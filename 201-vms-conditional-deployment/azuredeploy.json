@@ -127,12 +127,12 @@
         "flagDeployNSG"       : "[parameters('flagDeployNSG')]"
     }, 
     "hashSubnet1" : {
-      "true":  "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup.json', parameters('_artifactsLocationSasToken'))]",
-      "false": "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup-empty.json', parameters('_artifactsLocationSasToken'))]"
+      "true":  "[concat(parameters('_artifactsLocation'), '/',  'vms-workgroup.json', parameters('_artifactsLocationSasToken'))]",
+      "false": "[concat(parameters('_artifactsLocation'), '/',  'vms-workgroup-empty.json', parameters('_artifactsLocationSasToken'))]"
     },
     "hashSubnet2" : {
-      "true":  "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup.json', parameters('_artifactsLocationSasToken'))]",
-      "false": "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup-empty.json', parameters('_artifactsLocationSasToken'))]"
+      "true":  "[concat(parameters('_artifactsLocation'), '/',  'vms-workgroup.json', parameters('_artifactsLocationSasToken'))]",
+      "false": "[concat(parameters('_artifactsLocation'), '/',  'vms-workgroup-empty.json', parameters('_artifactsLocationSasToken'))]"
     },
     "hashNSG" : {
       "true":  "[concat(parameters('_artifactsLocation'), '/',  'nsg-subnets.json', parameters('_artifactsLocationSasToken'))]",
