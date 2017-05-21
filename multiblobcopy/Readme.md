@@ -1,3 +1,21 @@
+<properties
+   pageTitle="powershell script to replicate the content in Azure storage accounts"
+   description="powershell script to replicate the same blob in Azure storage accounts"
+   services=""
+   documentationCenter="na"
+   authors="fabferri"
+   manager=""
+   editor=""/>
+
+<tags
+   ms.service="Configuration-Example-Azure"
+   ms.devlang="na"
+   ms.topic="article"
+   ms.tgt_pltfrm="na"
+   ms.workload="na"
+   ms.date="25/11/2016"
+   ms.author="fabferri" />
+
 #  Powershell script to copy the same blob in multiple target storage accounts
 ###List of files:
 * **01_deploy_StorageAccounts.ps1**: the script run the ARM template to create the new target storage accounts. you do not need to run this script if you already have the target storage account in the same Azure Resource Group.

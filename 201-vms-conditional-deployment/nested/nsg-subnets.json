@@ -1,0 +1,167 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {   
+   "vnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "VNET name"
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the subnet created in the new VNET"
+      }
+    },
+    "subnet1Prefix":{
+      "type": "string",
+      "metadata": {
+        "description": "Subnet network prefix associated with Subnet1"
+      }
+    },
+    "subnet2Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the subnet created in the new VNET"
+      }
+    },
+    "subnet2Prefix":{
+      "type": "string",
+      "metadata": {
+        "description": "Subnet network prefix associated with Subnet1"
+      }
+    },    
+    "nsgName1":{
+      "type": "string",
+      "metadata":{
+        "description": "name of the networkSecurityGroup subnet 1"
+      }
+    },
+    "nsgName2":{
+      "type": "string",
+      "metadata":{
+        "description": "name of the networkSecurityGroup subnet 2"
+      }
+    }
+  },
+  "variables": {
+    "network-api-version": "2016-03-30",
+    "vnetName": "[parameters('vnetName')]",
+    "subnet1Name": "[parameters('subnet1Name')]",
+    "subnet2Name": "[parameters('subnet2Name')]",
+    "nsgName1": "[parameters('nsgName1')]",
+    "nsgName2": "[parameters('nsgName2')]" 
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('network-api-version')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName1')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "RDP-rule",
+            "properties": {
+              "description": "allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 500,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "HTPS-rule",
+            "properties": {
+               "description": "allow HTTPS",
+               "protocol": "Tcp",
+               "sourcePortRange": "*",
+               "destinationPortRange": "443",
+               "sourceAddressPrefix": "*",
+               "destinationAddressPrefix": "*",
+               "access": "Allow",
+               "priority": 600,
+               "direction": "Inbound"
+               }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[variables('network-api-version')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName2')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "RDP-rule",
+            "properties": {
+              "description": "allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 500,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "HTPS-rule",
+            "properties": {
+               "description": "allow HTTPS",
+               "protocol": "Tcp",
+               "sourcePortRange": "*",
+               "destinationPortRange": "443",
+               "sourceAddressPrefix": "*",
+               "destinationAddressPrefix": "*",
+               "access": "Allow",
+               "priority": 600,
+               "direction": "Inbound"
+               }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "name": "[concat(variables('vnetName'), '/', variables('subnet1Name'))]",
+      "dependsOn": [
+           "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName1'))]"
+      ],
+      "properties": {
+          "addressPrefix": "[parameters('subnet1Prefix')]",
+          "networkSecurityGroup": {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName1'))]"
+          }
+      }
+    },
+    {
+      "name": "[variables('vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "name": "[concat(variables('vnetName'), '/', variables('subnet2Name'))]",
+      "dependsOn": [
+           "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName2'))]"
+      ],      
+      "properties": {
+          "addressPrefix": "[parameters('subnet2Prefix')]",
+          "networkSecurityGroup": {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName2'))]"
+           }
+      }
+    }        
+  ]
+}
+

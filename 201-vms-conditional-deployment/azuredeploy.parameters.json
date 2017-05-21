@@ -1,0 +1,66 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "vnetName"           : { "value": "vnet1" },
+      "subnet1Name"        : { "value": "subnet1"},
+      "subnet2Name"        : { "value": "subnet2"},
+      "vnetAddressPrefix"  : { "value": "10.0.0.0/16"},
+      "subnet1Prefix"      : { "value": "10.0.0.0/24"},
+      "subnet2Prefix"      : { "value": "10.0.1.0/24"},
+      "adminUsername"      : { "value": "ADMIN_NAME" },
+      "adminPassword"      : { "value": "ADMIN_PASSWORD" },
+      "nsgName1"           : { "value": "NSG-Sub1" },
+      "nsgName2"           : { "value": "NSG-Sub2" },
+      "flagDeployVmSubnet1": { "value": "true" },
+      "flagDeployVmSubnet2": { "value": "false" },    
+      "flagDeployNSG"      : { "value": "true" },            
+      "_artifactsLocation" : {"value": "https://github.com/fabferri/azure-repo/tree/master/101-vpn-cisco-csr/nested"},
+      "newStorageAccountSuffix": { "value": "xso"},
+      "vmArraySubnet1" : {
+           "value":[
+              {
+                  "vmNamePrefix"  : "MYdom-srv11",
+                  "dnsNamePubIP"  : "MYdom-srv11",
+                  "nicName"       : "NIC11",
+                  "NicIPAddress"  : "10.0.0.5",
+                  "vmSize"        : "Standard_F1s",
+                  "imagePublisher": "MicrosoftWindowsServer",
+                  "imageOffer"    : "WindowsServer",
+                  "OSVersion"     : "2012-R2-Datacenter",
+                  "vmStorageAccountType":"Premium_LRS",
+                  "dataDiskSize"  : "10"
+              }
+           ]
+     },
+     "vmArraySubnet2" : {
+           "value":[
+              {
+                  "vmNamePrefix"  : "MYdom-srv21",
+                  "dnsNamePubIP"  : "MYdom-srv21",
+                  "nicName"       : "NIC21",
+                  "NicIPAddress"  : "10.0.1.5",
+                  "vmSize"        : "Standard_F1s",
+                  "imagePublisher": "MicrosoftWindowsServer",
+                  "imageOffer"    : "WindowsServer",
+                  "OSVersion"     : "2012-R2-Datacenter",
+                  "vmStorageAccountType":"Premium_LRS",
+                  "dataDiskSize"  : "10"
+              },
+              {
+                  "vmNamePrefix"  : "MYdom-srv22",
+                  "dnsNamePubIP"  : "MYdom-srv22",
+                  "nicName"       : "NIC22",
+                  "NicIPAddress"  : "10.0.1.6",
+                  "vmSize"        : "Standard_F1s",
+                  "imagePublisher": "MicrosoftWindowsServer",
+                  "imageOffer"    : "WindowsServer",
+                  "OSVersion"     : "2012-R2-Datacenter",
+                  "vmStorageAccountType":"Premium_LRS",
+                  "dataDiskSize"  : "10"
+              }
+           ]
+     }
+  }
+}
+

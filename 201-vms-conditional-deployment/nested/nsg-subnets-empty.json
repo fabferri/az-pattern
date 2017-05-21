@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+   "parameters": {   
+   "vnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "VNET name"
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the subnet created in the new VNET"
+      }
+    },
+    "subnet1Prefix":{
+      "type": "string",
+      "metadata": {
+        "description": "Subnet network prefix associated with Subnet1"
+      }
+    },
+    "subnet2Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the subnet created in the new VNET"
+      }
+    },
+    "subnet2Prefix":{
+      "type": "string",
+      "metadata": {
+        "description": "Subnet network prefix associated with Subnet1"
+      }
+    },    
+    "nsgName1":{
+      "type": "string",
+      "metadata":{
+        "description": "name of the networkSecurityGroup subnet 1"
+      }
+    },
+    "nsgName2":{
+      "type": "string",
+      "metadata":{
+        "description": "name of the networkSecurityGroup subnet 2"
+      }
+    }
+  },
+  "variables" : {},
+  "resources" : []
+}
+

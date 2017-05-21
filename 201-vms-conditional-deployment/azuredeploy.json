@@ -1,0 +1,289 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Virtual Network to Create"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The address range of the new VNET in CIDR format"
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the subnet created in the new VNET"
+      }
+    },
+    "subnet1Prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The address range of the subnet created in the new VNET"
+      }
+    },
+    "subnet2Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the subnet created in the new VNET"
+      }
+    },
+    "subnet2Prefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The address range of the subnet created in the new VNET"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Administrator of the new VM and Domain"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the Administrator account of the new VM and Domain"
+      }
+    },
+    "newStorageAccountSuffix": {
+      "type": "string"
+    },
+    "vmArraySubnet1":{
+      "type": "array",
+      "metadata": {
+        "description": "Spec VMs Created"
+      }
+    },
+    "vmArraySubnet2":{
+      "type": "array",
+      "metadata": {
+        "description": "array to create multiple VMs"
+      }
+    },
+    "nsgName1":{
+      "type": "string",
+      "metadata": {
+        "description": "Network Security Group Name for Subnet 1"
+      }
+    },
+    "nsgName2":{
+      "type": "string",
+      "metadata": {
+        "description": "Network Security Group Name for Subnet 2"
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of resources, such as templates and DSC modules, that the template depends on"
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Auto-generated token to access _artifactsLocation"
+      }
+    },
+    "flagDeployVmSubnet1" :{
+       "type": "string",
+       "allowedValues": [ "true", "false" ],
+       "metadata": {
+        "description": "deployment options for VMs in subnet1"
+        }      
+    },
+    "flagDeployVmSubnet2" :{
+       "type": "string",
+       "allowedValues": [ "true", "false" ],
+       "metadata": {
+        "description": "deployment options for VMs in subnet2"
+        }      
+    },
+    "flagDeployNSG" :{
+       "type": "string",
+       "allowedValues": [ "true", "false" ],
+       "metadata": {
+        "description": "deployment options for NSG"
+        }      
+    }        
+  },
+  "variables": {
+    "vnetName": "[parameters('vnetName')]",
+    "vnetAddressPrefix": "[parameters('vnetAddressPrefix')]",
+    "subnet1Name": "[parameters('subnet1Name')]",
+    "subnet1Prefix" : "[parameters('subnet1Prefix')]",
+    "subnet2Name": "[parameters('subnet2Name')]",
+    "subnet2Prefix" : "[parameters('subnet2Prefix')]",
+    "nsgName1" : "[parameters('nsgName1')]",
+    "nsgName2" : "[parameters('nsgName2')]",
+    "options": {
+        "flagDeployVmSubnet1" : "[parameters('flagDeployVmSubnet1')]",
+        "flagDeployVmSubnet2" : "[parameters('flagDeployVmSubnet2')]",
+        "flagDeployNSG"       : "[parameters('flagDeployNSG')]"
+    }, 
+    "hashSubnet1" : {
+      "true":  "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup.json', parameters('_artifactsLocationSasToken'))]",
+      "false": "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup-empty.json', parameters('_artifactsLocationSasToken'))]"
+    },
+    "hashSubnet2" : {
+      "true":  "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup.json', parameters('_artifactsLocationSasToken'))]",
+      "false": "[concat(parameters('_artifactsLocation'), '/',  'VMs-workgroup-empty.json', parameters('_artifactsLocationSasToken'))]"
+    },
+    "hashNSG" : {
+      "true":  "[concat(parameters('_artifactsLocation'), '/',  'nsg-subnets.json', parameters('_artifactsLocationSasToken'))]",
+      "false": "[concat(parameters('_artifactsLocation'), '/',  'nsg-subnets-empty.json', parameters('_artifactsLocationSasToken'))]"
+    },
+
+    "URItemplateVmSubnet1": "[variables('hashSubnet1')[variables('options').flagDeployVmSubnet1]]",
+    "URItemplateVmSubnet2": "[variables('hashSubnet2')[variables('options').flagDeployVmSubnet2]]",
+    "URItemplateNSG"      : "[variables('hashNSG')[variables('options').flagDeployNSG]]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "name": "VNet",
+      "apiVersion": "2016-02-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/','vnet.json', parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "vnetAddressPrefix": {
+            "value": "[variables('vnetAddressPrefix')]"
+          },
+          "subnet1Name": {
+            "value": "[variables('subnet1Name')]"
+          },
+          "subnet1Prefix": {
+            "value": "[variables('subnet1Prefix')]"
+          },
+          "subnet2Name": {
+            "value": "[variables('subnet2Name')]"
+          },
+          "subnet2Prefix": {
+            "value": "[variables('subnet2Prefix')]"
+          }
+        }
+      }
+    },
+   {
+      "name": "VMs-Subnet1",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+         "Microsoft.Resources/deployments/VNet"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('URItemplateVmSubnet1')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "newStorageAccountSuffix":{
+               "value": "[parameters('newStorageAccountSuffix')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnet1Name')]"
+          },
+          "vmArray": {
+            "value": "[parameters('vmArraySubnet1')]"
+          },
+           "adminUsername": {
+            "value":  "[parameters('adminUsername')]" 
+          },
+          "adminPassword": {
+            "value":  "[parameters('adminPassword')]" 
+          }              
+        }
+      }
+    },    
+   {
+      "name": "VMs-Subnet2",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+         "Microsoft.Resources/deployments/VNet"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('URItemplateVmSubnet2')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "newStorageAccountSuffix":{
+               "value": "[parameters('newStorageAccountSuffix')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnet2Name')]"
+          },
+          "vmArray": {
+            "value": "[parameters('vmArraySubnet2')]"
+          },
+           "adminUsername": {
+            "value":  "[parameters('adminUsername')]" 
+          },
+          "adminPassword": {
+            "value":  "[parameters('adminPassword')]" 
+          }              
+        }
+      }
+    },    
+    {
+      "name": "applyNSGs",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2015-01-01",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/VNet"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('URItemplateNSG')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName":{
+             "value": "[variables('vnetName')]"
+          },
+          "subnet1Name": {
+            "value": "[variables('subnet1Name')]"
+          },
+          "subnet1Prefix": {
+            "value": "[variables('subnet1Prefix')]"
+          },          
+          "subnet2Name": {
+            "value": "[variables('subnet2Name')]"
+          }, 
+          "subnet2Prefix": {
+            "value": "[variables('subnet2Prefix')]"
+          },               
+          "nsgName1":{
+            "value": "[variables('nsgName1')]"      
+          },
+          "nsgName2":{
+            "value": "[variables('nsgName2')]"   
+          } 
+        }
+      }
+    }  
+  ]
+}
+

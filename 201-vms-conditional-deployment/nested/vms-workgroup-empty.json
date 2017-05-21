@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "newStorageAccountSuffix": {
+            "type": "string",
+            "metadata": {
+                "description": "Unique DNS Name for the Storage Account where the VM's disks will be placed."
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "metadata": {  "description": "VNet Name" }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+            "description": "Existing subnet that contains the domain controller"
+            }
+        },
+        "vmArray" :{
+           "type" : "array",
+           "metadata" : { "description" : "VM object"}
+        },
+        "adminUsername": {
+           "type": "string",
+           "metadata": {
+           "description": "Username of the account on the domain"
+           }
+        },
+        "adminPassword": {
+           "type": "securestring",
+           "metadata": {
+           "description": "Password of the account on the domain"
+           }
+        }
+    },
+    "variables": { },
+    "resources": [ ]
+}
