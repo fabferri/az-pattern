@@ -1,0 +1,239 @@
+{
+  "$schema":"http://schema.management.azure.com/schemas/2015-01-01-preview/deploymentTemplate.json",
+  "contentVersion":"1.0.0.0",
+  "parameters":{
+    "vmssName":{
+      "type":"string",
+      "metadata":{
+        "description":"String used as a base for naming resources (9 characters or less). A hash is prepended to this string for some resources, and resource-specific information is appended."
+      },
+      "maxLength":9
+    },
+    "vmSize":{
+      "type":"string",
+      "allowedValues": [
+        "Standard_A1", "Standard_A2", "Standard_A3", "Standard_A4", "Standard_A5", "Standard_A6", "Standard_A7",
+				"Standard_D1","Standard_D2","Standard_D3","Standard_D4","Standard_D11","Standard_D12","Standard_D13","Standard_D14",
+				"Standard_DS1","Standard_DS2","Standard_DS3","Standard_DS4","Standard_DS11","Standard_DS12","Standard_DS13","Standard_DS14",
+        "Standard_DS1_v2","Standard_DS2_v2","Standard_DS3_v2","Standard_DS4_v2", "Standard_DS5_v2","Standard_DS11_v2","Standard_DS12_v2",
+        "Standard_DS13_v2","Standard_DS14_v2","Standard_DS15_v2"
+			],
+      "metadata":{ "description":"Size of VMs in the VM Scale Set." }
+    },
+    "instanceCount":{
+      "type":"int",
+      "metadata": { "description":"Number of VM instances (100 or less)." },
+      "maxValue":100
+    },
+    "storageAccountType":{
+      "type": "string",
+      "allowedValues": ["Standard_LRS", "Premium_LRS"],
+      "metadata": { "description": "type storage" }
+    },
+    "resourceGroupVNet":{
+      "type":"string",
+      "metadata":{ "description":"Resource Group where is locate the VNet "}
+    },
+    "virtualNetworkName":{
+      "type":"string",
+      "metadata":{ "description":"Resource Group where is locate the VNet "}
+    },
+    "subnetName":{
+      "type":"string",
+      "metadata":{ "description":"Resource Group where is locate the VNet "}
+    },
+    "adminUsername":{
+      "type":"string",
+      "metadata":{
+        "description":"Admin username on all VMs."
+      }
+    },
+    "adminPassword":{
+      "type":"securestring",
+      "metadata":{
+        "description":"Admin password on all VMs."
+      }
+    },
+    "fileServerIPAddress":{
+      "type":"string",
+    "metadata":{ "description":"IP Address of the file server containing the sw package need to be installed in the VM"}
+    }
+  },
+  "variables":{
+    "osType": {
+         "publisher": "MicrosoftWindowsServer",
+         "offer": "WindowsServer",
+         "sku": "2008-R2-SP1",
+         "version": "latest"
+    },
+    "imageReference": "[variables('osType')]",
+    "computeApiVersion": "2016-03-30",
+    "networkApiVersion": "2016-03-30",
+    "storageApiVersion": "2015-06-15",
+    "namingInfix": "[toLower(parameters('vmssName'))]",
+    "storageAccountType": "[parameters('storageAccountType')]",
+    "newStorageAccountSuffix": "[concat(variables('namingInfix'), 'sa')]",
+    "uniqueStringArray": [
+      "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '0')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '1')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '2')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '3')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '4')))]"
+    ],
+    "saCount": "[length(variables('uniqueStringArray'))]",
+    "vhdContainerName": "[concat(variables('namingInfix'), 'vhd')]",
+    "osDiskName":"[concat(variables('namingInfix'), 'osdisk')]",
+    "virtualNetworkName":"[parameters('virtualNetworkName')]",
+    "subnetName":"[parameters('subnetName')]",
+    "ipConfigName":"[concat(variables('namingInfix'), 'ipconfig')]",
+    "nicName":"[concat(variables('namingInfix'), 'nic')]",
+    "fileServerIPAddress":"[parameters('fileServerIPAddress')]",
+    "unattendAutoLogonXML":"[Concat('<AutoLogon><Password><Value>',parameters('adminPassword'),'</Value></Password><Domain></Domain><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>',parameters('adminUsername'),'</Username></AutoLogon>')]",
+
+    "headerCmdsXML":"<FirstLogonCommands xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" >",
+    "tailCmdsXML" : "</FirstLogonCommands>",
+    "addCmdXML"   : "<SynchronousCommand wcm:action=\"add\">",
+    "endCmdXML"   : "</SynchronousCommand>",
+
+    "bodyCmd1XML" : "[Concat('<CommandLine>cmd.exe /c robocopy \\\\',variables('fileServerIPAddress'),'\\shared C:\\install /MIR /V > D:\\unattendCopyFiles.log </CommandLine>')]",
+    "descrCmd1XML": "<Description>Copy files</Description>",
+    "orderCmd1XML": "<Order>1</Order>",
+    "cmd1XML"     : "[Concat(variables('addCmdXML'),variables('bodyCmd1XML'), variables('descrCmd1XML'), variables('orderCmd1XML'),variables('endCmdXML'))]",
+
+    "bodyCmd2XML" : "<CommandLine>cmd.exe /c robocopy C:\\install C:\\Windows\\System32\\drivers\\etc hosts /IS > D:\\unattendedCopyhostsFile.log </CommandLine>",
+    "descrCmd2XML": "<Description>move hosts file</Description>",
+    "orderCmd2XML": "<Order>2</Order>",
+    "cmd2XML"     : "[Concat(variables('addCmdXML'),variables('bodyCmd2XML'), variables('descrCmd2XML'), variables('orderCmd2XML'),variables('endCmdXML'))]",
+
+    "bodyCmd3XML" : "<CommandLine>cmd.exe /c netsh advfirewall set allprofiles state off > D:\\unattendedDisableFirewall.log </CommandLine>",
+    "descrCmd3XML": "<Description>disable the Windows firewall</Description>",
+    "orderCmd3XML": "<Order>3</Order>",
+    "cmd3XML"     : "[Concat(variables('addCmdXML'),variables('bodyCmd3XML'), variables('descrCmd3XML'), variables('orderCmd3XML'),variables('endCmdXML'))]",
+
+    "bodyCmd4XML" : "<CommandLine>cmd.exe /c C:\\install\\setup.exe -s -f2c:\\datasynapse.log </CommandLine>",
+    "descrCmd4XML": "<Description>install Datasynapse Engine</Description>",
+    "orderCmd4XML": "<Order>4</Order>",
+    "cmd4XML"     : "[Concat(variables('addCmdXML'),variables('bodyCmd4XML'), variables('descrCmd4XML'), variables('orderCmd4XML'),variables('endCmdXML'))]",
+
+    "unattendFirstRunXML": "[Concat(variables('headerCmdsXML'),variables('cmd1XML'),variables('cmd2XML'),variables('cmd3XML'),variables('cmd4XML'),variables('tailCmdsXML'))]",
+
+    "unattendFirstRunXML1":"[Concat('<FirstLogonCommands xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" >
+  <SynchronousCommand wcm:action=\"add\">
+     <CommandLine>cmd.exe /c robocopy \\\\',variables('fileServerIPAddress'),'\\shared C:\\install /MIR /V > D:\\unattendCopyFiles.log </CommandLine>
+     <Description>Copy files</Description><Order>1</Order></SynchronousCommand>
+  <SynchronousCommand wcm:action=\"add\">
+     <CommandLine>cmd.exe /c robocopy C:\\install C:\\Windows\\System32\\drivers\\etc hosts /IS > D:\\unattendedCopyhostsFile.log </CommandLine>
+     <Description>Copy files</Description><Order>2</Order></SynchronousCommand>
+  <SynchronousCommand wcm:action=\"add\">
+     <CommandLine>cmd.exe /c netsh advfirewall set allprofiles state off > D:\\unattendedDisableFirewall.log </CommandLine>
+     <Description>disable the Windows firewall</Description><Order>3</Order></SynchronousCommand>
+  <SynchronousCommand wcm:action=\"add\">
+     <CommandLine>cmd.exe /c C:\\install\\setup.exe -s -f2c:\\datasynapse.log </CommandLine>
+     <Description>install Datasynapse Engine</Description><Order>4</Order></SynchronousCommand>
+  </FirstLogonCommands>')]"
+  },
+  "resources":[
+    {
+       "type": "Microsoft.Storage/storageAccounts",
+       "name": "[concat(variables('uniqueStringArray')[copyIndex()], variables('newStorageAccountSuffix'))]",
+       "location": "[resourceGroup().location]",
+       "apiVersion": "[variables('storageApiVersion')]",
+       "copy": {
+            "name": "storageLoop",
+            "count": "[variables('saCount')]"
+       },
+       "properties": {
+       "accountType": "[variables('storageAccountType')]"
+       }
+    },
+    {
+      "type":"Microsoft.Compute/virtualMachineScaleSets",
+      "name":"[variables('namingInfix')]",
+      "location":"[resourceGroup().location]",
+      "apiVersion":"[variables('computeApiVersion')]",
+      "dependsOn": [
+         "storageLoop"
+      ],
+      "sku":{
+        "name":"[parameters('vmSize')]",
+        "tier":"Standard",
+        "capacity":"[parameters('instanceCount')]"
+      },
+      "properties":{
+        "overprovision": "true",
+        "upgradePolicy":{
+          "mode":"Manual"
+        },
+        "virtualMachineProfile":{
+          "storageProfile":{
+            "osDisk":{
+              "vhdContainers": [
+                  "[concat('https://', variables('uniqueStringArray')[0], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[1], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[2], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[3], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]",
+                  "[concat('https://', variables('uniqueStringArray')[4], variables('newStorageAccountSuffix'), '.blob.core.windows.net/', variables('vhdContainerName'))]"
+              ],
+              "name":"[variables('osDiskName')]",
+              "caching":"ReadOnly",
+              "createOption": "FromImage",
+            },
+            "imageReference": "[variables('imageReference')]"
+          },
+          "osProfile":{
+            "computerNamePrefix":"[variables('namingInfix')]",
+            "adminUsername":"[parameters('adminUsername')]",
+            "adminPassword":"[parameters('adminPassword')]",
+            "windowsConfiguration": {
+                "provisionVMAgent": "true",
+                "additionalUnattendContent":[
+                    {
+                        "passName":"oobesystem",
+                        "componentName":"Microsoft-Windows-Shell-Setup",
+                        "settingName":"AutoLogon",
+                        "content":"[variables('unattendAutoLogonXML')]"
+                    },
+                    {
+                        "passName":"oobesystem",
+                        "componentName":"Microsoft-Windows-Shell-Setup",
+                        "settingName":"FirstLogonCommands",
+                        "content":"[variables('unattendFirstRunXML')]"
+                    }
+                ]
+              }
+          },
+          "networkProfile":{
+            "networkInterfaceConfigurations":[
+              {
+                "name":"[variables('nicName')]",
+                "properties":{
+                  "primary":"true",
+                  "ipConfigurations":[
+                    {
+                      "name":"[variables('ipConfigName')]",
+                      "properties":{
+                        "subnet":{
+                          "id":"[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', parameters('resourceGroupVNet'), '/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'), '/subnets/', variables('subnetName'))]"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+     "ScaleSetName":{
+       "type": "string",
+       "value": "variables('namingInfix')"
+     },
+     "XML" : {
+       "type" : "string",
+       "value": "[variables('unattendFirstRunXML')]"
+     }
+   }
+}

@@ -1,0 +1,195 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01-preview/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName":{
+      "type":"string",
+      "metadata":{ "description":"VM Name"}
+    },
+    "vmSize":{
+      "type":"string",
+      "allowedValues": [
+        "Standard_A1", "Standard_A2", "Standard_A3", "Standard_A4", "Standard_A5", "Standard_A6", "Standard_A7",
+        "Standard_D1","Standard_D2","Standard_D3","Standard_D4","Standard_D11","Standard_D12","Standard_D13","Standard_D14",
+        "Standard_DS1","Standard_DS2","Standard_DS3","Standard_DS4","Standard_DS11","Standard_DS12","Standard_DS13","Standard_DS14","Standard_D1_V2","Standard_DS1_V2"
+    ],
+    "metadata":{ "description":"Size of VM" }
+    },
+    "storageAccountType":{
+      "type": "string",
+      "allowedValues": ["Standard_LRS", "Premium_LRS"],
+      "metadata": { "description": "type storage" }
+    },
+    "resourceGroupVNet":{
+      "type":"string",
+      "metadata":{ "description":"Resource Group where is deployed the VNet "}
+    },
+    "virtualNetworkName":{
+      "type":"string",
+      "metadata":{ "description":"VNet Name"}
+    },
+    "subnetName":{
+      "type":"string",
+      "metadata":{ "description":"Subnet Name"}
+    },
+    "privNicIPAddress":{
+      "type":"string",
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": { "description": "Admin username on all VMs." }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": { "description": "Admin password on all VMs." }
+    }
+  },
+  "variables": {
+    "osType": {
+       "publisher": "MicrosoftWindowsServer",
+       "offer": "WindowsServer",
+       "sku": "2012-R2-Datacenter",
+       "version": "latest"
+     },
+    "imageReference": "[variables('osType')]",
+    "vmName": "[toLower(parameters('vmName'))]",
+    "vmSAName": "[concat(uniqueString(concat(resourceGroup().id, 'fs')), 'fs')]",
+    "vmOSDiskName": "[concat(variables('vmName'), 'osdisk')]",
+    "vmDataDiskName": "[concat(variables('vmName'), 'datadisk')]",
+    "sizeOfDataDiskInGB": "510",
+    "vmVHDContainerName": "[concat(variables('vmName'), 'vhd')]",
+    "vmIPConfigName": "[concat(variables('vmName'), 'ipconfig')]",
+    "vmNicName": "[concat(variables('vmName'), '-nic')]",
+    "storageAccountType": "[parameters('storageAccountType')]",
+    "virtualNetworkName":"[parameters('virtualNetworkName')]",
+    "subnetName":"[parameters('subnetName')]",
+    "computeApiVersion": "2016-03-30",
+    "networkApiVersion": "2016-03-30",
+    "storageApiVersion": "2015-06-15",
+    "unattendAutoLogonXML":"[Concat('<AutoLogon><Password><Value>',parameters('adminPassword'),'</Value></Password><Domain></Domain><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>',parameters('adminUsername'),'</Username></AutoLogon>')]",
+
+    "headerCmdsXML":"<FirstLogonCommands xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" >",
+    "tailCmdsXML" : "</FirstLogonCommands>",
+    "addCmdXML"   : "<SynchronousCommand wcm:action=\"add\">",
+    "endCmdXML"   : "</SynchronousCommand>",
+
+    "bodyCmd1XML" : "<CommandLine>powershell.exe -Command New-Item C:\\shared –type directory -Verbose *> D:\\unattendCreateDir.log </CommandLine>",
+    "descrCmd1XML": "<Description>Create Folder</Description>",
+    "orderCmd1XML": "<Order>1</Order>",
+    "cmd1XML" : "[Concat(variables('addCmdXML'),variables('bodyCmd1XML'), variables('descrCmd1XML'), variables('orderCmd1XML'),variables('endCmdXML'))]",
+
+    "bodyCmd2XML" : "[Concat('<CommandLine>powershell.exe -Command New-SMBShare –Name shared –Path C:\\shared –FullAccess ', parameters('adminUsername'),' -ReadAccess Everyone -Verbose *> D:\\unattendCopy.log </CommandLine>')]",
+    "descrCmd2XML": "<Description>Copy MSI file</Description>",
+    "orderCmd2XML": "<Order>2</Order>",
+    "cmd2XML" : "[Concat(variables('addCmdXML'),variables('bodyCmd2XML'), variables('descrCmd2XML'), variables('orderCmd2XML'),variables('endCmdXML'))]",
+
+    "unattendFirstRunXML": "[Concat(variables('headerCmdsXML'),variables('cmd1XML'),variables('cmd2XML'),variables('tailCmdsXML'))]",
+
+    "unattendFirstRunXML1":"[Concat('<FirstLogonCommands xmlns:wcm=\"http://schemas.microsoft.com/WMIConfig/2002/State\" >
+  <SynchronousCommand wcm:action=\"add\">
+     <CommandLine>powershell.exe -Command New-Item C:\\shared –type directory -Verbose *> D:\\unattendCreateDir.log </CommandLine>
+     <Description>Create Folder</Description><Order>1</Order></SynchronousCommand>
+  <SynchronousCommand wcm:action=\"add\">
+     <CommandLine>powershell.exe -Command New-SMBShare –Name shared –Path C:\\shared –FullAccess ', parameters('adminUsername'),' -ReadAccess Everyone -Verbose *> D:\\unattendCopy.log </CommandLine>
+     <Description>Copy MSI file</Description><Order>2</Order></SynchronousCommand>
+  </FirstLogonCommands>')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('vmSAName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "properties": {
+        "accountType": "[variables('storageAccountType')]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('vmNicName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('networkApiVersion')]",
+      "dependsOn": [
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('vmIPConfigName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('privNicIPAddress')]",
+              "subnet": {
+                "id":"[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', parameters('resourceGroupVNet'), '/providers/Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'), '/subnets/', variables('subnetName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('computeApiVersion')]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('vmSAName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('vmNicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+             "additionalUnattendContent":[
+                 {
+                     "passName":"oobesystem",
+                     "componentName":"Microsoft-Windows-Shell-Setup",
+                     "settingName":"AutoLogon",
+                     "content":"[variables('unattendAutoLogonXML')]"
+                 },
+                 {
+                     "passName":"oobesystem",
+                     "componentName":"Microsoft-Windows-Shell-Setup",
+                     "settingName":"FirstLogonCommands",
+                     "content":"[variables('unattendFirstRunXML')]"
+                 }
+                 ]
+             }
+        },
+        "storageProfile": {
+          "imageReference": "[variables('imageReference')]",
+          "osDisk": {
+            "name": "[variables('vmOSDiskName')]",
+            "vhd": {
+              "uri": "[concat('http://',variables('vmSAName'),'.blob.core.windows.net/',variables('vmVHDContainerName'),'/',variables('vmOSDiskName'),'.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "datadisk1",
+              "diskSizeGB": "[variables('sizeOfDataDiskInGB')]",
+              "lun": 0,
+              "vhd": {
+                "uri": "[concat('http://',variables('vmSAName'),'.blob.core.windows.net/',variables('vmVHDContainerName'),'/',variables('vmDataDiskName'),'.vhd')]"
+              },
+              "createOption": "Empty"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('vmNicName'))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

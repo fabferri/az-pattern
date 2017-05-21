@@ -1,0 +1,43 @@
+{
+	"$schema":"http://schema.management.azure.com/schemas/2015-01-01-preview/deploymentTemplate.json",
+	"contentVersion":"1.0.0.0",
+	"parameters":{
+		"location":{
+			"type":"string",
+			"metadata":{
+				"description":"Deployment location"
+			},
+			"defaultValue":"[resourceGroup().location]"
+		},
+		"numberOfSAs": {
+				"type": "int"
+		},
+		"storageAccountType": {
+				"type": "string"
+		},
+		"storageAccountSuffix": {
+				"type": "string"
+		}
+	},
+	"variables":{
+		"apiVersion":"2015-06-15",
+		"storageAccountType" : "[parameters('storageAccountType')]",
+		"allowedValues": ["Standard_LRS", "Premium_LRS"]
+	},
+	"resources":[
+		{
+      "type":"Microsoft.Storage/storageAccounts",
+      "name":"[concat(uniqueString(concat(resourceGroup().id, parameters('storageAccountSuffix'), copyIndex())))]",
+      "location":"[parameters('location')]",
+      "apiVersion":"[variables('apiVersion')]",
+      "properties":{
+        "accountType":"[variables('storageAccountType')]"
+      },
+			"copy": {
+                "name": "storageLoop",
+                "count": "[parameters('numberOfSAs')]"
+            }
+    }
+	],
+	"outputs" :{}
+}

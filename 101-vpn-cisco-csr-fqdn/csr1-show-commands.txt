@@ -1,0 +1,188 @@
+CSR1#show crypto ikev2 sa
+ IPv4 Crypto IKEv2  SA
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+1         10.1.0.4/4500         40.69.211.144/4500    none/none            READY
+      Encr: AES-CBC, keysize: 256, PRF: SHA512, Hash: SHA512, DH Grp:14, Auth sign: PSK, Auth verify: PSK
+      Life/Active Time: 86400/17454 sec
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+2         10.1.0.4/4500         40.69.211.144/4500    none/none            READY
+      Encr: AES-CBC, keysize: 256, PRF: SHA512, Hash: SHA512, DH Grp:14, Auth sign: PSK, Auth verify: PSK
+      Life/Active Time: 86400/17507 sec
+
+ IPv6 Crypto IKEv2  SA
+
+CSR1#show crypto ikev2 sa detailed
+ IPv4 Crypto IKEv2  SA
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+1         10.1.0.4/4500         40.69.211.144/4500    none/none            READY
+      Encr: AES-CBC, keysize: 256, PRF: SHA512, Hash: SHA512, DH Grp:14, Auth sign: PSK, Auth verify: PSK
+      Life/Active Time: 86400/17477 sec
+      CE id: 1002, Session-id: 1
+      Status Description: Negotiation done
+      Local spi: 188F8145FB0AD288       Remote spi: EC0A9D81EF5594E2
+      Local id: CSR1.cisco.com
+      Remote id: CSR2.cisco.com
+      Local req msg id:  10             Remote req msg id:  6
+      Local next msg id: 10             Remote next msg id: 6
+      Local req queued:  10             Remote req queued:  6
+      Local window:      5              Remote window:      5
+      DPD configured for 10 seconds, retry 2
+      Fragmentation not  configured.
+      Extended Authentication not configured.
+      NAT-T is detected inside
+      Cisco Trust Security SGT is disabled
+      Initiator of SA : Yes
+      Post NATed Address  : 52.164.231.103
+
+Tunnel-id Local                 Remote                fvrf/ivrf            Status
+2         10.1.0.4/4500         40.69.211.144/4500    none/none            READY
+      Encr: AES-CBC, keysize: 256, PRF: SHA512, Hash: SHA512, DH Grp:14, Auth sign: PSK, Auth verify: PSK
+      Life/Active Time: 86400/17530 sec
+      CE id: 1001, Session-id: 1
+      Status Description: Negotiation done
+      Local spi: DC9AF7C2F8632301       Remote spi: 55DB0980CE43526F
+      Local id: CSR1.cisco.com
+      Remote id: CSR2.cisco.com
+      Local req msg id:  0              Remote req msg id:  2
+      Local next msg id: 0              Remote next msg id: 2
+      Local req queued:  0              Remote req queued:  2
+      Local window:      5              Remote window:      5
+      DPD configured for 10 seconds, retry 2
+      Fragmentation not  configured.
+      Extended Authentication not configured.
+      NAT-T is detected inside
+      Cisco Trust Security SGT is disabled
+      Initiator of SA : No
+      Post NATed Address  : 52.164.231.103
+
+ IPv6 Crypto IKEv2  SA
+
+=====================================================================
+
+CSR1#show crypto session
+Crypto session current status
+
+Interface: Tunnel0
+Profile: azure-profile
+Session status: UP-ACTIVE
+Peer: 40.69.211.144 port 4500
+  Session ID: 1
+  IKEv2 SA: local 10.1.0.4/4500 remote 40.69.211.144/4500 Active
+  Session ID: 2
+  IKEv2 SA: local 10.1.0.4/4500 remote 40.69.211.144/4500 Active
+  IPSEC FLOW: permit 47 host 10.1.0.4 host 40.69.211.144
+        Active SAs: 2, origin: crypto map
+
+=====================================================================
+
+CSR1#show crypto session detail
+Crypto session current status
+
+Code: C - IKE Configuration mode, D - Dead Peer Detection
+K - Keepalives, N - NAT-traversal, T - cTCP encapsulation
+X - IKE Extended Authentication, F - IKE Fragmentation
+R - IKE Auto Reconnect
+
+Interface: Tunnel0
+Profile: azure-profile
+Uptime: 04:47:07
+Session status: UP-ACTIVE
+Peer: 40.69.211.144 port 4500 fvrf: (none) ivrf: (none)
+      Phase1_id: CSR2.cisco.com
+      Desc: (none)
+  Session ID: 1
+  IKEv2 SA: local 10.1.0.4/4500 remote 40.69.211.144/4500 Active
+          Capabilities:DN connid:1 lifetime:19:12:53
+  Session ID: 2
+  IKEv2 SA: local 10.1.0.4/4500 remote 40.69.211.144/4500 Active
+          Capabilities:DN connid:2 lifetime:19:12:00
+  IPSEC FLOW: permit 47 host 10.1.0.4 host 40.69.211.144
+        Active SAs: 2, origin: crypto map
+        Inbound:  #pkts dec'ed 842 drop 0 life (KB/Sec) 4607978/2237
+        Outbound: #pkts enc'ed 843 drop 0 life (KB/Sec) 4607988/2237
+
+=====================================================================
+
+CSR1#show crypto ipsec sa
+
+interface: Tunnel0
+    Crypto map tag: Tunnel0-head-0, local addr 10.1.0.4
+
+   protected vrf: (none)
+   local  ident (addr/mask/prot/port): (10.1.0.4/255.255.255.255/47/0)
+   remote ident (addr/mask/prot/port): (40.69.211.144/255.255.255.255/47/0)
+   current_peer 40.69.211.144 port 4500
+     PERMIT, flags={origin_is_acl,}
+    #pkts encaps: 853, #pkts encrypt: 853, #pkts digest: 853
+    #pkts decaps: 852, #pkts decrypt: 852, #pkts verify: 852
+    #pkts compressed: 0, #pkts decompressed: 0
+    #pkts not compressed: 0, #pkts compr. failed: 0
+    #pkts not decompressed: 0, #pkts decompress failed: 0
+    #send errors 0, #recv errors 0
+
+     local crypto endpt.: 10.1.0.4, remote crypto endpt.: 40.69.211.144
+     plaintext mtu 1426, path mtu 1500, ip mtu 1500, ip mtu idb GigabitEthernet1
+     current outbound spi: 0xB3F1D7C4(3018971076)
+     PFS (Y/N): N, DH group: none
+
+     inbound esp sas:
+      spi: 0x498A13C0(1233785792)
+        transform: esp-256-aes esp-sha512-hmac ,
+        in use settings ={Transport UDP-Encaps, }
+        conn id: 2013, flow_id: CSR:13, sibling_flags FFFFFFFF80000008, crypto map: Tunnel0-head-0
+        sa timing: remaining key lifetime (k/sec): (4607977/2142)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     inbound ah sas:
+
+     inbound pcp sas:
+
+     outbound esp sas:
+      spi: 0xB3F1D7C4(3018971076)
+        transform: esp-256-aes esp-sha512-hmac ,
+        in use settings ={Transport UDP-Encaps, }
+        conn id: 2014, flow_id: CSR:14, sibling_flags FFFFFFFF80000008, crypto map: Tunnel0-head-0
+        sa timing: remaining key lifetime (k/sec): (4607987/2142)
+        IV size: 16 bytes
+        replay detection support: Y
+        Status: ACTIVE(ACTIVE)
+
+     outbound ah sas:
+
+     outbound pcp sas:
+
+=====================================================================
+CSR1#show ip route
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is 10.1.0.1 to network 0.0.0.0
+
+S*    0.0.0.0/0 [1/0] via 10.1.0.1
+      10.0.0.0/8 is variably subnetted, 5 subnets, 2 masks
+C        10.1.0.0/24 is directly connected, GigabitEthernet1
+L        10.1.0.4/32 is directly connected, GigabitEthernet1
+C        10.1.1.0/24 is directly connected, GigabitEthernet2
+L        10.1.1.4/32 is directly connected, GigabitEthernet2
+O        10.2.1.0/24 [110/1001] via 172.16.0.2, 05:00:43, Tunnel0
+      168.63.0.0/32 is subnetted, 1 subnets
+S        168.63.129.16 [254/0] via 10.1.0.1
+      169.254.0.0/32 is subnetted, 1 subnets
+S        169.254.169.254 [254/0] via 10.1.0.1
+      172.16.0.0/16 is variably subnetted, 2 subnets, 2 masks
+C        172.16.0.0/30 is directly connected, Tunnel0
+L        172.16.0.1/32 is directly connected, Tunnel0
+
+

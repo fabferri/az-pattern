@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "newStorageAccountName": { "value": "YOUR_STORAGE_ACCOUNT" },
+        "adminUsername":         { "value": "ADMIN_USER_NAME" },
+        "adminPassword":         { "value": "ADMIN_PASSWORD" },
+        "virtualNetworkName":    { "value": "VIRTUAL_NETWORK_NAME"},
+        "vmArray" :{
+           "value":[
+              {
+                   "vmNamePrefix"  : "CENTOS_HOSTNAME",
+                   "dnsNamePubIP"  : "DNS_PUB_PREFIX",
+                   "nicName"       : "NIC3",
+                   "vmSize"        : "Standard_A1",
+                   "imagePublisher": "OpenLogic",
+                   "imageOffer"    : "CentOS",
+                   "OSVersion"     : "7.1",
+                   "dataDiskSize"  : "50"
+              },
+              {
+                   "vmNamePrefix"  : "UBUNTU_HOSTNAME",
+                   "dnsNamePubIP"  : "DNS_PUB_PREFIX",
+                   "nicName"       : "NIC5",
+                   "vmSize"        : "Standard_D1",
+                   "imagePublisher": "Canonical",
+                   "imageOffer"    : "UbuntuServer",
+                   "OSVersion"     : "15.04",
+                   "dataDiskSize"  : "20"
+              },
+              {
+                  "vmNamePrefix"  : "WIN_HOSTNAME1",
+                  "dnsNamePubIP"  : "DNS_PUB_PREFIX_WIN_HOST1",
+                  "nicName"       : "NIC6",
+                  "vmSize"        : "Standard_A1",
+                  "imagePublisher": "MicrosoftWindowsServer",
+                  "imageOffer"    : "WindowsServer",
+                  "OSVersion"     : "2012-R2-Datacenter",
+                  "dataDiskSize"  : "10"
+              },
+              {
+                  "vmNamePrefix"  : "WIN_HOSTNAME2",
+                  "dnsNamePubIP"  : "DNS_PUB_PREFIX",
+                  "nicName"       : "NIC7",
+                  "vmSize"        : "Standard_A1",
+                  "imagePublisher": "MicrosoftWindowsServer",
+                  "imageOffer"    : "WindowsServer",
+                  "OSVersion"     : "2008-R2-SP1",
+                  "dataDiskSize"  : "10"
+              },
+              {
+                  "vmNamePrefix"  : "WINDOWS_HOSTNAME3",
+                  "dnsNamePubIP"  : "DNS_PUB_PREFIX",
+                  "nicName"       : "NIC8",
+                  "vmSize"        : "Standard_A1",
+                  "imagePublisher": "MicrosoftWindowsServer",
+                  "imageOffer"    : "WindowsServer",
+                  "OSVersion"     : "2008-R2-SP1",
+                  "dataDiskSize"  : "10"
+              }
+          ]
+        }
+    }
+}

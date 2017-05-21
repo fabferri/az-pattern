@@ -1,0 +1,17 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername"  : { "value": "ADMIN_NAME" },
+    "adminPassword"  : { "value": "ADMIN_PASSWORD"},
+    "vmName"         : { "value": "CSR1"},
+    "vnetName"       : { "value": "VNet1"},
+    "subnet1Name"    : { "value": "Subnet1"},
+    "subnet2Name"    : { "value": "Subnet2"},
+    "addressPrefix"  : { "value": "10.1.0.0/16"},
+    "subnet1Prefix"  : { "value": "10.1.0.0/24"},
+    "subnet2Prefix"  : { "value": "10.1.1.0/24"},
+    "subnet1StartAddress" : { "value": "10.1.0.4"},
+    "subnet2StartAddress" : { "value": "10.1.1.4"}
+  }
+}

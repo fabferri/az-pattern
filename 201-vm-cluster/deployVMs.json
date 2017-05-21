@@ -1,0 +1,173 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountPrefix": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": { "description": "Admin username" }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {  "description": "Admin password" }
+        },
+        "vnetName": {
+            "type": "string"
+        },
+        "subnetName": {
+            "type": "string"
+        },
+        "vmSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_A0", "Standard_A1", "Standard_A2", "Standard_A3","Standard_A4",
+                "Standard_D1", "Standard_D2", "Standard_D3", "Standard_D4"
+            ]
+        },
+        "imagePublisher": {
+            "type": "string",
+            "metadata": { "description": "Image Publisher" }
+        },
+        "imageOffer": {
+            "type": "string",
+            "metadata": { "description": "Image Offer" }
+        },
+        "imageSKU": {
+            "type": "string",
+            "metadata": { "description": "Image SKU" }
+        },
+        "basePrefix": {
+            "type": "string",
+            "metadata": { "description": "Unique Prefix" }
+        },
+        "numberOfInstancesPerAccount" :{
+          "type" : "int"
+        },
+        "numberOfStorageAccounts" :{
+          "type" : "int"
+        }
+    },
+    "variables": {
+      "storageAccountType": "Standard_LRS",
+      "addressPrefix": "10.0.0.0/20",
+      "subnetPrefix": "10.0.0.0/21",
+      "apiVersion": "2015-06-15",
+      "numberOfInstances": "[mul(parameters('numberOfStorageAccounts'),parameters('numberOfInstancesPerAccount'))]",
+      "numberOfStorageAccounts" : "[parameters('numberOfStorageAccounts')]",
+      "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+      "subnet1Ref": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('vnetName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat('nic', parameters('basePrefix'), padLeft(copyindex(), 2, '0'))]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "[concat('nicLoop', parameters('basePrefix'))]",
+                "count": "[variables('numberOfInstances')]"
+            },
+            "dependsOn": [
+                  "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnet1Ref')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[concat(uniqueString(concat(resourceGroup().id, parameters('storageAccountPrefix'), copyIndex())),parameters('storageAccountPrefix'))]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "staLoop",
+                "count": "[variables('numberOfStorageAccounts')]"
+            },
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat('vm', parameters('basePrefix'), padLeft(copyIndex(), 2, '0'))]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+               "name": "[concat('virtualMachineLoop', parameters('basePrefix'))]",
+               "count": "[variables('numberOfInstances')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', 'nic', parameters('basePrefix'), padLeft(copyIndex(), 2, '0'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', uniqueString(concat(resourceGroup().id, parameters('storageAccountPrefix'), div(copyIndex(),parameters('numberOfInstancesPerAccount'))  )),parameters('storageAccountPrefix'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                     "vmSize": "[parameters('vmSize')]"
+                },
+            "osProfile": {
+                "computername": "[concat('vm', parameters('basePrefix'), padLeft(copyIndex(), 2, '0'))]",
+                "adminUsername": "[parameters('adminUsername')]",
+                "adminPassword": "[parameters('adminPassword')]"
+                },
+            "storageProfile": {
+                "imageReference": {
+                     "publisher": "[parameters('imagePublisher')]",
+                     "offer": "[parameters('imageOffer')]",
+                     "sku": "[parameters('imageSKU')]",
+                     "version": "latest"
+                     },
+                "osDisk": {
+                     "name": "osdisk",
+                     "vhd": {
+                         "uri": "[concat('http://',uniqueString(concat(resourceGroup().id, parameters('storageAccountPrefix'), div(copyIndex(),parameters('numberOfInstancesPerAccount'))  )),parameters('storageAccountPrefix'),'.blob.core.windows.net/vhds/','osdisk', parameters('basePrefix'), padLeft(copyIndex(), 2, '0'), '.vhd')]"
+                         },
+                     "caching": "ReadWrite",
+                     "createOption": "FromImage"
+                     }
+                },
+            "networkProfile": {
+                "networkInterfaces": [
+                   {
+                       "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('nic', parameters('basePrefix'), padLeft(copyIndex(), 2, '0')))]"
+                   }
+                ]
+            }
+          }
+        }
+    ],
+    "outputs": { }
+
+}
