@@ -1,6 +1,6 @@
 <properties
-   pageTitle="VPN IPSec tunnel between two Cisco 1000v in Azure"
-   description="configuration to setup an IPSec tunnel between two Cisco 1000v in two different Azure VNet"
+   pageTitle="VPN IPSec tunnel between two Cisco CSR 1000v in Azure"
+   description="configuration to setup an IPSec tunnel between two Cisco CSR 1000v in two different Azure VNet"
    services=""
    documentationCenter="na"
    authors="fabferri"
@@ -15,7 +15,7 @@
    ms.workload="na"
    ms.date="17/05/2017"
    ms.author="fabferri" />
-##  Configuration of VPN IPSec tunnel between two Cisco 1000v in Azure
+##  Configuration of VPN IPSec tunnel between two Cisco CSR 1000v in Azure
 
 Azure market place offers a large number of Network Virtual Appliances (NVAs). In this article is reported the configuration of VPN IPSec tunnel between two Cisco 1000v deployed in different Azure Virtual Networks (VNets).
 

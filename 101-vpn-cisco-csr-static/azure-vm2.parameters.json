@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location"           : { "value":"northeurope"},
+    "storageAccountType" : { "value": "Premium_LRS"},
+    "vmSize"             : { "value": "Standard_DS3_v2"},
+    "vmName"             : { "value": "hVM2"},
+    "adminUsername"      : { "value": "ADMIN_NAME" },
+    "adminPassword"      : { "value": "ADMIN_PASSWORD" },
+    "existingVirtualNetworkName" :{"value":"VNet2"},
+    "existingSubnetName"         :{"value":"Subnet2"},
+    "existingVirtualNetworkResourceGroup" :{"value":"RG02-NVA"}
+  }
+}
