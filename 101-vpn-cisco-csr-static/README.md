@@ -199,6 +199,22 @@ In order to verify the configuration use few show commands:
 - **show crypto ikev2 session detail**
 - **show crypto ipsec sa**
 - **show ip route**
+- ping with source IP, i.e.:
+
+
+    CSR1#ping 10.2.1.4 source 10.1.1.4
+
+	Type escape sequence to abort.
+	
+	Sending 5, 100-byte ICMP Echos to 10.2.1.4, timeout is 2 seconds:
+	
+	Packet sent with a source address of 10.1.1.4
+	
+    !!!!!
+    
+	Success rate is 100 percent (5/5), round-trip min/avg/max = 2/2/2 ms
+
+- **clear crypto sa** : delete the SA and wait that the new association is recreated successfully.
 
 To check the NAT table:
 

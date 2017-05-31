@@ -1,0 +1,95 @@
+========================================== site A ==========================================
+[admin@h1 ~]$ sudo strongswan status
+Security Associations (1 up, 0 connecting):
+   s2stunnel[1]: ESTABLISHED 31 seconds ago, 192.168.1.5[192.168.1.5]...52.178.221.22[192.168.2.5]
+   s2stunnel{1}:  INSTALLED, TUNNEL, reqid 1, ESP in UDP SPIs: c9bd392b_i cf753bca_o
+   s2stunnel{1}:   10.0.1.0/24 === 10.0.2.0/24
+
+[admin@h1 ~]$ sudo strongswan status s2stunnel
+Security Associations (1 up, 0 connecting):
+   s2stunnel[1]: ESTABLISHED 72 seconds ago, 192.168.1.5[192.168.1.5]...52.178.221.22[192.168.2.5]
+   s2stunnel{1}:  INSTALLED, TUNNEL, reqid 1, ESP in UDP SPIs: c9bd392b_i cf753bca_o
+   s2stunnel{1}:   10.0.1.0/24 === 10.0.2.0/24
+
+
+[admin@h1 ~]$ sudo strongswan statusall
+Status of IKE charon daemon (strongSwan 5.4.0, Linux 3.10.0-514.21.1.el7.x86_64, x86_64):
+  uptime: 85 seconds, since May 31 15:40:31 2017
+  malloc: sbrk 2568192, mmap 0, used 512144, free 2056048
+  worker threads: 11 of 16 idle, 5/0/0/0 working, job queue: 0/0/0/0, scheduled: 5
+  loaded plugins: charon aes des rc2 sha2 sha1 md4 md5 random nonce x509 revocation constraints acert pubkey pkcs1 pkcs8 pkcs12 pgp dnskey sshkey pem openssl gcrypt fips-prf gmp xcbc cmac hmac ctr ccm gcm curl attr kernel-netlink resolve socket-default farp stroke vici updown eap-identity eap-md5 eap-gtc eap-mschapv2 eap-tls eap-ttls eap-peap xauth-generic xauth-eap xauth-pam xauth-noauth dhcp
+Listening IP addresses:
+  192.168.1.5
+  10.0.1.5
+Connections:
+   s2stunnel:  192.168.1.5...52.178.221.22  IKEv2, dpddelay=30s
+   s2stunnel:   local:  [192.168.1.5] uses pre-shared key authentication
+   s2stunnel:   remote: [192.168.2.5] uses pre-shared key authentication
+   s2stunnel:   child:  10.0.1.0/24 === 10.0.2.0/24 TUNNEL, dpdaction=clear
+Security Associations (1 up, 0 connecting):
+   s2stunnel[1]: ESTABLISHED 85 seconds ago, 192.168.1.5[192.168.1.5]...52.178.221.22[192.168.2.5]
+   s2stunnel[1]: IKEv2 SPIs: 39fe1172b83a646e_i* a459547509fd5079_r, pre-shared key reauthentication in 37 minutes
+   s2stunnel[1]: IKE proposal: AES_CBC_256/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/MODP_1024
+   s2stunnel{1}:  INSTALLED, TUNNEL, reqid 1, ESP in UDP SPIs: c9bd392b_i cf753bca_o
+   s2stunnel{1}:  AES_CBC_256/HMAC_SHA2_256_128, 0 bytes_i, 0 bytes_o, rekeying in 7 hours
+   s2stunnel{1}:   10.0.1.0/24 === 10.0.2.0/24
+
+
+[admin@h1 ~]$ sudo ip xfrm state
+src 192.168.1.5 dst 52.178.221.22
+        proto esp spi 0xcf753bca reqid 1 mode tunnel
+        replay-window 32 flag af-unspec
+        auth-trunc hmac(sha256) 0x4a8cdceafe57b41d1fad811c33062da3d58bb60e1abfd1df3d46cb6e63f3fde5 128
+        enc cbc(aes) 0x8288b713642d148e90ca67afb337688dfc7b65fe71ca2e017b0740bc565ed52b
+        encap type espinudp sport 4500 dport 4500 addr 0.0.0.0
+src 52.178.221.22 dst 192.168.1.5
+        proto esp spi 0xc9bd392b reqid 1 mode tunnel
+        replay-window 32 flag af-unspec
+        auth-trunc hmac(sha256) 0x8e2c6268d8667007d196ba1e3a3b9d74ef7564e662eda1bd0c33451d74767c5f 128
+        enc cbc(aes) 0x51b463e26ad2d79da391d2e815e41d6d06a0f8079012a23b83915cc361542cdd
+        encap type espinudp sport 4500 dport 4500 addr 0.0.0.0
+
+
+========================================== site B ==========================================
+
+[admin@h2 ~]$ sudo strongswan status
+Security Associations (1 up, 0 connecting):
+   s2stunnel[2]: ESTABLISHED 26 minutes ago, 192.168.2.5[192.168.2.5]...52.169.149.106[192.168.1.5]
+   s2stunnel{2}:  INSTALLED, TUNNEL, reqid 2, ESP in UDP SPIs: cf753bca_i c9bd392b_o
+   s2stunnel{2}:   10.0.2.0/24 === 10.0.1.0/24
+
+[admin@h2 ~]$ sudo strongswan statusall
+Status of IKE charon daemon (strongSwan 5.4.0, Linux 3.10.0-514.21.1.el7.x86_64, x86_64):
+  uptime: 27 minutes, since May 31 15:40:13 2017
+  malloc: sbrk 2568192, mmap 0, used 512624, free 2055568
+  worker threads: 11 of 16 idle, 5/0/0/0 working, job queue: 0/0/0/0, scheduled: 7
+  loaded plugins: charon aes des rc2 sha2 sha1 md4 md5 random nonce x509 revocation constraints acert pubkey pkcs1 pkcs8 pkcs12 pgp dnskey sshkey pem openssl gcrypt fips-prf gmp xcbc cmac hmac ctr ccm gcm curl attr kernel-netlink resolve socket-default farp stroke vici updown eap-identity eap-md5 eap-gtc eap-mschapv2 eap-tls eap-ttls eap-peap xauth-generic xauth-eap xauth-pam xauth-noauth dhcp
+Listening IP addresses:
+  192.168.2.5
+  10.0.2.5
+Connections:
+   s2stunnel:  192.168.2.5...52.169.149.106  IKEv2, dpddelay=30s
+   s2stunnel:   local:  [192.168.2.5] uses pre-shared key authentication
+   s2stunnel:   remote: [192.168.1.5] uses pre-shared key authentication
+   s2stunnel:   child:  10.0.2.0/24 === 10.0.1.0/24 TUNNEL, dpdaction=clear
+Security Associations (1 up, 0 connecting):
+   s2stunnel[2]: ESTABLISHED 27 minutes ago, 192.168.2.5[192.168.2.5]...52.169.149.106[192.168.1.5]
+   s2stunnel[2]: IKEv2 SPIs: 39fe1172b83a646e_i a459547509fd5079_r*, pre-shared key reauthentication in 20 minutes
+   s2stunnel[2]: IKE proposal: AES_CBC_256/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/MODP_1024
+   s2stunnel{2}:  INSTALLED, TUNNEL, reqid 2, ESP in UDP SPIs: cf753bca_i c9bd392b_o
+   s2stunnel{2}:  AES_CBC_256/HMAC_SHA2_256_128, 0 bytes_i, 0 bytes_o, rekeying in 7 hours
+   s2stunnel{2}:   10.0.2.0/24 === 10.0.1.0/24
+
+[admin@h2 ~]$ sudo ip xfrm state
+src 192.168.2.5 dst 52.169.149.106
+        proto esp spi 0xc9bd392b reqid 2 mode tunnel
+        replay-window 32 flag af-unspec
+        auth-trunc hmac(sha256) 0x8e2c6268d8667007d196ba1e3a3b9d74ef7564e662eda1bd0c33451d74767c5f 128
+        enc cbc(aes) 0x51b463e26ad2d79da391d2e815e41d6d06a0f8079012a23b83915cc361542cdd
+        encap type espinudp sport 4500 dport 4500 addr 0.0.0.0
+src 52.169.149.106 dst 192.168.2.5
+        proto esp spi 0xcf753bca reqid 2 mode tunnel
+        replay-window 32 flag af-unspec
+        auth-trunc hmac(sha256) 0x4a8cdceafe57b41d1fad811c33062da3d58bb60e1abfd1df3d46cb6e63f3fde5 128
+        enc cbc(aes) 0x8288b713642d148e90ca67afb337688dfc7b65fe71ca2e017b0740bc565ed52b
+        encap type espinudp sport 4500 dport 4500 addr 0.0.0.0

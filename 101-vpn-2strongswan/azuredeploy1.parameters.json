@@ -1,0 +1,19 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername" : { "value": "ADMIN_NAME" },
+    "adminPassword" : { "value": "ADMIN_PASSWORD" },
+    "vmName"        : { "value": "h1" },
+    "publicIPAddressType" : { "value" : "Static"},
+    "vnetName"      : { "value": "VNet1" },
+    "addressPrefix1": { "value": "192.168.1.0/24"},
+    "addressPrefix2": { "value": "10.0.1.0/24"},
+    "subnet1Name"   : { "value": "Subnet1"},
+    "subnet1Prefix" : { "value":"192.168.1.0/24"},
+    "subnet1PrivateAddress": { "value":"192.168.1.5"},
+    "subnet2Name"   : { "value":"Subnet2"},
+    "subnet2Prefix" : { "value":"10.0.1.0/24"},
+    "subnet2PrivateAddress": { "value":"10.0.1.5"}
+  }
+}
