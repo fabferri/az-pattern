@@ -1,23 +1,21 @@
----
-title: '101 ARM template to deploy multiple VMs with multiple NICs'
-description: simple ARM template to deploy multiple VMs with multiple NICs
+<properties
+pageTitle= '101 ARM template to deploy multiple VMs with multiple NICs'
+description= "simple ARM template to deploy multiple VMs with multiple NICs"
 documentationcenter: na
-services: Azure routing
-author:  fabferri
-manager:
-editor: ''
-tags: azure-service-management
+services=""
+documentationCenter="na"
+authors="fabferri"
+manager=""
+editor=""/>
 
-ms.assetid:
-ms.service: VNet
-ms.devlang: na
-ms.topic: article
-ms.tgt_pltfrm: na
-ms.workload: infrastructure-services
-ms.date: 07/16/2018
-ms.author: fabferri
-
----
+<tags
+   ms.service="configuration-Example-Azure"
+   ms.devlang="na"
+   ms.topic="article"
+   ms.tgt_pltfrm="na"
+   ms.workload="na"
+   ms.date="17/07/2018"
+   ms.author="fabferri" />
 
 # Configuration Azure VMs with multiple NICs
 This ARM template allows to you to create a deployment with multiple Azure VMs, with multiple NICs, in single Azure VNet.
