@@ -169,13 +169,17 @@ This is due to the static route set inside the vm2.
 
 Two different possibile alternative paths can be established between the vm2 and vm4:
 
-* case 1: static route with egress interface **eth0** of the vm2 (or default)
+* *case 1*: static route with egress interface **eth0** of the vm2 (or default)
+
 	**[root@vm2 ~]# route add -net 10.0.1.0 netmask 255.255.255.0 gw 10.0.2.1 dev eth0**
+    
     The traffic in egress for the destination 10.0.1.0/24 is routed through the eth1 of the vm1.
 
 
-* case 2: static route with egress interface **eth1** of the vm2
-	**[root@vm2 ~]# route add -net 10.0.1.0 netmask 255.255.255.0 gw 10.0.3.1 dev eth1**
+* *case 2*: static route with egress interface **eth1** of the vm2
+	
+    **[root@vm2 ~]# route add -net 10.0.1.0 netmask 255.255.255.0 gw 10.0.3.1 dev eth1**
+    
     The traffic in egress for the destination 10.0.1.0/24 is routed through the eth2 of the vm1.
 
 [![5]][5]
