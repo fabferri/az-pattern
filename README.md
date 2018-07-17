@@ -17,4 +17,4 @@
    ms.author="fabferri" />
 
 # Azure repository
-Few basic things around Azure by examples.
+Few basic Azure scripts.

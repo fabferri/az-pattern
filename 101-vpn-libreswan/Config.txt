@@ -1,0 +1,83 @@
+hub1-public IP: 23.101.59.45
+hub2-public IP: 51.140.112.196
+
+==============================================
+==============================================
+
+*************** hub1:
+
+vi /etc/ipsec.conf 
+config setup
+	logfile=/var/log/pluto.log
+	logappend=no
+	dumpdir=/tmp
+	plutodebug=all
+	protostack=netkey
+include /etc/ipsec.d/*.conf
+
+vi /etc/ipsec.d/host-to-host.conf
+conn mytunnel
+        left=%defaultroute
+        leftid=23.101.59.45
+	leftsubnets={10.0.1.0/24 10.0.3.0/24}
+        right=51.140.112.196
+        rightid=51.140.112.196
+	rightsubnets={10.0.2.0/24 10.0.4.0/24}
+        authby=secret
+        type=tunnel
+	ikev2=yes
+        esp=aes_gcm128-null
+    
+	mtu=1436
+
+	# tunnel starts automatically
+
+	auto=start
+
+	dpdaction=restart
+
+	dpddelay=10
+
+	dpdtimeout=60
+
+vi /etc/ipsec.d/host-to-host.secrets
+23.101.59.45 51.140.112.196 : PSK "myAzureSharedSecret%321"
+==============================================
+
+*************** hub2:
+vi /etc/ipsec.conf 
+config setup
+	logfile=/var/log/pluto.log
+	logappend=no
+	dumpdir=/tmp
+	plutodebug=all
+	protostack=netkey
+
+vi /etc/ipsec.d/host-to-host.conf
+
+conn mytunnel
+        left=%defaultroute
+        leftid=51.140.112.196
+	leftsubnets={10.0.2.0/24 10.0.4.0/24}
+        right=23.101.59.45
+        rightid=23.101.59.45
+	rightsubnets={10.0.1.0/24 10.0.3.0/24}
+        authby=secret
+        type=tunnel
+	ikev2=yes
+        esp=aes_gcm128-null
+    
+	mtu=1436
+
+	# tunnel starts automatically
+
+	auto=start
+
+	dpdaction=restart
+
+	dpddelay=10
+
+	dpdtimeout=60
+
+vi /etc/ipsec.d/host-to-host.secrets
+23.101.59.45 51.140.112.196 : PSK "myAzureSharedSecret%321"

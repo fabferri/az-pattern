@@ -17,18 +17,18 @@
    ms.author="fabferri" />
 
 # ExpressRoute Microsoft peering: powershell script
-This is a simple powershell script to get the list of prefixes in ExpressRoute Microsoft peering with specific BGP community.
+Simple powershell script to get the list of prefixes in ExpressRoute Microsoft peering with specific BGP community.
 
 Office 365 IP prefixes that are advertised over ExpressRoute Microsoft peering are tagged with service specific BGP community values:
 
 
 
-| Service            | BGP Community Value |
-|--------------------|---------------------|
-| Exchange           | 12076:5010          |
-| sharepoint         | qux                 |
-| skype for business | quuz                |
-|other Office 365 services|12076:510       |
-| CRM Online         |12076:5040           |
+| Service                  | BGP Community Value |
+|--------------------------|---------------------|
+| other Office 365 services| 12076:5100          |
+| Exchange                 | 12076:5010          |
+| sharepoint               | 12076:5020          |
+| skype for business       | 12076:5030          |
+| CRM Online               | 12076:5040          |
 
-Before running the script be sure you are login in your Azure subscription by **Login-AzureRmAccount**
+to run the script you need to login in your Azure subscription by **Login-AzureRmAccount**
