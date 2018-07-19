@@ -1,23 +1,21 @@
----
-title: 'Azure ARM template to create multiple VNet-to-VNet with VPN Gateways'
-description: simple ARM template to create multiple VNet to VNet with VPN Gateways
+<properties
+pageTitle= 'Azure ARM template to create multiple VNet-to-VNet with VPN Gateways'
+description= "Azure ARM template to create multiple VNet to VNet with VPN Gateways"
 documentationcenter: na
-services: Azure routing
-author:  fabferri
-manager:
-editor: ''
-tags: azure-service-management
+services=""
+documentationCenter="na"
+authors="fabferri"
+manager=""
+editor=""/>
 
-ms.assetid:
-ms.service: VNet-to-VNet
-ms.devlang: na
-ms.topic: article
-ms.tgt_pltfrm: na
-ms.workload: infrastructure-services
-ms.date: 07/19/2018
-ms.author: fabferri
-
----
+<tags
+   ms.service="configuration-Example-Azure"
+   ms.devlang="na"
+   ms.topic="article"
+   ms.tgt_pltfrm="na"
+   ms.workload="na"
+   ms.date="19/07/2018"
+   ms.author="fabferri" />
 
 # Azure ARM template to create multiple VNet-to-VNet with VPN Gateways
 This ARM template create a deployment with multiple VNets and with VNet-to-VNet intercommunication by VPN Gateway.
