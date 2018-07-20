@@ -1,0 +1,199 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vNetCount": {
+            "type": "int",
+            "defaultValue": 10,
+            "metadata": {
+                "description": "total number of VNets"
+            }
+        },
+        "azureRegion":{
+            "type": "array",
+            "defaultValue":[
+                "northeurope",
+                "westeurope",
+                "eastus",
+                "eastus2",
+                "eastus2",
+                "northeurope",
+                "centralus" 
+            ]
+        },
+        "adminUsername": 
+        {   "type": "string",
+            "defaultValue":"SET_HERE_ADMINISTRATOR_USERNAME",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": 
+        {   "type": "securestring",
+            "defaultValue":"SET_HERE_ADMINISTRATOR_PASSWORD",
+            "metadata": {
+                "description": "admin password"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "VM size"
+            }
+        },
+        "imagePublisher":{
+            "type": "string",
+            "defaultValue": "openlogic"         
+        } ,
+        "imageOffer":{
+            "type": "string",
+            "defaultValue": "CentOS"
+        } ,
+        "OSVersion":{
+            "type": "string",
+            "defaultValue": "7.4"
+        }
+    },
+    "variables": {
+//        "azureRegion": [
+//            "northeurope",
+//            "westeurope",
+//            "eastus",
+//            "eastus2",
+//            "eastus2",
+//            "northeurope",
+//            "centralus"
+//        ],
+        "azureRegionCount": "[length(parameters('azureRegion'))]",
+        "imagePublisher": "[parameters('imagePublisher')]",
+        "imageOffer": "[parameters('imageOffer')]",
+        "OSVersion": "[parameters('OSVersion')]",
+        "vmSize" :"[parameters('vmSize')]",
+        "adminUsername":"[parameters('adminUsername')]",
+        "adminPassword":"[parameters('adminPassword')]",
+        "vNetCount": "[parameters('vNetCount')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-01-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[concat('vnet-', padLeft(copyindex(), 2, '0') )]",
+            "location": "[parameters('azureRegion')[ mod(copyindex(), variables('azureRegionCount') )] ]",
+            "dependsOn": [],
+            "comments": "create VNets in different location. The loop use the array azureRegion to assign the region.",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[concat('10.0.',copyIndex(),'.0/24')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "subnet1",
+                        "properties": {
+                            "addressPrefix": "[concat('10.0.',copyIndex(),'.0/25')]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[concat('10.0.',copyIndex(),'.224/27')]"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "vnetCopy",
+                "count": "[variables('vNetCount')]"
+            }
+        },
+        // Public IP addresses VMs
+        {
+            "apiVersion": "2016-03-30",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat('vm-', padLeft(copyindex(), 2, '0'),'-pubIP' )]",
+            "location": "[parameters('azureRegion')[ mod(copyindex(), variables('azureRegionCount') )] ]",  
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vNetCount')]"
+            }
+        },
+        {
+            "apiVersion": "2016-03-30",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat('vm-', padLeft(copyindex(), 2, '0'),'-NIC' )]",
+            "location": "[parameters('azureRegion')[ mod(copyindex(), variables('azureRegionCount') )] ]",  
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses/', concat('vm-', padLeft(copyindex(), 2, '0'),'-pubIP' ) )]",
+                "[resourceId('Microsoft.Network/virtualNetworks',  concat('vnet-', padLeft(copyindex(), 2, '0'))  )]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[concat('10.0.',copyIndex(),'.10')]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat('vm-', padLeft(copyindex(), 2, '0'),'-pubIP' )  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',concat('vnet-', padLeft(copyindex(), 2, '0') ), 'subnet1')]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": false
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vNetCount')]"
+            }
+        },
+        {
+            "apiVersion": "2017-03-30",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat('vm-', padLeft(copyindex(), 2, '0') )]",
+            "location": "[parameters('azureRegion')[ mod(copyindex(), variables('azureRegionCount') )] ]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat('vm-', padLeft(copyindex(), 2, '0'),'-NIC' )  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat('vm-', padLeft(copyindex(), 2, '0') )]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[variables('OSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('vm-', padLeft(copyindex(), 2, '0'),'-NIC' )  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vNetCount')]"
+            }
+        }
+    ]
+}
