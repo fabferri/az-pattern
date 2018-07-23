@@ -33,11 +33,11 @@ the ARM templates works with arrays:
  *connection for vnet2-to -> vnet1*
  Every connection have an element in the array.
 
-> [!NOTE1]
+> [!NOTE]
 > you can increase the number of VNets changing the structure of the arrays: **vNetArray**, **vpnConnectionArray**
 > 
 
-> [!NOTE2]
+> [!Caveat]
 > The ARM template might fail in the creation of connections. In this case you can easly fix it, removing the connection went in failure and than run again the same ARM template.
 > 
 
