@@ -423,7 +423,7 @@
             ],
             "properties": {
                 "primary": true,
-                "enableIPForwarding": "[variables('nvArray')[copyIndex()].enableIPForwarding]",
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
                 "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
                 "ipConfigurations": [
                     {

@@ -17,4 +17,8 @@
    ms.author="fabferri" />
 
 # Azure repository
-Few basic Azure scripts.
+Few basic Azure examples.
+
+* Azure ARM template to create standard load balancer in HA ports  [101-ilb-ha-ports-1vnet](../101-ilb-ha-ports-1vnet/README.md)
+* Azure ARM template to create multiple VNets and VMs in different Azure regions [101-multiple-vnets-vms](../101-multiple-vnets-vms/README.md)
+* 

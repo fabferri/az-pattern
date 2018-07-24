@@ -113,6 +113,7 @@ The traffic path in transit through vm1 can be verified using tcpdump:
     ...
 
 tcpdump gives a proof that traffic is symmetric (follow the same path in both directions):
+
 **vm2(eth0)-> [vm1(eth1) ->vm1(eth0)] -> vm4(eth0)**
 **vm4(eth0)-> [vm1(eth0) ->vm1(eth1)] -> vm2(eth0)**
 
@@ -172,14 +173,14 @@ Two different possibile alternative paths can be established between the vm2 and
 * *case 1*: static route with egress interface **eth0** of the vm2 (or default)
 
 	**[root@vm2 ~]# route add -net 10.0.1.0 netmask 255.255.255.0 gw 10.0.2.1 dev eth0**
-    
+
     The traffic in egress for the destination 10.0.1.0/24 is routed through the eth1 of the vm1.
 
 
 * *case 2*: static route with egress interface **eth1** of the vm2
-	
+
     **[root@vm2 ~]# route add -net 10.0.1.0 netmask 255.255.255.0 gw 10.0.3.1 dev eth1**
-    
+
     The traffic in egress for the destination 10.0.1.0/24 is routed through the eth2 of the vm1.
 
 [![5]][5]
