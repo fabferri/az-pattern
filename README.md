@@ -22,6 +22,9 @@ Few basic Azure ARM examples:
 * ARM template to create standard load balancer in HA ports  [101-ilb-ha-ports-1vnet](./101-ilb-ha-ports-1vnet/README.md)
 * ARM template to create standard load balancer in HA ports with VNet peering [101-ilb-ha-ports-vnetpeering](./101-ilb-ha-ports-vnetpeering/README.md)
 * ARM template to create multiple VNets and VMs in different Azure regions [101-multiple-vnets-vms](./101-multiple-vnets-vms/README.md)
+* Azure VMs with multiple NICs [101-vms-multiple-nics-01](./101-vms-multiple-nics-01/README.md)
 * ARM template to create multiple VNets and VMs in different Azure regions [101-multiple-vnets-vms](./101-multiple-vnets-vms/README.md)
 * ARM template to create multiple VNet-to-VNet with VPN Gateways [vnet-2-vnet-vpn](./vnet-2-vnet-vpn/README.md)
-* 
+* Interconnection of two Azure hub-spoke VNets through site-to-site VPN with libreswan [101-vpn-libreswan](./101-vpn-libreswan/README.md)
+* powershell script to get the list og BGP communities in ExpressRoute Microsoft peering [ExpressRoute-MS-Peering-BGPCommunity](./ExpressRoute-MS-Peering-BGPCommunity/README.md)
+* Powershell script to capture Windows system counters [win-sys-counters](./win-sys-counters/Readme.md)
