@@ -21,6 +21,7 @@ Few basic Azure ARM examples:
 
 * [ARM template to create standard load balancer in HA ports](./101-ilb-ha-ports-1vnet/)
 * [ARM template to create standard load balancer in HA ports with VNet peering](./101-ilb-ha-ports-vnetpeering/)
+* [ARM template to create a standard load balancer in HA ports with two frontend IPs and two backend pools](./101-ilb-ha-ports-2frontend-2backendpools)
 * [ARM template to create multiple VNets and VMs in different Azure regions](./101-multiple-vnets-vms/)
 * [Azure VMs with multiple NICs](./101-vms-multiple-nics-01/README.md)
 * [ARM template to create multiple VNets and VMs in different Azure regions](./101-multiple-vnets-vms/)
