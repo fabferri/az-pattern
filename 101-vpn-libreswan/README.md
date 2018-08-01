@@ -32,20 +32,20 @@ Here is a detailed network diagram of what we are going to achieve:
 
 Name convention used in the article:
 - Azure region1: northeurope
- - vNetSpoke1: Azure Spoke VNet in Azure region 1
- - spoke1: Azure VM connected to the spoke VNet, in Azure region 2
- - vNetHub1: Azure Hub VNet in Azure region 1
- - hub2: Azure VM with CentOS 7.4 OS and libreswan connected to vNetHub1 VNet
- - Spoke1toHub1: name of VNet peering between VNetSpoke1 and vNetHub1
- - Hub1toSpoke1: name of VNet peering between vNetHub1 and VNetSpoke1
+    - vNetSpoke1: Azure Spoke VNet in Azure region 1
+    - spoke1: Azure VM connected to the spoke VNet, in Azure region 2
+    - vNetHub1: Azure Hub VNet in Azure region 1
+    - hub2: Azure VM with CentOS 7.4 OS and libreswan connected to vNetHub1 VNet
+    - Spoke1toHub1: name of VNet peering between VNetSpoke1 and vNetHub1
+    - Hub1toSpoke1: name of VNet peering between vNetHub1 and VNetSpoke1
 
 - Azure regioni2: uksouth
- - vNetSpoke2: Azure Spoke VNet in Azure region 2
- - spoke2: Azure VM connected to the spoke VNet, in Azure region 2
- - vNetHub2: Azure Hub VNet in Azure region 2
- - hub2: Azure VM with CentOS 7.4 OS and libreswan connected to vNetHub2 VNet
- - Spoke2toHub2: name of VNet peering between VNetSpoke2 and vNetHub2
- - Hub2toSpoke2: name of VNet peering between vNetHub2 and VNetSpoke2
+    - vNetSpoke2: Azure Spoke VNet in Azure region 2
+    - spoke2: Azure VM connected to the spoke VNet, in Azure region 2
+    - vNetHub2: Azure Hub VNet in Azure region 2
+    - hub2: Azure VM with CentOS 7.4 OS and libreswan connected to vNetHub2 VNet
+    - Spoke2toHub2: name of VNet peering between VNetSpoke2 and vNetHub2
+    - Hub2toSpoke2: name of VNet peering between vNetHub2 and VNetSpoke2
 
 - site-to-site VPN between hub1 VM and hub2 VM
 
@@ -72,10 +72,12 @@ Libreswan is a fork of Openswan. The paragraph describes the step to configure s
 The configuration use tunnel mode and the Pre-Shared Keys (PSK) authentication method. PSKs should consist of random characters and have a length of at least 20 characters.
 
 Update the CentOS VMs:
-	# yum -y update
+
+    # yum -y update
 
 To install Libreswan, enter the following command as root:
-	# yum -y install libreswan
+
+    # yum -y install libreswan
 
 To check that Libreswan is installed: **yum info libreswan**
 
@@ -95,6 +97,7 @@ Libreswan have two configuration files:
 
 
 Configuration in the file: **/etc/ipsec.conf**
+
 ```
 config setup
 	logfile=/var/log/pluto.log
@@ -102,9 +105,11 @@ config setup
     protostack=netkey
 include /etc/ipsec.d/*.conf
 ```
+
 The last statement includes all the files with extension **.conf** in the folder **/etc/ipsec.d/**
 
 Create a new file: **#vi /etc/ipsec.d/host-to-host.conf**
+
 ```
 conn mytunnel
 	left=%defaultroute

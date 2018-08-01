@@ -17,12 +17,13 @@
    ms.author="fabferri" />
 
 # Fab's Azure repository
-Few basic Azure ARM examples:
+Few basic Azure ARM template and script examples:
 
 * [Standard load balancer in HA ports](./101-ilb-ha-ports-1vnet/)
 * [Standard load balancer in HA ports with VNet peering](./101-ilb-ha-ports-vnetpeering/)
 * [Standard load balancer in HA ports with two frontend IPs and two backend pools](./101-ilb-ha-ports-2frontend-2backendpools)
 * [Two hub-spoke VNets interconnected by global VNet peering](./101-01-vnet-peering-2hubspoke)
+* [Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub VNets](./101-03-vnet-peering-2hubspoke-ilb-vpn)
 * [Multiple VNets and VMs in different Azure regions](./101-multiple-vnets-vms/)
 * [Azure VMs with multiple NICs](./101-vms-multiple-nics-01/README.md)
 * [Multiple VNets and VMs in different Azure regions](./101-multiple-vnets-vms/)
