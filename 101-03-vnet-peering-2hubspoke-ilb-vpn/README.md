@@ -105,11 +105,11 @@ seq 100000 | parallel -j0 mycurl
 #### <a name="trafficTransit"></a>7. Example of flows transit between VMs in different VNets
 Path from vm3 to vm4:
 
-[![2][2]
+[![2]][2]
 
 Path from vm1 to vm2:
 
-[![3][3]
+[![3]][3]
 
 #### <a name="installGNUparallel"></a>ANNEX. Increase the number of simultaneous open files in vm1, vm2, vm3, vm4
 This is optional configuration (you can skip it if you do not have interest to increase the system parameters).
@@ -153,6 +153,7 @@ run the command:
 sysctl -p
 ```
 the command shows the new value: **fs.file-max = 200500**
+
 Logout and then relogin in the system to get the new values.
 
 <!--Image References-->
@@ -160,7 +161,6 @@ Logout and then relogin in the system to get the new values.
 [1]: ./media/network-diagram.png "network diagram"
 [2]: ./media/flow1.png "network diagram"
 [3]: ./media/flow2.png "network diagram"
-
 
 
 <!--Link References-->

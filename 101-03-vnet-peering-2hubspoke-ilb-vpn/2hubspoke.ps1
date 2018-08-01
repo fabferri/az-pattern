@@ -1,5 +1,5 @@
 ################# Input parameters #################
-$subscriptionName      = "NAME_YOUR_AZURe_SUBSCRIPTION" 
+$subscriptionName      = "NAME_YOUR_AZURE_SUBSCRIPTION" 
 $location              = "eastus"
 $destResourceGrp       = "RG-vnetpeering01"
 $resourceGrpDeployment = "deploy-vnetpeering"
