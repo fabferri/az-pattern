@@ -1,4 +1,4 @@
-<properties
+Standard load balancer in HA ports with two frontend IPs and two backend pools<properties
    pageTitle="Examples of Azure templates and scripts"
    description="Examples of Azure templates and scripts"
    services=""
@@ -38,9 +38,9 @@ Few basic Azure ARM template and script examples:
 |----------|:--------------:|
 | [Standard load balancer in HA ports](./101-ilb-ha-ports-1vnet/)|  <img src="./101-ilb-ha-ports-1vnet/media/network-diagram.png" align="left" width="500"> |
 | [Standard load balancer in HA ports with VNet peering](./101-ilb-ha-ports-vnetpeering/)| <img src="./101-ilb-ha-ports-vnetpeering/media/network-diagram.png" align="left" width="500"> |
-| [Standard load balancer in HA ports with two frontend IPs and two backend pools](./101-ilb-ha-ports-2frontend-2backendpools) | <img src="./101-ilb-ha-ports-2frontend-2backendpools/network-diagram.png" align="left" width="500"> |
-|[Two hub-spoke VNets interconnected by global VNet peering](./101-01-vnet-peering-2hubspoke)|  <img src="./101-01-vnet-peering-2hubspoke/network-diagram.png" align="left" width="500"> |
-|[Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub VNets](./101-03-vnet-peering-2hubspoke-ilb-vpn)|<img src="./101-03-vnet-peering-2hubspoke-ilb-vpn/network-diagram.png" align="left" width="500">|
+| [Standard load balancer in HA ports with two frontend IPs and two backend pools](./101-ilb-ha-ports-2frontend-2backendpools) | <img src="./101-ilb-ha-ports-2frontend-2backendpools/media/network-diagram.png" align="left" width="500"> |
+|[Two hub-spoke VNets interconnected by global VNet peering](./101-01-vnet-peering-2hubspoke)|  <img src="./101-01-vnet-peering-2hubspoke/media/network-diagram.png" align="left" width="500"> |
+|[Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub VNets](./101-03-vnet-peering-2hubspoke-ilb-vpn)|<img src="./101-03-vnet-peering-2hubspoke-ilb-vpn/media/network-diagram.png" align="left" width="500">|
 
 
 * 

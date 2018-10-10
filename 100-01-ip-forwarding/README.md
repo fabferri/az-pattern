@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'ARM template to create a single VNets with three subnet and a VM working as ip forwarder'
-description= "ARM template to create a single VNets with three subnets and a VM working as ip forwarder"
+pageTitle= 'ARM template to create a single VNet with three subnet and a VM working as ip forwarder'
+description= "ARM template to create a single VNet with three subnets and a VM working as ip forwarder"
 documentationcenter: na
 services=""
 documentationCenter="na"
@@ -17,13 +17,13 @@ editor=""/>
    ms.date="18/08/2018"
    ms.author="fabferri" />
 
-## Single VNets with three subnets and a VM working as ip forwarder
-The article use an ARM template to create a VNet with three subnets named subnet1,subnet2,subnet3.
+## Single VNets with three subnets and a VM working as IP forwarder
+The article use an ARM template to create a VNet with three subnets named **subnet1**,**subnet2**,**subnet3**.
 In every subnet runs a VM:
 
-* in subnet1 runs a VM with hostname nva. The vm1 is configured as IP forwarder. A VM with IP forwarder enabled in the OS has the behviour of router: the VM is able to receive IP packets with destination different from own IP address and route them to a destination VM in different subnet.
-* subnet2 runs a Linux or Windows VM with hostname vm2
-* subnet3 runs a Linux or Windows VM with hostname vm3
+* in **subnet1** runs a VM with hostname **nva** configured as IP packet forwarder. A VM with IP forwarder enabled in the OS has the behviour of router: the VM is able to receive IP packets with destination different from own IP address and route them to a destination VM in different subnet.
+* **subnet2** runs a Linux or Windows VM with hostname **vm2**
+* **subnet3** runs a Linux or Windows VM with hostname **vm3**
 
 The ARM template can be changed to customize VM size and OS.
 
@@ -31,7 +31,7 @@ The network diagram is shown below:
 
 [![1]][1]
 
-Only the Azure VM nva in subnet1 works as ip forwarder. A static route (User Defined Route) associated with the subnet2 and subnet3 force the traffic vm2-vm3 to pass through the nva.
+Two static route (User Defined Routes) associated with the subnet2 and subnet3 force the traffic vm2-vm3 to pass through the nva.
 
 [![2]][2]
 
@@ -77,7 +77,7 @@ the command return **0** if the ip forwarder is disabled.
 > **sysctl -w net.ipv4.ip_forward=1**
 >
 
-The bash script to enable the ip forwarder in linux is stored in **ipforwarder.sh**
+
 
 #### <a name="EnableIPForwarding"></a>2. How to enable ip forwarding in Windows VM
 
@@ -91,15 +91,13 @@ Set-Service remoteaccess -StartupType Automatic
 Start-Service remoteaccess
 ```
 
-The script is reported in the file **ipforwarder.ps1**
-
 [![4]][4]
 
 #### <a name="tcpdump"></a>3. Check the traffic between vm2 and vm2 transit through nva
 
-To check the traffic between the two VMs transit properly through nva, it can be used a sniffer in nva.
-if nva is a linux VM the natural choice is tcpdump
-if nva is a windows VM it can be used wireshark. There is also an altenative solution free or change to run a compact portable version of tcmpdump in windows [Microolap TCPDUMP for Windows](http://www.microolap.com/products/network/tcpdump/download/)
+To check the traffic between the two VMs (vm2 and vm3) transit properly through nva, it can be used a sniffer in nva.
+* if nva is a linux VM the natural choice is tcpdump
+* if nva is a windows VM it can be used Wireshark. There is also an altenative solution free or change to run a compact portable version of tcmpdump in windows [Microolap TCPDUMP for Windows](http://www.microolap.com/products/network/tcpdump/download/)
 to dump the traffic in transit in the nva:
 
 ```bash
