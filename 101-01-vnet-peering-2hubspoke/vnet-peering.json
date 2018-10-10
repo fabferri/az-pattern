@@ -34,11 +34,11 @@
     "variables": {
         "nsg1":{
             "name":"nsg1",
-            "location":"[parameters('azureRegion1')]"
+            "location":"[variables('vNetHub1').location]"
         },
         "nsg2":{
             "name":"nsg2",
-            "location":"[parameters('azureRegion2')]"
+            "location":"[variables('vNetHub2').location]"
         },
         "vNetHub1": {
             "location": "[parameters('azureRegion1')]",
@@ -78,11 +78,11 @@
             "name": "RT-vNetHub1",
             "location":"[parameters('azureRegion1')]",
             "nameRTEntry1": "route-to-hub2",
-            "destinationAddressPrefix1" :"10.0.2.0/24",
+            "destinationAddressPrefix1" :"[variables('vNetHub2').addressSpacePrefix]",
             "nextHopType1": "VirtualAppliance",
             "nextHopIpAddress1": "10.0.2.10",
             "nameRTEntry2": "route-to-spoke2",
-            "destinationAddressPrefix2" :"10.0.4.0/24",
+            "destinationAddressPrefix2" : "[variables('vNetSpoke2').addressSpacePrefix]",
             "nextHopType2": "VirtualAppliance",
             "nextHopIpAddress2": "10.0.2.10"
         },
@@ -90,11 +90,11 @@
             "name": "RT-vNetHub2",
             "location":"[parameters('azureRegion2')]",
             "nameRTEntry1": "route-to-hub1",
-            "destinationAddressPrefix1" :"10.0.1.0/24",
+            "destinationAddressPrefix1" :"[variables('vNetHub1').addressSpacePrefix]",
             "nextHopType1": "VirtualAppliance",
             "nextHopIpAddress1": "10.0.1.10",
             "nameRTEntry2": "route-to-spoke1",
-            "destinationAddressPrefix2" :"10.0.3.0/24",
+            "destinationAddressPrefix2": "[variables('vNetSpoke1').addressSpacePrefix]",
             "nextHopType2": "VirtualAppliance",
             "nextHopIpAddress2": "10.0.1.10"
         },
@@ -102,11 +102,11 @@
             "name": "RT-vNetSpoke1",
             "location":"[parameters('azureRegion1')]",
             "nameRTEntry1": "route-to-hub2",
-            "destinationAddressPrefix1" :"10.0.2.0/24",
+            "destinationAddressPrefix1": "[variables('vNetHub2').addressSpacePrefix]",
             "nextHopType1": "VirtualAppliance",
             "nextHopIpAddress1": "10.0.1.10",
             "nameRTEntry2": "route-to-spoke2",
-            "destinationAddressPrefix2" :"10.0.4.0/24",
+            "destinationAddressPrefix2": "[variables('vNetSpoke2').addressSpacePrefix]",
             "nextHopType2": "VirtualAppliance",
             "nextHopIpAddress2": "10.0.1.10"
         },
@@ -114,11 +114,11 @@
             "name": "RT-vNetSpoke2",
             "location":"[parameters('azureRegion2')]",
             "nameRTEntry1": "route-to-hub1",
-            "destinationAddressPrefix1" :"10.0.1.0/24",
+            "destinationAddressPrefix1": "[variables('vNetHub1').addressSpacePrefix]",
             "nextHopType1": "VirtualAppliance",
             "nextHopIpAddress1": "10.0.2.10",
             "nameRTEntry2": "route-to-spoke1",
-            "destinationAddressPrefix2" :"10.0.3.0/24",
+            "destinationAddressPrefix2": "[variables('vNetSpoke1').addressSpacePrefix]",
             "nextHopType2": "VirtualAppliance",
             "nextHopIpAddress2": "10.0.2.10"
         },
