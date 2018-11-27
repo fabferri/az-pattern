@@ -39,7 +39,7 @@ Name convention used in the article:
     - Spoke1toHub1: name of VNet peering between VNetSpoke1 and vNetHub1
     - Hub1toSpoke1: name of VNet peering between vNetHub1 and VNetSpoke1
 
-- Azure regioni2: uksouth
+- Azure region2: uksouth
     - vNetSpoke2: Azure Spoke VNet in Azure region 2
     - spoke2: Azure VM connected to the spoke VNet, in Azure region 2
     - vNetHub2: Azure Hub VNet in Azure region 2

@@ -23,11 +23,10 @@ The ARM template use loops to created VNets, IPs, NICs, VMs.
 
 * The parameter **vNetCount** define how many VNets are created
 * The array **azureRegion** defines the list of Azure regions where the VNet will be deployed. The array can contain multiple times the same Azure region. The ARM template uses the Azure region in sequence:
- * first element of the array **azureRegion[0]** is assigned to vnet-01
- * second element of the array **azureRegion[1]** is assigned to vnet-02
+ * first element of the array **azureRegion[0]** is assigned to the virtual network vnet-01
+ * second element of the array **azureRegion[1]** is assigned to the virtual network vnet-02
  * ...
- A module function manage the assignment of Azure region, and supports the case with total number of VNets higher than the number of Azure regions.
-* for every VNet is created a single CentOS VM
+* A module function manage the assignment of Azure region, and supports the case with total number of VNets higher than the number of Azure regions.
 * The ARM template creates for every VNet a small Azure CentOS VM with private static IP address
 
 The network diagram is reported below:
