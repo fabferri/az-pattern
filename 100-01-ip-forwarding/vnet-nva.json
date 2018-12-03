@@ -11,16 +11,14 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue" : "ADMINISTRATOR_USERNAME",
       "metadata": {
-        "description": "Username for the Virtual Machine."
+        "description": "admin username"
       }
     },
     "adminPassword": {
       "type": "securestring",
-      "defaultValue" :"ADMINISTRATOR_PASSWORD",
       "metadata": {
-        "description": "Password for the Virtual Machine."
+        "description": "admin password"
       }
     }
   },
@@ -96,11 +94,10 @@
       "imageOffer": "CentOS",
       "OSVersion": "7.5"
     },
-   
     "vmarray": [
       {
         "location": "[variables('vNet').location]",
-        "vmName":  "[variables('nva').vmName]",
+        "vmName": "[variables('nva').vmName]",
         "vmSize": "[variables('nva').vmSize]",
         "imagePublisher": "[variables('nva').imagePublisher]",
         "imageOffer": "[variables('nva').imageOffer]",
@@ -112,7 +109,7 @@
       },
       {
         "location": "[variables('vNet').location]",
-        "vmName":  "[variables('vm2').vmName]",
+        "vmName": "[variables('vm2').vmName]",
         "vmSize": "[variables('vm2').vmSize]",
         "imagePublisher": "[variables('vm2').imagePublisher]",
         "imageOffer": "[variables('vm2').imageOffer]",
@@ -124,7 +121,7 @@
       },
       {
         "location": "[variables('vNet').location]",
-        "vmName":  "[variables('vm3').vmName]",
+        "vmName": "[variables('vm3').vmName]",
         "vmSize": "[variables('vm3').vmSize]",
         "imagePublisher": "[variables('vm3').imagePublisher]",
         "imageOffer": "[variables('vm3').imageOffer]",
@@ -188,7 +185,6 @@
         "[resourceId('Microsoft.Network/routeTables', variables('RT-subnet3').name )]",
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsg').name)]"
       ],
-      
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -255,7 +251,6 @@
       },
       "resources": []
     },
-    
     {
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('RT-subnet3').name]",

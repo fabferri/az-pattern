@@ -1,6 +1,6 @@
 <properties
 pageTitle= '101 Azure ARM template to create a standard load balancer in HA ports'
-description= "Azure ARM template to create a standard load balancer in HA ports"
+description= "Azure standard load balancer in HA ports"
 documentationcenter: na
 services=""
 documentationCenter="na"
@@ -17,10 +17,8 @@ editor=""/>
    ms.date="20/07/2018"
    ms.author="fabferri" />
 
-# Azure ARM template to create standard load balancer in HA ports
+# Howto create standard load balancer in HA ports
 This ARM template aims to create one VNet with an internal standard load balancer in HA ports.
-
-
 The network diagram is reported below:
 
 [![1]][1]

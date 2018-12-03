@@ -20,7 +20,7 @@ editor=""/>
 ## Generate IP traffic between two Azure VMs
 
 In testing process is common to use software to generate traffic between Azure VMs.
-The article shows few methods to generate traffic between two Azure VMs, with hostname vm1 and vm2, connected to the the same Azure subnet. The methods can be extended in more complex configurations, with the only requirement of VMs reachability.
+The article shows few methods to generate traffic between two Azure VMs, with hostname vm1 and vm2, connected to the the same Azure subnet. The methods can be extended in more complex configurations, with the only requirement of IP reachability between the VMs.
 
 [![1]][1]
 
@@ -35,18 +35,18 @@ The article shows few methods to generate traffic between two Azure VMs, with ho
 
 
 #### <a name="iperf3"></a>1. iperf3 (Linux and Windows)
-Iperf3 works in Linux and Windows (see: [iperf3](https://iperf.fr/))
-Install iperf3 in Linux vm1 and vm2:
+[iperf3](https://iperf.fr/) works in Linux and Windows.
+To install iperf3 in Linux vm1 and vm2:
 
-```bash
+```console
 [root@vm1 ~]# yum -y iperf3
 [root@vm2 ~]# yum -y iperf3
 ```
 
 To run iperf3 as server in vm2:
 
-```bash
-iperf3 -s -p 6001
+```console
+[root@vm1 ~]# iperf3 -s -p 6001
 ```
 
 where -p specifices the listening TCP port (default port is TCP 5201).
@@ -54,7 +54,7 @@ where -p specifices the listening TCP port (default port is TCP 5201).
 To run iperf3 as client in vm2:
 
 ```bash
-iperf3 -c 10.0.2.10 -P 20 -p 6001 -i 1 -f M
+[root@vm2 ~]# iperf3 -c 10.0.2.10 -P 20 -p 6001 -i 1 -f M
 ```
 where:
 

@@ -31,7 +31,7 @@ The network diagram is shown below:
 
 [![1]][1]
 
-Two static route (User Defined Routes) associated with the subnet2 and subnet3 force the traffic vm2-vm3 to pass through the nva.
+Two static route (User Defined Routes), associated with the subnet2 and subnet3, force the traffic vm2-vm3 to pass through the nva.
 
 [![2]][2]
 
@@ -47,7 +47,7 @@ Let's discuss the different way to set the IP forwarder in Linux and Windows.
 #### <a name="EnableIPForwarding"></a>1. How to enable ip forwarding in Linux VM
 To enable the ip forwarder in Linux vm run the command as root:
 
-```bash
+```console
 sed -i -e '$a\net.ipv4.ip_forward = 1' /etc/sysctl.conf
 systemctl restart network.service
 sysctl net.ipv4.ip_forward
@@ -56,13 +56,13 @@ sysctl net.ipv4.ip_forward
 The sed command add the raw **net.ipv4.ip_forward = 1** to the file **/etc/sysctl.conf**
 To check the setting of ip forwarding:
 
-```bash
+```console
 cat /proc/sys/net/ipv4/ip_forward
 ```
 
 or
 
-```bash
+```console
 sysctl net.ipv4.ip_forward
 ```
 the command return **1** if the ip forwarder is enabled.
@@ -100,7 +100,7 @@ To check the traffic between the two VMs (vm2 and vm3) transit properly through 
 * if nva is a windows VM it can be used Wireshark. There is also an altenative solution free or change to run a compact portable version of tcmpdump in windows [Microolap TCPDUMP for Windows](http://www.microolap.com/products/network/tcpdump/download/)
 to dump the traffic in transit in the nva:
 
-```bash
+```console
 tcpdump -nq -ttt host 10.0.2.10 or host 10.0.3.10
 ```
 

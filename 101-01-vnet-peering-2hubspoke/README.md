@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'ARM template to create two hub-spoke VNets interconnected by global VNet peering'
-description= "ARM template to create two hub-spoke VNets interconnected by global VNet peering"
+pageTitle= 'how to create two Azure hub-spoke VNets interconnected by global VNet peering by ARM'
+description= "ARM template to create two Azure hub-spoke VNets interconnected by global VNet peering"
 documentationcenter: na
 services=""
 documentationCenter="na"
@@ -9,7 +9,7 @@ manager=""
 editor=""/>
 
 <tags
-   ms.service="configuration-Example-Azure"
+   ms.service="howto-example-Azure"
    ms.devlang="na"
    ms.topic="article"
    ms.tgt_pltfrm="na"
@@ -17,18 +17,18 @@ editor=""/>
    ms.date="26/07/2018"
    ms.author="fabferri" />
 
-# ARM template to create two hub-spoke VNets interconnected by global VNet peering
-This ARM template aims to create a VNet with an internal standard load balancer in HA ports.
-The standard ILB is configured with two frontend IPs and two backend pools. For resiliency, the Azure VMs associated with every backend pool have an assigned availability set.
+# How to create two hub-spoke VNets interconnected by global VNet peering
+This ARM template aims to create two hub-spoke vnets in different Azure regions, with hub vnets interconnected through global vnet peering.
 
 
 The network diagram is reported below:
 
 [![1]][1]
 
-To forward the traffic between spoke vnets is required nva1, nva2,  with ip forwarding enabled. The replacement of NVAs with simple linux VMs is useful for to troubleshooting to verify the traffic flows rights through the NVAs.
+To forward the traffic between spoke vnets is required nva1, nva2,  with ip forwarding enabled. The replacement of NVAs with simple linux VMs is useful for to troubleshooting to verify the traffic flows properly through the NVAs.
 Internal load balancer with frontend IPs and backend pools is show above:
-[![2][2]
+
+[![2]][2]
 
 
 > [!NOTE]
@@ -60,7 +60,7 @@ write two bash scripts: one for the server (traffic receiver) and one for the cl
 
 file: **server.sh**
 
-```
+```bash
 #!/bin/bash
 #
 val=true
@@ -72,7 +72,7 @@ done
 ```
 file: **client.sh**
 
-```
+```bash
 for i in {1..10};
 do
   dd if=/dev/urandom bs=1M count=100 | nc 10.0.4.10 9000
@@ -81,21 +81,21 @@ done
 ```
 To send traffic from vm3 to vm4 run:
 
-```
+```console
 [root@vm4 ~]#./server.sh
 [root@vm4 ~]#./client.sh
 ```
 
 By tcpdump check the transit through nva1 and nva2 in both directions: [from vm3 to vm4] AND [from vm4 to vm3]
 
-```
+```console
 [root@nva1 ~]# tcpdump -nqt -i eth0 host 10.0.3.10
 [root@nva2 ~]# tcpdump -nqt -i eth0 host 10.0.3.10
 ```
 
 To monitor the traffic on vm3 and vm4 we can use a tool like **iftop**
 
-```
+```console
 #yum -y install libpcap libpcap-devel ncurses ncurses-devel
 #yum -y install epel-release
 #yum -y install  iftop

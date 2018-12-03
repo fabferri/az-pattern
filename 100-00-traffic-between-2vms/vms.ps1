@@ -9,6 +9,9 @@
 ##
 ##  .\vms -adminUsername YOUR_USERNAME -adminPassword YOUR_PASSWORD
 ##
+## where:
+##  YOUR_USERNAME: username of the adminsitrator of Azure VMs
+##  YOUR_PASSWORD: password of the administrator of Azure VMs
 ################# Input parameters #################
 [CmdletBinding()]
 param (

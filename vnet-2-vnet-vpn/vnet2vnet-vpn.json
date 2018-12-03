@@ -72,14 +72,14 @@
         },
         "adminUsername": 
         {   "type": "string",
-            "defaultValue":"cloudadmin",
+            "defaultValue":"YOUR_VM_ADMIN_USERNAME",
             "metadata": {
                 "description": "admin username"
             }
         },
         "adminPassword": 
         {   "type": "securestring",
-            "defaultValue":"Verdicchio**2016",
+            "defaultValue":"YOUR_VM_ADMIN_PASSWORD",
             "metadata": {
                 "description": "admin password"
             }
