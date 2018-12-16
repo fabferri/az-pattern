@@ -73,7 +73,7 @@ the command return **0** if the ip forwarder is disabled.
 
 
 > > [!NOTE]
-> In case you want to enable on the fly (++not persistent to the reboot++) the ip forwarder in a linux VM, use the command:
+> in a linux VM to enable the ip forwarder on the fly (++not persistent to the reboot++), use the command:
 > **sysctl -w net.ipv4.ip_forward=1**
 >
 

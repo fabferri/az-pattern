@@ -18,13 +18,15 @@ editor=""/>
    ms.author="fabferri" />
 
 # Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub vnets
-This ARM template creates two hub-spokes VNets in two different Azure regions. Each hub VNet have a standard load balancer in the hub VNetnet configured with HA ports.
-The two hub vnets are connected through VPN gateway with IPsec tunnel. The VPN gateway are configured with VNet-to-VNet connection.
+The article describes two hub-spoke vnets in two different regions with VNet-to-VNet interconnection.
+A vnet-to-vnet interconnection provides an encrypted IPsec communication between the two hub vnets.
+In each hub vnet are present two linux VMs (nva11, nva12 in hub1 and nva21,nva21 in hub2) configured with ip forwarding. 
+In each hub VNet is deployed an internal standard load balancer (ILB) configured with HA ports. The presence of ILB provides a configuration in HA on the flow in transit through the NVA VMs.
 The network diagram is reported below:
 
 [![1]][1]
 
-To keep the configuration easy, the nva11 and nva12 in the hub vnet1 and nva21, nva22 in hub vnt2 are configured as ip forwarder with the only purpose to route the received IP packets to a destination in the same VNet or remote VNet. ARM template spins up the VMs, but the ip forwarding needs to be configured in the OS. The nva11,nva12, nva21, nva22 can be replaced in production with Azure NVA..
+The ARM template creates all the environment; the ip forwarding in nva11,nva12, nva21, nva22 needs to be enabled manually in the OS.
 
 
 > [!NOTE]
@@ -43,7 +45,7 @@ systemctl restart network.service
 sysctl net.ipv4.ip_forward
 ```
 #### <a name="EnableHTTPdaemon"></a>2. Install and enable httpd daemon in nva11, nva12, nva21, nva22
-The Azure internal load balancers (ilb1 and ilb2) have a probe set on port 80 to verify the healtcheck of VMs in the backpool. To route the traffic through the backpool VMs, it is required as mandatory a daemon answering on query on TCP port 80. httpd needs to be installed and activated on the nva11, nva12, nva21, nva22:
+The Azure internal load balancers (ilb1 and ilb2) require the presence of custom port on the VMs in the backend pool to make healtcheck. In our ATM template the probes have been defined to TCP port 80. httpd needs to be installed and activated on the nva11, nva12, nva21, nva22:
 
 ```
 yum -y install httpd

@@ -17,19 +17,19 @@ editor=""/>
    ms.date="26/07/2018"
    ms.author="fabferri" />
 
-# How to create two hub-spoke VNets interconnected by global VNet peering
-This ARM template aims to create two hub-spoke vnets in different Azure regions, with hub vnets interconnected through global vnet peering.
+# How to create two hub-spoke VNets interconnected by VNet peering
 
 
-The network diagram is reported below:
+The article describes a scenario with Azure VNet in peering. The network diagram is reported below:
 
 [![1]][1]
 
-To forward the traffic between spoke vnets is required nva1, nva2,  with ip forwarding enabled. The replacement of NVAs with simple linux VMs is useful for to troubleshooting to verify the traffic flows properly through the NVAs.
-Internal load balancer with frontend IPs and backend pools is show above:
+the configuration aim to make intercommunication between VNetSpoke1 and vNetSpoke2 with traffic in transit through the VMs nva1 and nva2. The VMs nva1 and nva2 are two CentOS VMs,  with ip forwarding enabled. A Linux VMs with ip forwarding do not make traffic inspection like security Network Virtual appliances (NVAs)  but it is pretty useful to  check the routing end-to-end and the consistency of UDRs (User Defined Routes).
+Below a network diagram zoon-in, with UDR and commands to generate traffic between two spoke VNets.
 
 [![2]][2]
 
+The ARM template creates the full environment, inclusive of UDRs. After the deployment, run the step reported below to activate the ip forwarding in nva1 and nva2.
 
 > [!NOTE]
 > Before spinning up the ARM template you should:
@@ -105,7 +105,6 @@ To monitor the traffic on vm3 and vm4 we can use a tool like **iftop**
 
 [1]: ./media/network-diagram.png "network diagram"
 [2]: ./media/flow.png "tcp flow transit from vm2 to vm3"
-
 
 <!--Link References-->
 
