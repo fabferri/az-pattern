@@ -39,7 +39,9 @@ The Azure deployment can be done by ARM template. The ARM template:
 > .\azfw.ps1 -adminUsername ADMIN_USERNAME -adminPassword ADMIN_PASSWORD
 > 
 > where:
+> 
 > ADMIN_USERNAME: it is the administrator username of the Azure VMs
+> 
 > ADMIN_PASSWORD: it is the administrator password of the Azure VMs
 > 
 
@@ -115,7 +117,7 @@ By iperf3 check out the behaviour with TCP traffic on custom port 4001; the traf
 Inbound connectivity can be enabled by configuring Destination Network Address Translation (DNAT).
 In the deployment the DNAT rules enable incoming SSH connection through the public IP of the firewall. Two DNAT rules are define to reach out the Server and jubmbox VMs. A snipet of ARM template and a diagram clarify how work the DNAT rules.
 
-```json
+```console
 "natRuleCollections":[
   ...
   ...
