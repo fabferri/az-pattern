@@ -31,13 +31,17 @@ The Azure deployment can be done by ARM template. The ARM template:
 * two UDRs, one applied to the jumpboxSubnet and one to the ServerSubnet, to force the traffic to passthrough the Azure Firewall
 
 > [!NOTE]
+> 
 > In the .ps1 script replace the value of variable **$subscriptionName** with the name of your Azure subscription ID.
 > 
 > Run the deployed by powershell:
+> 
 > .\azfw.ps1 -adminUsername ADMIN_USERNAME -adminPassword ADMIN_PASSWORD
+> 
 > where:
 > ADMIN_USERNAME: it is the administrator username of the Azure VMs
 > ADMIN_PASSWORD: it is the administrator password of the Azure VMs
+> 
 
 In the next paragraphs are discused by diagrams the security policy rules assicated to the Azure firewall.
 
@@ -49,7 +53,6 @@ A snipet of **applicationRuleCollections** defined in teh ARM template is report
 ```json
 "applicationRuleCollections": [
    {
-    ....
      "action": {"type": "Allow" },
      "rules": [
         {
@@ -76,8 +79,6 @@ In the deployment, the network rules are configured to enable the communication 
 
 ```json
 "networkRuleCollections": [
-...
-...
   "action":  { "type":  "Allow"},
   "rules": [
     {
@@ -112,8 +113,6 @@ In the deployment the DNAT rules enable incoming SSH connection through the publ
 
 ```json
 "natRuleCollections":[
-...
-...
  "action": {
     "type":  "Dnat"},
     "rules":[
@@ -144,12 +143,12 @@ In the deployment the DNAT rules enable incoming SSH connection through the publ
 [![6]][6]
 
 The diagram below shows the DNAT for incoming SSH connection through the public IP of the firewall on custom port 5000.
-The Azure firewall map the incoming TCP traffic with destination port 5000 into port 22. The traffic is routed to the jumpbox.
+The Azure firewall map the incoming TCP traffic with destination port 5000 into destination port 22. The traffic is routed to the jumpbox.
 
 [![7]][7]
 
 The diagram below shows the DNAT for incoming SSH connection through the public IP of the firewall on custom port 5001.
-The Azure firewall map the incoming TCP traffic with destination port 5000 into port 22. The traffic is routed to the  server.
+The Azure firewall change the incoming TCP traffic with destination port 5001 into destination port 22. The traffic is routed to the  server.
 
 [![8]][8]
 
