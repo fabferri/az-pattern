@@ -49,13 +49,14 @@ To run iperf3 as server in vm2:
 [root@vm1 ~]# iperf3 -s -p 6001
 ```
 
-where -p specifices the listening TCP port (default port is TCP 5201).
+where **-p** specifices the listening TCP port (default port is TCP 5201).
 
 To run iperf3 as client in vm2:
 
-```bash
+```console
 [root@vm2 ~]# iperf3 -c 10.0.2.10 -P 20 -p 6001 -i 1 -f M
 ```
+
 where:
 
     -c: IP Address of the iperf3 server
@@ -108,7 +109,7 @@ To send traffic from **vm2** to **vm1** run:
 
 By tcpdump check the traffic:
 
-```bash
+```console
 [root@vm1 ~]# tcpdump -nqttt -i eth0 host 10.0.1.10 and host 10.0.1.20
 ```
 

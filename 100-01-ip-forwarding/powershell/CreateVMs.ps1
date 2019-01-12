@@ -14,11 +14,12 @@
 ## What the script does:
 ## - Create a Storage account
 ## - Create a folder in the storage account
-## - Copy the cript in the storage account folder
+## - Copy the script in the storage account folder
 ## - Create the Public IP Address
 ## - Create the VNet
 ## - Create the NIC
 ## - Create the VM
+## - by VM script extension run the script in storage account to enable ip forwarding  
 ###########################################
 [CmdletBinding()]
 param (
@@ -206,8 +207,8 @@ $vnet = Get-AzureRmVirtualNetwork -Name $vnetName -ResourceGroupName $rgName
 $subnet1 = Get-AzureRmVirtualNetworkSubnetConfig -Name $subnet1Name -VirtualNetwork $vnet  
 $subnet2 = Get-AzureRmVirtualNetworkSubnetConfig -Name $subnet2Name -VirtualNetwork $vnet  
 $subnet3 = Get-AzureRmVirtualNetworkSubnetConfig -Name $subnet3Name -VirtualNetwork $vnet  
-write-host -ForegroundColor Yellow "VNet              : " $vnet.Name 
-write-host -ForegroundColor Yellow "VNet Address Space: " $vnet.AddressSpace.AddressPrefixes  
+write-host -ForegroundColor Yellow "VNet               : " $vnet.Name 
+write-host -ForegroundColor Yellow "VNet Address Space : " $vnet.AddressSpace.AddressPrefixes  
 write-host -ForegroundColor Yellow "Subnet1 Name       : " $subnet1.Name  
 write-host -ForegroundColor Yellow "SubNet1 Prefix     : " $subnet1.AddressPrefix
 write-host -ForegroundColor Yellow "Subnet2 Name       : " $subnet2.Name  
@@ -290,7 +291,7 @@ function createAzVM {
 
     try {
         $vm = Get-AzureRmVM -Name $vmName -ResourceGroupName $rgName -ErrorAction Stop
-        write-host -foreground Yellow "VM:" $vm.Name "already exists... skipping" -foregroundcolor Green -backgroundcolor Black
+        write-host -foregroundcolor Green -backgroundcolor Black "VM:" $vm.Name "already exists... skipping" 
     }
     catch {  
         $vmConfig = New-AzureRmVMConfig `
@@ -322,7 +323,6 @@ function createAzVM {
             -Version $script:version -Verbose 
 
         $vmConfig = Set-AzureRmVMBootDiagnostics -VM $vmConfig -Disable -Verbose 
-
 
         New-AzureRmVM -VM $vmConfig `
             -ResourceGroupName $rgName `

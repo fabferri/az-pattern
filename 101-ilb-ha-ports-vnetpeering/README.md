@@ -17,16 +17,17 @@ editor=""/>
    ms.date="24/07/2018"
    ms.author="fabferri" />
 
-# Azure ARM template to create standard load balancer in HA ports with VNet peering
-This ARM template aims to create VNets in hub-spoke configuration, with an internal standard load balancer in HA ports in the hub VNet.
+# Azure standard load balancer in HA ports with VNet peering
+The article presents a configuration hub-spoke VNet, with an internal standard load balancer (ILB) in HA ports in the hub VNet.
 
 
 The network diagram is reported below:
 
 [![1]][1]
 
-The nva1 and nva2 run with linux VMs, with ip forwarding enabled. The replacement of  NVAs with simple linux VMs is useful to verify the traffic flows transit correctly through the NVAs.
-The diagram below shown the VNet peering between hub-VNet and spoke-VNets:
+The UDRs applied to the subnets force the traffic to transit to the frontend IP address of the ILB.
+The nva1 and nva2 run with linux VMs, with ip forwarding enabled.
+The VNet peering configurations between hub-VNet and spoke-VNets are reported in the diagram shown below:
 
 [![2]][2]
 
@@ -34,12 +35,15 @@ Internal load balancer in the hub VNet:
 [![3]][3]
 
 
+The ARM template creates all the Azure deployment.
+
 > [!NOTE]
 > Before spinning up the ARM template you should:
 > * set the Azure subscription name in the file **ilb-ha-ports-vnetpeering.ps1**
 > * set the administrator username and password in the file **ilb-ha-ports-vnetpeering.json**
 >
 
+After deployment of ARM template, there are few manual steps to complte the setup.
 
 #### <a name="EnableIPForwarding"></a>1. Enable ip forwarding in nva1, nva2 VMs
 Enable ip forwarding:
@@ -68,7 +72,7 @@ To create multiple TCP flows from vm5 to vm10:
     [root@vm5 ~]# iperf3 -P 80 -c 10.0.10.10 -t 60 -i 1 -f m -p 5080       (iperf client)
     [root@vm10 ~]# iperf3 -s -p 5080                                       (iperf server)
 
-the parameters **-p** determine the number of simultaneous flows.
+the parameters **-P** determine the number of simultaneous flows.
 Below the TCP flows generated with iperf, in transit through the standard load balancer.
 
 [![4]][4]
