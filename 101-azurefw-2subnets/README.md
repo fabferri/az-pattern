@@ -50,9 +50,11 @@ In Azure firewall the application rules provide a meachnims FQDN based,to contro
 In our setup the **applicationRuleCollections** contain the rules to enable to the VMs in the subnets to access in HTTP and HTTPS to any web site out of the VNet (internet).
 A snipet of **applicationRuleCollections** defined in teh ARM template is reported below:
 
-```json
+```console
 "applicationRuleCollections": [
    {
+     ...
+     ...
      "action": {"type": "Allow" },
      "rules": [
         {
@@ -77,8 +79,10 @@ A snipet of **applicationRuleCollections** defined in teh ARM template is report
 Network rule is mechanism in Azure firewall to control access between networks. The filtering cirteria in network rule is based on source address, protocol, destination port, and destination address.
 In the deployment, the network rules are configured to enable the communication between the **ServersSubnet** and **JumpboxSubnet** only for specific TCP ports:[22,80,6000-6999].
 
-```json
+```console
 "networkRuleCollections": [
+   ...
+   ...
   "action":  { "type":  "Allow"},
   "rules": [
     {
@@ -113,6 +117,8 @@ In the deployment the DNAT rules enable incoming SSH connection through the publ
 
 ```json
 "natRuleCollections":[
+  ...
+  ...
  "action": {
     "type":  "Dnat"},
     "rules":[
