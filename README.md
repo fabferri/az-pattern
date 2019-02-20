@@ -1,4 +1,4 @@
-Standard load balancer in HA ports with two frontend IPs and two backend pools<properties
+<properties
    pageTitle="Examples of Azure templates and scripts"
    description="Examples of Azure templates and scripts"
    services=""
