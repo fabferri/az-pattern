@@ -92,7 +92,7 @@ Transit of traffic on nva can be checked by tcpdump:
 
 [1]: ./media/network-diagram.png "network diagram"
 [2]: ./media/flow1.png "tcp flow transit between VMs"
-[2]: ./media/flow2.png "tcp flow transit between VMs"
+[3]: ./media/flow2.png "tcp flow transit between VMs"
 
 <!--Link References-->
 
