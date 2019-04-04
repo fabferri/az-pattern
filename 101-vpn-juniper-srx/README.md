@@ -81,16 +81,19 @@ srx1# **run show security flow session nat source-prefix 10.0.2.0/24**
 Session ID: 35, Policy name: default-permit/5, Timeout: 2, Valid
 
   In: 10.0.2.20/7 --> 8.8.8.8/3111;icmp, Conn Tag: 0x0, If: ge-0/0/1.0, Pkts: 1, Bytes: 84,
+
   Out: 8.8.8.8/3111 --> 10.0.1.10/18693;icmp, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 1, Bytes: 84,
 
 Session ID: 36, Policy name: default-permit/5, Timeout: 2, Valid
 
   In: 10.0.2.20/8 --> 8.8.8.8/3111;icmp, Conn Tag: 0x0, If: ge-0/0/1.0, Pkts: 1, Bytes: 84,
+
   Out: 8.8.8.8/3111 --> 10.0.1.10/17377;icmp, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 1, Bytes: 84,
 
 Session ID: 37, Policy name: default-permit/5, Timeout: 4, Valid
   
   In: **10.0.2.20**/9 --> 8.8.8.8/3111;icmp, Conn Tag: 0x0, If: ge-0/0/1.0, Pkts: 1, Bytes: 84,
+
   Out: 8.8.8.8/3111 --> **10.0.1.10**/31989;icmp, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 1, Bytes: 84,
 
 Total sessions: 3
