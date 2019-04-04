@@ -68,7 +68,7 @@ set security nat source rule-set NAT-TRUST-TO-UNTRUST rule TRUST-TO-INTERNET the
 
 As our existing security policy permits access from the trust zone to the untrust zone, this configuration is complete.
 
-There are a few ways to verify the configuration:
+There is a way to verify the configuration:
 
 * login in the srx1
 * ssh from srx1 to the vm1
