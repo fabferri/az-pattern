@@ -1,6 +1,6 @@
 <properties
    pageTitle="site-to-site VPN between two Juniper vSRX in Azure"
-   description="configuration of  site-to-site VPN between two Juniper vSRX in Azure"
+   description="configuration of site-to-site VPN between two Juniper vSRX in Azure"
    services=""
    documentationCenter="na"
    authors="fabferri"
@@ -17,7 +17,7 @@
    ms.author="fabferri" />
 #  Site-to-site VPN between two Juniper vSRX in Azure
 
-The article reports the powrrshell, ARM templates and configuration file to create a site-to-site VPN between two Azure Virtual Networks (VNets). The network diagram is reported below.
+The article reports the powershell, ARM templates and configuration file to create a site-to-site VPN between two Azure Virtual Networks (VNets). The network diagram is reported below.
 
 [![1]][1]
 
@@ -25,6 +25,7 @@ The topology is based to sites:
 * site1, deployed in VNet1
 * site2, deployed in VNet2
 
+Over the IPSec tunnel is enabled BGP to advertise the network prefixes associated with the subnets to the remote site.
 The two VNets can be deployed on the same Azure regions or different Azure regions.
 
 
@@ -43,7 +44,7 @@ The two VNets can be deployed on the same Azure regions or different Azure regio
 
 > #### Note
 >
-> Before running the powershel scrips **Create-srx1-config.ps1**, **Create-srx2-config.ps1** check out the variables in the headers of the script.
+> Before running the powershell scrips **Create-srx1-config.ps1**, **Create-srx2-config.ps1** check out the variables in the headers of the script.
 > The values of variables need to match with the naming convention used in the **srx1.json**,**srx2.json**
 
 <!--Image References-->
