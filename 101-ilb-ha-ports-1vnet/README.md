@@ -31,6 +31,7 @@ The network diagram is reported below:
 
 ### Enable ip forwarding in nva1, nva2 VMs
 In the CentOS VMs permanent ip forwarding can be enabled by command:
+
     # sed -i -e '$a\net.ipv4.ip_forward = 1' /etc/sysctl.conf
     # systemctl restart network.service
 
@@ -39,6 +40,7 @@ Check the ip forwarding by command:
     # sysctl  net.ipv4.ip_forward
 
 ### Install and enable apache daemon in nva1, nva2
+Health probe of the load balancer is set on the HTTP. A daemon is required to answer to HTTP request to check the status of nva1 and nva2. Load balacer will forward the traffic to the nva1 and nva2 only if they answer to HTTP requests.
 
     # yum -y install httpd
     # systemctl enable httpd.service    (enable the httpd daemon)
@@ -54,14 +56,14 @@ To create multiple tcp flows from vm1 to vm2:
     [root@vm1 ~]# iperf3 -P 80 -c 10.0.3.10 -t 60 -i 1 -f m -p 5020
     [root@vm2 ~]# iperf3 -s -p 5020
 
-the parameters **-p** determine the number of simultaneous flows.
+the parameters **-P** determine the number of simultaneous flows.
 Below the TCP flows generated with iperf, in transit through the standard load balancer.
 
 [![2]][2]
 
 [![3]][3]
 
-The UDR set in the subnet2 and subnet 2 force the traffic to transit through the frontend IP of the standard load balancer.
+The UDR set in the subnet2 and subnet 2 forces the traffic to pass through the frontend IP of the standard load balancer.
 
 ### How to check the traffic in transit though the nva1 and nva2
 tcpdump helps to check the traffic balancing between nva1 and nva2.
@@ -70,9 +72,9 @@ Run the iperf commands in vm1 and vm2, and get the tcp captures in nva1 and nva2
      [root@nva1 ~]# tcpdump -n -i eth0 -q -t host 10.0.3.10 > cap1.txt
      [root@nva2 ~]# tcpdump -n -i eth0 -q -t host 10.0.3.10 > cap2.txt
 
-You need to trigger the event where the session will be slit up between nva1 and nva2.
-When capture file on nva1 and nva2 are both not empty, use the grep command to check the soruce port of the TCP flows.
-A TCP flow transit through the same nva.
+You need to trigger the event where the TCP sessions will be slit up between nva1 and nva2.
+When capture file on nva1 and nva2 are both not empty, use the grep command to check the source port of the TCP flows.
+A TCP flow passes through the same nva.
 
 To verify a specific TCP flow is served only by a single nva:
 - open one of cap file (i.e. cap1.txt),

@@ -1,0 +1,96 @@
+#Set the IP addresses for vSRX1 interfaces.
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.1.10/24
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.2.10/24
+set interfaces st0 unit 1 description "VPN tunnel"
+set interfaces st0 unit 1 family inet address 10.0.200.1/30
+set interfaces st0 unit 1 family inet mtu 1436
+
+#Set security policy
+set security policies from-zone trust to-zone trust policy default-permit match source-address any
+set security policies from-zone trust to-zone trust policy default-permit match destination-address any
+set security policies from-zone trust to-zone trust policy default-permit match application any
+set security policies from-zone trust to-zone trust policy default-permit then permit
+
+set security policies from-zone trust to-zone untrust policy default-permit match source-address any
+set security policies from-zone trust to-zone untrust policy default-permit match destination-address any
+set security policies from-zone trust to-zone untrust policy default-permit match application any
+set security policies from-zone trust to-zone untrust policy default-permit then permit
+
+set security policies from-zone untrust to-zone trust policy default-permit match source-address any
+set security policies from-zone untrust to-zone trust policy default-permit match destination-address any
+set security policies from-zone untrust to-zone trust policy default-permit match application any
+set security policies from-zone untrust to-zone trust policy default-permit then permit
+
+#Set up the untrust security zone.
+set security zone security-zone untrust screen untrust-screen
+set security zone security-zone untrust host-inbound-traffic system-services all
+set security zone security-zone untrust interfaces ge-0/0/0.0
+
+
+#Set up the trust security zone.
+set security zone security-zone trust host-inbound-traffic system-services all
+set security zone security-zone trust host-inbound-traffic protocols bgp
+set security zone security-zone trust interfaces ge-0/0/1.0
+set security zone security-zone trust interfaces st0.1
+
+#Configure IKE.
+set security ike proposal ike-phase1-proposalA authentication-method pre-shared-keys
+set security ike proposal ike-phase1-proposalA dh-group group2
+set security ike proposal ike-phase1-proposalA authentication-algorithm sha-256
+set security ike proposal ike-phase1-proposalA encryption-algorithm aes-256-cbc
+set security ike proposal ike-phase1-proposalA lifetime-seconds 1800
+
+set security ike policy ike-phase1-policyA mode main
+set security ike policy ike-phase1-policyA proposals ike-phase1-proposalA
+set security ike policy ike-phase1-policyA pre-shared-key ascii-text Password123!
+
+set security ike gateway gw-siteB ike-policy ike-phase1-policyA
+set security ike gateway gw-siteB address 104.211.35.42
+set security ike gateway gw-siteB local-identity inet 168.62.175.156
+set security ike gateway gw-siteB external-interface ge-0/0/0.0
+set security ike gateway gw-siteB version v2-only
+set security ike gateway gw-siteB dead-peer-detection
+
+#Configure IPsec.
+set security ipsec proposal ipsec-proposalA protocol esp
+set security ipsec proposal ipsec-proposalA authentication-algorithm hmac-sha1-96
+set security ipsec proposal ipsec-proposalA encryption-algorithm aes-256-cbc
+set security ipsec proposal ipsec-proposalA lifetime-seconds 3600
+
+set security ipsec policy ipsec-policy-siteB proposals ipsec-proposalA
+
+set security ipsec vpn ike-vpn-siteB bind-interface st0.1
+set security ipsec vpn ike-vpn-siteB ike gateway gw-siteB
+set security ipsec vpn ike-vpn-siteB ike ipsec-policy ipsec-policy-siteB
+set security ipsec vpn ike-vpn-siteB establish-tunnels immediately
+
+set security flow tcp-mss ipsec-vpn mss 1387
+
+#Configure routing
+set routing-instances siteA-vr1 instance-type virtual-router
+set routing-instances siteA-vr1 interface ge-0/0/0.0
+set routing-instances siteA-vr1 interface ge-0/0/1.0
+set routing-instances siteA-vr1 interface st0.1
+set routing-instances siteA-vr1 routing-options static route 0.0.0.0/0 next-hop 10.0.1.1
+
+
+#Configure routing policy to reditribute direct connect networks
+set policy-options policy-statement send-direct term 1 from protocol direct
+set policy-options policy-statement send-direct term 1 then accept
+#set policy-options policy-statement send-direct term 2 from protocol static
+#set policy-options policy-statement send-direct term 2 then accept
+
+
+set routing-instances siteA-vr1 routing-options autonomous-system 65001
+set routing-instances siteA-vr1 routing-options router-id 10.0.200.1
+
+set routing-instances siteA-vr1 protocols bgp group ext multihop ttl 5
+set routing-instances siteA-vr1 protocols bgp group ext type external
+
+set routing-instances siteA-vr1 protocols bgp group ext export send-direct
+set routing-instances siteA-vr1 protocols bgp group ext peer-as 65002
+set routing-instances siteA-vr1 protocols bgp group ext local-as 65001
+set routing-instances siteA-vr1 protocols bgp group ext neighbor 10.0.200.2 
+
+
+

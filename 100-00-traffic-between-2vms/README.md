@@ -19,7 +19,7 @@ editor=""/>
 
 ## Generate IP traffic between two Azure VMs
 
-In testing process is common to use software to generate traffic between Azure VMs.
+In testing process is common to use tools to generate traffic between Azure VMs.
 The article shows few methods to generate traffic between two Azure VMs, with hostname vm1 and vm2, connected to the the same Azure subnet. The methods can be extended in more complex configurations, with the only requirement of IP reachability between the VMs.
 
 [![1]][1]

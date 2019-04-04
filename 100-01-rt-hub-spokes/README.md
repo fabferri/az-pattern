@@ -38,7 +38,7 @@ sysctl net.ipv4.ip_forward
 ```
 
 ## <a name="routing-spoke1"></a>2. routing table applied to subnet1, subnet of the spoke1-vnet
-Azure selects a route based on the destination IP address, using the longest prefix match algorithm.
+##### Azure selects a route based on the destination IP address, using the longest prefix match algorithm.
 
 Here the routing table applied to the subnet1 and subnet2 of spoke1-vnet:
 

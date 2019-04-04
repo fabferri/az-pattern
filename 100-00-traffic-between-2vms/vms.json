@@ -89,7 +89,7 @@
     },
     "resources": [
         {
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-12-01",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsg').name]",
             "location": "[variables('nsg').location]",
@@ -127,7 +127,7 @@
             }
         },
         {
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-12-01",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet').name]",
             "location": "[variables('vNet').location]",
@@ -154,12 +154,12 @@
                 ]
             }
         },
-        // Public IP address VMs
         {
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-12-01",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
             "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Public IP address VMs",
             "properties": {
               "publicIPAllocationMethod": "Dynamic"
             },
@@ -169,10 +169,11 @@
             }
           },
           {
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-12-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
             "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Create NICs of Azure VMs by loop",
             "dependsOn": [
               "[concat('Microsoft.Network/publicIPAddresses/', variables('vmArray')[copyIndex()].vmName,'-pubIP' )]",
               "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].VNetName))]"
@@ -203,8 +204,9 @@
           {
             "type": "Microsoft.Compute/virtualMachines",
             "name":  "[variables('vmArray')[copyIndex()].vmName]",
-            "apiVersion": "2018-06-01",
+            "apiVersion":  "2018-10-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Create Azure VMs by loop",
             "dependsOn": [
               "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
             ],
