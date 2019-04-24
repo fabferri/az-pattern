@@ -1,5 +1,5 @@
 ﻿$nl = [Environment]::NewLine
-$a=Get-AzureRmBgpServiceCommunity 
+$a=Get-AzBgpServiceCommunity 
 For ($i=0; $i -le $a.Length; $i++) 
 {
     switch($a[$i].Name)
@@ -39,11 +39,11 @@ For ($i=0; $i -le $a.Length; $i++)
          $NumberPrefixesSharePoint=$arrayPrefixesSharePoint.CommunityPrefixes.Count
          #write-host -ForegroundColor White $prefix $nl
          }
-       "CRMOnline" {
+       "AzureEastUS" {
          $Name=$a[$i].Name
-         $arrayPrefixesCRMOnline=$a[$i].BgpCommunities.ToArray()
-         $prefix=$arrayPrefixesCRMOnline.CommunityPrefixes
-         $NumberPrefixesCRMOnline=$arrayPrefixesCRMOnline.CommunityPrefixes.Count
+         $arrayPrefixesAzureEastUS=$a[$i].BgpCommunities.ToArray()
+         $prefix=$arrayPrefixesAzureEastUS.CommunityPrefixes
+         $NumberPrefixesAzureEastUS=$arrayPrefixesAzureEastUS.CommunityPrefixes.Count
          #write-host -ForegroundColor Gray $prefix $nl
          }
      }
@@ -79,4 +79,10 @@ For ($i=0; $i -le $a.Length; $i++)
       Write-Host -ForegroundColor Gray  "---------------------------CRMOnline-------------------------------------"
       foreach ($k in $arrayPrefixesCRMOnline.CommunityPrefixes.GetEnumerator()) {
          Write-Host -ForegroundColor Gray $k
+      }
+
+      Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
+      Write-Host -ForegroundColor Gray  "---------------------------AzureEastUS------------------------------------"
+      foreach ($k in $arrayPrefixesAzureEastUS.CommunityPrefixes.GetEnumerator()) {
+         Write-Host -ForegroundColor white $k
       }

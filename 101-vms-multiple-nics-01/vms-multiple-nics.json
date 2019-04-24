@@ -19,24 +19,19 @@
     "vnetName": "vnet",
     "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
     "addressPrefix1": "10.0.0.0/16",
-    // Subnet1
     "subnet1Name": "subnet1",
     "subnet1Id": "[concat(variables('vnetId'), '/subnets/', variables('subnet1Name'))]",
     "subnet1Prefix": "10.0.1.0/24",
-    //Subnet2
     "subnet2Name": "subnet2",
     "subnet2Id": "[concat(variables('vnetId'), '/subnets/', variables('subnet2Name'))]",
     "subnet2Prefix": "10.0.2.0/24",
-    // Subnet3
     "subnet3Name": "subnet3",
     "subnet3Id": "[concat(variables('vnetId'), '/subnets/', variables('subnet3Name'))]",
     "subnet3Prefix": "10.0.3.0/24",
-    /////////////////////////////
     "vm1Name": "vm1",
     "vm2Name": "vm2",
     "vm3Name": "vm3",
     "vm4Name": "vm4",
-    ////////////////////////////
     "RT-Subnet1": {
       "name": "RT-subnet1",
       "location": "[variables('location')]",
@@ -89,7 +84,6 @@
         "nic3IPForwarding": true
       }
     ],
-    /////////////////////////////
     "arrayVM2NIC": [
       {
         "vmName": "[variables('vm2Name')]",
@@ -146,12 +140,12 @@
     "CountArrayVM1NIC": "[length(variables('arrayVM1NIC'))]"
   },
   "resources": [
-    // Routing Table subnet1
     {
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('RT-Subnet1').name]",
       "apiVersion": "2018-02-01",
       "location": "[variables('RT-Subnet1').location]",
+      "comments": "Routing Table subnet1",
       "dependsOn": [],
       "properties": {
         "routes": [
@@ -175,12 +169,12 @@
       },
       "resources": []
     },
-    // Routing Table subnet2
     {
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('RT-Subnet2').name]",
       "apiVersion": "2018-02-01",
       "location": "[variables('RT-Subnet2').location]",
+      "comments": "Routing Table subnet2",
       "dependsOn": [],
       "properties": {
         "routes": [
@@ -196,12 +190,12 @@
       },
       "resources": []
     },
-    // Routing Table subnet3
     {
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('RT-Subnet3').name]",
       "apiVersion": "2018-02-01",
       "location": "[variables('RT-Subnet3').location]",
+      "comments": "Routing Table subnet3",
       "dependsOn": [],
       "properties": {
         "routes": [
@@ -217,11 +211,11 @@
       },
       "resources": []
     },
-    // create VNet
     {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2018-02-01",
       "location": "[variables('location')]",
+      "comments": "create VNet",
       "dependsOn": [
         "[variables('RT-Subnet1').name]",
         "[variables('RT-Subnet2').name]",
@@ -265,7 +259,6 @@
         ]
       }
     },
-    // first NIC for the VMs with three NICs
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2018-02-01",
@@ -273,6 +266,7 @@
         "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
       ],
       "location": "[variables('location')]",
+      "comments": "first NIC for the VMs with three NICs",
       "name": "[variables('arrayVM3NIC')[copyIndex()].nic1Name]",
       "properties": {
         "ipConfigurations": [
@@ -294,7 +288,6 @@
         "count": "[variables('countArrayVM3NIC')]"
       }
     },
-    // second NIC for the VMs with three NICs
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2018-02-01",
@@ -302,6 +295,7 @@
         "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
       ],
       "location": "[variables('location')]",
+      "comments": "second NIC for the VMs with three NICs",
       "name": "[variables('arrayVM3NIC')[copyIndex()].nic2Name]",
       "properties": {
         "ipConfigurations": [
@@ -323,7 +317,6 @@
         "count": "[variables('countArrayVM3NIC')]"
       }
     },
-    // third NIC for the VMs with three NICs
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2018-02-01",
@@ -331,6 +324,7 @@
         "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
       ],
       "location": "[variables('location')]",
+      "comments": "third NIC for the VMs with three NICs",
       "name": "[variables('arrayVM3NIC')[copyIndex()].nic3Name]",
       "properties": {
         "ipConfigurations": [
@@ -352,7 +346,6 @@
         "count": "[variables('countArrayVM3NIC')]"
       }
     },
-    // first NIC for the VMs with two NICs
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2018-02-01",
@@ -360,6 +353,7 @@
         "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
       ],
       "location": "[variables('location')]",
+      "comments": "first NIC for the VMs with two NICs",
       "name": "[variables('arrayVM2NIC')[copyIndex()].nic1Name]",
       "properties": {
         "ipConfigurations": [
@@ -381,7 +375,6 @@
         "count": "[variables('countArrayVM2NIC')]"
       }
     },
-    // second NIC for the VMs with two NICs
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2018-02-01",
@@ -389,6 +382,7 @@
         "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
       ],
       "location": "[variables('location')]",
+      "comments": "second NIC for the VMs with two NICs",
       "name": "[variables('arrayVM2NIC')[copyIndex()].nic2Name]",
       "properties": {
         "ipConfigurations": [
@@ -424,7 +418,6 @@
         "count": "[variables('countArrayVM1NIC')]"
       }
     },
-    // NIC interface for VMs with single NIC
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2018-02-01",
@@ -433,6 +426,7 @@
         "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
       ],
       "location": "[variables('location')]",
+      "comments": "NIC interface for VMs with single NIC",
       "name": "[variables('arrayVM1NIC')[copyIndex()].nic1Name]",
       "properties": {
         "ipConfigurations": [
@@ -457,71 +451,68 @@
         "count": "[variables('countArrayVM1NIC')]"
       }
     },
-
-   // VM with 3 NICs
-   {
-    "type": "Microsoft.Compute/virtualMachines",
-    "apiVersion": "2017-03-30",
-    "dependsOn": [
-      "[concat('Microsoft.Network/networkInterfaces/',variables('arrayVM3NIC')[copyIndex()].nic1Name)]",
-      "[concat('Microsoft.Network/networkInterfaces/', variables('arrayVM3NIC')[copyIndex()].nic2Name)]",
-      "[concat('Microsoft.Network/networkInterfaces/', variables('arrayVM3NIC')[copyIndex()].nic3Name)]"
-    ],
-    "location": "[variables('location')]",
-    "name": "[variables('arrayVM3NIC')[copyIndex()].vmName]",
-    "properties": {
-      "hardwareProfile": {
-        "vmSize": "[variables('arrayVM3NIC')[copyIndex()].vmSize]"
-      },
-      "networkProfile": {
-        "networkInterfaces": [
-          {
-            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('arrayVM3NIC')[copyIndex()].nic1Name)]",
-            "properties": {
-              "primary": "[bool(variables('arrayVM3NIC')[copyIndex()].nic1Property)]"
-            }
-          },
-          {
-            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('arrayVM3NIC')[copyIndex()].nic2Name)]",
-            "properties": {
-              "primary": "[bool(variables('arrayVM3NIC')[copyIndex()].nic2Property)]"
-            }
-          },
-          {
-            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('arrayVM3NIC')[copyIndex()].nic3Name)]",
-            "properties": {
-              "primary": "[bool(variables('arrayVM3NIC')[copyIndex()].nic3Property)]"
-            }
-          }
-        ]
-      },
-      "osProfile": {
-        "computerName": "[variables('arrayVM3NIC')[copyIndex()].vmName]",
-        "adminUsername": "[variables('adminUsername')]",
-        "adminPassword": "[variables('adminPassword')]",
-        "linuxConfiguration": {
-          "disablePasswordAuthentication": false
-        }
-      },
-      "storageProfile": {
-        "imageReference": {
-          "publisher": "[ variables('arrayVM3NIC')[copyIndex()].imagePublisher]",
-          "offer": "[ variables('arrayVM3NIC')[copyIndex()].imageOffer]",
-          "sku": "[ variables('arrayVM3NIC')[copyIndex()].OSVersion]",
-          "version": "latest"
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-03-30",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/',variables('arrayVM3NIC')[copyIndex()].nic1Name)]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('arrayVM3NIC')[copyIndex()].nic2Name)]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('arrayVM3NIC')[copyIndex()].nic3Name)]"
+      ],
+      "location": "[variables('location')]",
+      "comments": "VM with 3 NICs",
+      "name": "[variables('arrayVM3NIC')[copyIndex()].vmName]",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('arrayVM3NIC')[copyIndex()].vmSize]"
         },
-        "osDisk": {
-          "createOption": "FromImage"
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('arrayVM3NIC')[copyIndex()].nic1Name)]",
+              "properties": {
+                "primary": "[bool(variables('arrayVM3NIC')[copyIndex()].nic1Property)]"
+              }
+            },
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('arrayVM3NIC')[copyIndex()].nic2Name)]",
+              "properties": {
+                "primary": "[bool(variables('arrayVM3NIC')[copyIndex()].nic2Property)]"
+              }
+            },
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('arrayVM3NIC')[copyIndex()].nic3Name)]",
+              "properties": {
+                "primary": "[bool(variables('arrayVM3NIC')[copyIndex()].nic3Property)]"
+              }
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[variables('arrayVM3NIC')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": false
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[ variables('arrayVM3NIC')[copyIndex()].imagePublisher]",
+            "offer": "[ variables('arrayVM3NIC')[copyIndex()].imageOffer]",
+            "sku": "[ variables('arrayVM3NIC')[copyIndex()].OSVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          }
         }
+      },
+      "copy": {
+        "name": "nicCopy",
+        "count": "[variables('countArrayVM3NIC')]"
       }
     },
-    "copy": {
-      "name": "nicCopy",
-      "count": "[variables('countArrayVM3NIC')]"
-    }
-  },
-
-    // VM with two NICs
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2017-03-30",
@@ -530,6 +521,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('arrayVM2NIC')[copyIndex()].nic2Name)]"
       ],
       "location": "[variables('location')]",
+      "comments": "VM with two NICs",
       "name": "[variables('arrayVM2NIC')[copyIndex()].vmName]",
       "properties": {
         "hardwareProfile": {
@@ -576,7 +568,6 @@
         "count": "[variables('countArrayVM2NIC')]"
       }
     },
-    // VMs with 1 NIC
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2017-03-30",
@@ -584,6 +575,7 @@
         "[concat('Microsoft.Network/networkInterfaces/',variables('arrayVM1NIC')[copyIndex()].nic1Name)]"
       ],
       "location": "[variables('location')]",
+      "comments": "VMs with 1 NIC",
       "name": "[variables('arrayVM1NIC')[copyIndex()].vmName]",
       "properties": {
         "hardwareProfile": {
