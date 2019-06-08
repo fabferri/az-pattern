@@ -1,6 +1,6 @@
 <properties
-   pageTitle="Examples of Azure templates and scripts"
-   description="Examples of Azure templates and scripts"
+   pageTitle="Examples of Azure ARM templates and scripts"
+   description="Examples of Azure ARM templates and scripts"
    services=""
    documentationCenter="na"
    authors="fabferri"
@@ -17,9 +17,9 @@
    ms.author="fabferri" />
 
 # Fab's Azure repository
-Few basic Azure ARM template and script examples:
+Some Azure ARM templates and scripts:
 
-* [Standard load balancer in HA ports](./01-ilb-ha-ports-1vnet/)
+* [Standard load balancer in HA ports](./02-ilb-ha-ports-1vnet/)
 * [Standard load balancer in HA ports with VNet peering](./02-ilb-ha-ports-vnetpeering/)
 * [Standard load balancer in HA ports with two frontend IPs and two backend pools](./02-ilb-ha-ports-2frontend-2backendpools)
 * [Two hub-spoke VNets interconnected by global VNet peering](./02-01-vnet-peering-2hubspoke)
@@ -31,7 +31,13 @@ Few basic Azure ARM template and script examples:
 * [Interconnection of two Azure hub-spoke VNets through site-to-site VPN with libreswan](./02-vpn-libreswan/)
 * [powershell script to get the list og BGP communities in ExpressRoute Microsoft peering](./ExpressRoute-MS-Peering-BGPCommunity/)
 * [Powershell script to capture Windows system counters](./win-sys-counters/)
-
+* [Multiple VNets and VMs in different Azure regions](./01-multiple-vnets-vms/)
+* [Azure VMs with multiple NICs](./01-vms-multiple-nics-01/README.md)
+* [Multiple VNets and VMs in different Azure regions](./01-multiple-vnets-vms/)
+* [Multiple VNet-to-VNet with VPN Gateways](./vnet-2-vnet-vpn/README.md)
+* [Interconnection of two Azure hub-spoke VNets through site-to-site VPN with libreswan](./02-vpn-libreswan/)
+* [powershell script to get the list og BGP communities in ExpressRoute Microsoft peering](./ExpressRoute-MS-Peering-BGPCommunity/)
+* [Powershell script to capture Windows system counters](./win-sys-counters/)
 
 
 | Link     | Network Diagram|
@@ -44,10 +50,4 @@ Few basic Azure ARM template and script examples:
 
 
 
-* [Multiple VNets and VMs in different Azure regions](./01-multiple-vnets-vms/)
-* [Azure VMs with multiple NICs](./01-vms-multiple-nics-01/README.md)
-* [Multiple VNets and VMs in different Azure regions](./01-multiple-vnets-vms/)
-* [Multiple VNet-to-VNet with VPN Gateways](./vnet-2-vnet-vpn/README.md)
-* [Interconnection of two Azure hub-spoke VNets through site-to-site VPN with libreswan](./02-vpn-libreswan/)
-* [powershell script to get the list og BGP communities in ExpressRoute Microsoft peering](./ExpressRoute-MS-Peering-BGPCommunity/)
-* [Powershell script to capture Windows system counters](./win-sys-counters/)
+
