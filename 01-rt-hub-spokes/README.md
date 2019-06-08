@@ -19,9 +19,8 @@ editor=""/>
 
 # How to create hub-spoke VNets interconnected by VNet peering and UDR
 
-
-The article describes a basic configuration with one Azure hub VNet in VNet peering with two spoke VNets.
-in the hub VNet a VM works as ip forwarder.
+This article describes a basic configuration with one Azure hub VNet in peering with two spoke VNets.
+In the hub VNet a VM works as ip forwarder.
 
 [![1]][1]
 

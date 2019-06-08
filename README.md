@@ -21,6 +21,7 @@ List of Azure ARM templates and scripts:
 * Basic templates
    * [How to generate IP traffic between two Azure VMs](./00-traffic-between-2vms/)
    * [Communication between Azure VMs through an IP forwarder](./01-ip-forwarding/)
+   * [How to create hub-spoke VNets interconnected by VNet peering and UDR](./01-rt-hub-spokes/)
 * Azure Load Balancer
    * [Standard load balancer in HA ports](./02-ilb-ha-ports-1vnet/)
    * [Standard load balancer in HA ports with VNet peering](./02-ilb-ha-ports-vnetpeering/)
