@@ -17,8 +17,9 @@
    ms.author="fabferri" />
 
 # Fab's Azure repository
-Some Azure ARM templates and scripts:
-
+List of Azure ARM templates and scripts:
+* Basic templates
+   - [How to generate IP traffic between two Azure VMs] (./00-traffic-between-2vms/)
 * [Standard load balancer in HA ports](./02-ilb-ha-ports-1vnet/)
 * [Standard load balancer in HA ports with VNet peering](./02-ilb-ha-ports-vnetpeering/)
 * [Standard load balancer in HA ports with two frontend IPs and two backend pools](./02-ilb-ha-ports-2frontend-2backendpools)
