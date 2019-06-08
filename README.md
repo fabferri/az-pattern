@@ -40,6 +40,8 @@ Some Azure ARM templates and scripts:
 * [Powershell script to capture Windows system counters](./win-sys-counters/)
 
 
+Common scenarios
+
 | Link     | Network Diagram|
 |----------|:--------------:|
 | [Standard load balancer in HA ports](./02-ilb-ha-ports-1vnet/)|  <img src="./02-ilb-ha-ports-1vnet/media/network-diagram.png" align="left" width="500"> |

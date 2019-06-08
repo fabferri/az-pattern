@@ -1,6 +1,6 @@
 <properties
-   pageTitle="interconnection of two hub-spoke VNet through libreswan"
-   description="Interconnection of two Azure hub-spoke VNets through site-to-site VPN with libreswan"
+   pageTitle="interconnection of Azure hub-spoke VNet through site-to-site VPN with libreswan"
+   description="Interconnection of Azure hub-spoke VNets through site-to-site VPN with libreswan"
    services=""
    documentationCenter="na"
    authors="fabferri"
