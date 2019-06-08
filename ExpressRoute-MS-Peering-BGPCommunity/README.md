@@ -31,4 +31,4 @@ Office 365 IP prefixes that are advertised over ExpressRoute Microsoft peering a
 | skype for business       | 12076:5030          |
 | CRM Online               | 12076:5040          |
 
-to run the script you need to login in your Azure subscription by **Login-AzureRmAccount**
+to run the script you need to login in your Azure subscription by **Login-AzAccount**
