@@ -18,12 +18,12 @@ editor=""/>
    ms.author="fabferri" />
 
 ## Single VNets with three subnets and one VM working as IP forwarder
-The post presents an ARM template to create a VNet with three subnets named **subnet1**,**subnet2**,**subnet3**.
+The blog post presents a ARM template to create a VNet with three subnets named **subnet1**,**subnet2**,**subnet3**.
 In every subnet runs a VM:
 
-* in **subnet1** runs a VM with hostname **nva** configured as IP packet forwarder. A VM with IP forwarder enabled in the OS has the behviour of router: the VM is able to receive IP packets with destination different from own IP address and route them to a destination VM in different subnet.
-* **subnet2** runs a Linux (or Windows) VM  with hostname **vm2**
-* **subnet3** runs a Linux (or Windows) VM with hostname **vm3**
+* in **subnet1** runs a VM with hostname **nva** configured as IP packet forwarder. A VM with IP forwarder enabled in the OS has a router behaviour: the VM is able to receive an IP packet with destination address different from its IP address and forwards (routes) the packet to another VM.
+* in **subnet2** runs a Linux (or Windows) VM  with hostname **vm2**
+* in **subnet3** runs a Linux (or Windows) VM with hostname **vm3**
 
 The ARM template can be changed to customize VM size and OS.
 
@@ -31,7 +31,7 @@ The network diagram is shown below:
 
 [![1]][1]
 
-Two static route (User Defined Routes), associated with the subnet2 and subnet3, force the traffic vm2-vm3 to pass through the nva.
+Two static routes (User Defined Routes), associated with the subnet2 and subnet3, force the traffic between vm2-vm3 to pass through the nva.
 
 [![2]][2]
 

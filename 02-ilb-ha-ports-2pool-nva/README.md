@@ -18,7 +18,7 @@ editor=""/>
    ms.author="fabferri" />
 
 # Standard load balancer in HA ports with two NVA pools
-This ARM template aims to create a  VNet with an internal standard load balancer (ILB) in HA ports to create a configuration with NVAs in high avaiability.  
+Here's an Azure ARM template to create a VNet with an internal standard load balancer (ILB) in HA ports to create a configuration with NVAs in high avaiability.
 For resiliency, the Azure VMs associated with every backend pool have an assigned availability set.
 
 
@@ -26,8 +26,8 @@ The network diagram is reported below:
 
 [![1]][1]
 
-The nva1, nva2, nva3, nva4 run with linux VMs, with ip forwarding enabled. The replacement of NVAs with simple linux VMs is useful for to troubleshooting to verify the traffic flows rights through the NVAs.
-Internal load balancer with frontend IPs and backend pools is show above:
+The nva1, nva2, nva3, nva4 run with linux VMs, with ip forwarding enabled. The replacement of NVAs with simple linux VMs is useful for to troubleshooting to verify the traffic flows pass through the NVAs.
+The internal load balancer with frontend IPs and backend pools is show above:
 
 [![2][2]
 
@@ -49,7 +49,8 @@ Enable ip forwarding on nva1, nva2, nva3, nva4:
     # systemctl restart network.service
 ```
 
-The ARM template set two heath check probes on port 80. Install and enable apache daemon on nva1, nva2, nva3, nva4:
+The ARM template sets two heath check probes on port 80. The ILB forwards the traffic to a nva, only if the nva answers to health probe messages. It is mandatory for the setup install and enable an HTTP daemon on the NVAs.
+Run the following steps to install apache httpd daemon on nva1, nva2, nva3, nva4:
 
 ```bash
     # yum -y install httpd
@@ -85,7 +86,7 @@ Based on the static routes (UDRs) set in the subnet3,subnet4 the following flows
 
 [![4]][4]
 
-The traffic in transit in NVAs can be verified with tcpdump:
+The traffic in transit in NVAs can be verified by tcpdump:
 
 ```bash
      tcpdump -nn -qt -i eth0 port 6001
