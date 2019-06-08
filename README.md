@@ -21,9 +21,10 @@ List of Azure ARM templates and scripts:
 * Basic templates
    * [How to generate IP traffic between two Azure VMs](./00-traffic-between-2vms/)
    * [Communication between Azure VMs through an IP forwarder](./01-ip-forwarding/)
-* [Standard load balancer in HA ports](./02-ilb-ha-ports-1vnet/)
-* [Standard load balancer in HA ports with VNet peering](./02-ilb-ha-ports-vnetpeering/)
-* [Standard load balancer in HA ports with two frontend IPs and two backend pools](./02-ilb-ha-ports-2frontend-2backendpools)
+* Azure Load Balancer
+   * [Standard load balancer in HA ports](./02-ilb-ha-ports-1vnet/)
+   * [Standard load balancer in HA ports with VNet peering](./02-ilb-ha-ports-vnetpeering/)
+   * [Standard load balancer in HA ports with two frontend IPs and two backend pools](./02-ilb-ha-ports-2frontend-2backendpools)
 * [Two hub-spoke VNets interconnected by global VNet peering](./02-01-vnet-peering-2hubspoke)
 * [Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub VNets](./02-03-vnet-peering-2hubspoke-ilb-vpn)
 * [Multiple VNets and VMs in different Azure regions](./02-multiple-vnets-vms/)
@@ -42,7 +43,7 @@ List of Azure ARM templates and scripts:
 * [Powershell script to capture Windows system counters](./win-sys-counters/)
 
 
-Common scenarios
+Few common scenarios
 
 | Link     | Network Diagram|
 |----------|:--------------:|
