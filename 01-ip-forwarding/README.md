@@ -17,7 +17,7 @@ editor=""/>
    ms.date="18/08/2018"
    ms.author="fabferri" />
 
-## Single VNets with three subnets and one VM working as IP forwarder
+## Communication between Azure VMs through an IP forwarder
 The blog post presents a ARM template to create a VNet with three subnets named **subnet1**,**subnet2**,**subnet3**.
 In every subnet runs a VM:
 
