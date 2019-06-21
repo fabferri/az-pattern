@@ -1,0 +1,643 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator'"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "vnetName": "vnet1",
+    "vnetv4AddressSpace": "10.0.0.0/24",
+    "vnetv6AddressSpace": "ace:cab:deca::/48",
+    "subnet1AddressRangev4": "10.0.0.0/27",
+    "subnet1AddressRangev6": "ace:cab:deca:deea::/64",
+    "subnet2AddressRangev4": "10.0.0.32/27",
+    "subnet2AddressRangev6": "ace:cab:deca:deeb::/64",
+    "subnet3AddressRangev4": "10.0.0.64/27",
+    "subnet3AddressRangev6": "ace:cab:deca:deec::/64",
+    "subnet1Name": "subnet1",
+    "subnet2Name": "subnet2",
+    "subnet3Name": "transitsubnet",
+    "availabilitySet1Name": "avset1",
+    "subnet1Id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet1Name'))]",
+    "subnet2Id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet2Name'))]",
+    "subnet3Id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet3Name'))]",
+    "numberOfInstances": 2,
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPassword": "[parameters('adminPassword')]",
+    "nvaPrivIPv4" : "10.0.0.90",
+    "nvaPrivIPv6" : "ace:cab:deca:deec::90",
+
+    "vmArraywithLB" :[
+      {
+        "location": "[variables('location')]",
+        "vmName": "vm11",
+        "vmSize": "Standard_A1",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "OSVersion": "2019-Datacenter",
+        "subnetId": "[variables('subnet1Id')]",
+        "enableIPForwarding": false,
+        "availabilitySetName": "[variables('availabilitySet1Name')]",
+        "nsgName": "nsg"
+      },
+      {
+        "location": "[variables('location')]",
+        "vmName": "vm12",
+        "vmSize": "Standard_A1",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "OSVersion": "2019-Datacenter",
+        "vnetName": "[variables('vnetName')]",
+        "subnetId": "[variables('subnet1Id')]",
+        "enableIPForwarding": false,
+        "availabilitySetName": "[variables('availabilitySet1Name')]",
+        "nsgName": "nsg"
+      }      
+    ],
+    "vmArray":[
+      {
+        "location": "[variables('location')]",
+        "vmName": "h2",
+        "vmSize": "Standard_B1s",
+        "imagePublisher": "openlogic",
+        "imageOffer": "CentOS",
+        "OSVersion": "7.5",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet2Name')]",
+        "privateIPv4": "10.0.0.50",
+        "privateIPv6": "ace:cab:deca:deeb::50",
+        "enableIPForwarding": false,
+        "nsgName": "nsg"
+      },
+      {
+        "location": "[variables('location')]",
+        "vmName": "nva",
+        "vmSize": "Standard_B1s",
+        "imagePublisher": "openlogic",
+        "imageOffer": "CentOS",
+        "OSVersion": "7.5",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet3Name')]",
+        "privateIPv4": "[variables('nvaPrivIPv4')]",
+        "privateIPv6": "[variables('nvaPrivIPv6')]",
+        "enableIPForwarding": true,
+        "nsgName": "nsg"
+      }
+    ],
+    "vmArraywithLBCount": "[length(variables('vmArraywithLB'))]",
+    "vmCount": "[length(variables('vmArray'))]",
+    "lbName": "loadBalancer",
+    "lbPublicIPName": "lb-pubIP",
+    "lbPublicIPv6Name": "lb-pubIP-v6",
+    "backendAddressPoolName": "LBBAP",
+    "backendAddressPoolNameIPv6": "LBBAP-v6",
+    "nsgName": "nsg"
+  },
+  "resources": [
+
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('lbPublicIPName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('lbPublicIPv6Name')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAddressVersion": "IPv6"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySet1Name')]",
+      "apiVersion": "2019-03-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "5"
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "RTv6-subnet1",
+      "apiVersion": "2019-04-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "routes": [
+          {
+            "name": "v6-to-subnet2",
+            "properties": {
+              "addressPrefix":  "[variables('subnet2AddressRangev6')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('nvaPrivIPv6')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "RTv6-subnet2",
+      "apiVersion": "2019-04-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "routes": [
+          {
+            "name": "v6-to-subnet1",
+            "properties": {
+              "addressPrefix": "[variables('subnet1AddressRangev6')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('nvaPrivIPv6')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "name": "[variables('lbName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[variables('location')]",
+      "comments": "External load balancer",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbPublicIPName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbPublicIPv6Name'))]"
+      ],
+      "properties": {
+        "frontendIpConfigurations": [
+          {
+            "name": "LBFE",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('lbPublicIPName'))]"
+              }
+            }
+          },
+          {
+            "name": "LBFE-v6",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbPublicIPv6Name'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('backendAddressPoolName')]"
+          },
+          {
+            "name": "[variables('backendAddressPoolNameIPv6')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "lbrule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbName'), 'LBFE')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('backendAddressPoolName'))]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "idleTimeoutInMinutes": 15
+            }
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbName'), 'LBFE-v6')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('backendAddressPoolNameIPv6'))]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80
+            },
+            "name": "lbrule-v6"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetv4AddressSpace')]",
+            "[variables('vnetv6AddressSpace')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefixes": [
+                "[variables('subnet1AddressRangev4')]",
+                "[variables('subnet1AddressRangev6')]"
+              ]
+            }
+          },
+          {
+            "name": "[variables('subnet2Name')]",
+            "properties": {
+              "addressPrefixes": [
+                "[variables('subnet2AddressRangev4')]",
+                "[variables('subnet2AddressRangev6')]"
+              ]
+            }
+          },
+          {
+            "name": "[variables('subnet3Name')]",
+            "properties": {
+              "addressPrefixes": [
+                "[variables('subnet3AddressRangev4')]",
+                "[variables('subnet3AddressRangev6')]"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-all-out",
+            "properties": {
+              "description": "Allow out All",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1001,
+              "direction": "Outbound"
+            }
+          },          
+          {
+            "name": "allow-HTTP-in",
+            "properties": {
+              "description": "Allow HTTP",
+              "protocol": "TCP",
+              "sourcePortRange": "80",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1002,
+              "direction": "Inbound"
+            }
+          },
+
+          {
+            "name": "allow-RDP-in",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1003,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-SSH-in",
+            "properties": {
+              "description": "Allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1004,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-Ipv6App-out-subnet1",
+            "properties": {
+              "description": "Allow My IPv6 App",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5000-6000",
+              "sourceAddressPrefix": "[variables('subnet1AddressRangev6')]",
+              "destinationAddressPrefixes": [
+                "[variables('subnet2AddressRangev6')]",
+                "[variables('subnet3AddressRangev6')]"
+              ],
+              "access": "Allow",
+              "priority": 1010,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "allow-Ipv6App-out-subnet2",
+            "properties": {
+              "description": "Allow My IPv6 App",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5000-6000",
+              "sourceAddressPrefix": "[variables('subnet2AddressRangev6')]",
+              "destinationAddressPrefixes": [
+                "[variables('subnet1AddressRangev6')]",
+                "[variables('subnet3AddressRangev6')]"
+              ],
+              "access": "Allow",
+              "priority": 1011,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "allow-Ipv6App-out-subnet3",
+            "properties": {
+              "description": "Allow My IPv6 App",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "5000-6000",
+              "sourceAddressPrefix": "[variables('subnet3AddressRangev6')]",
+              "destinationAddressPrefixes": [
+                "[variables('subnet1AddressRangev6')]",
+                "[variables('subnet2AddressRangev6')]"
+              ],
+              "access": "Allow",
+              "priority": 1012,
+              "direction": "Outbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArraywithLB')[copyIndex()].vmName,'-pubIP')]",
+      "copy": {
+        "name": "publicIpLoop",
+        "count": "[variables('vmArraywithLBCount')]"
+      },
+      "location": "[variables('vmArraywithLB')[copyIndex()].location]",
+      "comments": "crate public IP for the VMs",
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "apiVersion": "2019-02-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArraywithLB')[copyIndex()].vmName,'-NIC' )]",
+      "copy": {
+        "name": "NICLoop",
+        "count": "[variables('vmArraywithLBCount')]"
+      },
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
+        "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArraywithLB')[copyIndex()].vmName,'-pubIP') )]"
+      ],
+      "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+        },
+        "enableIPForwarding": "[variables('vmArraywithLB')[copyIndex()].enableIPForwarding]",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig-v4",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddressVersion": "IPv4",
+              "primary": true,
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArraywithLB')[copyIndex()].vmName,'-pubIP') )]"
+              },
+              "subnet": {
+                "id": "[variables('vmArraywithLB')[copyIndex()].subnetId]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('backendAddressPoolName'))]"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ipconfig-v6",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddressVersion": "IPv6",
+              "subnet": {
+                "id": "[variables('vmArraywithLB')[copyIndex()].subnetId]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('backendAddressPoolNameIPv6'))]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-03-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArraywithLB')[copyIndex()].vmName]",
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[variables('vmArraywithLBCount')]"
+      },
+      "location": "[variables('vmArraywithLB')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/availabilitySets',variables('vmArraywithLB')[copyIndex()].availabilitySetName)]",
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArraywithLB')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('vmArraywithLB')[copyIndex()].availabilitySetName)]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArraywithLB')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArraywithLB')[copyIndex()].vmName]",
+          "adminUsername": "[parameters('adminUserName')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArraywithLB')[copyIndex()].imagePublisher]",
+            "offer": "[variables('vmArraywithLB')[copyIndex()].imageOffer]",
+            "sku": "[variables('vmArraywithLB')[copyIndex()].OSVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArraywithLB')[copyIndex()].vmName,'-OSDisk')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArraywithLB')[copyIndex()].vmName,'-NIC')  )]"
+            }
+          ]
+        }
+      }
+    },
+    /////
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+      "copy": {
+        "name": "publicIpLoop",
+        "count": "[variables('vmCount')]"
+      },
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "comments": "create public IP for the VMs - without LB",
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "copy": {
+        "name": "NICloop",
+        "count": "[variables('vmCount')]"
+      },
+      "comments": "NIC of the VM - without LB",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName )]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]"
+      ],
+      "properties": {
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIPv4]",
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          },
+          {
+            "name": "ipconfig-v6",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIPv6]",
+              "privateIPAddressVersion": "IPv6",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
+            "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
+            "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OSDisk')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+================== On vm11:
+C:\>netsh interface ipv6 show address
+
+Interface 1: Loopback Pseudo-Interface 1
+
+Addr Type  DAD State   Valid Life Pref. Life Address
+---------  ----------- ---------- ---------- ------------------------
+Other      Preferred     infinite   infinite ::1
+
+Interface 4: Ethernet
+
+Addr Type  DAD State   Valid Life Pref. Life Address
+---------  ----------- ---------- ---------- ------------------------
+Dhcp       Preferred  195d16h50m15s 95d16h50m15s ace:cab:deca:deea::4
+Other      Preferred     infinite   infinite fe80::30dc:1130:a17a:25ea%4
+
+
+C:\>netsh interface ipv6 show route
+
+Publish  Type      Met  Prefix                    Idx  Gateway/Interface Name
+-------  --------  ---  ------------------------  ---  ------------------------
+No       Manual    256  ::/0                        4  fe80::1234:5678:9abc
+No       System    256  ::1/128                     1  Loopback Pseudo-Interface 1
+No       Manual    256  ace:cab:deca:deea::/64      4  Ethernet
+No       System    256  ace:cab:deca:deea::4/128    4  Ethernet
+No       System    256  fe80::/64                   4  Ethernet
+No       System    256  fe80::30dc:1130:a17a:25ea/128    4  Ethernet
+No       System    256  ff00::/8                    1  Loopback Pseudo-Interface 1
+No       System    256  ff00::/8                    4  Ethernet
+
+============================================================================================================ 
+
+on h2:
+[root@h2 ~]# ip -6 addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN qlen 1000
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 ace:cab:deca:deeb::50/64 scope global dynamic
+       valid_lft 17274995sec preferred_lft 8634995sec
+    inet6 fe80::20d:3aff:fe0b:a2c3/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+[root@h2 ~]# route -n -A inet6
+Kernel IPv6 routing table
+Destination                    Next Hop                   Flag Met Ref Use If
+::/96                          ::                         !n   1024 0     0 lo
+0.0.0.0/96                     ::                         !n   1024 0     0 lo
+ace:cab:deca:deeb::/64         ::                         U    256 0     0 eth0
+2002:a00::/24                  ::                         !n   1024 0     0 lo
+2002:7f00::/24                 ::                         !n   1024 0     0 lo
+2002:a9fe::/32                 ::                         !n   1024 0     0 lo
+2002:ac10::/28                 ::                         !n   1024 0     0 lo
+2002:c0a8::/32                 ::                         !n   1024 0     0 lo
+2002:e000::/19                 ::                         !n   1024 0     0 lo
+3ffe:ffff::/32                 ::                         !n   1024 0     0 lo
+fe80::/64                      ::                         U    256 0     0 eth0
+::/0                           fe80::1234:5678:9abc       UGDAe 1024 1     6 eth0
+::/0                           ::                         !n   -1  1    21 lo
+::1/128                        ::                         Un   0   2    57 lo
+ace:cab:deca:deeb::50/128      ::                         Un   0   2     6 lo
+fe80::20d:3aff:fe0b:a2c3/128   ::                         Un   0   2     7 lo
+ff00::/8                       ::                         U    256 1   999 eth0
+::/0                           ::                         !n   -1  1    21 lo
