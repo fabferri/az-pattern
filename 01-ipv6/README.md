@@ -45,7 +45,7 @@ The ARM template assigns static IPv4 and IPv6 addresses to the VMs:
 | **vm11**     | **10.0.0.4 (Dynamic)** | ace:cab:deca:deea::4 (Dynamic) |
 | **vm12**     | **10.0.0.5 (Dynamic)** | ace:cab:deca:deea::5 (Dynamic) |
 | **nva**      | **10.0.0.90 (Static)** | ace:cab:deca:deec::90 (Static) |
-| **h2**       |**10.0.0.50 (Static)**  | ace:cab:deca:deeb::50 (Static) |
+| **h2**       | **10.0.0.50 (Static)** | ace:cab:deca:deeb::50 (Static) |
 
 In the UDR **RT-subnet1** only a single IPv6 route is required:
 * the destination network is the IPv6 network **ace:cab:deca:deeb::/64** assigned to the subnet2
@@ -91,7 +91,7 @@ sudo ifdown eth0 && sudo ifup eth0
 ### <a name="IPv6"></a>3. Enable IPv6 forwarding on the **nva**
 If you want to apply a temporary IPv6 forwarding:
 
-```bash
+```console
 sysctl -w net.ipv6.conf.all.forwarding=1
 sysctl -w net.ipv6.conf.eth0.accept_ra=2
 sysctl -p /etc/sysctl.conf
@@ -114,7 +114,7 @@ systemctl restart network.service
 ```
 
 if instead to use an editor to change the parameters in /etc/sysctl.conf, you want to make by script:
-```bash
+```console
 sed -i \
     -e '/^\(net.ipv6.conf.all.forwarding=\).*/{s//\11/;:a;n;ba;q}' \
     -e '$anet.ipv6.conf.all.forwarding=1' /etc/sysctl.conf
@@ -289,6 +289,7 @@ To create the Network watcher and enable the NSG logs, run the powershell: **nsg
 Follow the official documentation:
 https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-visualize-nsg-flow-logs-power-bi
 to view the nsg logs in powerbi desktop.
+
 The file **PowerBI_FlowLogs_Storage_Template.pbit** is a power BI Desktop template to create a connection with storage account, downloads and parses the logs to provide a visual representation of the traffic that is logged by NSG.
 If you need to manually view the contents you can rename the ".pbit" extension to ".zip" to create a .ZIP file and then extract the contents of the file.
 A visualization of logs by power BI is reported below:
