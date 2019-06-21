@@ -73,7 +73,7 @@ List of scripts:
 After running the ARM template, some further steps are required to complete the setup.
 
 
-###<a name="IPv6"></a> 2. Enable IPv6 DHCP client in the **nva** and **h2** VMs
+### <a name="IPv6"></a>2. Enable IPv6 DHCP client in the **nva** and **h2** VMs
 Add the following entries in the files:
 
 | *file*                                        | *entry to add*          |
@@ -88,7 +88,7 @@ when the entries are added to the files, force the eth0 interface to renew the i
 **sudo ifdown eth0 && sudo ifup eth0**
 ```
 
-###<a name="IPv6"></a> 3. Enable IPv6 forwarding on the **nva**
+### <a name="IPv6"></a>3. Enable IPv6 forwarding on the **nva**
 If you want to apply a temporary IPv6 forwarding:
 
 ```bash
@@ -132,7 +132,7 @@ The option **net.ipv6.conf.eth0.accept_ra=2** on the interface is used when you 
 > ERROR     : [/etc/sysconfig/network-scripts/ifup-ipv6] Global IPv6 forwarding is disabled in configuration, but not  currently disabled in kernel
 > you should add to the file **/etc/sysconfig/network** the variable: **IPV6FORWARDING=yes**
 
-###<a name="IPv6"></a> 4. install IIS in **vm11, vm12**
+### <a name="IPv6"></a>4. install IIS in **vm11, vm12**
 IIS can be installed in Windows 2019 VMs by powershell command:
 
 ```powershell
@@ -144,7 +144,7 @@ Login in vm11 and vm12 and check IIS answers by HTTP requests on IPv6 loopback i
 The load balancer provides access via HTTP to the web sites in vm11 and vm12. It is useful make a customization of the homepage of IIS with different colours to make out the landing server (two simple IIS homepage are reported in the project; rename the file **iisstart.htm** and copy it in the IIS home folder: **%SystemDrive%\inetpub\wwwroot**)
 
 
-####<a name="IPv6"></a> 5. install and start NGINX in **h2** VM
+#### <a name="IPv6"></a>5. install and start NGINX in **h2** VM
 Add the CentOS EPEL package:
 
 ```console
@@ -185,7 +185,7 @@ To verify that both IPv6 and IPv4 are working:
 netstat -tulpna | grep nginx
 ```
 
-###<a name="IPv6"></a> 6. Install iperf3 in vm11, vm12, h2
+### <a name="IPv6"></a>6. Install iperf3 in vm11, vm12, h2
 iperf3 is flexible tool to generate IPv6 traffic flows on custom ports.
 To install iperf3 on h2 (CentOS):
 
@@ -194,9 +194,9 @@ yum -y install iperf3
 ```
 To install iperf3 on vm11 and vm12 (windows 2019) download the binary in a local folder.
 
-###<a name="IPv6"></a> 7. Check out IPv6
+### <a name="IPv6"></a>7. Check out IPv6
 
-####<a name="IPv6"></a> 7.1 verify IPv6 addresses in the VMs
+#### <a name="IPv6"></a>7.1 verify IPv6 addresses in the VMs
 | *OS*        | *command*                             |*description              *|
 | :---------- | :------------------------------------ |---------------------------|
 | **linux**   | **ip -6 addr**                        | show IPv6 IP addresses    |
@@ -206,7 +206,7 @@ To install iperf3 on vm11 and vm12 (windows 2019) download the binary in a local
 
 
 
-####<a name="IPv6"></a> 7.2 Connection from internet to the IIS running in vm11, vm21
+#### <a name="IPv6"></a>7.2 Connection from internet to the IIS running in vm11, vm21
 From a host in internet with IPv6, connect to the frontend public IPv6 of the external load balancer:
 
 [![3]][3]
@@ -225,7 +225,7 @@ where:
 
 The grep command filters the curl output and shows on which VMs (vm11 or vm21) the load balacer forwards the HTTP requests. The command works well also in git bash on Windows.
 
-####<a name="IPv6"></a> 7.3 icmp traffic in transit through the nva
+#### <a name="IPv6"></a>7.3 icmp traffic in transit through the nva
 When the IPv6 forwarder is enabled and UDRs are applied to subnet1 and subnet2, it can be verified the transit through nva.
 
 [![4]][4]
@@ -251,7 +251,7 @@ ping -6 -t ace:cab:deca:deec::90
 ```
 
 
-####<a name="IPv6"></a> 7.4 iperf traffic in transit through the nva
+#### <a name="IPv6"></a>7.4 iperf traffic in transit through the nva
 
 One other test can be done by iperf3:
 
@@ -268,7 +268,7 @@ In vn11 run the iperf3 client:
 iperf3 -6 -P 1 -c ace:cab:deca:deeb::50 -t 600 -i 1 -f m
 ```
 
-####<a name="IPv6"></a> 7.5 generate http requests from h2 to vm11 and vm12
+#### <a name="IPv6"></a>7.5 generate http requests from h2 to vm11 and vm12
 In h2 run the bash command to send HTTP requests to the vm11 and vm12:
 ```console
 for ((i=1;i<=1000;i++)); do  wget -SO-  "http://[ace:cab:deca:deea::4]/" 2>&1 | grep -E "Page 1|Page 2"; done
