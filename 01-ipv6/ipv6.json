@@ -302,20 +302,7 @@
       "location": "[variables('location')]",
       "properties": {
         "securityRules": [
-          {
-            "name": "allow-all-out",
-            "properties": {
-              "description": "Allow out All",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 1001,
-              "direction": "Outbound"
-            }
-          },          
+        
           {
             "name": "allow-HTTP-in",
             "properties": {
@@ -407,6 +394,20 @@
               ],
               "access": "Allow",
               "priority": 1012,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "allow-all-out",
+            "properties": {
+              "description": "Allow out All",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1020,
               "direction": "Outbound"
             }
           }
