@@ -277,7 +277,7 @@ for ((i=1;i<=1000;i++)); do  wget -SO-  "http://[ace:cab:deca:deea::5]/" 2>&1 | 
 
 [![6][6]
 
-####<a name="IPv6"></a> 5. NSG logging
+#### <a name="IPv6"></a> 8. NSG logging
 Network Security Group (NSG) flow logs are a feature of Network Watcher.
 * Network Watcher is a regional service
 * Only one Network Watcher can be created per region per subscription
