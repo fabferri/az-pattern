@@ -231,7 +231,7 @@ When the IPv6 forwarder is enabled and UDRs are applied to subnet1 and subnet2, 
 [![4]][4]
 
 To visualize the traffic in transit in nva, run the tcpdump:
-```console
+```bash
 tcpdump -i eth0 -nn -q 'ip6 and net ace:cab:deca:deea::/64 and net ace:cab:deca:deeb::/64'
 ```
 The **net** command find packets going from/to a particular network. The command above shows up any traffic from/to subnet1 and any traffic from/to subnet2.
@@ -270,7 +270,7 @@ iperf3 -6 -P 1 -c ace:cab:deca:deeb::50 -t 600 -i 1 -f m
 
 #### <a name="IPv6"></a>7.5 generate http requests from h2 to vm11 and vm12
 In h2 run the bash command to send HTTP requests to the vm11 and vm12:
-```console
+```bash
 for ((i=1;i<=1000;i++)); do  wget -SO-  "http://[ace:cab:deca:deea::4]/" 2>&1 | grep -E "Page 1|Page 2"; done
 for ((i=1;i<=1000;i++)); do  wget -SO-  "http://[ace:cab:deca:deea::5]/" 2>&1 | grep -E "Page 1|Page 2"; done
 ```
