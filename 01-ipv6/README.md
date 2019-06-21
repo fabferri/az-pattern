@@ -77,7 +77,7 @@ After running the ARM template, some further steps are required to complete the 
 Add the following entries in the files:
 
 | *file*                                        | *entry to add*          |
-| :-------------------------------------------- | :---------------------- |
+| :-------------------------------------------: | :---------------------: |
 | **/etc/sysconfig/network**                    | **NETWORKING_IPV6=yes** |
 | **/etc/sysconfig/network-scripts/ifcfg-eth0** | **IPV6INIT=yes**        |
 | **/etc/sysconfig/network-scripts/ifcfg-eth0** | **DHCPV6C=yes**         |
@@ -85,7 +85,7 @@ Add the following entries in the files:
 The **/etc/sysconfig/network** file specifies additional information that is valid to all network interfaces on the system.
 when the entries are added to the files, force the eth0 interface to renew the ip address:
 ```
-**sudo ifdown eth0 && sudo ifup eth0**
+sudo ifdown eth0 && sudo ifup eth0
 ```
 
 ### <a name="IPv6"></a>3. Enable IPv6 forwarding on the **nva**
