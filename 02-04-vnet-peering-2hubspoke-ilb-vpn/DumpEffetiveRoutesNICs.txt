@@ -1,0 +1,232 @@
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  nva11-NIC1
+
+Name            State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----            -----   ------                -------------    -----------           ----------------
+                Active  Default               {10.0.1.0/24}    VnetLocal             {}              
+                Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {40.87.85.116}  
+                Active  VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {40.87.85.116}  
+                Invalid VirtualNetworkGateway {10.0.5.0/24}    VirtualNetworkGateway {40.87.85.116}  
+                Invalid VirtualNetworkGateway {10.0.6.0/24}    VirtualNetworkGateway {40.87.85.116}  
+                Active  Default               {0.0.0.0/0}      Internet              {}              
+                Active  Default               {10.0.0.0/8}     None                  {}              
+                Active  Default               {100.64.0.0/10}  None                  {}              
+                Active  Default               {192.168.0.0/16} None                  {}              
+to-hub2-subnet3 Active  User                  {10.0.2.64/27}   VirtualAppliance      {10.0.2.5}      
+to-spoke5       Active  User                  {10.0.5.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke6       Active  User                  {10.0.6.0/24}    VirtualAppliance      {10.0.2.5}      
+                Active  Default               {10.0.3.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.4.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.2.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  nva12-NIC1
+
+Name            State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----            -----   ------                -------------    -----------           ----------------
+                Active  Default               {10.0.1.0/24}    VnetLocal             {}              
+                Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {40.87.85.116}  
+                Active  VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {40.87.85.116}  
+                Invalid VirtualNetworkGateway {10.0.5.0/24}    VirtualNetworkGateway {40.87.85.116}  
+                Invalid VirtualNetworkGateway {10.0.6.0/24}    VirtualNetworkGateway {40.87.85.116}  
+                Active  Default               {0.0.0.0/0}      Internet              {}              
+                Active  Default               {10.0.0.0/8}     None                  {}              
+                Active  Default               {100.64.0.0/10}  None                  {}              
+                Active  Default               {192.168.0.0/16} None                  {}              
+to-hub2-subnet3 Active  User                  {10.0.2.64/27}   VirtualAppliance      {10.0.2.5}      
+to-spoke5       Active  User                  {10.0.5.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke6       Active  User                  {10.0.6.0/24}    VirtualAppliance      {10.0.2.5}      
+                Active  Default               {10.0.3.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.4.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.2.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  nva21-NIC1
+
+Name            State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----            -----   ------                -------------    -----------           ----------------
+                Active  Default               {10.0.2.0/24}    VnetLocal             {}              
+                Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {137.135.160.38}
+                Active  VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {137.135.160.38}
+                Invalid VirtualNetworkGateway {10.0.3.0/24}    VirtualNetworkGateway {137.135.160.38}
+                Invalid VirtualNetworkGateway {10.0.4.0/24}    VirtualNetworkGateway {137.135.160.38}
+                Active  Default               {0.0.0.0/0}      Internet              {}              
+                Active  Default               {10.0.0.0/8}     None                  {}              
+                Active  Default               {100.64.0.0/10}  None                  {}              
+                Active  Default               {192.168.0.0/16} None                  {}              
+to-hub1-subnet3 Active  User                  {10.0.1.64/27}   VirtualAppliance      {10.0.1.5}      
+to-spoke3       Active  User                  {10.0.3.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke4       Active  User                  {10.0.4.0/24}    VirtualAppliance      {10.0.1.5}      
+                Active  Default               {10.0.6.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.5.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.1.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  nva22-NIC1
+
+Name            State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----            -----   ------                -------------    -----------           ----------------
+                Active  Default               {10.0.2.0/24}    VnetLocal             {}              
+                Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {137.135.160.38}
+                Active  VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {137.135.160.38}
+                Invalid VirtualNetworkGateway {10.0.3.0/24}    VirtualNetworkGateway {137.135.160.38}
+                Invalid VirtualNetworkGateway {10.0.4.0/24}    VirtualNetworkGateway {137.135.160.38}
+                Active  Default               {0.0.0.0/0}      Internet              {}              
+                Active  Default               {10.0.0.0/8}     None                  {}              
+                Active  Default               {100.64.0.0/10}  None                  {}              
+                Active  Default               {192.168.0.0/16} None                  {}              
+to-hub1-subnet3 Active  User                  {10.0.1.64/27}   VirtualAppliance      {10.0.1.5}      
+to-spoke3       Active  User                  {10.0.3.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke4       Active  User                  {10.0.4.0/24}    VirtualAppliance      {10.0.1.5}      
+                Active  Default               {10.0.6.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.5.0/24}    VNetGlobalPeering     {}              
+                Active  Default               {10.0.1.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  vm1-NIC
+
+Name      State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----      -----   ------                -------------    -----------           ----------------
+          Active  Default               {10.0.1.0/24}    VnetLocal             {}              
+          Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.5.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.6.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Active  Default               {0.0.0.0/0}      Internet              {}              
+          Active  Default               {10.0.0.0/8}     None                  {}              
+          Active  Default               {100.64.0.0/10}  None                  {}              
+          Active  Default               {192.168.0.0/16} None                  {}              
+to-dc0    Active  User                  {10.0.0.0/24}    VirtualAppliance      {10.0.1.5}      
+to-hub2   Active  User                  {10.0.2.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke3 Active  User                  {10.0.3.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke4 Active  User                  {10.0.4.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke5 Active  User                  {10.0.5.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke6 Active  User                  {10.0.6.0/24}    VirtualAppliance      {10.0.1.5}      
+          Invalid Default               {10.0.2.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.3.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.4.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  vm2-NIC
+
+Name      State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----      -----   ------                -------------    -----------           ----------------
+          Active  Default               {10.0.2.0/24}    VnetLocal             {}              
+          Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.3.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.4.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Active  Default               {0.0.0.0/0}      Internet              {}              
+          Active  Default               {10.0.0.0/8}     None                  {}              
+          Active  Default               {100.64.0.0/10}  None                  {}              
+          Active  Default               {192.168.0.0/16} None                  {}              
+to-dc0    Active  User                  {10.0.0.0/24}    VirtualAppliance      {10.0.2.5}      
+to-hub1   Active  User                  {10.0.1.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke3 Active  User                  {10.0.3.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke4 Active  User                  {10.0.4.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke5 Active  User                  {10.0.5.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke6 Active  User                  {10.0.6.0/24}    VirtualAppliance      {10.0.2.5}      
+          Invalid Default               {10.0.1.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.5.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.6.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  vm3-NIC
+
+Name      State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----      -----   ------                -------------    -----------           ----------------
+          Active  Default               {10.0.3.0/24}    VnetLocal             {}              
+          Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {40.87.85.116}  
+          Active  VirtualNetworkGateway {10.0.2.254/32}  VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.6.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.2.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Active  Default               {0.0.0.0/0}      Internet              {}              
+          Active  Default               {10.0.0.0/8}     None                  {}              
+          Active  Default               {100.64.0.0/10}  None                  {}              
+          Active  Default               {192.168.0.0/16} None                  {}              
+to-dc0    Active  User                  {10.0.0.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke4 Active  User                  {10.0.4.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke6 Active  User                  {10.0.6.0/24}    VirtualAppliance      {10.0.1.5}      
+to-hub1   Active  User                  {10.0.1.0/24}    VirtualAppliance      {10.0.1.5}      
+to-hub2   Active  User                  {10.0.2.0/24}    VirtualAppliance      {10.0.1.5}      
+          Active  Default               {10.0.5.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.1.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  vm4-NIC
+
+Name      State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----      -----   ------                -------------    -----------           ----------------
+          Active  Default               {10.0.4.0/24}    VnetLocal             {}              
+          Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {40.87.85.116}  
+          Active  VirtualNetworkGateway {10.0.2.254/32}  VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.5.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Invalid VirtualNetworkGateway {10.0.2.0/24}    VirtualNetworkGateway {40.87.85.116}  
+          Active  Default               {0.0.0.0/0}      Internet              {}              
+          Active  Default               {10.0.0.0/8}     None                  {}              
+          Active  Default               {100.64.0.0/10}  None                  {}              
+          Active  Default               {192.168.0.0/16} None                  {}              
+to-dc0    Active  User                  {10.0.0.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke3 Active  User                  {10.0.3.0/24}    VirtualAppliance      {10.0.1.5}      
+to-spoke5 Active  User                  {10.0.5.0/24}    VirtualAppliance      {10.0.1.5}      
+to-hub1   Active  User                  {10.0.1.0/24}    VirtualAppliance      {10.0.1.5}      
+to-hub2   Active  User                  {10.0.2.0/24}    VirtualAppliance      {10.0.1.5}      
+          Active  Default               {10.0.6.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.1.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  vm5-NIC
+
+Name      State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----      -----   ------                -------------    -----------           ----------------
+          Active  Default               {10.0.5.0/24}    VnetLocal             {}              
+          Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {137.135.160.38}
+          Active  VirtualNetworkGateway {10.0.1.254/32}  VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.4.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.1.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Active  Default               {0.0.0.0/0}      Internet              {}              
+          Active  Default               {10.0.0.0/8}     None                  {}              
+          Active  Default               {100.64.0.0/10}  None                  {}              
+          Active  Default               {192.168.0.0/16} None                  {}              
+to-dc0    Active  User                  {10.0.0.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke4 Active  User                  {10.0.4.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke6 Active  User                  {10.0.6.0/24}    VirtualAppliance      {10.0.2.5}      
+to-hub1   Active  User                  {10.0.1.0/24}    VirtualAppliance      {10.0.2.5}      
+to-hub2   Active  User                  {10.0.2.0/24}    VirtualAppliance      {10.0.2.5}      
+          Active  Default               {10.0.3.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.2.0/24}    VNetGlobalPeering     {}              
+
+
+----------------------------------------------------------------------------
+Effectiv2 routes in NIC:  vm6-NIC
+
+Name      State   Source                AddressPrefix    NextHopType           NextHopIpAddress
+----      -----   ------                -------------    -----------           ----------------
+          Active  Default               {10.0.6.0/24}    VnetLocal             {}              
+          Active  VirtualNetworkGateway {10.0.0.254/32}  VirtualNetworkGateway {137.135.160.38}
+          Active  VirtualNetworkGateway {10.0.1.254/32}  VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.0.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.3.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Invalid VirtualNetworkGateway {10.0.1.0/24}    VirtualNetworkGateway {137.135.160.38}
+          Active  Default               {0.0.0.0/0}      Internet              {}              
+          Active  Default               {10.0.0.0/8}     None                  {}              
+          Active  Default               {100.64.0.0/10}  None                  {}              
+          Active  Default               {192.168.0.0/16} None                  {}              
+to-dc0    Active  User                  {10.0.0.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke3 Active  User                  {10.0.3.0/24}    VirtualAppliance      {10.0.2.5}      
+to-spoke5 Active  User                  {10.0.5.0/24}    VirtualAppliance      {10.0.2.5}      
+to-hub1   Active  User                  {10.0.1.0/24}    VirtualAppliance      {10.0.2.5}      
+to-hub2   Active  User                  {10.0.2.0/24}    VirtualAppliance      {10.0.2.5}      
+          Active  Default               {10.0.4.0/24}    VNetGlobalPeering     {}              
+          Invalid Default               {10.0.2.0/24}    VNetGlobalPeering     {} 
