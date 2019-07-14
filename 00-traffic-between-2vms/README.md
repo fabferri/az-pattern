@@ -34,7 +34,7 @@ The article shows few methods to generate traffic between two Azure VMs, with ho
 
 
 
-#### <a name="iperf3"></a>1. iperf3 (Linux and Windows)
+### <a name="iperf3"></a>1. iperf3 (Linux and Windows)
 [iperf3](https://iperf.fr/) works in Linux and Windows.
 To install iperf3 in Linux vm1 and vm2:
 
@@ -43,7 +43,7 @@ To install iperf3 in Linux vm1 and vm2:
 [root@vm2 ~]# yum -y iperf3
 ```
 
-To run iperf3 as server in vm2:
+To run iperf3 as server in vm1:
 
 ```console
 [root@vm1 ~]# iperf3 -s -p 6001
@@ -54,7 +54,7 @@ where **-p** specifices the listening TCP port (default port is TCP 5201).
 To run iperf3 as client in vm2:
 
 ```console
-[root@vm2 ~]# iperf3 -c 10.0.2.10 -P 20 -p 6001 -i 1 -f M
+[root@vm2 ~]# iperf3 -c 10.0.1.10 -P 20 -p 6001 -i 1 -f M
 ```
 
 where:
@@ -64,7 +64,7 @@ where:
     -p: TCP port on server
     -M: formatting the output in Mbps
 
-#### <a name="netcat"></a>2. netcat and urandom (Linux)
+### <a name="netcat"></a>2. netcat and urandom (Linux)
 
 Traffic can be generated in Linux VMs by **netcat** and **urandom** (the random number function in the linux kernel).
 
@@ -120,11 +120,11 @@ yum install epel-release
 yum -y install nload
 ```
 
-#### <a name="ApacheBench"></a>3. Generate HTTP traffic
+### <a name="ApacheBench"></a>3. Generate HTTP traffic
 
 Install on both VMs apache httpd deamon or nginx (see annex).
 
-##### <a name="ApacheBench"></a>3.1 How generate HTTP traffic by Apache Bench tool
+#### <a name="ApacheBench"></a>3.1 How generate HTTP traffic by Apache Bench tool
 
 Apache Bench tool can be used to do simple load testing. Apache Bench is contained in the **httpd-tools** package.
 
@@ -141,10 +141,10 @@ c: _number of concurrent requests_
 Run the bash command:
 
 ```bash
-for i in `seq 1 20`; do curl http://10.0.2.10; done
+for i in `seq 1 20`; do curl http://10.0.1.10; done
 ```
 
-##### <a name="curl"></a>3.3 Generate HTTP traffic by curl and parallel
+#### <a name="curl"></a>3.3 Generate HTTP traffic by curl and parallel
 GNU parallel is a great tool to run HTTP queries in parallel. In CentOS GNU parallel is in EPEL repository:
 
 ```console
@@ -171,7 +171,7 @@ Before running the script, replace the _"some_url_here"_ with the IP address of 
 
 
 
-##### <a name="HTTPpowershell"></a>3.5 generate HTTP traffic by powershell
+#### <a name="HTTPpowershell"></a>3.5 generate HTTP traffic by powershell
 
 ```powershell
 $ipServer="10.0.1.10:80"
