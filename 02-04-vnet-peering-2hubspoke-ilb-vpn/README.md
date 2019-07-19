@@ -19,7 +19,7 @@ editor=""/>
 
 # Two hub-spoke VNets connected by VNet peering with load balancer in HA ports in the hub VNets
 The article depicts two hub-spoke vnets in different regions interconnected by VNets in peering.
-* In each hub vnet are present two linux VMs (nva11, nva12 in hub1 and nva21,nva21 in hub2) configured with ip forwarding.
+* In each hub vnet are present two linux VMs (nva11, nva12 in hub1 VNet and nva21,nva21 in hub2 VNet) configured with ip forwarding.
 * In each hub VNet is deployed an internal standard load balancer (ILB) configured with HA ports. The presence of ILB provides a configuration in HA on the flow in transit through the NVA VMs. The IBL has got a an heath probe on HTTP port 80. To receive a traffic from the ILB, the nva11,nva12,nva21,nva22 VMs require a httpd daemon.
 
 
