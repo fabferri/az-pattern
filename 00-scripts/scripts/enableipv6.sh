@@ -15,5 +15,5 @@ sed -i \
     -e '/^\(DHCPV6C=\).*/{s//\1yes/;:a;n;ba;q}' \
     -e '$aDHCPV6C=yes' /etc/sysconfig/network-scripts/ifcfg-eth0
 
-# disable and reable the interface to get the new setup
+# disable and enable the interface to get the new setup
 ifdown eth0 && ifup eth0
