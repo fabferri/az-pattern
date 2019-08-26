@@ -18,7 +18,7 @@ Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
 Stop-Process -Name Explorer
 
 # Create Web App PagesWeb
-MainPage = '<%@ Page Language="C#" %>
+$MainPage = '<%@ Page Language="C#" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
