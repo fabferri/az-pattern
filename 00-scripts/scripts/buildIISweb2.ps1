@@ -4,10 +4,15 @@ Param(
 [string]$theSecret)
 
 # Turn On ICMPv4
-Write-Host "Opening ICMPv4 Port"
 Try {Get-NetFirewallRule -Name Allow_ICMPv4_in -ErrorAction Stop | Out-Null
      Write-Host "Port already open"}
-Catch {New-NetFirewallRule -DisplayName "Allow ICMPv4" -Name Allow_ICMPv4_in -Action Allow -Enabled True -Profile Any -Protocol ICMPv4 | Out-Null
+Catch {New-NetFirewallRule -DisplayName "Allow ICMPv4" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4 | Out-Null
+       Write-Host "Port opened"}
+
+
+Try {Get-NetFirewallRule -Name Allow_ICMPv6_in -ErrorAction Stop | Out-Null
+     Write-Host "Port already open"}
+Catch {New-NetFirewallRule -DisplayName "Allow ICMPv6" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv6  | Out-Null
        Write-Host "Port opened"}
 
 Write-Host "Installing IIS and .Net 4.5, this can take some time, around 5+ minutes..." -ForegroundColor Cyan
@@ -18,7 +23,8 @@ Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
 Stop-Process -Name Explorer
 
 # Create Web App PagesWeb
-$MainPage = '<%@ Page Language="C#" %>
+$MainPage = @"
+<%@ Page Language="C#" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -124,9 +130,11 @@ body {
     <br><span style="color: Black">remote host address: </span><asp:Label id="PageMessage" runat="server" ForeColor= "Red"/>
     </form>
 </body>
-</html>'
+</html>
+"@
 
-$WebConfig ='<?xml version="1.0" encoding="utf-8"?>
+$WebConfig = @"
+<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <system.web>
     <compilation debug="true" strict="false" explicit="true" targetFramework="4.5" />
@@ -141,7 +149,8 @@ $WebConfig ='<?xml version="1.0" encoding="utf-8"?>
       </files>
     </defaultDocument>
   </system.webServer>
-</configuration>'
+</configuration>
+"@
 
 $MainPage | Out-File -FilePath "C:\inetpub\wwwroot\Home.aspx" -Encoding ascii
 $WebConfig | Out-File -FilePath "C:\inetpub\wwwroot\Web.config" -Encoding ascii
