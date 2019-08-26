@@ -9,14 +9,13 @@ Try {Get-NetFirewallRule -Name Allow_ICMPv4_in -ErrorAction Stop | Out-Null
 Catch {New-NetFirewallRule -DisplayName "Allow ICMPv4" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4 | Out-Null
        Write-Host "Port opened"}
 
-
+# Turn On ICMPv6
 Try {Get-NetFirewallRule -Name Allow_ICMPv6_in -ErrorAction Stop | Out-Null
      Write-Host "Port already open"}
 Catch {New-NetFirewallRule -DisplayName "Allow ICMPv6" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv6  | Out-Null
        Write-Host "Port opened"}
 
-
-
+# Install IIS
 Write-Host "Installing IIS and .Net 4.5, this can take some time, around 5+ minutes..." -ForegroundColor Cyan
 Install-WindowsFeature -Name @("Web-Server", "Web-WebServer", "Web-Common-Http", "Web-Default-Doc", "Web-Dir-Browsing", "Web-Http-Errors", "Web-Static-Content", "Web-Health", "Web-Http-Logging", "Web-Performance", "Web-Stat-Compression", "Web-Security", "Web-Filtering", "Web-App-Dev", "Web-ISAPI-Ext", "Web-ISAPI-Filter", "Web-Net-Ext", "Web-Net-Ext45", "Web-Asp-Net45", "Web-Mgmt-Tools", "Web-Mgmt-Console") 
 
@@ -79,7 +78,7 @@ protected string Getipv6()
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head runat="server">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    <title>Page Class Example</title>
+<title>Web page Example</title>
 <style type="text/css">
 
 body {
@@ -112,8 +111,6 @@ body {
   height: 80px;
   background-color: red; /* For browsers that do not support gradients #00ccff*/
   background-image: linear-gradient(to bottom, #00ccff 50%, #ffffff 90%);  /*Standard syntax (must be last) */
-  /*  background-image: linear-gradient(indigo,violet) */
-
 }
 
 </style>
@@ -135,6 +132,7 @@ body {
 </html>
 "@
 
+# Create Web Config
 $WebConfig =@"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>

@@ -9,7 +9,7 @@ Try {Get-NetFirewallRule -Name Allow_ICMPv4_in -ErrorAction Stop | Out-Null
 Catch {New-NetFirewallRule -DisplayName "Allow ICMPv4" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4 | Out-Null
        Write-Host "Port opened"}
 
-
+# Turn On ICMPv6
 Try {Get-NetFirewallRule -Name Allow_ICMPv6_in -ErrorAction Stop | Out-Null
      Write-Host "Port already open"}
 Catch {New-NetFirewallRule -DisplayName "Allow ICMPv6" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv6  | Out-Null
@@ -18,6 +18,7 @@ Catch {New-NetFirewallRule -DisplayName "Allow ICMPv6" -Direction Inbound -Actio
 Write-Host "Installing IIS and .Net 4.5, this can take some time, around 5+ minutes..." -ForegroundColor Cyan
 Install-WindowsFeature -Name @("Web-Server", "Web-WebServer", "Web-Common-Http", "Web-Default-Doc", "Web-Dir-Browsing", "Web-Http-Errors", "Web-Static-Content", "Web-Health", "Web-Http-Logging", "Web-Performance", "Web-Stat-Compression", "Web-Security", "Web-Filtering", "Web-App-Dev", "Web-ISAPI-Ext", "Web-ISAPI-Filter", "Web-Net-Ext", "Web-Net-Ext45", "Web-Asp-Net45", "Web-Mgmt-Tools", "Web-Mgmt-Console") 
 
+# Turn off IE Enhanced security configuration
 $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
 Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
 Stop-Process -Name Explorer
@@ -29,10 +30,10 @@ $MainPage = @"
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <script runat="server">
-  protected string GetTime()
-  {
-     return DateTime.Now.ToString("h:mm:ss tt", System.Globalization.DateTimeFormatInfo.InvariantInfo);
-   }
+protected string GetTime()
+{
+    return DateTime.Now.ToString("h:mm:ss tt", System.Globalization.DateTimeFormatInfo.InvariantInfo);
+}
 
 
 protected string Getipv6()
@@ -133,6 +134,7 @@ body {
 </html>
 "@
 
+# Create Web Config
 $WebConfig = @"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
