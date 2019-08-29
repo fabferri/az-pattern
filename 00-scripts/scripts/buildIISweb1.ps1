@@ -157,7 +157,7 @@ th, td {
 </head>
 <body>
 <div id="grad1">
-<h1 class="text text-2"> My COUNCIL - Test Page 1 </h1>
+<h1 class="text text-2"> My Web - Test Page 1 </h1>
 </div>
     <form id="form1" runat="server">
     <div id="grad1">
