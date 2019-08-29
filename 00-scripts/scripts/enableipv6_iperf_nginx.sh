@@ -24,7 +24,7 @@ yum -y install iperf3
 #install nginx
 yum -y install epel-release
 yum -y install nginx
-sed -i 's/Fedora/Linux/' /usr/share/nginx/html/index.html
 systemctl enable nginx
+sed -i 's/Fedora/Linux/g' /usr/share/nginx/html/index.html
 systemctl start nginx
 
