@@ -21,10 +21,4 @@ ifdown eth0 && ifup eth0
 #install iperf3
 yum -y install iperf3
 
-#install nginx
-yum -y install epel-release
-yum -y install nginx
-sed -i 's/Fedora/Linux/' /usr/share/nginx/html/index.html
-systemctl enable nginx
-systemctl start nginx
 
