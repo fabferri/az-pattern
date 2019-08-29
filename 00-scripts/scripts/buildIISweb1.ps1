@@ -5,21 +5,31 @@ Param(
 
 # Turn On ICMPv4
 Try {
-    Get-NetFirewallRule -Name Allow_ICMPv4_in -ErrorAction Stop | Out-Null
+    Get-NetFirewallRule -DisplayName "Allow ICMPv4" -ErrorAction Stop | Out-Null
     Write-Host "Port already open"
 }
 Catch {
-    New-NetFirewallRule -DisplayName "Allow ICMPv4" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4 | Out-Null
+    New-NetFirewallRule -Name "allow_ICMPv4_in" -DisplayName "Allow ICMPv4" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4 | Out-Null
     Write-Host "Port opened"
 }
 
 # Turn On ICMPv6
 Try {
-    Get-NetFirewallRule -Name Allow_ICMPv6_in -ErrorAction Stop | Out-Null
+    Get-NetFirewallRule -DisplayName "Allow ICMPv6" -ErrorAction Stop | Out-Null
     Write-Host "Port already open"
 }
 Catch {
-    New-NetFirewallRule -DisplayName "Allow ICMPv6" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv6 | Out-Null
+    New-NetFirewallRule -Name "allow_ICMPv6_in" -DisplayName "Allow ICMPv6" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv6 | Out-Null
+    Write-Host "Port opened"
+}
+
+# Enable incoming traffic for iperf3
+Try {
+    Get-NetFirewallRule -DisplayName "Allow iperf" -ErrorAction Stop | Out-Null
+    Write-Host "Port already open"
+}
+Catch {
+New-NetFirewallRule -Name "allow_iperf_in" -DisplayName "Allow iperf" -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol TCP -LocalPort 5200-5300 | Out-Null
     Write-Host "Port opened"
 }
 
