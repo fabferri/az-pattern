@@ -17,7 +17,7 @@ editor=""/>
    ms.date="02/09/2019"
    ms.author="fabferri" />
 
-## Example of Azure hub-spoke Virtual Network deployement with IPv6
+## Example of Azure hub-spoke Virtual Network with IPv6
 
 The article talks through a deployment of Azure VNet (Virtual Network) with IPv6 by ARM template. 
 An overview of network diagram is shown below.
@@ -43,8 +43,9 @@ The configuration is based on:
 * the ARM template **ipv6-standaloneVM.json** creates a VNet5 with single standone VM
 
 The ARM template install the VMs with the following OS:
-* **h11,h12**: Windows Server 2019
-* **h2**,**nva**,**s1**,**s2**: CentOS 7.6
+* **h11**, **h12**: Windows Server 2019
+* **h2**, **nva**, **s1**, **s2**: CentOS 7.6
+
 The ARM template define the specs of the VMs in two arrays: **vmArraywithLB** and **vmArray**.
 The **vmArraywithLB** array contains the specs of the VMs with NIC associated to the backend pool of Azure load balancer.
 The **vmArray** array contains the specs of the VMs not associated with the Azure load balacer
@@ -127,9 +128,9 @@ mysql> CREATE USER 'New_Username_mysql'@'%' IDENTIFIED BY 'Password_for_New_User
 
 mysql> GRANT ALL PRIVILEGES ON *.* TO 'New_Username_mysql'@'%' WITH GRANT OPTION;
 ```
-
-*New_Username_mysql* is the new username to access remolty to mysql
-*Password_for_New_Username* is the password associated with *New_Username_mysql*
+Note
+> *New_Username_mysql*: it is the new username to access remolty to mysql
+> *Password_for_New_Username*: it is the password associated with the new user *New_Username_mysql*
 
 * check the login with the new account 'New_Username_mysql'
 ```console
@@ -147,13 +148,18 @@ yum -y update
 ```
 
 * check the remote login from s2 to mysql in s1:
-mysql --host=abc:abc:abc:abc::5 --user=*New_Username_mysql* --password=*Password_for_New_Username*
-
+```console
+mysql --host=abc:abc:abc:abc::5 --user=New_Username_mysql --password=Password_for_New_Username
+```
 * show connection information: 
+```console
 mysql> STATUS
+```
 
 * check the transit of communication between mysql server and mysql client through nva:
+```bash
 tcpdump -i eth0 -nn -qq 'ip6 and net abc:abc:abc:abc::/64 and net cab:cab:cab:cab::/64'
+```
 
 <!--Image References-->
 
