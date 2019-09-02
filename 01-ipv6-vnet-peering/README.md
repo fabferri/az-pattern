@@ -59,12 +59,15 @@ Example of traffic in transit through the **nva**:
 
 [![3]][3]
 
-IPv6 traffic through the external load balacer:
-
+Effective routes in the NIC of **s1** and **h2** VMs:
 [![4]][4]
 
-How to use TCPdump to track the transit of iperf traffic through the **nva**:
+IPv6 traffic through the external load balacer:
+
 [![5]][5]
+
+How to use TCPdump to track the transit of iperf traffic through the **nva**:
+[![6]][6]
 
 ### <a name="IPv6"></a>1. Annex: setup of mysql in s1 VM
 ```console
@@ -166,8 +169,9 @@ tcpdump -i eth0 -nn -qq 'ip6 and net abc:abc:abc:abc::/64 and net cab:cab:cab:ca
 [1]: ./media/network-diagram.png "network overview"
 [2]: ./media/network-diagram-with-udr.png "network diagram with UDR"
 [3]: ./media/flows.png "communication flows"
-[4]: ./media/elb.png "access from internet to elb"
-[5]: ./media/iperf.png "iperf"
+[4]: ./media/effective-routes.png "effective routes"
+[5]: ./media/elb.png "access from internet to elb"
+[6]: ./media/iperf.png "iperf"
 
 <!--Link References-->
 
