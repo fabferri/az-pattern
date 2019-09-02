@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "value": "YOUR_ADMINISTRATOR_USERNAME"
+    },
+    "adminPassword": {
+      "value": "YOUR_ADMINISTRATOR_PASSWORD"
+    },
+    "location": {
+      "value": "uksouth"
+    },
+    "vnetName": {
+      "value": "vnet1"
+    },
+    "vnetAddressSpacev4": {
+      "value": "10.5.0.0/24"
+    },
+    "vnetAddressSpacev6": {
+      "value": "fd5:ace:ace::/48"
+    },
+    "subnet1AddressRangev4": {
+      "value": "10.5.0.0/24"
+    },
+    "subnet1AddressRangev6": {
+      "value": "fd5:ace:ace:ace::/64"
+    },
+    "subnet1Name": {
+      "value": "subnet1"
+    },
+    "vm1Name" : {
+      "value": "vm5"
+    },
+    "vm1privateIPv4": {
+      "value": "10.5.0.5"
+    },
+    "vm1privateIPv6": {
+      "value": "fd5:ace:ace:ace::5"
+    }
+  }
+}

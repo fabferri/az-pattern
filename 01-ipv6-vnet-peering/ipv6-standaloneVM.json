@@ -1,0 +1,434 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator'"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "vnetAddressSpacev4": {
+      "type": "string",
+      "metadata": {
+        "description": "VNet address space"
+      }
+    },
+    "vnetAddressSpacev6": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "subnet1AddressRangev4": {
+      "type": "string",
+      "metadata": {
+        "description": "address space IPv4 of the subnet1"
+      }
+    },
+    "subnet1AddressRangev6": {
+      "type": "string",
+      "metadata": {
+        "description": "address space IPv6 of the subnet1"
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vm1Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vm1privateIPv4": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vm1privateIPv6": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "scriptLocation": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern/master/00-scripts/scripts",
+      "metadata": {
+        "description": "The base URI where artifacts required by this template are located."
+      }
+    },
+    "scriptFileName": {
+      "type": "string",
+      "defaultValue": "enableipv6.sh",
+      "metadata": {
+        "description": "The command to execute."
+      }
+    },
+    "dnsZoneName": {
+      "type": "string",
+      "defaultValue": "contoso.com",
+      "metadata": {
+        "description": "Name of the DNS Zone."
+      }
+    },
+    "ttl": {
+      "type": "int",
+      "defaultValue": 3600,
+      "metadata": {
+        "description": "DNS Time to live value, in seconds."
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "vnetName": "[parameters('vnetName')]",
+    "vnetAddressSpacev4": "[parameters('vnetAddressSpacev4')]",
+    "vnetAddressSpacev6": "[parameters('vnetAddressSpacev6')]",
+    "subnet1AddressRangev4": "[parameters('subnet1AddressRangev4')]",
+    "subnet1AddressRangev6": "[parameters('subnet1AddressRangev6')]",
+    "subnet1Name": "[parameters('subnet1Name')]",
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPassword": "[parameters('adminPassword')]",
+    "vm1Name": "[parameters('vm1Name')]",
+    "vm1privateIPv4": "[parameters('vm1privateIPv4')]",
+    "vm1privateIPv6": "[parameters('vm1privateIPv6')]",
+    "vmArray": [
+      {
+        "location": "[variables('location')]",
+        "vmName": "[variables('vm1Name')]",
+        "vmSize": "Standard_DS1_v2",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "OSVersion": "2019-Datacenter",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet1Name')]",
+        "privateIPv4": "[parameters('vm1privateIPv4')]",
+        "privateIPv6": "[parameters('vm1privateIPv6')]",
+        "enableIPForwarding": true
+      }
+    ],
+    "vmArray_backup_not_in_use": [
+      {
+        "location": "[variables('location')]",
+        "vmName": "[variables('vm1Name')]",
+        "vmSize": "Standard_B1s",
+        "imagePublisher": "openlogic",
+        "imageOffer": "CentOS",
+        "OSVersion": "7.6",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet1Name')]",
+        "privateIPv4": "[parameters('vm1privateIPv4')]",
+        "privateIPv6": "[parameters('vm1privateIPv6')]",
+        "enableIPForwarding": true
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]",
+    "nsgName": "nsg"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressSpacev4')]",
+            "[variables('vnetAddressSpacev6')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefixes": [
+                "[variables('subnet1AddressRangev4')]",
+                "[variables('subnet1AddressRangev6')]"
+              ],
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-RDP-Ipv6-inbound-subnet1",
+            "properties": {
+              "description": "Allow RDP IPv6",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefixes": [
+                "[variables('subnet1AddressRangev6')]"
+              ],
+              "access": "Allow",
+              "priority": 1010,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-RDP-inbound",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 1020,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP6')]",
+      "copy": {
+        "name": "publicIpLoop",
+        "count": "[variables('vmCount')]"
+      },
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv6"
+      },
+      "sku": {
+        "name": "Standard"
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+      "copy": {
+        "name": "publicIpLoop",
+        "count": "[variables('vmCount')]"
+      },
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "comments": "create public IP for the VMs",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "copy": {
+        "name": "NICloop",
+        "count": "[variables('vmCount')]"
+      },
+      "comments": "NIC of the VM",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName )]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP6') )]"
+      ],
+      "properties": {
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig-v4",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIPv4]",
+              "privateIPAddressVersion": "IPv4",
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          },
+          {
+            "name": "ipconfig-v6",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIPv6]",
+              "privateIPAddressVersion": "IPv6",
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP6' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
+            "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
+            "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OSDisk')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "condition": "[equals(variables('vmArray')[copyIndex()].imageOffer, 'CentOS')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'/installcustomscript')]",
+      "apiVersion": "2019-03-01",
+      "location": "[parameters('location')]",
+      "comments": "Custom script extension for linux VMs",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[concat(parameters('scriptLocation'),  '/', parameters('scriptFileName'))]"
+          ],
+          "commandToExecute": "[concat('sh ',  parameters('scriptFileName') )]"
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "name": "[parameters('dnsZoneName')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "location": "global",
+      "properties": {
+        "ttl": "[parameters('ttl')]",
+        "cnameRecord": {
+          "cname": "contoso.com"
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('dnsZoneName'),'/','priv')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/privateDnsZones',parameters('dnsZoneName'))]"
+      ],
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+        },
+        "registrationEnabled": true
+      }
+    },
+    {
+      "name": "[concat(parameters('dnsZoneName'),'/',variables('vmArray')[copyIndex()].vmName)]",
+      "type": "Microsoft.Network/privateDnsZones/AAAA",
+      "apiVersion": "2018-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones',parameters('dnsZoneName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP6'))]"
+      ],
+      "properties": {
+        "ttl": "[parameters('ttl')]",
+        "aaaaRecords": [
+          {
+            "ipv6Address": "[reference( resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP6'))  ).IpAddress  ]"
+          }
+        ]
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    }
+  ],
+  "outputs": {
+    "publicIPv6": {
+      "type": "string",
+      "value": "[reference( resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[0].vmName,'-pubIP6'))  ).IpAddress  ]"
+    }
+  }
+}
