@@ -66,7 +66,7 @@ IPv6 traffic through the external load balacer:
 How to use TCPdump to track the transit of iperf traffic through the **nva**:
 [![5]][5]
 
-#### <a name="IPv6"></a>1. Annex: setup of mysql in s1 VM
+### <a name="IPv6"></a>1. Annex: setup of mysql in s1 VM
 ```console
 yum -y update
 wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
@@ -138,7 +138,7 @@ mysql -u New_Username_mysql -p
 password: Password_for_New_Username
 ```
 
-#### <a name="IPv6"></a>2. Annex: setup of mysql client in s2 VM
+### <a name="IPv6"></a>2. Annex: setup of mysql client in s2 VM
 ```console
 yum -y update
 wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
