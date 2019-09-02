@@ -65,8 +65,8 @@ IPv6 traffic through the external load balacer:
 How to use TCPdump to track the transit of iperf traffic through the **nva**:
 [![5]][5]
 
-####<a name="IPv6"></a>1. Annex: setup of mysql in s1 VM
-```bash
+#### <a name="IPv6"></a>1. Annex: setup of mysql in s1 VM
+```console
 yum -y update
 wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
 rpm -ivh mysql80-community-release-el7-3.noarch.rpm
@@ -76,7 +76,7 @@ systemctl enable mysqld
 systemctl start mysqld
 ```
 
-* Get Your Generated Random root Password:
+* Get your generated random **root** rassword:
 ```bash
 grep 'A temporary password is generated for root@localhost' /var/log/mysqld.log |tail -1
 ```
@@ -103,40 +103,48 @@ mysql_secure_installation
 mysql -u root -p
 ```
 NOTE
-When you omit the ENGINE option, the default storage engine is used. in MySQL 8.0 the default engine is InnoDB.
-the command to set the storage engine is NOT required:
-set storage_engine = InnoDB;
+> When you omit the ENGINE option, the default storage engine is used. In MySQL 8.0 the default engine is InnoDB.
+> The command to set the storage engine is NOT required:
+> set storage_engine = InnoDB;
 
 
-* Create a text file with SQL instructions to create table and load data in the tables.
-myfile.sql
+* Create a text file (i.e. **myfile.sql**) with SQL instructions to create table and load data in the tables.
+```console
+mysql> source myfile.sql
+```
 
 * Login in mysql:
 mysql -u root -p   
 
 * check login in mysql through IPv6:
+
+```console
 mysql -u root -p --bind-address=abc:abc:abc:abc::5
-
+```
 * create a user and add GRANT privilege:
-
+```console
 mysql> CREATE USER 'New_Username_mysql'@'%' IDENTIFIED BY 'Password_for_New_Username';
 
 mysql> GRANT ALL PRIVILEGES ON *.* TO 'New_Username_mysql'@'%' WITH GRANT OPTION;
+```
 
 *New_Username_mysql* is the new username to access remolty to mysql
 *Password_for_New_Username* is the password associated with *New_Username_mysql*
 
 * check the login with the new account 'New_Username_mysql'
-
+```console
 mysql -u New_Username_mysql -p
 password: Password_for_New_Username
+```
 
-####<a name="IPv6"></a>2. Annex: setup of mysql client in s2 VM
+#### <a name="IPv6"></a>2. Annex: setup of mysql client in s2 VM
+```console
 yum -y update
 wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
 rpm -ivh mysql80-community-release-el7-3.noarch.rpm
 yum -y install mysql
 yum -y update
+```
 
 * check the remote login from s2 to mysql in s1:
 mysql --host=abc:abc:abc:abc::5 --user=*New_Username_mysql* --password=*Password_for_New_Username*
