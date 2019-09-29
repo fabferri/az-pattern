@@ -37,7 +37,7 @@ The network diagram is shown below:
 > * parameter **azureRegion1**:  name of Azure region wher eis deployed the Azure VNet1
 > * parameter **azureRegion2**:  name of Azure region wher eis deployed the Azure VNet2
 > * **authorizationKey**:  authorization Key associated with the Expressroute circuit
-> * **erCircuitId**: ExpressRoute circuit Id
+> * **erCircuitId**: ExpressRoute circuit Id. The structure of Expressroute circuit Id is: "/subscriptions/<subscription_ID>/resourceGroups/<resourceGroup_Name>/providers/Microsoft.Network/expressRouteCircuits/<ER_circuit_Name>" 
 > Each Azure VNet requires a specific autorization key; you can't use the same authorization key to join more then one VNet to the same ExpressRoute circuit.
 
 
