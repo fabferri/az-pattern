@@ -74,8 +74,8 @@
             "gatewayName": "vNet1-gw",
             "gatewaySku" : "[parameters('gatewaySku')]",
             "connectionName": "conn-er-vnet1",
-            "authorizationKey" : "1d115955-0c7b-43da-bc57-a29473b1b7c4",
-            "erCircuitId": "/subscriptions/4bffbb15-d414-4874-a2e4-c548c6d45e2a/resourceGroups/ASH-Cust10/providers/Microsoft.Network/expressRouteCircuits/ASH-Cust10-ER"
+            "authorizationKey" : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX",
+            "erCircuitId": "EXPRESSROUTE_CIRCUIT_Identification"
         },
         "vNet2": {
             "location": "[parameters('azureRegion2')]",
@@ -89,8 +89,8 @@
             "gatewayName": "vNet2-gw",
             "gatewaySku" : "[parameters('gatewaySku')]",
             "connectionName": "conn-er-vnet2",
-            "authorizationKey" : "ba33597d-8e73-45e6-ac2e-b46855c7d62a",
-            "erCircuitId": "/subscriptions/4bffbb15-d414-4874-a2e4-c548c6d45e2a/resourceGroups/ASH-Cust10/providers/Microsoft.Network/expressRouteCircuits/ASH-Cust10-ER"
+            "authorizationKey" : "YYYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYY",
+            "erCircuitId": "EXPRESSROUTE_CIRCUIT_Identification"
         },
         "nsg1Name": "nsg1",
         "nsg2Name": "nsg2",
