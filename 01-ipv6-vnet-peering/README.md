@@ -25,31 +25,33 @@ An overview of network diagram is shown below.
 [![1]][1]
 
 The configuration is based on:
-* an Azure hub VNet with IPv4 10.0.0.0/24 and IPv6 ace:cab:deca::/48 address space
-* in the hub VNet are configured three subnets **subnet1, subnet2, subnet3**, in dual stack IPv4 and IPv6
-* all the VMs run un dual stack IPv4 and IPv6
-* two VMs **h11, h12** connected to the **subnet1** with Windows 2019 and IIS
-* an external basic load balancer is configured with IPv6 and IPv4 frontend and a backend pool associated with the NIC of **h11, h12**
-* an **nva** VM is connected to the **subnet3**, configured with IPv6 forwarding
-* two UDRs **RT-subnet1, RT-subnet2** applied respectively to the **subnet1** and **subnet2** to enforce the IPv6 traffic to transit through the **nva**
+* the Azure VNets are configured in dual-stack IPv4 and IPv6
+* configuration is based on three VNets: one hub VNet and two spoke VNets
+* an Azure hub VNet with IPv4 10.0.0.0/24 and IPv6 ace:cab:deca::/48 address space. In the hub VNet are configured three subnets **subnet1, subnet2, subnet3**
 * an Azure Spoke1 VNet with IPv4 10.0.0.0/24 and IPv6 ace:cab:deca::/48 address space
 * an Azure Spoke2 VNet with IPv4 10.0.0.0/24 and IPv6 ace:cab:deca::/48 address space
 * a Spoke1 VNet is in peering with hub VNet
 * a Spoke2 VNet is in peering with hub VNet 
 * the VNets are all deployed in different Azure regions
+* all the VMs run un dual stack IPv4 and IPv6
+* two VMs **h11, h12** connected to the **subnet1** run with Windows 2019 and IIS
+* in the hub VNet is configured an external basic load balancer with frontend IPv6 and IPv4 and a backend pool associated with the NIC of **h11, h12**
+* an **nva** VM is connected to the **subnet3**, configured with IPv6 forwarder
+* two UDRs **RT-subnet1, RT-subnet2** are applied respectively to the **subnet1** and **subnet2** to enforce the IPv6 traffic to transit through the **nva**
+* a UDR **RT-spoke1** is applied to the spoke1 VNet to force the traffic to trasit through the **nva** VM
+* a UDR **RT-spoke2** is applied to the spoke2 VNet to force the traffic to trasit through the **nva** VM
 * an NSG is applied to each subnet to filter the traffic in ingress
 * the ARM template **ipv6.json** creates hub, spoke1 and spoke2 VNets with all Azure VMs
-* the ARM template **ipv6.json** use custom script extensions to make some setup of Azure VMs at boostrap. In particular, a bash script **enableipv6withforwarding.sh** is invoked after the boostrap of **nva** VM to enable the ipv6 forwarding. 
+* the ARM template **ipv6.json** use custom script extensions to make some VM setup at boostrap. In particular, a bash script **enableipv6withforwarding.sh** is invoked after the boostrap of **nva** VM to enable the ipv6 forwarding. 
 * the ARM template **ipv6-standaloneVM.json** creates a VNet5 with single standone VM
-
-The ARM template install the VMs with the following OS:
+The ARM template **ipv6.json** installs the VMs with the following OS:
 * **h11**, **h12**: Windows Server 2019
 * **h2**, **nva**, **s1**, **s2**: CentOS 7.6
 
-The ARM template define the specs of the VMs in two arrays: **vmArraywithLB** and **vmArray**.
-The **vmArraywithLB** array contains the specs of the VMs with NIC associated to the backend pool of Azure load balancer.
-The **vmArray** array contains the specs of the VMs not associated with the Azure load balacer
-A customization with different OS can be done by changing the values of variables: "imagePublisher", "imageOffer", "OSVersion" in the ARM template. if you want to run different OS, change the values in the array  After running the ARM template, some further steps are required to complete the setup.
+In the ARM template **ipv6.json** two arrays **vmArraywithLB** and **vmArray** define the specs of the VMs:
+* the **vmArraywithLB** array contains the specs of the VMs with NIC associated to the backend pool of Azure load balancer.
+* the **vmArray** array contains the specs of the VMs not associated with the Azure load balacer
+A customization with different OS can be done by changing the values of variables: "imagePublisher", "imageOffer", "OSVersion" in the ARM template. After running the ARM template, some further steps are required to complete the setup.
 
 A network diagram with IPv6 UDRs is shown underneath:
 
@@ -68,6 +70,7 @@ IPv6 traffic through the external load balacer:
 
 How to use TCPdump to track the transit of iperf traffic through the **nva**:
 [![6]][6]
+
 
 ### <a name="IPv6"></a>1. Annex: setup of mysql in s1 VM
 ```console
