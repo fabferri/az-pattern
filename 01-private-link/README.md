@@ -39,7 +39,7 @@ List of scripts:
 * **consumer-vnet-1er.json**: ARM template to create a VNet with the private endpoint. The ARM template contain two variables:    
    - **"erCircuitId"**: it is the resource Id of the existing Expressroute circuit. The structure of variable is reported below:
 "erCircuitId": "/subscriptions/<AZURE_SUBSCRIPITON_ID>/resourceGroups/<RESOURCE-GROUP>/providers/Microsoft.Network/expressRouteCircuits/<EXPRESSROUTE_CIRCUIT_NAME>"
-   - **"authorizationKey"** : it contains the redeem authetorization to link the gateway to the ExpressRoute circuit.
+   - **"authorizationKey"** : it contains the redeem authorization to link the gateway to the ExpressRoute circuit.
 
 Short description of  **provider.json**:
 * Create a VNet with two subnets: private link subnet and backend subnet.  
