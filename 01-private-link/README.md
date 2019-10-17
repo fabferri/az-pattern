@@ -24,7 +24,7 @@ Below the network diagram:
 [![1]][1]
 
 
-The configuration is based on two deployments have to run in sequence:
+The configuration is based on two deployments to execute in sequence:
 * 1-st step: create the VNet with private service link. The deployment is created through the **provider.json**
 * 2-nd step: create the consumer VNet with ExpressRoute gateway and Connection. The deployment is created by **consumer-vnet-1er.json**. To use the ARM template is required the availability of an ExpressRoute circuit deployed in different Azure subscription.
 To link an ExpressRoute Gateway to the circuit in different Azure subscription, a redeem authorization is generated. The redeem authorization has to be set in the **consumer-vnet-1er.json**
