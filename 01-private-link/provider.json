@@ -1,0 +1,417 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
+    "vmNamePrefix": {
+      "type": "string",
+      "defaultValue": "backendVM",
+      "metadata": {
+        "description": "Prefix to use for VM names"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "allowedValues": [
+        "eastus", "eastus2","centralus","southcentralus", "northcentralus","westcentralus", "westus","westus2", 
+        "canadacentral","canadaeast",
+        "westeurope", "northeurope","uksouth","ukwest","francesouth","francecentral",
+        "southindia","centralindia","westindia",
+        "eastasia","southeastasia", 
+        "japaneast","japanwest", 
+        "australiaeast", "australiasoutheast","australiacentral","australiacentral2"
+      ],
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "Load balancer SKU"
+      }
+    },
+    "isWindowsOS":  {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [true, false],
+      "metadata": {
+        "description": "true: Windows OS or false: Linux"
+      }
+    }
+  },
+  "variables": {
+    "isWindowsOS": "[parameters('isWindowsOS')]",
+    "os": {
+      "windows": {
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "imageSKU": "2019-Datacenter",
+        "vmsize": "Standard_D1S_v3"
+      },
+      "centos": {
+        "imagePublisher": "openlogic",
+        "imageOffer": "CentOS",
+        "imageSKU": "7.6",
+        "vmsize":  "Standard_B1s"
+
+      }
+    },
+    "nsgName": "nsg1",
+    "availabilitySetName": "AvSet",
+    "vnetName": "vNet",
+    "vnetAddressPrefix": "10.0.0.0/16",
+    "backendSubnetName": "backendSubnet",
+    "backendSubnetPrefix": "10.0.2.0/24",
+    "privateLinkSubnetName": "privateLinkSubnet",
+    "privateLinkSubnetPrefix": "10.0.4.0/24",
+    "privateLinkServiceName": "privateLinkSrv01",
+    "lbName": "ilb",
+    "lbFrontEndConfigName": "lbFrontEnd",
+    "lbFrontEndIP": "10.0.2.6",
+    "lbBackendPoolName": "lbBackEndPool",
+    "lbProbeName": "lbHealthProbe",
+    "backendSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('backendSubnetName'))]",
+    "privateLinkSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('privateLinkSubnetName'))]",
+    "numberOfInstances": 2,
+    "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-08-01",
+      "name": "[variables('nsgName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allowRDPInbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allowRSSHInbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 200,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-pubIP')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "publicIPAddressLoop",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "apiVersion": "2019-03-01",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[parameters('location')]",
+      "name": "[variables('availabilitySetName')]",
+      "properties": {
+        "PlatformUpdateDomainCount": 1,
+        "PlatformFaultDomainCount": 1
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('backendSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('backendSubnetPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              },
+              "PrivateEndpointNetworkPolicies": "Disabled",
+              "PrivateLinkServiceNetworkPolicies": "Disabled"
+            }
+          },
+          {
+            "name": "[variables('privateLinkSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('privateLinkSubnetPrefix')]",
+              "PrivateEndpointNetworkPolicies": "Disabled",
+              "PrivateLinkServiceNetworkPolicies": "Disabled"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('lbName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+      ],
+      "sku": {
+        "name": "[parameters('skuName')]"
+      },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('lbFrontEndConfigName')]",
+            "properties": {
+              "subnet": {
+                "id": "[variables('backendSubnetRef')]"
+              },
+              "privateIPAddress": "[variables('lbFrontEndIP')]",
+              "privateIPAllocationMethod": "Static"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('lbBackendPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "httpLBRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackendPoolName'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbProbeName'))]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "idleTimeoutInMinutes": 15
+            }
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 80,
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            },
+            "name": "[variables('lbProbeName')]"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-nic')]",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('vmNamePrefix'), copyindex(),'-pubIP'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('vmNamePrefix'), copyindex(),'-pubIP' ))]"
+              },
+              "subnet": {
+                "id": "[variables('backendSubnetRef')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(variables('lbID'), '/backendAddressPools/',variables('lbBackendPoolName') )]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-03-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('vmNamePrefix'), copyindex())]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmNamePrefix'), copyindex(),'-nic')  )]",
+        "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[if(variables('isWindowsOS'),variables('os').windows.vmsize,variables('os').centos.vmsize)]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('vmNamePrefix'), copyIndex())]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[if(variables('isWindowsOS'),variables('os').windows.imagePublisher,variables('os').centos.imagePublisher)]",
+            "offer": "[if(variables('isWindowsOS'),variables('os').windows.imageOffer,variables('os').centos.imageOffer)]",
+            "sku": "[if(variables('isWindowsOS'),variables('os').windows.imageSKU,variables('os').centos.imageSKU)]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-OS')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmNamePrefix'), copyindex(),'-nic'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "condition": "[variables('isWindowsOS')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2019-03-01",
+      "name": "[concat(parameters('vmNamePrefix'), copyindex(), '/', 'InstallWebServer')]",
+      "comments": "custom script extension to install IIS on the Windows server",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "extensionCopy",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('vmNamePrefix'), copyindex())  )]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.9",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "commandToExecute": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername)"
+        }
+      }
+    },
+    {
+      "condition": "[not(variables('isWindowsOS'))]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2019-03-01",
+      "name": "[concat(parameters('vmNamePrefix'), copyindex(), '/', 'installcustomscript')]",
+      "comments": "custom script extension to install httpd on CentOS",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "extensionCopy",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('vmNamePrefix'), copyindex()) )]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "commandToExecute": "yum install -y httpd && systemctl enable httpd && systemctl start httpd"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Network/privateLinkServices",
+      "name": "[variables('privateLinkServiceName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "natNicIpconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('privateLinkSubnetRef')]"
+              },
+              "primary": true,
+              "privateIPAddressVersion": "IPv4"
+            }
+          }
+        ],
+        "loadBalancerFrontendIpConfigurations": [
+          {
+            "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+          }
+        ]
+      }
+    }
+  ]
+}

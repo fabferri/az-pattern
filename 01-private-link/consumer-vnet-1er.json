@@ -1,0 +1,389 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "azureRegion1": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "allowedValues": [ 
+                "eastus", "eastus2","centralus","southcentralus", "northcentralus","westcentralus", "westus","westus2", 
+                "canadacentral","canadaeast",
+                "westeurope", "northeurope","uksouth","ukwest","francesouth","francecentral",
+                "southindia","centralindia","westindia",
+                "eastasia","southeastasia", 
+                "japaneast","japanwest", 
+                "australiaeast", "australiasoutheast","australiacentral","australiacentral2"
+            ],
+            "metadata": {
+              "description": "azure region where is deployed the first VNet"
+            }
+          },
+          "gatewaySku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "HighPerformance",
+                "UltraPerformance"
+            ],
+            "metadata": {
+                "description": "The SKU for the ExpressRoute Gateway"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password for the VMs"
+            }
+        },
+        "privateEndpointName": {
+            "type": "string",
+            "defaultValue": "pvtEndpoint",
+            "metadata": {
+              "description": "Specifies the name of the Private Endpoint to be created"
+            }
+          },
+          "privateLinkService_AzureSubscriptionId":{
+            "type": "string",
+            "metadata": {
+              "description": "Specifies the Azure subscription Id where is deployed the Private Link Service"
+            }
+          },
+          "privateLinkService_ResourceGroup":{
+            "type": "string",
+            "metadata": {
+              "description": "Specifies the Resource Group where is deployed the Private Link Service"
+            }
+          },
+          "privateLinkService_Name":{
+            "type": "string",
+            "metadata": {
+              "description": "Specifies the name of the Private Link Service"
+            }
+          },
+          "privateLinkConnectionMessage": {
+            "type": "string",
+            "defaultValue": "Please approve my connection, thanks!",
+            "metadata": {
+              "description": "Text to include when sending a request to connect to a Private Link service"
+            }
+          }
+    },
+    "variables": {
+        "privateLinkServiceId": "[resourceId(parameters('privateLinkService_AzureSubscriptionId'), parameters('privateLinkService_ResourceGroup'), 'Microsoft.Network/privateLinkServices', parameters('privateLinkService_Name') )]",
+        "vNet1": {
+            "location": "[parameters('azureRegion1')]",
+            "name": "vNet1",
+            "addressSpacePrefix": "10.0.1.0/24",
+            "subnet1Name": "subnet1",
+            "subnet1Prefix": "10.0.1.0/27",
+            "subnet2Name": "GatewaySubnet",
+            "subnet2Prefix": "10.0.1.224/27",
+            "gatewayPublicIPName":"vNet1-gw-pubIP",
+            "gatewayName": "vNet1-gw",
+            "gatewaySku" : "[parameters('gatewaySku')]",
+            "connectionName": "conn-er-vnet1",
+            "authorizationKey" : "<REDEEM_AUTHORIZATION>",
+            "erCircuitId": "/subscriptions/<AZURE_SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP>/providers/Microsoft.Network/expressRouteCircuits/<EXPRESSROUTE_CIRCUIT_NAME>"
+        },
+        "nsg1Name": "nsg1",
+        "os": {
+            "windows": {
+              "imagePublisher": "MicrosoftWindowsServer",
+              "imageOffer": "WindowsServer",
+              "imageSKU": "2019-Datacenter",
+              "vmsize": "Standard_DS1_v2"
+            },
+            "centos": {
+              "imagePublisher": "openlogic",
+              "imageOffer": "CentOS",
+              "imageSKU": "7.6",
+              "vmsize": "Standard_D8S_v3"
+            }
+          },
+        "vmStorageAccountType": "Premium_LRS",
+        "adminUsername":"[parameters('adminUsername')]",
+        "adminPassword":"[parameters('adminPassword')]",
+        "vmarray": [
+            {
+                "location": "[variables('vNet1').location]",
+                "vmName": "vm1",
+                "vmSize": "[variables('os').centos.vmsize]",
+                "imagePublisher": "[variables('os').centos.imagePublisher]",
+                "imageOffer": "[variables('os').centos.imageOffer]",
+                "imageSKU": "[variables('os').centos.imageSKU]",
+                "vNetName": "[variables('vNet1').name]",
+                "subnetName": "[variables('vNet1').subnet1Name]",
+                "privateIP": "10.0.1.10",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false
+            }
+        ], 
+        "vmCount": "[length(variables('vmarray'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsg1Name')]",
+            "location": "[variables('vNet1').location]",
+            "comments": "NSG applied to the subnets in VNet1",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 600,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet1').name]",
+            "location": "[variables('vNet1').location]",
+            "comments": "vNet1 in AzureRegion1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1Name'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet1Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1Name'))]"
+                            },
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet2Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Network/privateEndpoints",
+            "name": "[parameters('privateEndpointName')]",
+            "location": "[variables('vNet1').location]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]"
+            ],
+            "properties": {
+              "privateLinkServiceConnections": [
+                {
+                  "name": "{plsConnectionAutoApproval}",
+                  "properties": {
+                    "privateLinkServiceId": "[variables('privateLinkServiceId')]",
+                    "requestMessage": "[parameters('privateLinkConnectionMessage')]"
+                  }
+                }
+              ],
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet1').name, variables('vNet1').subnet1Name)]"
+              }
+            }
+          },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet1').gatewayPublicIPName]",
+            "apiVersion": "2019-08-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "public IP for ExpressRoute Gateway in the VNet1",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vNet1').gatewayName]",
+            "apiVersion": "2019-08-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "ExpressRoute Gateway for vNet1 in AzureRegion1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet1').gatewayPublicIPName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet1').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet1').gatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "gwipconf-1"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[variables('vNet1').gatewaySku]",
+                    "tier": "[variables('vNet1').gatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2019-08-01",
+            "name": "[variables('vNet1').connectionName]",
+            "location": "[variables('vNet1').location]",
+            "comments": "create the connection between the VNet1 and the ER circuit",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vNet1').gatewayName  )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vNet1').gatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[variables('vNet1').authorizationKey]",
+                "peer": {
+                    "id": "[variables('vNet1').erCircuitId]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-08-01",
+            "name": "[concat(variables('vmarray')[copyIndex()].vmName,'-pubIP')]",
+            "location": "[variables('vmarray')[copyIndex()].location]",
+            "comments": "create public IP for the VMs in AzureRegion1",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat( variables('vmarray')[copyIndex()].vmName,'-NIC' )]",
+            "apiVersion": "2019-08-01",
+            "location": "[variables('vmarray')[copyIndex()].location]",
+            "comments": "create NIC of the VMs in AzureRegion1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmarray')[copyIndex()].vNetName )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmarray')[copyIndex()].vmName,'-pubIP') )]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmarray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmarray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmarray')[copyIndex()].privateIP]",
+                            "publicIPAddress": {
+                                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmarray')[copyIndex()].vmName,'-pubIP' )  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmarray')[copyIndex()].vNetName, variables('vmarray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "apiVersion": "2019-03-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmarray')[copyIndex()].vmName]",
+            "location": "[variables('vmarray')[copyIndex()].location]",
+            "comments": "create VMs in AzureRegion1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmarray')[copyIndex()].vmName,'-NIC')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmarray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmarray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmarray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('vmarray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('vmarray')[copyIndex()].imageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmarray')[copyIndex()].vmName,'-OsDisk')]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmarray')[copyIndex()].vmName,'-NIC' )  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}
