@@ -65,6 +65,7 @@ Short description of  **consumer-vnet-1er.json**:
 >
 >   $rgName: name of the Resource Group
 
+Below the effective routes in the NIC of vm1:
 [![2]][2]
 
 <!--Image References-->
