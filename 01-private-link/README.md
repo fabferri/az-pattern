@@ -27,19 +27,19 @@ Below the network diagram:
 The configuration is based on two deployments to execute in sequence:
 * 1-st step: create the VNet with private service link. The deployment is created through the **provider.json**
 * 2-nd step: create the consumer VNet with ExpressRoute gateway and Connection. The deployment is created by **consumer-vnet-1er.json**. To use the ARM template is required the availability of an ExpressRoute circuit deployed in different Azure subscription.
-To link an ExpressRoute Gateway to the circuit in different Azure subscription, a redeem authorization is generated. The redeem authorization has to be set in the **consumer-vnet-1er.json**
+To link an ExpressRoute Gateway to the circuit in different Azure subscription, a redeem authorization is required. The redeem authorization has to be set inside the **consumer-vnet-1er.json**
 The 2-nd step requires as mandatory the availability of primate link service deployed in the 1-st step.
 
 
 List of scripts:
-* **provider.ps1**: powershell command to run the ARM template provider.json; you can run the script by command:
+* **provider.ps1**: powershell command to run the ARM template **provider.json**; you can run the script by command:
   provider.ps1 -adminUsername <USERNAME_ADMINISTRATOR_VMs> -adminPassword <PASSWORD_ADMINISTRATOR_VMs> 
 * **provider.json**: ARM template to create a VNet with private link service.
-* **consumer-vnet-1er.ps1**: powershell to deploy the ARM template consumer-vnet-1er.json
+* **consumer-vnet-1er.ps1**: powershell to deploy **consumer-vnet-1er.json**
 * **consumer-vnet-1er.json**: ARM template to create a VNet with the private endpoint. The ARM template contain two variables:    
    - **"erCircuitId"**: it is the resource Id of the existing Expressroute circuit. The structure of variable is reported below:
 "erCircuitId": "/subscriptions/<AZURE_SUBSCRIPITON_ID>/resourceGroups/<RESOURCE-GROUP>/providers/Microsoft.Network/expressRouteCircuits/<EXPRESSROUTE_CIRCUIT_NAME>"
-   - **"authorizationKey"** : it contains the redeem authorization to link the gateway to the ExpressRoute circuit.
+   - **"authorizationKey"** : it contains the redeem authorization, needed to link the gateway to the ExpressRoute circuit.
 
 Short description of  **provider.json**:
 * Create a VNet with two subnets: private link subnet and backend subnet.  
@@ -58,8 +58,11 @@ Short description of  **consumer-vnet-1er.json**:
 
 > Note
 > before running the powershell scripts customize the values of variables:
+>
 >   $subscriptionName: name of the Azure subscription
+>
 >   $location: name of the Azure region
+>
 >   $rgName: name of the Resource Group
 
 [![2]][2]
