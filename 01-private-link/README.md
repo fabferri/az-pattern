@@ -18,7 +18,7 @@ editor=""/>
    ms.author="fabferri" />
 
 ## Example of private service link with ExpressRoute
-This post talks through as example of Azure private service link through ARM template.
+This post talks through as example of Azure private service link by ARM template.
 Below the network diagram:
 
 [![1]][1]
