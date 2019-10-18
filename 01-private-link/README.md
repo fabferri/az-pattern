@@ -36,8 +36,8 @@ List of scripts:
   provider.ps1 -adminUsername <USERNAME_ADMINISTRATOR_VMs> -adminPassword <PASSWORD_ADMINISTRATOR_VMs>
 * **provider.json**: ARM template to create a VNet with private link service. 
    - "isWindowsOS" takes a boolean value: true to deploy Windows VMs and false to deploy CentOS VMs.
-   - "numberOfInstances": define how many VMs spin in the backend pool of the internal load balancer.
-   **provider.json** uses custom script extension to install web server in the backend VMs: IIS in Windows VMs, apache server in CentOS. 
+   - "numberOfInstances": define how many VMs spin up in the backend pool of the internal load balancer.
+   **provider.json** uses custom script extension to install web server in the backend VMs: IIS in Windows VMs, Apache web server in CentOS. 
 * **consumer-vnet-1er.ps1**: powershell to deploy **consumer-vnet-1er.json**
 * **consumer-vnet-1er.json**: ARM template to create a VNet with the private endpoint. The ARM template contain two variables:    
    - **"erCircuitId"**: it is the resource Id of the existing Expressroute circuit. The structure of variable is reported below:
