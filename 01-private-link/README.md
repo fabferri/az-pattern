@@ -68,12 +68,18 @@ Short description of  **consumer-vnet-1er.json**:
 >
 >   $rgName: name of the Resource Group
 
-Below the effective routes in the NIC of vm1:
+In the diagram shown below the communication flows with private service link:
+
 [![2]][2]
+
+Below the effective routes in the NIC of vm1:
+[![3]][3]
+
 
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network overview"
-[2]: ./media/effective-routes.png "effective routes vm1"
+[2]: ./media/flows.png "communication flows with private service link"
+[3]: ./media/effective-routes.png "effective routes vm1"
 <!--Link References-->
 
