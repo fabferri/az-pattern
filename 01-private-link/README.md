@@ -17,8 +17,8 @@ editor=""/>
    ms.date="16/10/2019"
    ms.author="fabferri" />
 
-## Example of private service link with ExpressRoute
-This post talks through as example of Azure private service link by ARM template.
+## ARM template with private service link and ExpressRoute
+This post talks through an example of Azure private service link by ARM template.
 Below the network diagram:
 
 [![1]][1]
@@ -33,8 +33,11 @@ The 2-nd step requires as mandatory the availability of primate link service dep
 
 List of scripts:
 * **provider.ps1**: powershell command to run the ARM template **provider.json**; you can run the script by command:
-  provider.ps1 -adminUsername <USERNAME_ADMINISTRATOR_VMs> -adminPassword <PASSWORD_ADMINISTRATOR_VMs> 
-* **provider.json**: ARM template to create a VNet with private link service.
+  provider.ps1 -adminUsername <USERNAME_ADMINISTRATOR_VMs> -adminPassword <PASSWORD_ADMINISTRATOR_VMs>
+* **provider.json**: ARM template to create a VNet with private link service. 
+   - "isWindowsOS" takes a boolean value: true to deploy Windows VMs and false to deploy CentOS VMs.
+   - "numberOfInstances": define how many VMs spin in the backend pool of the internal load balancer.
+   **provider.json** uses custom script extension to install web server in the backend VMs: IIS in Windows VMs, apache server in CentOS. 
 * **consumer-vnet-1er.ps1**: powershell to deploy **consumer-vnet-1er.json**
 * **consumer-vnet-1er.json**: ARM template to create a VNet with the private endpoint. The ARM template contain two variables:    
    - **"erCircuitId"**: it is the resource Id of the existing Expressroute circuit. The structure of variable is reported below:
