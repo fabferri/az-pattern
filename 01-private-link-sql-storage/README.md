@@ -28,7 +28,7 @@ The ARM template creates a VNet with three subnets:
 * the Azure VMs are deployed in subnet2
 * the gateway subnet is used for deployment of Azure Gateway
 
-
+### Private endpoints
 The private endpoint is linked to a specific subnet. When a private endpoint is created, a synthetic NIC is automatically deployed in the subnet, with dynamic IP. 
 To resolve the private endpoint a private DNS zone is required, with the A record to point to the IP address of the synthetic NIC.
 Two private DNS zone are created: one for Azure SQL and another one for the storage account.
