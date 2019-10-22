@@ -18,7 +18,7 @@ editor=""/>
    ms.author="fabferri" />
 
 ## ARM template with private endpoints to communicate with Azure SQL and Azure storage account
-The ARM template gives the capabilities to deploy an Azure VNet and create two private endpoints to get access to the Azure SQL Azure storage account. Two DNS private zones are deployed with integration in the VNet to access to the SQL and storage account through naming. The network diagram is shown below:
+The ARM template gives the capabilities to deploy an Azure VNet and create two private endpoints to access to a Azure SQL server and Azure storage account. Two DNS private zones are deployed with VNet integration to access through names to the SQL and storage account. The network diagram is shown below:
 
 
 [![1]][1]
@@ -28,6 +28,13 @@ The ARM template creates a VNet with three subnets:
 * the Azure VMs are deployed in subnet2
 * the gateway subnet is used for deployment of Azure Gateway
 
+Using the statement **"dependsOn"** in the ARM template is established a workflow in the deployment.
+The private endpoint is linked to a specific subnet. When a private endpoint is created, a synthetic NIC is automatically deployed in the subnet, with dynamic IP. 
+To resolve the private endpoint a private DNS zone is required, with the A record to point to the IP address of the synthetic NIC.
+Two private DNS zone are created: one for Azure SQL and another one for the storage account.
+In the ARM template, the private endpoints are generated in sequence as follow:
+   - private endpoint associated with the Azure SQL; the related synthetic NIC takes the address 10.0.1.4
+   - private endpoint associated with the storage account; the related synthetic NIC takes the address 10.0.1.5
 
 > Note
 > before running the powershell scripts customize the values of variables:
