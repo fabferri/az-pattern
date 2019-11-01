@@ -33,13 +33,15 @@ Steps to create the enviroment
        The script generates the configuration in a text file (csr-config.txt). if the file already exists, it is overwrite.
 - **step4**: login on the console of the CSR and enter in config mode (csr command: conf t)
 - **step5**: paste in the console of CSR the config generated from text file
-- **step6**: on the csr console run the command check the IPSec tunnels are up:
+- **step6**: on the csr console run the commands to check the IPSec tunnels are up and BGP advertisements:
+```console
        csr# show crypto session 
        csr# show crypto ipsec sa
        csr# show ip bgp
        csr# show ip route
        csr# show ip bgp neighbor 10.0.10.228 routes
        csr# show ip bgp neighbor 10.0.10.228 routes
+```
 - **step7**: run the powershell routingTableVPN.ps1 to get the route advertised from csr to the VPN gateway
 
 ```console
