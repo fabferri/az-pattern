@@ -41,6 +41,8 @@ Steps to create the enviroment
        csr# show ip bgp neighbor 10.0.10.228 routes
        csr# show ip bgp neighbor 10.0.10.228 routes
 - **step7**: run the powershell routingTableVPN.ps1 to get the route advertised from csr to the VPN gateway
+
+```console
 LocalAddress Network        NextHop     SourcePeer  Origin  AsPath Weight
 ------------ -------        -------     ----------  ------  ------ ------
 10.0.10.228  10.0.10.0/24               10.0.10.228 Network         32768
@@ -57,7 +59,7 @@ LocalAddress Network        NextHop     SourcePeer  Origin  AsPath Weight
 10.0.10.229  10.1.1.0/24    10.0.10.228 10.0.10.228 IBgp    65011   32768
 10.0.10.229  10.1.2.0/24    172.168.1.1 172.168.1.1 EBgp    65011   32768
 10.0.10.229  10.1.2.0/24    10.0.10.228 10.0.10.228 IBgp    65011   32768
-
+```
 
 <!--Image References-->
 [0]: ./media/network-diagram.png "Network Diagram" 
