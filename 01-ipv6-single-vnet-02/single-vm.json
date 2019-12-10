@@ -116,8 +116,8 @@
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
     "OSVersion": "2019-Datacenter",
-    "scriptFileName": "enable-icmp-echo.ps1",
-    "scriptCommand": "enable-icmp-echo.ps1",
+    "scriptFileName": "enable-icmp-iperf.ps1",
+    "scriptCommand": "enable-icmp-iperf.ps1",
     "resourceGrpPublicIP6PrefixesRange": "[parameters('resourceGrpPublicIP6PrefixesRange')]",
     "publicIP6PrefixesRangeName": "pubipv6Range",
     "nsgName": "nsg"
