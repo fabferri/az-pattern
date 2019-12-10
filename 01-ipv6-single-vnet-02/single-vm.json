@@ -1,0 +1,343 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator'"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM"
+      }
+    },
+    "resourceGrpPublicIP6PrefixesRange":{
+      "type": "string",
+      "defaultValue": "ipv6-01",
+      "metadata": {
+        "description": "Resource Group containing the public IPv6 prefix range"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "uksouth",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "vnet5",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "vnetAddressSpacev4": {
+      "type": "string",
+      "defaultValue": "10.5.0.0/24",
+      "metadata": {
+        "description": "VNet address space"
+      }
+    },
+    "vnetAddressSpacev6": {
+      "type": "string",
+      "defaultValue": "cab:cab:cab::/48",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "defaultValue": "subnet1",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "subnet1AddressRangev4": {
+      "type": "string",
+      "defaultValue": "10.5.0.0/27",
+      "metadata": {
+        "description": "address space IPv4 of the subnet1"
+      }
+    },
+    "subnet1AddressRangev6": {
+      "type": "string",
+      "defaultValue": "cab:cab:cab:cab::/64",
+      "metadata": {
+        "description": "address space IPv6 of the subnet1"
+      }
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "vm5",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vmprivateIPv4": {
+      "type": "string",
+      "defaultValue": "10.5.0.10",
+      "metadata": {
+        "description": "IPv4 of the VM attached to the subnet"
+      }
+    },
+    "vmprivateIPv6": {
+      "type": "string",
+      "defaultValue": "cab:cab:cab:cab::a",
+      "metadata": {
+        "description": "IPv6 of the VM attached to the subnet1"
+      }
+    },
+    "scriptLocation": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern/master/00-scripts/scripts",
+      "metadata": {
+        "description": "The base URI where artifacts required by this template are located."
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "vnetName": "[parameters('vnetName')]",
+    "vnetAddressSpacev4": "[parameters('vnetAddressSpacev4')]",
+    "vnetAddressSpacev6": "[parameters('vnetAddressSpacev6')]",
+    "subnet1Name": "[parameters('subnet1Name')]",
+    "subnet1AddressRangev4": "[parameters('subnet1AddressRangev4')]",
+    "subnet1AddressRangev6": "[parameters('subnet1AddressRangev6')]",
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPassword": "[parameters('adminPassword')]",
+    "vmName": "[parameters('vmName')]",
+    "vmprivateIPv4": "[parameters('vmprivateIPv4')]",
+    "vmprivateIPv6": "[parameters('vmprivateIPv6')]",
+    "vmSize": "Standard_DS2_v2",
+    "imagePublisher": "MicrosoftWindowsServer",
+    "imageOffer": "WindowsServer",
+    "OSVersion": "2019-Datacenter",
+    "scriptFileName": "enable-icmp-echo.ps1",
+    "scriptCommand": "enable-icmp-echo.ps1",
+    "resourceGrpPublicIP6PrefixesRange": "[parameters('resourceGrpPublicIP6PrefixesRange')]",
+    "publicIP6PrefixesRangeName": "pubipv6Range",
+    "nsgName": "nsg"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-09-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressSpacev4')]",
+            "[variables('vnetAddressSpacev6')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefixes": [
+                "[variables('subnet1AddressRangev4')]",
+                "[variables('subnet1AddressRangev6')]"
+              ],
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-09-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-inbound-RDP-Ipv6-subnet1",
+            "properties": {
+              "description": "Allow RDP IPv6",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefixes": [
+                "[variables('subnet1AddressRangev6')]"
+              ],
+              "access": "Allow",
+              "priority": 1010,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-inbound-RDP-subnet1",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefixes": [
+                "[variables('subnet1AddressRangev4')]"
+              ],
+              "access": "Allow",
+              "priority": 1020,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-09-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmName'),'-pubIP6')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv6",
+        "publicIPPrefix": {
+          "id": "[resourceId(variables('resourceGrpPublicIP6PrefixesRange'),'Microsoft.Network/publicIPPrefixes', variables('publicIP6PrefixesRangeName'))]"
+        }
+      },
+      "sku": {
+        "name": "Standard"
+      }
+    },
+    {
+      "apiVersion": "2019-09-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmName'),'-pubIP')]",
+      "location": "[variables('location')]",
+      "comments": "create public IP for the VMs",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "apiVersion": "2019-09-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmName'),'-NIC' )]",
+      "location": "[variables('location')]",
+      "comments": "NIC of the VM",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName') )]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmName'),'-pubIP') )]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmName'),'-pubIP6') )]"
+      ],
+      "properties": {
+        "primary": true,
+        "enableIPForwarding": false,
+        "ipConfigurations": [
+          {
+            "name": "ipconfig-v4",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmprivateIPv4')]",
+              "privateIPAddressVersion": "IPv4",
+              "primary": true,
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmName'),'-pubIP' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet1Name'))]"
+              }
+            }
+          },
+          {
+            "name": "ipconfig-v6",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmprivateIPv6')]",
+              "privateIPAddressVersion": "IPv6",
+              "primary": false,
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmName'),'-pubIP6' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet1Name'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmName'),'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('OSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmName'),'-OSDisk')]",
+            "managedDisk": {
+              "storageAccountType": "[if(contains(toUpper(variables('vmsize')), 'S'),'Premium_LRS','Standard_LRS')]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmName'),'-NIC' )  )]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "condition": "[equals(variables('imageOffer'), 'WindowsServer')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'/customscriptWindows')]",
+      "apiVersion": "2019-03-01",
+      "location": "[variables('location')]",
+      "comments": "Custom script extension for Windows VMs",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.9",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[concat(parameters('scriptLocation'),  '/', variables('scriptFileName') )]"
+          ],
+          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./', variables('scriptCommand') )]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
