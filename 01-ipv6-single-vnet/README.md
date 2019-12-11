@@ -61,9 +61,13 @@ In the UDR **RT-subnet2**, only a single IPv6 route is required:
 
 
 List of scripts:
-* **01-ipv6.ps1**: powershell command to run the ARM template ipv6.json. Tou can run the script by command:
+* **01-ipv6.ps1**: powershell script to run the ARM template **ipv6.json**. Tou can run the script by command:
   ipv6.ps1 -adminUsername <USERNAME_ADMINISTRATOR_VMs> -adminPassword <PASSWORD_ADMINISTRATOR_VMs>
   or set the username and password inside the script
+* **02-single-vm.ps1**: powershell script to run the ARM template **single-vm.json**
+* **get-ips.ps1**: powershell script to grab the list of private and public IPv4 and IPv6 associated with the VMs deployed in a specific reosurce group 
+
+List of ARM templates:
 * **ipv6.json**: ARM template to deploy all the objects in **vnet1**
 * **single-vm.json**: ARM templat eto deploye the standalone **vm5**
 
@@ -78,7 +82,6 @@ The full deployment needs to be done in two steps:
 Before running the step2, check inside the ARM template the variable: **"resourceGrpPublicIP6PrefixesRange"** 
 the variable needs to be set with the resource group name created in the step1
  
-
 
 **ipv6.json** use "Public IP Prefix" to allocate a block of 8 consecutive public IPv6 addresses. 
 This block of consecutive public IPs are asigned to the **vm1**,**vm2**,**nva**,**vm5**, 
