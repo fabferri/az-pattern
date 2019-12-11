@@ -38,18 +38,20 @@ The configuration is based on:
 * **nsg3** is the network security group applied to the **subnet3**
 * **vm5** is a standalone Azure VM, deployed in different VNet, and it is used only to generate traffic to the public IPv6 of VMs in **vnet1**  
 
-A network diagram with IPv6 UDRs is shown underneath:
-
-[![2]][2]
-
 The ARM template assigns static IPv4 and IPv6 addresses to the VMs:
 
-| *VM*       | *private IPv4*            | *private IPv6*                 |
-| :--------- | :------------------------ |:------------------------------ |
+| *VM*       | *private IPv4*            | *private IPv6*                     |
+| :--------- | :------------------------ |:---------------------------------- |
 | **vm1**    | **10.0.0.10 (static IP)** | ``abc:abc:abc:abc1::a`` (static)   |
 | **vm2**    | **10.0.0.40 (static IP)** | ``abc:abc:abc:abc2::a`` (static)   |
 | **nva**    | **10.0.0.80 (static IP)** | ``abc:abc:abc:abc3::a`` (Static)   |
 | **vm5**    | **10.5.0.10 (static IP)** | ``ace:ace:ace:ace::a``  (static)   |
+
+
+A network diagram with IPv6 UDRs is shown underneath:
+
+[![2]][2]
+
 
 In the UDR **RT-subnet1** only a single IPv6 route is required:
 * the destination network is the IPv6 network ``abc:abc:abc:abc2::/64`` assigned to the subnet2
@@ -91,24 +93,24 @@ This block of consecutive public IPs are asigned to the **vm1**,**vm2**,**nva**,
 [![3]][3]
 
 
-#### <a name="IPv6"></a>Check the traffic through the public IPv6
-From **vm5** make http queries to the vm1 and catch the traffic by tcpdump:
+### <a name="IPv6"></a>Check the traffic through the public IPv6
+From **vm5** make http queries to the **vm1** and capture the traffic in **vm1** by tcpdump:
 
 [![4]][4]
 
-* by web browser: **http://[vm1-pubIPv6]**
-* by curl command: **curl -g -6 "http://[vm1-pubIPv6]/"**
+* by web browser in **vm5**: **http://[vm1-pubIPv6]**
+* by curl command in **vm5**: **curl -g -6 "http://[vm1-pubIPv6]/"**
 
 
 
-#### <a name="IPv6"></a>Check the traffic in transit through the nva
-From **vm1**  send http queries to the web server in **vm2** and run tcpdump in **nva** to capture the traffic in transit through:
+### <a name="IPv6"></a>Check the traffic in transit through the nva
+From **vm1** send http queries to the web server in **vm2** and run tcpdump in **nva** to capture the traffic in transit through:
 
 [![5]][5]
 
 
-* by web browser in vm1: **http://[``abc:abc:abc:abc2::a``]**
-* by curl command in vm1: **curl -g -6 "http://[``abc:abc:abc:abc2::a``]/"**
+* by web browser in **vm1**: **http://[``abc:abc:abc:abc2::a``]**
+* by curl command in **vm1**: **curl -g -6 "http://[``abc:abc:abc:abc2::a``]/"**
 
 
 <!--Image References-->
