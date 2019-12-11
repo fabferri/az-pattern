@@ -23,7 +23,7 @@ The article talks through a deployment of Azure VNet with IPv6 deployed by ARM t
 [![1]][1]
 
 The configuration is based on:
-* single Azure Virtual Network **vnet1** with IPv4 10.0.0.0/24 and IPv6 abc:abc:abc::/48 address space
+* single Azure Virtual Network **vnet1** with IPv4 10.0.0.0/24 and IPv6 ``abc:abc:abc::/48`` address space
 * in the VNet are configured three subnets **subnet1, subnet2, subnet3**, each with IPv4 and IPv6 networks
 * all the VMs run un dual stack IPv4 and IPv6
 * **vm1** is a Windows VM attached to the **subnet1**. By Azure powershell script extension an IIS is installed in the VM.
@@ -46,18 +46,18 @@ The ARM template assigns static IPv4 and IPv6 addresses to the VMs:
 
 | *VM*       | *private IPv4*            | *private IPv6*                 |
 | :--------- | :------------------------ |:------------------------------ |
-| **vm1**    | **10.0.0.10 (static IP)** | abc:abc:abc:abc1::a (static)   |
-| **vm2**    | **10.0.0.40 (static IP)** | abc:abc:abc:abc2::a (static)   |
-| **nva**    | **10.0.0.80 (static IP)** | abc:abc:abc:abc3::a (Static)   |
-| **vm5**    | **10.5.0.10 (static IP)** | ace:ace:ace:ace::a  (static)   |
+| **vm1**    | **10.0.0.10 (static IP)** | ``abc:abc:abc:abc1::a`` (static)   |
+| **vm2**    | **10.0.0.40 (static IP)** | ``abc:abc:abc:abc2::a`` (static)   |
+| **nva**    | **10.0.0.80 (static IP)** | ``abc:abc:abc:abc3::a`` (Static)   |
+| **vm5**    | **10.5.0.10 (static IP)** | ``ace:ace:ace:ace::a``  (static)   |
 
 In the UDR **RT-subnet1** only a single IPv6 route is required:
-* the destination network is the IPv6 network **abc:abc:abc:abc2::/64** assigned to the subnet2
-* the next-hop IP  is the static IPv6 address **abc:abc:abc:abc3::a** of the nva
+* the destination network is the IPv6 network ``abc:abc:abc:abc2::/64`` assigned to the subnet2
+* the next-hop IP  is the static IPv6 address ``abc:abc:abc:abc3::a`` of the nva
 
 In the UDR **RT-subnet2**, only a single IPv6 route is required:
-* the destination network is the IPv6 network **abc:abc:abc:abc1::/64** assigned to the subnet1
-* the next-hop IP is the static IPv6 address **abc:abc:abc:abc3::a** of the nva
+* the destination network is the IPv6 network ``abc:abc:abc:abc1::/64`` assigned to the subnet1
+* the next-hop IP is the static IPv6 address ``abc:abc:abc:abc3::a`` of the nva
 
 
 List of scripts:
@@ -102,8 +102,8 @@ From **vm1**  send http queries to the web server in **vm2** and run tcpdump in 
 [![5]][5]
 
 
-* by web browser in vm1: **http://[abc:abc:abc:abc2::a]**
-* by curl command in vm1: **curl -g -6 "http://[abc:abc:abc:abc2::a]/"**
+* by web browser in vm1: **http://[``abc:abc:abc:abc2::a``]**
+* by curl command in vm1: **curl -g -6 "http://[``abc:abc:abc:abc2::a``]/"**
 
 
 <!--Image References-->
