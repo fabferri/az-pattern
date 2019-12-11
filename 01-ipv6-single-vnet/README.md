@@ -73,12 +73,14 @@ List of ARM templates:
 
 
 **NOTE1**
+
 The full deployment needs to be done in two steps: 
 * step1: run the powershell **01-ipv6.ps1**
 * step2: at the end of step 1,  you can run the powershell **02-single-vm.ps1**
 
 
 **NOTE2**
+
 Before running the step2, check inside the ARM template the variable: **"resourceGrpPublicIP6PrefixesRange"** 
 the variable needs to be set with the resource group name created in the step1
  
