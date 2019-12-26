@@ -2,7 +2,7 @@
 pageTitle= 'ARM template to create a single VNet with three subnet and a VM working as ip forwarder'
 description= "ARM template to create a single VNet with three subnets and a VM working as ip forwarder"
 documentationcenter: na
-services=""
+services="networking"
 documentationCenter="na"
 authors="fabferri"
 manager=""
@@ -54,6 +54,7 @@ sysctl net.ipv4.ip_forward
 ```
 
 The sed command add the raw **net.ipv4.ip_forward = 1** to the file **/etc/sysctl.conf**
+
 To check the setting of ip forwarding:
 
 ```console
@@ -83,7 +84,7 @@ the command return **0** if the ip forwarder is disabled.
 
 To enable the ip forwarder in windows vm, run the powershell as administrator:
 
-``` powershell
+```powershell
 Import-Module ServerManager
 Add-WindowsFeature RemoteAccess, Routing, RSAT-RemoteAccess
 Get-NetAdapter | Set-NetIPInterface -Forwarding Enabled

@@ -18,20 +18,20 @@ editor=""/>
 
 ## Example of Azure Virtual Network deployment with IPv6 by ARM templates
 
-The article talks through a deployment of Azure VNet with IPv6, deployed by ARM template. An overview of network diagram is shown below.
+The article talks through a deployment of Azure VNet with IPv6, by ARM template. The network diagram is shown below:
 
 [![1]][1]
 
 The configuration is based on:
-* single Azure Virtual Network **vnet1** with IPv4 10.0.0.0/24 and IPv6 ``abc:abc:abc::/48`` address space
-* in the VNet are configured three subnets **subnet1, subnet2, subnet3**, each with IPv4 and IPv6 networks
+* single Azure VNet **vnet1** with IPv4 10.0.0.0/24 and IPv6 ``abc:abc:abc::/48`` address space
+* in **vnet1** are configured three subnets **subnet1, subnet2, subnet3**, each with IPv4 and IPv6 networks
 * all the VMs run un dual stack IPv4 and IPv6
 * **vm1** is a Windows VM attached to the **subnet1**. By Azure powershell script extension, IIS is installed in the VM.
 * **vm2** is a Windows VM attached to the **subnet2**. By Azure powershell script extension, IIS is installed in the VM.
 * **nva** is a CentOS VM attached to the **subnet3**. By Azure custom script extension the VM is configured with IPv6 forwarding
 * **RT-subnet1** is a UDR applied to the **subnet1**
 * **RT-subnet2** is a UDR applied to the **subnet2**
-* By UDRs **RT-subnet1, RT-subnet2** the IPv6 traffic between **vm1** and **vm2** is forced to transit through the **nva**
+* By UDRs **RT-subnet1, RT-subnet2** the IPv6 traffic between **vm1** and **vm2** is forced to pass through the **nva**
 * a NSG-network security group is to each subnet to filter the IPv6 traffic in ingress and egress from/to the VMs
 * **nsg1** is the network security group applied to the **subnet1**
 * **nsg2** is the network security group applied to the **subnet2**
@@ -63,28 +63,28 @@ In the UDR **RT-subnet2**, only a single IPv6 route is required:
 
 
 List of scripts:
-* **01-ipv6.ps1**: powershell script to run the ARM template **ipv6.json**. Tou can run the script by command:
+* **01-ipv6.ps1**: powershell script to run the ARM template **ipv6.json**. The administrator credential (username and password) can be specificied in the line:
   ipv6.ps1 -adminUsername <USERNAME_ADMINISTRATOR_VMs> -adminPassword <PASSWORD_ADMINISTRATOR_VMs>
   or set the username and password inside the script
 * **02-single-vm.ps1**: powershell script to run the ARM template **single-vm.json**
-* **get-ips.ps1**: powershell script to grab the list of private and public IPv4 and IPv6 associated with the VMs deployed in a specific reosurce group 
+* **get-ips.ps1**: powershell script to grab the list of private and public IPv4 and IPv6 associated with the VMs deployed in a specific resource group 
 
 List of ARM templates:
 * **ipv6.json**: ARM template to deploy all the objects in **vnet1**
-* **single-vm.json**: ARM templat eto deploye the standalone **vm5**
+* **single-vm.json**: ARM template to deploy the standalone **vm5**
 
 
 **NOTE1**
 
 The full deployment needs to be done in two steps: 
 * step1: run the powershell **01-ipv6.ps1**
-* step2: at the end of step 1,  you can run the powershell **02-single-vm.ps1**
+* step2: at the end of step 1, run the powershell **02-single-vm.ps1**
 
 
 **NOTE2**
 
 Before running the step2, check inside the ARM template the variable: **"resourceGrpPublicIP6PrefixesRange"** 
-the variable needs to be set with the resource group name created in the step1
+that variable needs to be set with the resource group name created in the step1
  
 
 **ipv6.json** use "Public IP Prefix" to allocate a block of 8 consecutive public IPv6 addresses. 
