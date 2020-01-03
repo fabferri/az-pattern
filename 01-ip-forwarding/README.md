@@ -38,8 +38,8 @@ Two static routes (User Defined Routes), associated with the subnet2 and subnet3
 
 > [!NOTE]
 > Before spinning up the ARM template you should:
-> * edit the file **vnet-nva.json** and set your Azure subscription name
-> * edit the file **vnet-nva.json** and set the administrator username and password of the Azure VMs 
+> * edit the file **vnet-nva.ps1** and set your Azure subscription name (variable: $subscriptionName)
+> * edit the file **vnet-nva.ps1** and set the administrator username and password of the Azure VMs 
 >
 
 Let's discuss the different way to set the IP forwarder in Linux and Windows.
@@ -53,7 +53,7 @@ systemctl restart network.service
 sysctl net.ipv4.ip_forward
 ```
 
-The sed command add the raw **net.ipv4.ip_forward = 1** to the file **/etc/sysctl.conf**
+The sed command add the row **net.ipv4.ip_forward = 1** to the file **/etc/sysctl.conf**
 
 To check the setting of ip forwarding:
 
@@ -74,7 +74,7 @@ the command return **0** if the ip forwarder is disabled.
 
 
 > > [!NOTE]
-> in a linux VM to enable the ip forwarder on the fly (++not persistent to the reboot++), use the command:
+> in a linux VM to enable the ip forwarder on the fly (++not persistent through a reboot++), use the command:
 > **sysctl -w net.ipv4.ip_forward=1**
 >
 
