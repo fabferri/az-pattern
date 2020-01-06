@@ -111,9 +111,13 @@ By tcpdump check the traffic:
 
 ```console
 [root@vm1 ~]# tcpdump -nqttt -i eth0 host 10.0.1.10 and host 10.0.1.20
+
+-n: don't convert addresses (host addresses, port numbers, etc.) to names
+-q: print less protocol information so output lines are shorter
+-ttt: print a delta time between current and previous line on each dump line
 ```
 
-To monitor the volume of traffic on vm1 and vm2 we can use a tool like **nload**:
+To monitor the total traffic values (in/out) on vm1 and vm2 we can use a tool like **nload**:
 
 ```console
 yum install epel-release
