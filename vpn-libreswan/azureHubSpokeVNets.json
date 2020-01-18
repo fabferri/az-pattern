@@ -254,12 +254,12 @@
         "vmCount": "[length(variables('vmArray'))]"
     },
     "resources": [
-        //NSG 
         {
             "apiVersion": "2018-01-01",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsgarray')[copyIndex()].name]",
             "location": "[variables('nsgarray')[copyIndex()].location]",
+            "comments": "NSG",
             "properties": {
                 "securityRules": [
                     {
@@ -352,9 +352,6 @@
                 "count": "[variables('vNetCount')]"
             }
         },
-        //////////////////////////////////////////////
-        //////////////////////////////////////////////
-        // VNet peering 
         {
             "apiVersion": "2018-01-01",
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
@@ -366,10 +363,10 @@
             ],
             "comments": "VNet peering",
             "properties": {
-                "allowVirtualNetworkAccess": "true",
-                "allowForwardedTraffic": "true",
-                "allowGatewayTransit": "false",
-                "useRemoteGateways": "false",
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
                     "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNetPeeringArray')[copyIndex()].vNetRemote)]"
                 }
@@ -379,12 +376,12 @@
                 "count": "[variables('vNetPeeringArrayCount')]"
             }
         },
-        // Routing tables
         {
             "type": "Microsoft.Network/routeTables",
             "name": "[variables('rtArray')[copyIndex()].name]",
             "apiVersion": "2018-01-01",
             "location": "[variables('rtArray')[copyIndex()].location]",
+            "comments": "Routing table",
             "dependsOn": [],
             "properties": {
                 "routes": [
@@ -472,12 +469,12 @@
                 }
             }
         },
-        // Public IP addresses VMs
         {
             "apiVersion": "2016-03-30",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
             "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Public IP addresses VMs",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic"
             },
