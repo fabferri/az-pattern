@@ -81,7 +81,8 @@ The network diagram with details related to the configuration with four VNets an
 [![5]][5]
 
 
-The **vpn2.json** reference the existing public IP of VPN gateway. As discussed in the official Mcirosoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
+The **vpn2.json** reference the existing public IP of VPN gateway. As discussed in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
+
 To get the existing public IP of the VPN Gateway: 
 ```json
 reference(variables('gateway1PublicIP1Id'),'2017-10-01').ipAddress**
@@ -92,7 +93,7 @@ To get the exiting BGP private IPs of the VPN gateway:
 reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2017-10-01').bgpSettings.bgpPeeringAddress
 ```
 
-VPN public IPs and BGP IPs are required to define the locat network gateways:
+VPN public IPs and BGP IPs are both required to define the local network gateways:
 ```json 
         {
             "type": "Microsoft.Network/localNetworkGateways",
