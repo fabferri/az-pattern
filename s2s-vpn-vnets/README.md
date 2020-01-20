@@ -80,8 +80,8 @@ The network diagram with details related to the configuration with four VNets an
  
 [![5]][5]
 
-
-The **vpn2.json** reference the existing public IP of VPN gateway. As discussed in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
+#### <a name="vpn2.json"></a> **Reference an existing public IP in ARM template**
+The **vpn2.json** references the existing public IPs of VPN gateway. As reported in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
 
 To get the existing public IP of the VPN Gateway: 
 ```json
@@ -92,6 +92,10 @@ To get the exiting BGP private IPs of the VPN gateway:
 ```json
 reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2017-10-01').bgpSettings.bgpPeeringAddress
 ```
+the statement returs a string with two private IP apart from comma. 
+
+* the function **split** accepts in input a string and returns an array of strings that contains the substrings of the input string that are delimited by the specified delimiters. 
+* the function **first** accepts in input an array of string and returns the A less elegantfirst element of the array.
 
 VPN public IPs and BGP IPs are both required to define the local network gateways:
 ```json 
@@ -112,6 +116,12 @@ VPN public IPs and BGP IPs are both required to define the local network gateway
             }
         }
 ```
+
+A less elegant way to extact the first BGP IP of the VPN Gateway is to use the index of array:
+```json
+"[split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name'))).bgpSettings.bgpPeeringAddress , ',')[0]]",
+```
+
 <!--Image References-->
 
 [1]: ./media/network-diagram1.png "network diagram1"
