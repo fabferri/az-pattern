@@ -49,7 +49,7 @@ The network configuration is reported in the diagram:
 * folder **s2s-vpn-4vpngtw-6tunnels**: contains ARM templates to create site-to-site VPN between four VNets.
    * The Azure VPN gateways are all deployed in configuration active-active. 
    * The script creates three different VNets in three Azure regions (specified in the ARM template with parameters **location1, location2, location3 and location4** ). 
-   * In each gateway subnet is create a VPN Gateway.
+   * In each gateway subnet is create a VPN Gateway:
       * a vpnGtw1 is created in a vnet1
       * a vpnGtw2 is created in a vnet2
       * a vpnGtw3 is created in a vnet3
@@ -90,15 +90,15 @@ The network diagram with details related to the configuration with four VNets an
  
 [![5]][5]
 
-#### <a name="vpn2.json"></a> **Reference an existing public IP in ARM template**
+### <a name="vpn2.json"></a> **Reference an existing public IP in ARM template**
 The **vpn2.json** references the existing public IPs of VPN gateway. As reported in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
 
-To get the existing public IP of the VPN Gateway: 
+In the AM template **vpn2.json** to get the existing public IP of the VPN Gateway: 
 ```json
 reference(variables('gateway1PublicIP1Id'),'2017-10-01').ipAddress**
 ```
 
-To get the exiting BGP private IPs of the VPN gateway: 
+In the same way, to get the exiting BGP private IPs of the VPN gateway: 
 ```json
 reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2017-10-01').bgpSettings.bgpPeeringAddress
 ```
