@@ -20,33 +20,43 @@ editor=""/>
 # Azure ARM templates to create site-to-site VPN between VNets
 This post contains different ARM templates to create site-to-site VPN between Azure VNets.
 The ARM templates are stored in different folders: 
-* folder **s2s-vpn-2vpngtw-2tunnels**: contains ARM templates to create site-to-site VPN between two VNets. The Azure VPN gateway are deployed in configuration active-active. The script creates two different VNets in two different Azure regions specified by paramenters **location1, location2**. In each gateway subnet is created a VPN Gateway. A total nuber of 2 IPSec tunnels are established between the Azure VPN Gateways. 
-In each VNet is create a single Azure VM.
+* folder **s2s-vpn-2vpngtw-2tunnels**: contains ARM templates to create site-to-site VPN between two VNets. 
+   * The Azure VPN gateway are deployed in configuration active-active. 
+   * The script creates two different VNets in two different Azure regions specified by paramenters **location1, location2**. 
+   * In each gateway subnet is created a VPN Gateway:
+      * a vpnGtw1 is created in a vnet1
+      * a vpnGtw2 is created in a vnet2
+   * A total nuber of 2 IPSec tunnels are established between the Azure VPN Gateways. 
+   * In each VNet is create a single Azure VM.
 The network configuration is reported in the diagram:
 
 [![1]][1]
 
-* folder **s2s-vpn-3vpngtw-4tunnels**: contains ARM templates to create site-to-site VPN between three VNets. The Azure VPN gateways are all deployed in configuration active-active. The script creates three different VNets in three Azure regions (specified in the ARM template by paramenters **location1, location2, location3**). In each gateway subnet is create a VPN Gateway.
-   * a vpnGtw1 is created in a vnet1
-   * a vpnGtw2 is created in a vnet2
-   * a vpnGtw3 is created in a vnet3
-
-Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
-Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
+* folder **s2s-vpn-3vpngtw-4tunnels**: contains ARM templates to create site-to-site VPN between three VNets. 
+   * The Azure VPN gateways are all deployed in configuration active-active. 
+   * The script creates three different VNets in three Azure regions (specified in the ARM template by paramenters **location1, location2, location3**). 
+   * In each gateway subnet is create a VPN Gateway:
+      * a vpnGtw1 is created in a vnet1
+      * a vpnGtw2 is created in a vnet2
+      * a vpnGtw3 is created in a vnet3
+   * Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
+   * Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
 
 The network configuration is reported in the diagram:
 
 [![2]][2]
 
-* folder **s2s-vpn-4vpngtw-6tunnels**: contains ARM templates to create site-to-site VPN between four VNets. The Azure VPN gateways are all deployed in configuration active-active. The script creates three different VNets in three Azure regions (specified in the ARM template with parameters **location1, location2, location3 and location4** ). In each gateway subnet is create a VPN Gateway.
-   * a vpnGtw1 is created in a vnet1
-   * a vpnGtw2 is created in a vnet2
-   * a vpnGtw3 is created in a vnet3
-   * a vpnGtw4 is created in a vnet4
-
-Two IPSec tunnels are established between vpnGtw1-vpnGtw2 
-Two IPSec tunnels are established between vpnGtw1-vpnGtw3 
-Two IPSec tunnels are established between vpnGtw1-vpnGtw4
+* folder **s2s-vpn-4vpngtw-6tunnels**: contains ARM templates to create site-to-site VPN between four VNets.
+   * The Azure VPN gateways are all deployed in configuration active-active. 
+   * The script creates three different VNets in three Azure regions (specified in the ARM template with parameters **location1, location2, location3 and location4** ). 
+   * In each gateway subnet is create a VPN Gateway.
+      * a vpnGtw1 is created in a vnet1
+      * a vpnGtw2 is created in a vnet2
+      * a vpnGtw3 is created in a vnet3
+      * a vpnGtw4 is created in a vnet4
+   * Two IPSec tunnels are established between vpnGtw1-vpnGtw2 
+   * Two IPSec tunnels are established between vpnGtw1-vpnGtw3 
+   * Two IPSec tunnels are established between vpnGtw1-vpnGtw4
 
 The network configuration is reported in the diagram:
 
