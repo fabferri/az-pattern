@@ -218,12 +218,11 @@ $link  = New-AzPrivateDnsVirtualNetworkLink -ResourceGroupName $rgName `
 }
 
 
-if (-not $autoregistration )
-{
-  write-host "Manual Registration of private link in private DNS zone" -ForegroundColor Green -BackgroundColor Black
-  # get the nic associated with the private endpoint
-  $nic = Get-AzResource -ResourceId $privateEndpoint.NetworkInterfaces[0].Id -ApiVersion "2019-09-01" 
-  foreach ($ipconfig in $nic.properties.ipConfigurations) { 
+
+write-host "Manual Registration of private link in private DNS zone" -ForegroundColor Green -BackgroundColor Black
+# get the nic associated with the private endpoint
+$nic = Get-AzResource -ResourceId $privateEndpoint.NetworkInterfaces[0].Id -ApiVersion "2019-09-01" 
+foreach ($ipconfig in $nic.properties.ipConfigurations) { 
      foreach ($fqdn in $ipconfig.properties.privateLinkConnectionProperties.fqdns) { 
         Write-Host "$($ipconfig.properties.privateIPAddress) $($fqdn)"  
         $recordName = $fqdn.split('.',2)[0] 
@@ -231,6 +230,6 @@ if (-not $autoregistration )
         New-AzPrivateDnsRecordSet -Name $recordName -RecordType A -ZoneName "privatelink.blob.core.windows.net"  `
           -ResourceGroupName $rgName -Ttl 600 `
           -PrivateDnsRecords (New-AzPrivateDnsRecordConfig -IPv4Address $ipconfig.properties.privateIPAddress)  
-     } 
-  } 
-}
+   } 
+} 
+
