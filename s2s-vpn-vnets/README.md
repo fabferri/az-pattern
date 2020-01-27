@@ -26,7 +26,7 @@ The ARM templates are stored in different folders:
    * In each gateway subnet is created a VPN Gateway:
       * a vpnGtw1 is created in a vnet1
       * a vpnGtw2 is created in a vnet2
-   * A total nuber of 2 IPSec tunnels are established between the Azure VPN Gateways. 
+   * Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
    * In each VNet is create a single Azure VM.
 The network configuration is reported in the diagram:
 
@@ -40,7 +40,7 @@ The network configuration is reported in the diagram:
       * a vpnGtw2 is created in a vnet2
       * a vpnGtw3 is created in a vnet3
    * Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
-   * Two IPSec tunnels are created between vpnGtw1-vpnGtw2 
+   * Two IPSec tunnels are created between vpnGtw1-vpnGtw3 
 
 The network configuration is reported in the diagram:
 
