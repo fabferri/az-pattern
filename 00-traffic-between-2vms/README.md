@@ -26,13 +26,19 @@ The article shows few methods to generate traffic between two Azure VMs, with ho
 
 
 
-> [!NOTE]
-> Before spinning up the ARM template you should:
-> * edit the file **vms.json** and set your Azure subscription name
-> * edit the file **vms.json** and set the administrator username and password of the Azure VMs
+> [!NOTE1]
+> Before spinning up the ARM template you should edit the file **vms.ps1** and set:
+> * the Azure subscription name
+> * the administrator username and password of the Azure VMs
+>
+> [!NOTE2]
+> The folder **with-script-extension** contains the file to deploy the Azure VMs with custom script extension.
+> Custom script extension run at the end of VM deployment and provide an efffecive way to customize the setup. 
+> For linux VM are installed an apache server, iperf3, nload (interactive bandwidth consumption of the VM)
+> for Windows VM are installed and IIS with custom web page and enabled the ICMP echo through the firewall 
 >
 
-
+Below some guidelines to manually install few tools in the linux VMs.
 
 ### <a name="iperf3"></a>1. iperf3 (Linux and Windows)
 [iperf3](https://iperf.fr/) works in Linux and Windows.
