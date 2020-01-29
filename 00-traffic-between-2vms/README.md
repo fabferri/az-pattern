@@ -34,7 +34,7 @@ The article shows few methods to generate traffic between two Azure VMs, with ho
 >
 > [!NOTE2]
 > The folder **with-script-extension** contains the file to deploy the Azure VMs with custom script extension.
-> Custom script extension run at the end of VM deployment and provide an efffecive way to customize the setup. 
+> Custom script extensions run at the end of VM deployment and provide an efffecive way to customize the setup. 
 >
 > - for linux VM are installed an apache server, iperf3, nload (interactive bandwidth consumption of the VM)
 > - for Windows VM are installed and IIS with custom web page and enabled the ICMP echo through the firewall 
