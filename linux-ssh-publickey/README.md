@@ -73,7 +73,7 @@ where:
 
 <!--Image References-->
 
-[1]: <img src="./media/windows-optional-features.png" width="48"> "windows 10 optional features"
+[1]: ./media/windows-optional-features.png "windows 10 optional features"
 [2]: ./media/open-ssh-client.png "OpenSSH client"
 
 <!--Link References-->
