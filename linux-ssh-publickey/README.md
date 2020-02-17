@@ -20,7 +20,7 @@ editor=""/>
 ## Connect in SSH to Azure Linux VM by public key authetication method 
 SSH offers several options for user authentication and the most common ones are passwords and public key authentication methods. The principle of public key is to have a cryptographic key pair, public key and private key, where the public key is configured on the server to authorize access to every SSH client who has a copy of the private key.
 
-Windows machines allow you to use native tools to establish a SSH connection, but you need first to make sure that the feature Openssh windows client is installed. Normally is not installed by default so you will need first to do it. Go to Windows -> Settings -> Apps -> Manage optional feature 
+Windows machines allow you to use native tools to establish a SSH connection, but you need first to make sure that the feature Openssh windows client is installed. Normally is not installed by default so you will need first to do it. Go to **Windows -> Settings -> Apps -> Manage** optional feature:
 
 [![1]][1]
 
@@ -73,7 +73,7 @@ where:
 
 <!--Image References-->
 
-[1]: ./media/windows-optional-features.png "windows 10 optional features"
+[1]: <img src="./media/windows-optional-features.png" width="48"> "windows 10 optional features"
 [2]: ./media/open-ssh-client.png "OpenSSH client"
 
 <!--Link References-->
