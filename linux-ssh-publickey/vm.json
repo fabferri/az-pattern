@@ -1,0 +1,224 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "azureRegion1": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "azure region where is deployed the first hub vnet"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "admin username"
+      }
+    },
+    "adminPasswordOrKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "authenticationType": {
+      "type": "string",
+      "defaultValue": "sshPublicKey",
+      "allowedValues": [
+        "sshPublicKey",
+        "password"
+      ],
+      "metadata": {
+        "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+      }
+    }
+  },
+  "variables": {
+    "linuxConfiguration": {
+      "disablePasswordAuthentication": true,
+      "ssh": {
+        "publicKeys": [
+          {
+            "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('adminPasswordOrKey')]"
+          }
+        ]
+      }
+    },
+    "authenticationType": "[parameters('authenticationType')]",
+    "adminPasswordOrKey": "[parameters('adminPasswordOrKey')]",
+    "vNet": {
+      "location": "[parameters('azureRegion1')]",
+      "name": "vNet",
+      "addressSpace1Prefix": "10.0.1.0/24",
+      "subnet1Name": "subnet1",
+      "subnet1Prefix": "10.0.1.0/24"
+    },
+    "nsg": {
+      "name": "nsg",
+      "location": "[variables('vNet').location]"
+    },
+    "adminUsername": "[parameters('adminUsername')]",
+    "vmsize": "Standard_B1ls",
+    "vmarray": [
+      {
+        "location": "[variables('vNet').location]",
+        "vmName": "vm1",
+        "vmSize": "[variables('vmsize')]",
+        "imagePublisher": "openlogic",
+        "imageOffer": "CentOS",
+        "OSVersion": "7.7",
+        "VNetName": "[variables('vNet').name]",
+        "subnetName": "[variables('vNet').subnet1Name]",
+        "privateIP": "10.0.1.10",
+        "ipforwarding": false
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsg').name]",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('nsg').location]",
+      "comments": "Create the Network Security Group",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH-rule",
+            "properties": {
+              "description": "allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 500,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vNet').name]",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('vNet').location]",
+      "comments": "Create the Azure vNet",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsg').name)]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vNet').addressSpace1Prefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vNet').subnet1Name]",
+            "properties": {
+              "addressPrefix": "[variables('vNet').subnet1Prefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg').name)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+      "apiVersion": "2019-11-01",
+      "comments": "Public IP address VMs",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      },
+      "copy": {
+        "name": "publicIpCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('vmArray')[copyIndex()].vmName,'-pubIP' )]",
+        "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].VNetName))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].VNetName),'/subnets/', variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ],
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]"
+      },
+      "copy": {
+        "name": "nicCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "apiVersion": "2019-07-01",
+      "comments": "Create multiple VMs in a loop on VMArray",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPasswordOrKey')]",
+          "linuxConfiguration": "[if(equals(variables('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
+            "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
+            "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OS')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    }
+  ]
+}
