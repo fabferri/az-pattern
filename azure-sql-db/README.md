@@ -27,24 +27,36 @@ editor=""/>
 | **sql-dbs-pws.ps1** | powershell script to deploy the SQL server with databases           |
 
 > *Note1*
+>
 > Before running **sql-dbs.ps1** set the input variables:
 > $administratorLogin: name of the SQL administrator
+>
 > $administratorLoginPassword: password of the SQL server
+>
 > $subscriptionName : name of the Azure subscription
+>
 > $location         : name of the Azure region
+>
 > $rgName           : name of the Azure resource group
 >
 
 > *Note2*
+>
 > Before running **sql-dbs-pws.ps1** set the input variables:
+>
+>
 > $administratorLogin: name of the SQL administrator
+>
 > $administratorLoginPassword: password of the SQL server
+>
 > $subscriptionName : name of the Azure subscription
+>
 > $location         : name of the Azure region
+>
 > $rgName           : name of the Azure resource group
 >
 
-The  **sql-dbs.json** and **sql-dbs-pws.ps1** are possibile alternative ways to make the same deployment; use one of them.
+The  **sql-dbs.json** and **sql-dbs-pws.ps1** are possibile alternative ways to make the same deployment: use one of them.
 
 <!--Image References-->
 
