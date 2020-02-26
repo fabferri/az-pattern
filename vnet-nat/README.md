@@ -174,9 +174,11 @@ The number of .Net tasks in each client.exe can be increased if an higher number
 
 The total number of total TCP connections can be checked out by powershell command **Get-NetTCPConnection** in the receivers [vnet2-vm3 (receiver), vnet2-vm4 (receiver), vnet2-vm5 (receiver)] :
 
+```console
 in vnet2-vm3 (receiver): PS C:\> Get-NetTCPConnection -LocalPort 6000 | Measure-Object –Line
 in vnet2-vm4 (receiver): PS C:\> Get-NetTCPConnection -LocalPort 6010 | Measure-Object –Line
 in vnet2-vm5 (receiver): PS C:\> Get-NetTCPConnection -LocalPort 6020 | Measure-Object –Line 
+```
 
 The same information can be carve out by command line **netstat -an -p TCP** :
 
