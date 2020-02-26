@@ -50,7 +50,7 @@ A good number of SNAT flows through the NAT Gateway can be established by two ap
 *	**server.exe** (receiver role) accepts incoming connections from a remote client on local custom port (i.e. TCP port 6000).
 *	**client.exe** (sender role) uses .NET tasks to open multiple TCP sockets in parallel and send a small amount of data (datetime, local IP, local TCP port, thread ID) to a remote receiver.
 
-In our network configuration the receivers run in the VMs of vnet2, the senders run in the VMs of vnet1.  
+The NAT gateway support SNAT outboud, with TCP sessions initilized from the internal VMs to internet.  In our network configuration the receivers run in the VMs of vnet2, the senders run in the VMs of vnet1.  
 
 > *Note*
 >
