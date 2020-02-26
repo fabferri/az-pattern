@@ -1,0 +1,253 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator'"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "vnetName": "vnet2",
+    "vnetAddressSpace": "10.0.0.0/24",
+    "subnet1AddressRange": "10.0.0.0/24",
+    "subnet1Name": "subnet1",
+    "subnet1Id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet1Name'))]",
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPassword": "[parameters('adminPassword')]",
+   
+    "vmArray":[
+      {
+        "location": "[variables('location')]",
+        "vmName": "vm3",
+        "vmSize": "Standard_DS2_v2",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "OSVersion": "2019-Datacenter",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet1Name')]",
+        "privateIPv4": "10.0.0.10",
+        "enableIPForwarding": false
+      },
+      {
+        "location": "[variables('location')]",
+        "vmName": "vm4",
+        "vmSize": "Standard_DS2_v2",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "OSVersion": "2019-Datacenter",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet1Name')]",
+        "privateIPv4": "10.0.0.20",
+        "enableIPForwarding": false
+      },
+      {
+        "location": "[variables('location')]",
+        "vmName": "vm5",
+        "vmSize": "Standard_DS2_v2",
+        "imagePublisher": "MicrosoftWindowsServer",
+        "imageOffer": "WindowsServer",
+        "OSVersion": "2019-Datacenter",
+        "vnetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet1Name')]",
+        "privateIPv4": "10.0.0.30",
+        "enableIPForwarding": false
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]",
+    "nsgName": "nsg"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressSpace')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet1AddressRange')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-RDP-inbound",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1003,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-SSH-inbound",
+            "properties": {
+              "description": "Allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1004,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-app-inbound",
+            "properties": {
+              "description": "Allow custom app",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "6000-6100",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1020,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+      "copy": {
+        "name": "publicIpLoop",
+        "count": "[variables('vmCount')]"
+      },
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "comments": "create public IP for the VMs",
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "apiVersion": "2019-11-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "copy": {
+        "name": "NICloop",
+        "count": "[variables('vmCount')]"
+      },
+      "comments": "NIC of the VM",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName )]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]"
+      ],
+      "properties": {
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIPv4]",
+              "privateIPAddressVersion": "IPv4",
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-10-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
+            "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
+            "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OSDisk')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    }
+  ]
+}
