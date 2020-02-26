@@ -47,13 +47,10 @@ The vm2 in vnet1 is used as jump box to access to the [vnet1-vm1,vnet1-vm3, vnet
 
 A good number of SNAT flows through the NAT Gateway can be established by two applications written in C#:
 
-*	**server.exe** (receiver role) accepts connections on custom port (i.e. TCP port 6000) coming from the remote client
-*	**client.exe** (sender role) uses .NET tasks to open multiple TCP sockets in parallel and send a small amount of data (datetime, local IP, local TCP port, thread ID) to the server.
+*	**server.exe** (receiver role) accepts incoming connections from a remote client on local custom port (i.e. TCP port 6000).
+*	**client.exe** (sender role) uses .NET tasks to open multiple TCP sockets in parallel and send a small amount of data (datetime, local IP, local TCP port, thread ID) to a remote receiver.
 
-The VMs in vnet2 have the role of receiver (**server.exe** is listening on specific port to accept incoming TCP connections).
-
-The VMs in the vnet1 have the role of sender (**client.exe** code can open multiple TCP connection to a receiver).
-
+In our network configuration the receivers run in the VMs of vnet2, the senders run in the VMs of vnet1.  
 
 > *Note*
 >
