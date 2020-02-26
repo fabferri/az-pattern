@@ -32,20 +32,26 @@ In summary:
 
 ### <a name="NetworkDiagram"></a>1. Network diagram
 The network configuration is based on two VNets, vnet1 and vnet2.
+
 A NAT gateway is associated with the subnet1 in vnet1.
+
 A single public IP and public prefix /31 is associated with the NAT gateway to manage the SNAT.
 The vnet2 has three VMs, each with public IP.
 
 [![1]][1]
 
 All the VMs are deployed with:
-*	StandardD2S_v2 (2 vcpus, 7 GiB memory) SKU
+*	Standard_D2_v2 (2 vcpus, 7 GiB memory) SKU
 *	Windows 2019
 The vm2 in vnet1 is used as jump box to access to the [vnet1-vm1,vnet1-vm3, vnet1-vm4].
+
 A good number of SNAT flows through the NAT Gateway can be established by two applications written in C#:
+
 *	**server.exe** (receiver role) accepts connections on custom port (i.e. TCP port 6000) coming from the remote client
 *	**client.exe** (sender role) uses .NET tasks to open multiple TCP sockets in parallel and send a small amount of data (datetime, local IP, local TCP port, thread ID) to the server.
-The VMs in vnet2 have the role of receiver (**server.exe** is listening on specific TCP port to accept incoming connections)
+
+The VMs in vnet2 have the role of receiver (**server.exe** is listening on specific port to accept incoming TCP connections).
+
 The VMs in the vnet1 have the role of sender (**client.exe** code can open multiple TCP connection to a receiver).
 
 
@@ -53,9 +59,9 @@ The VMs in the vnet1 have the role of sender (**client.exe** code can open multi
 >
 > Before running **nat-gw.ps1**  and **vm.ps1** set the input variables:
 >
-> $$adminUsername: administrator username of the Azure VMs
+> $adminUsername: administrator username of the Azure VMs
 >
-> $$adminPassword: administrator password of the Azure VMs
+> $adminPassword: administrator password of the Azure VMs
 >
 > $subscriptionName : name of the Azure subscription
 >
