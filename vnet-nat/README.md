@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'NAT VNet'
-description= "NAT VNet wit ARM template"
+pageTitle= 'VNet NAT'
+description= "VNet NAT wit ARM template"
 documentationcenter: na
 services="networking"
 documentationCenter="na"
@@ -17,7 +17,7 @@ editor=""/>
    ms.date="26/02/2020"
    ms.author="fabferri" />
 
-## Azure ARM template to deploy and test NAT VNet 
+## Azure ARM template to deploy and test VNet NAT 
 
 Azure Virtual Network offers network address translation (NAT) to simplify outbound-only internet connectivity for virtual networks (VNets). All outbound connectivity uses the public IP address and/or public IP prefix resources connected to the virtual network NAT. Outbound connectivity is possible without a load balancer or public IP addresses directly attached to virtual machines. VNet NAT (preview) is fully managed, highly resilient.
 In summary:
