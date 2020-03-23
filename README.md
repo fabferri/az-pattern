@@ -38,7 +38,6 @@ List of Azure ARM templates and scripts:
 * [Multiple VNet-to-VNet with VPN Gateways](./vpn-vnet-2-vnet/)
 * [Interconnection of two Azure hub-spoke VNets through site-to-site VPN with libreswan](./vpn-libreswan/)
 * [powershell script to get the list of BGP communities in ExpressRoute Microsoft peering](./expressroute-ms-peering-bgp-community/)
-* [Azure VMs with multiple NICs](./01-vms-multiple-nics-01/README.md)
 * [Powershell script to capture Windows system counters](./win-sys-counters/)
 
 
