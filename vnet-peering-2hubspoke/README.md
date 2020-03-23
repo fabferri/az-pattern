@@ -34,14 +34,14 @@ The ARM template creates the full environment, inclusive of UDRs. After the depl
 
 > [!NOTE]
 > Before spinning up the ARM template you should:
-> * set the Azure subscription name in the file **vnet-peering.ps1**
-> * set the administrator username and password in the file **vnet-peering.json**
+> * set the Azure subscription name in the file **hub-spoke.ps1**
+> * set the administrator username and password in the file **hub-spoke.json**
 >
 
 
 ## <a name="EnableIPForwarding"></a>1. Enable ip forwarding on nva1 and nva2
 
-Enable ip forwarding in nv1 and nv2:
+Enable ip forwarding in nva1 and nva2:
 
 ```
 sed -i -e '$a\net.ipv4.ip_forward = 1' /etc/sysctl.conf
