@@ -1,0 +1,160 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vNet1": {
+            "location": "[variables('location')]",
+            "name": "VNet1",
+            "addressSpacePrefix1": "10.0.1.0/24",
+            "addressSpacePrefix2": "10.0.2.0/24",
+            "subnet1Name": "subnet1",
+            "subnet2Name": "subnet2",
+            "subnet1Prefix": "10.0.1.0/24",
+            "subnet2Prefix": "10.0.2.0/24"
+        },
+        "maxNumUsableIP": 254,
+        "offset1": 4, 
+        "ipconfigNum": "[div(sub(variables('maxNumUsableIP'),variables('offset1')),2)]",
+        "offset2": "[add(variables('ipconfigNum'),variables('offset1'))]",
+        "offset3": 4,
+        "ipconfigNum3":"[sub(variables('maxNumUsableIP'),variables('offset3'))]",
+        "copy": [
+            {
+                "name": "ipConf-nic1",
+                "count": "[variables('ipconfigNum')]",
+                "input": {
+                    "name": "[concat('IpConf-', string(add(variables('offset1'),copyIndex('ipConf-nic1'))) )]",
+                    "properties": {
+                        "primary": "[if(equals(copyIndex('ipConf-nic1'), 0), bool('true'), bool('false'))]",
+                        "privateIPAllocationMethod": "Static",
+                        "privateIPAddress": "[concat('10.0.1.', string(add(variables('offset1'),copyIndex('ipConf-nic1')))  )]",
+                        "subnet": {
+                            "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name),'/subnets/', variables('vNet1').subnet1Name)]"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "ipConf-nic2",
+                "count": "[variables('ipconfigNum')]",
+                "input": {
+                    "name": "[concat('IpConf-', string(add(variables('offset2'),copyIndex('ipConf-nic2'))) )]",
+                    "properties": {
+                        "primary": "[if(equals(copyIndex('ipConf-nic2'), 0), bool('true'), bool('false'))]",
+                        "privateIPAllocationMethod": "Static",
+                        "privateIPAddress": "[concat('10.0.1.', string(add(variables('offset2'),copyIndex('ipConf-nic2')))  )]",
+                        "subnet": {
+                            "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name),'/subnets/', variables('vNet1').subnet1Name)]"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "ipConf-nic3",
+                "count": "[variables('ipconfigNum3')]",
+                "input": {
+                    "name": "[concat('IpConf-', string(add(variables('offset3'),copyIndex('ipConf-nic3'))) )]",
+                    "properties": {
+                        "primary": "[if(equals(copyIndex('ipConf-nic3'), 0), bool('true'), bool('false'))]",
+                        "privateIPAllocationMethod": "Static",
+                        "privateIPAddress": "[concat('10.0.2.', string(add(variables('offset3'),copyIndex('ipConf-nic3')))  )]",
+                        "subnet": {
+                            "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name),'/subnets/', variables('vNet1').subnet2Name)]"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet1').name]",
+            "apiVersion": "2019-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "Create VNet1",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpacePrefix1]",
+                        "[variables('vNet1').addressSpacePrefix2]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet2Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "vm1-nic1",
+            "apiVersion": "2019-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "Create NIC1",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": false,
+                "enableAcceleratedNetworking": false,
+                "ipConfigurations": "[variables('ipConf-nic1')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "vm1-nic2",
+            "apiVersion": "2019-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "Create NIC2",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": false,
+                "enableAcceleratedNetworking": false,
+                "ipConfigurations": "[variables('ipConf-nic2')]"
+            }
+        },
+        {
+            
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "vm1-nic3",
+            "apiVersion": "2019-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "Create NIC3",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": false,
+                "enableAcceleratedNetworking": false,
+                "ipConfigurations": "[variables('ipConf-nic3')]"
+            }
+        }
+    ]
+}
