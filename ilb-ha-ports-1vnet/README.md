@@ -1,5 +1,5 @@
 <properties
-pageTitle= '101 Azure ARM template to create a standard load balancer in HA ports'
+pageTitle= 'Azure ARM template to create a standard load balancer in HA ports'
 description= "Azure standard load balancer in HA ports"
 documentationcenter: na
 services=""
