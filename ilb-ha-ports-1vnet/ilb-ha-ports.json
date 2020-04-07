@@ -11,14 +11,12 @@
         },
         "adminUsername": 
         {   "type": "string",
-            "defaultValue":"ADMINISTRATOR_USERNAME",
             "metadata": {
                 "description": "admin username"
             }
         },
         "adminPassword": 
         {   "type": "securestring",
-            "defaultValue":"ADMINISTRATOR_PASSWORD",
             "metadata": {
                 "description": "admin password"
             }
@@ -26,35 +24,32 @@
     },
     "variables": {
         "location": "[parameters('location')]",
-        //
-        // Virtual Networks
         "vNet1": {
-            "location": "[variables('location')]",     // location VNet1
-            "name": "VNet1",                           // VNet name
-            "addressSpacePrefix1": "10.0.1.0/24",      // address space vnet1-subnet1
-            "addressSpacePrefix2": "10.0.2.0/24",      // address space vnet1-subnet2
-            "addressSpacePrefix3": "10.0.3.0/24",      // address space vnet1-subnet3
-            "subnet1Name": "subnet1",                  // name vnet1-subnet1
-            "subnet2Name": "subnet2",                  // name vnet1-subnet2
-            "subnet3Name": "subnet3",                  // name vnet1-subnet3
-            "subnet1Prefix": "10.0.1.0/24",            // address space vnet1-subnet1
-            "subnet2Prefix": "10.0.2.0/24",            // address space vnet1-subnet2
-            "subnet3Prefix": "10.0.3.0/24"             // address space vnet1-subnet3
+            "location": "[variables('location')]",
+            "name": "VNet1", 
+            "addressSpacePrefix1": "10.0.1.0/24",
+            "addressSpacePrefix2": "10.0.2.0/24",
+            "addressSpacePrefix3": "10.0.3.0/24",
+            "subnet1Name": "subnet1",
+            "subnet2Name": "subnet2",
+            "subnet3Name": "subnet3",
+            "subnet1Prefix": "10.0.1.0/24",
+            "subnet2Prefix": "10.0.2.0/24",
+            "subnet3Prefix": "10.0.3.0/24"
         },
-        "nsgName"        : "nsg",                      // NSG to accept traffic incoming in the vnet from internet
-        "routeTableName2": "udr2",                     // UDR VNEt1-subnet1
-        "routeTableName3": "udr3",                     // UDR VNEt1-subnet3
-        "loadBalancerName": "lb1",                     // name internal load balancer  
-        "lbFrontEndIP": "10.0.1.5",                    // frontend LB IP address
-        "lbFrontEndConfigName": "lbFrontEndConf",      // frontend LB -Configuration Name
+        "nsgName"        : "nsg",
+        "routeTableName2": "udr2",
+        "routeTableName3": "udr3",
+        "loadBalancerName": "lb1",
+        "lbFrontEndIP": "10.0.1.5",
+        "lbFrontEndConfigName": "lbFrontEndConf",
         "backEndAddressPoolName": "lbBackEndPool",
+        "lbprobeName": "lbprobe",
         "lbVnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
         "lbSubnetRef": "[concat(variables('lbVnetID'),'/subnets/', variables('vNet1').subnet1Name)]",
-
-        "adminUsername": "[parameters('adminUsername')]",        // administrator VMs
-        "adminPassword": "[parameters('adminPassword')]",        // password VMs
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
         "vmsize": "Standard_B1s",
-        // array of VMs working as Network Virtual Appliance/Firewall
         "nvarray": [
             {
                 "location": "[variables('location')]",
@@ -116,10 +111,11 @@
     },
     "resources": [
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsgName')]",
             "location": "[variables('vNet1').location]",
+            "comments": "network security rule",
             "properties": {
                 "securityRules": [
                     {
@@ -139,12 +135,12 @@
                 ]
             }
         },
-        // Create udr1 to route the traffic to subnet3; the udr1 is applied to the subnet2
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/routeTables",
             "name": "[variables('routeTableName2')]",
             "location": "[variables('vNet1').location]",
+            "comments": "Create udr1 to route the traffic to subnet3; the udr1 is applied to the subnet2",
             "properties": {
                 "routes": [
                     {
@@ -158,12 +154,12 @@
                 ]
             }
         },
-        // Create udr2 to route the traffic to the subnet2; the udr2 is applied to the subnet3
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/routeTables",
             "name": "[variables('routeTableName3')]",
             "location": "[variables('vNet1').location]",
+            "comments": "Create udr2 to route the traffic to the subnet2; the udr2 is applied to the subnet3",
             "properties": {
                 "routes": [
                     {
@@ -178,14 +174,14 @@
             }
         },
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet1').name]",
             "location": "[variables('vNet1').location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/routeTables/', variables('routeTableName2'))]",
-                "[concat('Microsoft.Network/routeTables/', variables('routeTableName3'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTableName2'))]",
+                "[resourceId('Microsoft.Network/routeTables', variables('routeTableName3'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
             ],
             "comments": "Create VNet1",
             "properties": {
@@ -233,12 +229,12 @@
                 ]
             }
         },
-        // Load Balancer VNet1
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "name": "[variables('loadBalancerName')]",
             "type": "Microsoft.Network/loadBalancers",
             "location": "[variables('location')]",
+            "comments":"Load Balancer VNet1",
             "dependsOn": [
                 "[variables('lbVnetID')]"
             ],
@@ -273,7 +269,7 @@
                                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/backendAddressPools/',variables('backEndAddressPoolName'))]"
                             },
                             "probe": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/lbprobe')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/',variables('lbprobeName'))]"
                             },
                             "protocol": "All",
                             "frontendPort": 0,
@@ -293,23 +289,22 @@
                             "intervalInSeconds": 15,
                             "numberOfProbes": 2
                         },
-                        "name": "lbprobe"
+                        "name": "[variables('lbprobeName')]"
                     }
                 ]
             }
         },
-        ///////////////////////////////////////
-        // Create Network Virtual Appliance VMs
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(variables('nvArray')[copyIndex()].vmName,'-pubIP')]",
             "location": "[variables('nvArray')[copyIndex()].location]",
+            "comments": "Create Network Virtual Appliances- Note: StandardSkuPublicIPAddresses must be Static",
             "sku": {
                 "name": "Standard"
             },
             "properties": {
-                "publicIPAllocationMethod": "Static" // StandardSkuPublicIPAddresses must be "Static"
+                "publicIPAllocationMethod": "Static"
             },
             "copy": {
                 "name": "publicIpCopy",
@@ -317,14 +312,14 @@
             }
         },
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat( variables('nvArray')[copyIndex()].vmName,'-NIC' )]",
             "location": "[variables('nvArray')[copyIndex()].location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]",
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('nvArray')[copyIndex()].vmName,'-pubIP' )]",
-                "[concat('Microsoft.Network/loadBalancers/', variables('loadBalancerName'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('nvArray')[copyIndex()].vmName,'-pubIP') )]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]"
             ],
             "properties": {
                 "primary": true,
@@ -340,7 +335,7 @@
                                 "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('nvArray')[copyIndex()].vmName,'-pubIP' )  )]"
                             },
                             "subnet": {
-                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('nvArray')[copyIndex()].vNetName),'/subnets/', variables('nvArray')[copyIndex()].subnetName)]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('nvArray')[copyIndex()].vNetName, variables('nvArray')[copyIndex()].subnetName)]"
                             },
                             "loadBalancerBackendAddressPools": [
                                 {
@@ -357,7 +352,7 @@
             }
         },
         {
-            "apiVersion": "2017-12-01",
+            "apiVersion": "2019-07-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('nvArray')[copyIndex()].vmName]",
             "location": "[variables('nvArray')[copyIndex()].location]",
@@ -397,13 +392,12 @@
                 "count": "[variables('nvCount')]"
             }
         },
-        ////////////////////////////////////////////////////////////////
-        // Create Virtual Machines
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
             "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Create public IPs",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic"
             },
@@ -413,13 +407,13 @@
             }
         },
         {
-            "apiVersion": "2018-01-01",
+            "apiVersion": "2019-11-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]",
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('vmArray')[copyIndex()].vmName,'-pubIP' )]"
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP' ) )]"
             ],
             "properties": {
                 "primary": true,
@@ -435,7 +429,7 @@
                                 "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
                             },
                             "subnet": {
-                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vNetName),'/subnets/', variables('vmArray')[copyIndex()].subnetName)]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
                             }
                         }
                     }
@@ -447,7 +441,7 @@
             }
         },
         {
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2019-07-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
             "location": "[variables('vmArray')[copyIndex()].location]",

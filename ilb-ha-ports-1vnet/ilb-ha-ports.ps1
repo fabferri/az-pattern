@@ -1,21 +1,59 @@
+# Before running the script set the variables:
+#
+#    $adminUsername    : administrator username
+#    $adminPassword    : adminsitrator password
+#    $subscriptionName : name of the Azure subscription
+#
+#
+[CmdletBinding()]
+param (
+    [Parameter( Mandatory = $false, ValueFromPipeline=$false, HelpMessage='username administrator VMs')]
+    [string]$adminUsername = "pathlabuser",
+ 
+    [Parameter(Mandatory = $false, HelpMessage='password administrator VMs')]
+    [string]$adminPassword = "workshop**101"
+    )
+
 ################# Input parameters #################
-$subscriptionName = "NAME_OF_YOUR_AZURE_SUBSCRIPTION"
-$location         = "eastus"
-$destResourceGrp  = "rg-ha-ports01"
-$resourceGrpDeployment = "deployilb"
-$armTemplateFile       = "ilb-ha-ports.json"
+$subscriptionName  = "AzDev"     
+$location          = "eastus"
+$rgName            = "rg-ha-ports1"
+$deploymentName    = "ilbha"
+$armTemplateFile   = "ilb-ha-ports.json"
+##
+## tags
+$RGTagExpireDate = Get-Date -format "yyyy-MM-dd" 
+$RGTagContact = 'user1@contoso.com' 
+$RGTagAlias = 'user1' 
+$RGTagUsage = 'check Azure ilb' 
+
 ####################################################
 
 $pathFiles      = Split-Path -Parent $PSCommandPath
 $templateFile   = "$pathFiles\$armTemplateFile"
 
-$subscr=Get-AzureRmSubscription -SubscriptionName $subscriptionName
-Select-AzureRmSubscription -SubscriptionId $subscr.Id
+$parameters=@{
+              "adminUsername"= $adminUsername;
+              "adminPassword"= $adminPassword
+              }
 
-$runTime=Measure-Command {
-New-AzureRmResourceGroup -Name $destResourceGrp -Location $location
-write-host $templateFile
-New-AzureRmResourceGroupDeployment  -Name $resourceGrpDeployment -ResourceGroupName $destResourceGrp -TemplateFile $templateFile -Verbose
+$subscr=Get-AzSubscription -SubscriptionName $subscriptionName
+Select-AzSubscription -SubscriptionId $subscr.Id
+
+# Create Resource Group 
+Write-Host (Get-Date)' - ' -NoNewline
+Write-Host "Creating Resource Group $rgName " -ForegroundColor Cyan
+Try {$rg = Get-AzResourceGroup -Name $rgName  -ErrorAction Stop
+     Write-Host '  resource exists, skipping'}
+Catch {$rg = New-AzResourceGroup -Name $rgName  -Location $location  
+             Set-AzResourceGroup -Name $rgName `
+             -Tag @{Expires=$RGTagExpireDate; Contacts=$RGTagContact; Pathfinder=$RGTagAlias; Usage=$RGTagUsage} | Out-Null
 }
 
-write-host -ForegroundColor Yellow "runtime: "$runTime.ToString()
+$runTime=Measure-Command {
+
+write-host "running ARM template:"$templateFile
+New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
+}
+
+write-host "runtime: "$runTime.ToString() -ForegroundColor Yellow 
