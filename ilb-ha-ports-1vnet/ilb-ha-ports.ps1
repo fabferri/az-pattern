@@ -8,7 +8,7 @@
 [CmdletBinding()]
 param (
     [Parameter( Mandatory = $false, ValueFromPipeline=$false, HelpMessage='username administrator VMs')]
-    [string]$adminUsername = "ARMINISTRATOR_USERNAME",
+    [string]$adminUsername = "ADMINISTRATOR_USERNAME",
  
     [Parameter(Mandatory = $false, HelpMessage='password administrator VMs')]
     [string]$adminPassword = "ADMINISTRATOR_PASSWORD"
