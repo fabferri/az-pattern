@@ -8,16 +8,16 @@
 [CmdletBinding()]
 param (
     [Parameter( Mandatory = $false, ValueFromPipeline=$false, HelpMessage='username administrator VMs')]
-    [string]$adminUsername = "pathlabuser",
+    [string]$adminUsername = "ARMINISTRATOR_USERNAME",
  
     [Parameter(Mandatory = $false, HelpMessage='password administrator VMs')]
-    [string]$adminPassword = "workshop**101"
+    [string]$adminPassword = "ADMINISTRATOR_PASSWORD"
     )
 
 ################# Input parameters #################
 $subscriptionName  = "AzDev"     
 $location          = "eastus"
-$rgName            = "rg-ha-ports1"
+$rgName            = "rg-lbha"
 $deploymentName    = "ilbha"
 $armTemplateFile   = "ilb-ha-ports.json"
 ##
