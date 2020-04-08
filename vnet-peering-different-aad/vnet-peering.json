@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "existingLocalVNetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Set the local VNet name"
+      }
+    },   
+    "remoteSubscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "remote subscription Id"
+      }
+    },
+    "existingRemoteVNetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Set the remote VNet name"
+      }
+    },
+    "existingRemoteVNetResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the resource Group of the remote VNet"
+      }
+    },
+    "vnetpeeringName":{
+      "type": "string",
+      "metadata": {
+        "description": "named of the vnet peering"
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "remoteVNet": "[resourceId(parameters('remoteSubscriptionId'),parameters('existingRemoteVNetResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('existingRemoteVNetName'))]",
+    "peeringName": "[concat(parameters('existingLocalVNetName'), '/',parameters('vnetpeeringName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "[variables('peeringName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": false,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false,
+        "remoteVirtualNetwork": {
+          "id": "[variables('remoteVNet')]"
+        }
+      }
+    }
+  ]
+}
