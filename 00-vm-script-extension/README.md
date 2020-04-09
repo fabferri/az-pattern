@@ -32,6 +32,7 @@ yum install -y httpd && systemctl enable httpd && systemctl start httpd && yum i
 
 ```
 The command is defined in the ARM template **vms-script-extension.json**, variable:"linuxCommand"
+
 The command install httpd daemon, set the EPEL repository, install iperf3 and nload (tool to monitor the traffic in the network adapter) 
 
 ### Windows command
@@ -43,14 +44,15 @@ powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools &
 
 ```
 The command is defined in the ARM template **vms-script-extension.json**, variable:"windowsCommand"
-The command install IIS and set the windows firewall rule to accept inbound ICMP traffic
+
+The command install IIS,customize the homepage of IIS and set the windows firewall rule to accept inbound ICMP traffic.
 
 > [!NOTE]
 > In powershell script **vms-script-extension.ps1** set the following variables:
 > * **$subscriptionName**:  Azure subscription name 
 > * **$adminUsername**: administrator username of the Azure VMs
 > * **$adminPassword**: administrator password of the Azure VMs
-> *
+>
 
 
 
