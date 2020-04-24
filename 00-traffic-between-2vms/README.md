@@ -34,7 +34,7 @@ The article shows few methods to generate traffic between two Azure VMs, vm1 and
 
 
 
-#### <a name="iperf3"></a>1. Linux and Windows VMs: iperf3
+### <a name="iperf3"></a>1. Linux and Windows VMs: iperf3
 Iperf3 works in Linux and Windows (see: [iperf3](https://iperf.fr/))
 Install iperf3 in Linux vm1 and vm2:
 
@@ -61,7 +61,7 @@ where:
 -p: _TCP port_
 -M: _formatting the output in Mbps_
 
-#### <a name="netcat"></a>2. Linux VMs: netcat and urandom
+### <a name="netcat"></a>2. Linux VMs: netcat and urandom
 
 In Linux VMs traffic can be generated  by **netcat** and **urandom** (the random number function in the linux kernel).
 
@@ -115,7 +115,7 @@ To monitor the volume of traffic on vm1 and vm2 we can use a tool like **nload**
 yum install epel-release
 yum -y install nload
 ```
-##### <a name="ApacheBench"></a>4.3 How generate HTTP traffic by Apache Bench tool
+#### <a name="ApacheBench"></a>4.3 How generate HTTP traffic by Apache Bench tool
 
 Apache Bench tool is used to do simple load testing. Apache Bench is contained in the **httpd-tools** package.
 
@@ -128,14 +128,14 @@ n: _total number of requests_
 c: _number of concurrent requests_
 
 
-##### <a name="curl"></a>4.4 generate HTTP traffic by curl
+#### <a name="curl"></a>4.4 generate HTTP traffic by curl
 Run the bash command:
 
 ```bash
 for i in `seq 1 20`; do curl http://10.0.2.10; done
 ```
 
-##### <a name="curl"></a>4.4 generate HTTP traffic by curl and parallel
+#### <a name="curl"></a>4.4 generate HTTP traffic by curl and parallel
 To run HTTP queries in parallel, it can be used GNU parallel. In CentOS GNU parallel is in EPEL repository:
 
 ```bash
@@ -168,7 +168,7 @@ Same command with easier option :
 do it 5000 times, but at 5 a time
 
 
-##### <a name="HTTPpowershell"></a>4.5 generate HTTP traffic by powershell script
+#### <a name="HTTPpowershell"></a>4.5 generate HTTP traffic by powershell script
 
 ```powershell
 $ipServer="10.0.2.10:80"

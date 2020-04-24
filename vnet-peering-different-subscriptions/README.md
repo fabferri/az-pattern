@@ -21,8 +21,10 @@ editor=""/>
 
 It is common create _VNet peering_ between VNets deployed in different Azure subscriptions.
 The diagram below shows the configuration with two VNets called **vnet1** and **vnet2** connected by VNet peering.
-The **vnet1** is deployed in **Azure subscription1**
-The **vnet2** is deployed in **Azure subscription2**
+
+* The **vnet1** is deployed in **Azure subscription1**
+* The **vnet2** is deployed in **Azure subscription2**
+
 Both of Azure subscriptions are associated with the same Azure Active Directory (AAD).
 
 [![1]][1]
