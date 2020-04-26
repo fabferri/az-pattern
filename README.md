@@ -26,6 +26,7 @@ List of Azure ARM templates and scripts:
    * [Standard load balancer in HA ports](./ilb-ha-ports-1vnet/)
    * [Standard load balancer in HA ports with VNet peering](./ilb-ha-ports-vnetpeering/)
    * [Standard load balancer in HA ports with two frontend IPs and two backend pools](./ilb-ha-ports-2frontend-2backendpools)
+   * [Standard internal load balancer with multiple frontend IPs and backend address pools](./ilb-multiple-fe-be)]
 *  VNet Peering
    * [Two hub-spoke VNets interconnected by global VNet peering](./vnet-peering-2hubspoke)
    * [Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub VNets](./vnet-peering-2hubspoke-ilb-vpn)
