@@ -18,7 +18,7 @@ editor=""/>
    ms.author="fabferri" />
 
 # Azure standard internal load balancer with multiple frontend IPs and backend address pools
-This ARM template aims to create one VNet with multiple subnets and an internal standard load balancer with multiple frontend IPs and multiple backend address pools.
+The ARM template aims to create one VNet with multiple subnets and an internal standard load balancer with multiple frontend IPs and multiple backend address pools.
 The network diagram is reported below:
 
 [![1]][1]
@@ -252,7 +252,7 @@ Apache Virtual Hosts allows you to run more than one website on a single VM. Wit
 
 ### Setup multiple IPs in the same network adapter
 
-The virtual interfaces of the physical interface eth0 will have the names eth0:0, eth0:1, eth0:2 and so on.
+The virtual interfaces of the physical interface eth0 can have the names eth0:0, eth0:1, eth0:2 and so on.
 For CentOS the directory responsible for permanent IP address assignment is /etc/sysconfig/network-scripts. In this directory you need to create a file corresponding to your new virtual interface.
 Navigate to the network scripts folder:
 
@@ -282,13 +282,13 @@ IPADDR=10.0.2.5
 NETMASK=255.255.255.0
 NM_CONTROLLED=yes
 ```
-Note that the device's name will be changed to the name of the virtual interface (eth0:0 here), and the hardware address will remain the same (because physical device is the same). The NAME and DEVICE attributes to match eth0:0
+Note that the device's name will be changed to the name of the virtual interface (eth0:5 here), and the hardware address will remain the same (because physical device is the same). The NAME and DEVICE attributes have to match the virtual interface eth0:5
 
 To reload a new setting:
 
 ```console
 systemctl restart NetworkManager
-nmcli device reapply eth0
+nmcli networking off; nmcli networking on
 ```
 or
 
@@ -297,6 +297,7 @@ nmcli networking off; nmcli networking on
 ```
 
 Make sure the changes are successful and the new (aliased) interfaces are ready:
+
 ```
 ifconfig
 ```
@@ -326,6 +327,7 @@ systemctl status httpd
 
 
 ### Set up multiple instances of Apache
+
 The **Listen** directive instructs Apache httpd to accept incoming requests on the specified port or address-and-port combination; by default, it responds to requests on all IP interfaces. If only a port number is specified, the server listens to the given port on all interfaces. If an IP address is given as well as a port, the server will listen on the given port and interface.
 **Listen** is now a required directive (mandatory). If it is not in the config file **/etc/httpd/conf/httpd.conf**, the server will fail to start.
 Multiple **Listen** directives may be used to specify several addresses and ports to listen to.
