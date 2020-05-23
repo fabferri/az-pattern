@@ -28,7 +28,7 @@ The configuration doesn't follow the best pratice, due to following limitations:
 * _higher latency_: hairpinning traffic, Azure VNet-> On-premisies-> Azure VNet, has longer path and increase latency between Azure VMs
 * _complex configuration_: for the presence of 4 devices, two NVAs in Azure and two VPN concentrators on-premises
 * _complex governance_: any VNet configuration change, i.e. add/remove subnets or add/remove VNet in peering, requires a change in routing in VPN device1 and NVA2
-* a failure of single IPSec tunnel casue n out of service in the communication between Azure VMs
+* a failure of single IPSec tunnel casue out of service in the communication between Azure VMs
 * _higher cost_: due to additional NVA and VPN device 
 
 A recommended approach, to avoid inefficiency and complexity, is to inspect traffic between Azure VMs through a firewall (i.e. Azure firewall or NVAs) in the Azure VNet.
@@ -77,10 +77,10 @@ The diagram includes:
 |**siteB.json**                 |	ARM template to deploy siteB 	                  |
 |**siteA.ps1**                  |	powershell script to run siteA.json	            |
 |**siteB.ps1**                  |	powershell script to run siteB.json		          |
-|**csr11-generate-config.ps1**  |	powershell script to generate the configuration of csr11	|
-|**csr12-generate-config.ps1**  |	powershell script to generate the configuration of csr12	|
-|**csr21-generate-config.ps1**  |	powershell script to generate the configuration of csr21	|
-|**csr22-generate-config.ps1**  |	powershell script to generate the configuration of csr22	|
+|**csr11-generate-config.ps1**  |	powershell script to generate the configuration for csr11	|
+|**csr12-generate-config.ps1**  |	powershell script to generate the configuration for csr12	|
+|**csr21-generate-config.ps1**  |	powershell script to generate the configuration for csr21	|
+|**csr22-generate-config.ps1**  |	powershell script to generate the configuration for csr22	|
 |**get-csr-images.ps1**         |	powershell script to check the available csr images in Azure marketplace	|
 
 The sequence of actions to make the deployment:
@@ -388,13 +388,13 @@ The csr22 receives via eBGP the networks [10.0.1.96/27, 10.0.1.128/27] from csr1
    |10.0.1.96/27     |	10.0.2.90    |	
    |10.0.1.128/27    |	10.0.2.90    |	
 
-**7.** From vm14 ping vm15 and verify that packets pass through the interface eth0 and eth1 of the vm2. In the vm2 run the following commands:
+**7.** From vm14 ping vm15 and verify that packets pass through the interface eth0 and eth1 of the vm2. In the vm2 run the following commands to pick up the traffic in  through the two NICs:
 
 ```bash
 tcpdump -i eth0 host 10.0.1.100
 tcpdump -i eth1 host 10.0.1.100
 ```
-In csr22 make packets capture; if the icmp packets sent from vm14 reach out the GigabitEthernet2 interface you will be able to see a capture as reported below:
+Packet capture in csr22 provides a good checkpoint. If the icmp packets send from vm14 to vm15 reach out the GigabitEthernet2 interface of csr22, you will be able to see a capture as reported below:
 
 ```
 csr22#show monitor capture CAP buffer brief
