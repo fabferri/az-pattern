@@ -1,0 +1,650 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "VM administrator username"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "VM administrator password"
+      }
+    },
+    "csr_imagePublisher": {
+      "type": "string",
+      "defaultValue": "cisco"
+    },
+    "csr_imageOffer": {
+      "type": "string",
+      "defaultValue": "cisco-csr-1000v"
+    },
+    "csr_imageSKU": {
+      "type": "string",
+      "defaultValue": "16_12-byol",
+      "allowedValues": [
+        "16_12-byol",
+        "17_1-byol"
+      ]
+    },
+    "csr_vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_B2s"
+    },
+    "csr1_vmName": {
+      "type": "string",
+      "defaultValue": "csr21"
+    },
+    "csr2_vmName": {
+      "type": "string",
+      "defaultValue": "csr22"
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "vm2",
+      "metadata": {
+        "description": "Name of the VM"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_B1s",
+      "metadata": {
+        "description": "Size of the VM"
+      }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Premium_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "The storage account type for the disks of the VM"
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "vnetName": "vnet2",
+    "subnet1Name": "subnet1",
+    "subnet2Name": "subnet2",
+    "subnet3Name": "subnet3",
+    "subnet1Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet1Name'))]",
+    "subnet2Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet2Name'))]",
+    "subnet3Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet3Name'))]",
+    "address1Prefix": "10.0.2.0/24",
+    "subnet1Prefix": "10.0.2.0/27",
+    "subnet2Prefix": "10.0.2.32/27",
+    "subnet3Prefix": "10.0.2.64/27",
+
+    "routeTableNameSubnet2": "[concat('RT-',variables('subnet2Name'))]",
+    "routeTableNameSubnet3": "[concat('RT-',variables('subnet3Name'))]",
+
+    "csr1_imagePublisher": "[parameters('csr_imagePublisher')]",
+    "csr1_imageOffer": "[parameters('csr_imageOffer')]",
+    "csr1_imageSKU": "[parameters('csr_imageSKU')]",
+    "csr1_vmName": "[parameters('csr1_vmName')]",
+    "csr1_vmSize": "[parameters('csr_vmSize')]",
+    "osDiskType": "Premium_LRS",
+    "csr1_pubIPAddressName": "[concat(variables('csr1_vmName'),'-pubIP' )]",
+    "csr1_nic1": "[concat(variables('csr1_vmName'), '-nic0')]",
+    "csr1_nic2": "[concat(variables('csr1_vmName'), '-nic1')]",
+    "csr1AddressSubnet1": "10.0.2.10",
+    "csr1AddressSubnet2": "10.0.2.50",
+
+    "csr2_imagePublisher": "[parameters('csr_imagePublisher')]",
+    "csr2_imageOffer": "[parameters('csr_imageOffer')]",
+    "csr2_imageSKU": "[parameters('csr_imageSKU')]",
+    "csr2_vmName": "[parameters('csr2_vmName')]",
+    "csr2_vmSize": "[parameters('csr_vmSize')]",
+    "csr2_pubIPAddressName": "[concat(variables('csr2_vmName'),'-pubIP' )]",
+    "csr2_nic1": "[concat(variables('csr2_vmName'), '-nic0')]",
+    "csr2_nic2": "[concat(variables('csr2_vmName'), '-nic1')]",
+    "csr2AddressSubnet1": "10.0.2.11",
+    "csr2AddressSubnet2": "10.0.2.90",
+
+    "nsgName": "[concat(variables('vnetName'),'-nsg')]",
+
+    "vmName": "[parameters('vmName')]",
+    "vmSize": "[parameters('vmSize')]",
+    "nic1Name": "[concat(variables('vmName'), '-nic1')]",
+    "nic2Name": "[concat(variables('vmName'), '-nic2')]",
+    "vmPublicIPName": "[concat(variables('vmName'), '-pubIP')]",
+    "vmIPsubnet2": "10.0.2.60",
+    "vmIPsubnet3": "10.0.2.70",
+    "imagePublisher": "OpenLogic",
+    "imageOffer": "CentOS",
+    "imageSKU": "7.7",
+    "storageAccountType": "[parameters('storageAccountType')]",
+    "remoteNetwork1": "10.0.1.96/27",
+    "remoteNetwork2": "10.0.1.128/27"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "apiVersion": "2019-12-01",
+      "comments": "virtual network",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables', variables('routeTableNameSubnet2') )]",
+        "[resourceId('Microsoft.Network/routeTables', variables('routeTableNameSubnet3') )]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName') )]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('address1Prefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet1Prefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet2Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableNameSubnet2'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet3Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet3Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableNameSubnet3'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH-Rule",
+            "properties": {
+              "description": "Allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "UDP-Rule1-IKE",
+            "properties": {
+              "description": "Allow UDP for IKE",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "500",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "UDP-Rule2-IKE",
+            "properties": {
+              "description": "Allow UDP for IKE",
+              "protocol": "Udp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4500",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('routeTableNameSubnet2')]",
+      "apiVersion": "2019-12-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "routes": [
+          {
+            "name": "RT-to-RemoteSubnet4",
+            "properties": {
+              "addressPrefix": "[variables('remoteNetwork1')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('vmIPsubnet2')]"
+            }
+          },
+          {
+            "name": "RT-to-RemoteSubnet5",
+            "properties": {
+              "addressPrefix": "[variables('remoteNetwork2')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('vmIPsubnet2')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('routeTableNameSubnet3')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "routes": [
+          {
+            "name": "RT-to-RemoteSubnet4",
+            "properties": {
+              "addressPrefix": "[variables('remoteNetwork1')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('csr2AddressSubnet2')]"
+            }
+          },
+          {
+            "name": "RT-to-RemoteSubnet5",
+            "properties": {
+              "addressPrefix": "[variables('remoteNetwork2')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('csr2AddressSubnet2')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('csr1_pubIPAddressName')]",
+      "apiVersion": "2019-12-01",
+      "comments": "public IP assigned to the CSR",
+      "location": "[variables('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 25
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('csr1_nic1')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('csr1_pubIPAddressName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('csr1AddressSubnet1')]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('csr1_pubIPAddressName')  )]"
+              },
+              "subnet": {
+                "id": "[variables('subnet1Ref')]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+        },
+        "enableIPForwarding": true
+      }
+    },
+    {
+      "apiVersion": "2019-12-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('csr1_nic2')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('csr1AddressSubnet2')]",
+              "subnet": {
+                "id": "[variables('subnet2Ref')]"
+              }
+            }
+          }
+        ],
+        "enableIPForwarding": true
+      }
+    },
+    {
+      "apiVersion": "2019-07-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('csr1_vmName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('csr1_nic1'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('csr1_nic2'))]"
+      ],
+      "plan": {
+        "name": "16_12-byol",
+        "publisher": "cisco",
+        "product": "cisco-csr-1000v"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('csr1_vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('csr1_vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('csr1_imagePublisher')]",
+            "offer": "[variables('csr1_imageOffer')]",
+            "sku": "[variables('csr1_imageSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('csr1_vmName'),'-OSDisk')]",
+            "managedDisk": {
+              "storageAccountType": "[variables('osDiskType')]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "properties": {
+                "primary": true
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csr1_nic1'))]"
+            },
+            {
+              "properties": {
+                "primary": false
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csr1_nic2'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('csr2_pubIPAddressName')]",
+      "apiVersion": "2019-12-01",
+      "comments": "public IP assigned to the second CSR",
+      "location": "[variables('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 25
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('csr2_nic1')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('csr2_pubIPAddressName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('csr2AddressSubnet1')]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('csr2_pubIPAddressName')  )]"
+              },
+              "subnet": {
+                "id": "[variables('subnet1Ref')]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+        },
+        "enableIPForwarding": true
+      }
+    },
+    {
+      "apiVersion": "2019-12-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('csr2_nic2')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('csr2AddressSubnet2')]",
+              "subnet": {
+                "id": "[variables('subnet3Ref')]"
+              }
+            }
+          }
+        ],
+        "enableIPForwarding": true
+      }
+    },
+    {
+      "apiVersion": "2019-07-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('csr2_vmName')]",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('csr2_nic1'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces/', variables('csr2_nic2'))]"
+      ],
+      "plan": {
+        "name": "16_12-byol",
+        "publisher": "cisco",
+        "product": "cisco-csr-1000v"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('csr2_vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('csr2_vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('csr2_imagePublisher')]",
+            "offer": "[variables('csr2_imageOffer')]",
+            "sku": "[variables('csr2_imageSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('csr2_vmName'),'-OSDisk')]",
+            "managedDisk": {
+              "storageAccountType": "[variables('osDiskType')]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "properties": {
+                "primary": true
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csr2_nic1'))]"
+            },
+            {
+              "properties": {
+                "primary": false
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csr2_nic2'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('vmPublicIPName')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nic1Name')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmPublicIPName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmIPsubnet2')]",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmPublicIPName'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnet2Ref')]"
+              }
+            }
+          }
+        ],
+        "enableIPForwarding": true
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nic2Name')]",
+      "apiVersion": "2019-12-01",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmPublicIPName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig2",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmIPsubnet3')]",
+              "subnet": {
+                "id": "[variables('subnet3Ref')]"
+              }
+            }
+          }
+        ],
+        "enableIPForwarding": true
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmName')]",
+      "apiVersion": "2019-07-01",
+      "location": "[variables('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nic1Name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nic2Name'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('imageSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[concat(variables('vmName'),'-OSdisk')]",
+            "createOption": "FromImage",
+            "caching": "ReadWrite",
+            "managedDisk": {
+              "storageAccountType": "[variables('storageAccountType')]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "properties": {
+                "primary": true
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nic1Name'))]"
+            },
+            {
+              "properties": {
+                "primary": false
+              },
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nic2Name'))]"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+  }
+}
