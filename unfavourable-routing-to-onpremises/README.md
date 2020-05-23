@@ -278,7 +278,7 @@ The best approach is proceeding by steps:
 
 **1. SiteA**. Check out the consistency of UDRs applied to the _subnet4_ and _subnet5_ of siteA:
 
-    _subnet4_:
+   _subnet4_:
    |Address Prefix   |	Next hop     |	
    | --------------- |:--------------|
    |10.0.1.96/27     |	10.0.1.50    |	
@@ -395,7 +395,7 @@ tcpdump -i eth1 host 10.0.1.100
 ```
 Packet capture in csr22 provides a good checkpoint. If the icmp packets send from vm14 to vm15 reach out the GigabitEthernet2 interface of csr22, you will be able to see a capture as reported below:
 
-```
+```console
 csr22#show monitor capture CAP buffer brief
  ----------------------------------------------------------------------------
  #   size   timestamp     source             destination      dscp    protocol
