@@ -292,7 +292,7 @@ The best approach is proceeding by steps:
 
 **2. siteA**. In csr11 verify the ipsec tunnel is up and active; ping the remote loopback (172.16.1.2) of csr21:
 
-```
+```console
 csr11#show crypto session
 Crypto session current status
 
@@ -311,7 +311,6 @@ Sending 5, 100-byte ICMP Echos to 172.16.1.2, timeout is 2 seconds:
 Packet sent with a source address of 172.16.1.1
 !!!!!
 Success rate is 100 percent (5/5), round-trip min/avg/max = 4/5/8 ms
-
 ```
 
 **3. siteA**. In the csr11 verify the bgp routing table:
