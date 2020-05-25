@@ -44,7 +44,10 @@ $resourceGrpDeployment = 'siteA-deployment'
 
 $parameters=@{
               "adminUsername"= $json.siteA.adminUsername;
-              "adminPassword"= $json.siteA.adminPassword
+              "adminPassword"= $json.siteA.adminPassword;
+              "location"=$json.siteA.location;
+              "csr1_vmName"=$json.siteA.csr1_vmName;
+              "csr2_vmName"=$json.siteA.csr2_vmName
               }
 $templateFile       = "$ScriptDir\$armTemplateFile"
 
