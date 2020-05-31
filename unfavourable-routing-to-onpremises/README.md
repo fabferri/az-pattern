@@ -241,10 +241,12 @@ Following the linux [kernel documentation](https://www.kernel.org/doc/Documentat
 
 **rp_filter** - INTEGER
 
-    0 - No source validation.
-    1 - Strict mode as defined in RFC3704 Strict Reverse Path.
+   **0** - No source validation.
+   
+   **1** - Strict mode as defined in RFC3704 Strict Reverse Path.
     Each incoming packet is tested against the FIB and if the interface is not the best reverse path the packet check will fail. By default failed packets are discarded.
-    2 - Loose mode as defined in RFC3704 Loose Reverse Path.
+   
+   **2** - Loose mode as defined in RFC3704 Loose Reverse Path.
     Each incoming packet's source address is also tested against the FIB and if the source address is not reachable via any interface the packet check will fail.
 
 Current recommended practice in RFC3704 is to enable strict mode to prevent IP spoofing from DDos attacks. If using asymmetric routing or other complicated routing, then loose mode is recommended.
