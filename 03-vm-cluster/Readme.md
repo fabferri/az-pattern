@@ -32,12 +32,12 @@ List of files:
 
 > **NOTE**
 > Before running **multiple-vms.ps1** set the values of following variables:
-> ##   $adminUsername    : administrator username
-> ##   $adminPassword    : adminsitrator password
-> ##   $subscriptionName : name of the Azure subscription
-> ##   $location         : Azure region when deployed the resource group
-> ##   $rgName           : resource group name
+> ###   $adminUsername    : administrator username
+> ###   $adminPassword    : adminsitrator password
+> ###   $subscriptionName : name of the Azure subscription
+> ###   $location         : Azure region when deployed the resource group
+> ###   $rgName           : resource group name
 >
 
-##Known Issues and Limitations
-- deployment works with max 250 VMs. Scale up at higher number of VMs requires a review of static IP assigment of private IP.
+## Known Issues and Limitations
+The ARM template works with max 250 VMs. Scale up at higher number of VMs requires a review of static IP assigment of private IP.
