@@ -1,0 +1,110 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "VNet Name"
+            }
+        },
+        "nicCount": {
+            "type": "int",
+            "defaultValue": 250,
+            "minValue": 1,
+            "maxValue": 255
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "virtualNetworkName": "[parameters('virtualNetworkName')]",
+        "addressPrefix": "10.1.2.0/24",
+        "subnet1Name": "subnet1",
+        "subnet1Prefix": "10.1.2.0/24",
+        "subnet1Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('virtualNetworkName'),variables('subnet1Name'))]",
+
+        "prefix": "[substring(variables('subnet1Prefix'),0,indexOf(variables('subnet1Prefix'),'/'))]",
+        "firstOctect": "[substring(variables('prefix'),0,indexOf(variables('prefix'),'.'))]",
+
+        "tmp1": "[substring(variables('prefix'), add(indexOf(variables('prefix'),'.'),1), sub(sub(length(variables('prefix')),length(variables('firstOctect'))),1)  )]",
+        "secondOctect": "[substring(variables('tmp1'),0,indexOf(variables('tmp1'),'.'))]",
+
+        "tmp2": "[substring(variables('tmp1'), add(indexOf(variables('tmp1'),'.'),1), sub(sub(length(variables('tmp1')),length(variables('secondOctect'))),1)  )]",
+        "thirdOctect": "[substring(variables('tmp2'),0,indexOf(variables('tmp2'),'.'))]",
+
+        "fourthOctect": "[substring(variables('tmp2'), add(indexOf(variables('tmp2'),'.'),1), sub(sub(length(variables('tmp2')),length(variables('thirdOctect'))),1)  )]",
+
+        "nicCount": "[parameters('nicCount')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "apiVersion": "2019-12-01",
+            "location": "[variables('location')]",
+            "comments": "Azure VNet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet1Prefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat('nic-', string(copyIndex()) )]",
+            "apiVersion": "2019-12-01",
+            "location": "[variables('location')]",
+            "comments": "NICs if Azure VM",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[concat('ipfcg-', copyIndex())]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[concat(variables('firstOctect'),'.',variables('secondOctect'),'.',variables('thirdOctect'),'.', string (add(add(int(variables('fourthOctect')),copyIndex()),4) ) )]",
+                            "subnet": {
+                                "id": "[variables('subnet1Ref')]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('nicCount')]"
+            }
+        }
+    ],
+    "outputs": {
+        "firstOctect": {
+            "type": "string",
+            "value": "[variables('firstOctect')]"
+        },
+        "secondOctect": {
+            "type": "string",
+            "value": "[variables('secondOctect')]"
+        },
+        "thirdOctect": {
+            "type": "string",
+            "value": "[variables('thirdOctect')]"
+        },
+        "fourthOctect": {
+            "type": "string",
+            "value": "[variables('fourthOctect')]"
+        }
+    }
+}

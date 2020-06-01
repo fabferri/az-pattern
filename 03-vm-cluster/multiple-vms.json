@@ -1,0 +1,182 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the VM."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the VM."
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "VNet Name"
+            }
+        },
+        "vmCount": {
+            "type": "int",
+            "defaultValue": 5,
+            "minValue": 1,
+            "maxValue": 255
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "windows": {
+            "imagePublisher": "MicrosoftWindowsServer",
+            "imageOffer": "WindowsServer",
+            "OSVersion": "2019-Datacenter",
+            "vmSize": "Standard_B2s"
+        },
+        "linux": {
+            "imagePublisher": "openlogic",
+            "imageOffer": "CentOS",
+            "OSVersion": "7.7",
+            "vmSize": "Standard_B1s"
+        },
+        "vmPrefixName": "vm",
+        "virtualNetworkName": "[parameters('virtualNetworkName')]",
+        "addressPrefix": "10.0.0.0/24",
+        "publicIPAddressType": "Dynamic",
+        "subnet1Name": "subnet1",
+        "subnet1Prefix": "10.0.0.0/24",
+        "subnet1Ref": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('virtualNetworkName'),variables('subnet1Name'))]",
+
+        "prefix": "[substring(variables('subnet1Prefix'),0,indexOf(variables('subnet1Prefix'),'/'))]",
+        "firstOctect": "[substring(variables('prefix'),0,indexOf(variables('prefix'),'.'))]",
+        "tmp1": "[substring(variables('prefix'), add(indexOf(variables('prefix'),'.'),1), sub(sub(length(variables('prefix')),length(variables('firstOctect'))),1)  )]",
+        "secondOctect": "[substring(variables('tmp1'),0,indexOf(variables('tmp1'),'.'))]",
+        "tmp2": "[substring(variables('tmp1'), add(indexOf(variables('tmp1'),'.'),1), sub(sub(length(variables('tmp1')),length(variables('secondOctect'))),1)  )]",
+        "thirdOctect": "[substring(variables('tmp2'),0,indexOf(variables('tmp2'),'.'))]",
+        "fourthOctect": "[substring(variables('tmp2'), add(indexOf(variables('tmp2'),'.'),1), sub(sub(length(variables('tmp2')),length(variables('thirdOctect'))),1)  )]",
+
+        "imagePublisher": "[variables('linux').imagePublisher]",
+        "imageOffer": "[variables('linux').imageOffer]",
+        "OSVersion": "[variables('linux').OSVersion]",
+        "vmSize": "[variables('linux').vmSize]",
+        "vmCount": "[parameters('vmCount')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('vmPrefixName'), string(copyIndex()),'-pubIP')]",
+            "apiVersion": "2019-12-01",
+            "location": "[variables('location')]",
+            "comments": "Public IP addresses assigned to the VMs",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "apiVersion": "2019-12-01",
+            "location": "[variables('location')]",
+            "comments": "Azure VNet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet1Prefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(variables('vmPrefixName'), string(copyIndex()),'-nic')]",
+            "apiVersion": "2019-12-01",
+            "location": "[variables('location')]",
+            "comments": "NICs if Azure VM",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmPrefixName'), string(copyIndex()),'-pubIP') )]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[concat('ipconfig', copyIndex())]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[concat(variables('firstOctect'),'.',variables('secondOctect'),'.',variables('thirdOctect'),'.', string (add(add(int(variables('fourthOctect')),copyIndex()),4) ) )]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',  concat(variables('vmPrefixName'), string(copyIndex()),'-pubIP')  )]"
+
+                            },
+                            "subnet": {
+                                "id": "[variables('subnet1Ref')]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(variables('vmPrefixName'), string(copyIndex()))]",
+            "apiVersion": "2019-07-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmPrefixName'), string(copyIndex()),'-nic')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat( variables('vmPrefixName'), string(copyIndex()) )]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[variables('OSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmPrefixName'), string(copyIndex()), '-OSDisk' )]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmPrefixName'), string(copyIndex()),'-nic')  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}
