@@ -1,88 +1,79 @@
-﻿$nl = [Environment]::NewLine
-$a=Get-AzBgpServiceCommunity 
-For ($i=0; $i -le $a.Length; $i++) 
+﻿$fullList=Get-AzBgpServiceCommunity 
+foreach ($i in $fullList)
 {
-    switch($a[$i].Name)
+    switch($i.Name)
     {
       "Exchange" {
-         $Name=$a[$i].Name
-         $arrayPrefixesExchange=$a[$i].BgpCommunities.ToArray()
+         $Name=$i.Name
+         $arrayPrefixesExchange=$i.BgpCommunities.ToArray()
          $prefix=$arrayPrefixesExchange.CommunityPrefixes
          $NumberPrefixesExchange=$arrayPrefixesExchange.CommunityPrefixes.Count
-         # write-host -ForegroundColor Green $prefix $nl
+         # write-host -ForegroundColor Green $prefix
          }
       "OtherOffice365Services" {
-         $Name=$a[$i].Name
-         $arrayPrefixesOtherOffice365Services=$a[$i].BgpCommunities.ToArray()
+         $Name=$i.Name
+         $arrayPrefixesOtherOffice365Services=$i.BgpCommunities.ToArray()
          $prefix=$arrayPrefixesOtherOffice365Services.CommunityPrefixes
          $NumberPrefixesOtherOffice365Services=$arrayPrefixesOtherOffice365Services.CommunityPrefixes.Count
-         # write-host -ForegroundColor Yellow $prefix $nl
+         # write-host -ForegroundColor Yellow $prefix
          }
-      "SkypeForBusiness" {
-         $Name=$a[$i].Name
-         $arrayPrefixesSkypeForBusiness=$a[$i].BgpCommunities.ToArray()
-         $prefix=$arrayPrefixesSkypeForBusiness.CommunityPrefixes
-         $NumberPrefixesSkype=$arrayPrefixesSkypeForBusiness.CommunityPrefixes.Count
-         # write-host -ForegroundColor Cyan $prefix $nl
-         }
-      "SkypeForBusiness" {
-         $Name=$a[$i].Name
-         $arrayPrefixesSkypeForBusiness=$a[$i].BgpCommunities.ToArray()
-         $prefix=$arrayPrefixesSkypeForBusiness.CommunityPrefixes
-         $NumberPrefixesSkype=$arrayPrefixesSkypeForBusiness.CommunityPrefixes.Count
-         #write-host -ForegroundColor Cyan $prefix $nl
-         }        
       "SharePoint" {
-         $Name=$a[$i].Name
-         $arrayPrefixesSharePoint=$a[$i].BgpCommunities.ToArray()
+         $Name=$i.Name
+         $arrayPrefixesSharePoint=$i.BgpCommunities.ToArray()
          $prefix=$arrayPrefixesSharePoint.CommunityPrefixes
          $NumberPrefixesSharePoint=$arrayPrefixesSharePoint.CommunityPrefixes.Count
          #write-host -ForegroundColor White $prefix $nl
          }
-       "AzureEastUS" {
-         $Name=$a[$i].Name
-         $arrayPrefixesAzureEastUS=$a[$i].BgpCommunities.ToArray()
-         $prefix=$arrayPrefixesAzureEastUS.CommunityPrefixes
-         $NumberPrefixesAzureEastUS=$arrayPrefixesAzureEastUS.CommunityPrefixes.Count
-         #write-host -ForegroundColor Gray $prefix $nl
+      "SkypeForBusiness" {
+         $Name=$i.Name
+         $arrayPrefixesSkypeForBusiness=$i.BgpCommunities.ToArray()
+         $prefix=$arrayPrefixesSkypeForBusiness.CommunityPrefixes
+         $NumberPrefixesSkype=$arrayPrefixesSkypeForBusiness.CommunityPrefixes.Count
+         # write-host -ForegroundColor Cyan $prefix $nl
          }
      }
 } 
-      write-host -ForegroundColor Yellow "total number of prefixes in OtherOffice365Services: " $NumberPrefixesOtherOffice365Services 
-      write-host -ForegroundColor Green  "total number of prefixes in Exchange..............: " $NumberPrefixesExchange
-      write-host -ForegroundColor Cyan   "total number of prefixes in SkypeForBusiness......: " $NumberPrefixesSkype
-      write-host -ForegroundColor Red    "total number of prefixes in SharePoint............: " $NumberPrefixesSharePoint
-      write-host -ForegroundColor Gray   "total number of prefixes in CRMOnline.............: " $NumberPrefixesCRMOnline
 
-      Write-Host -ForegroundColor White  "--------------------------------------------------------------------------"
-      Write-Host -ForegroundColor Yellow "---------------------------OtherOffice365Services-------------------------"
-      foreach ($k in $arrayPrefixesOtherOffice365Services.CommunityPrefixes.GetEnumerator()) {
-         Write-Host -ForegroundColor Yellow $k
-      }
+$list =@()
+$list +=$arrayPrefixesExchange.CommunityPrefixes
+$list +=$arrayPrefixesOtherOffice365Services.CommunityPrefixes
+$list +=$arrayPrefixesSharePoint.CommunityPrefixes
+$list +=$arrayPrefixesSkypeForBusiness.CommunityPrefixes
 
-      Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
-      Write-Host -ForegroundColor Green "---------------------------Exchange---------------------------------------"
-      foreach ($k in $arrayPrefixesExchange.CommunityPrefixes.GetEnumerator()) {
-         Write-Host -ForegroundColor Green $k
-      }
-      Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
-      Write-Host -ForegroundColor Cyan  "---------------------------SkypeForBusiness-------------------------------"
-      foreach ($k in $arrayPrefixesSkypeForBusiness.CommunityPrefixes.GetEnumerator()) {
-         Write-Host -ForegroundColor Cyan $k
-      }
-      Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
-      Write-Host -ForegroundColor Red   "---------------------------SharePoint-------------------------------------"
-      foreach ($k in $arrayPrefixesSharePoint.CommunityPrefixes.GetEnumerator()) {
-         Write-Host -ForegroundColor Red $k
-      }
-      Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
-      Write-Host -ForegroundColor Gray  "---------------------------CRMOnline-------------------------------------"
-      foreach ($k in $arrayPrefixesCRMOnline.CommunityPrefixes.GetEnumerator()) {
-         Write-Host -ForegroundColor Gray $k
-      }
 
-      Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
-      Write-Host -ForegroundColor Gray  "---------------------------AzureEastUS------------------------------------"
-      foreach ($k in $arrayPrefixesAzureEastUS.CommunityPrefixes.GetEnumerator()) {
-         Write-Host -ForegroundColor white $k
-      }
+[Array]::Sort([array]$list)
+
+$totalNumberPrefixes=$list.Count
+
+write-host "total number of prefixes in OtherOffice365Services: " $NumberPrefixesOtherOffice365Services -ForegroundColor White
+write-host "total number of prefixes in Exchange..............: " $NumberPrefixesExchange -ForegroundColor Green 
+write-host "total number of prefixes in SkypeForBusiness......: " $NumberPrefixesSkype -ForegroundColor Cyan
+write-host "total number of prefixes in SharePoint............: " $NumberPrefixesSharePoint -ForegroundColor Red
+write-host "total number of prefixes: " $totalNumberPrefixes -ForegroundColor Yellow
+write-host ""
+write-host "List of prefixes: "
+$list
+
+
+Write-Host -ForegroundColor White  "--------------------------------------------------------------------------"
+Write-Host -ForegroundColor Yellow "---------------------------OtherOffice365Services-------------------------"
+foreach ($k in $arrayPrefixesOtherOffice365Services.CommunityPrefixes.GetEnumerator()) {
+     Write-Host -ForegroundColor Yellow $k
+}
+
+Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
+Write-Host -ForegroundColor Green "---------------------------Exchange---------------------------------------"
+foreach ($k in $arrayPrefixesExchange.CommunityPrefixes.GetEnumerator()) {
+     Write-Host -ForegroundColor Green $k
+}
+
+Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
+Write-Host -ForegroundColor Cyan  "---------------------------SkypeForBusiness-------------------------------"
+foreach ($k in $arrayPrefixesSkypeForBusiness.CommunityPrefixes.GetEnumerator()) {
+     Write-Host -ForegroundColor Cyan $k
+}
+Write-Host -ForegroundColor White "--------------------------------------------------------------------------"
+Write-Host -ForegroundColor Red   "---------------------------SharePoint-------------------------------------"
+foreach ($k in $arrayPrefixesSharePoint.CommunityPrefixes.GetEnumerator()) {
+     Write-Host -ForegroundColor Red $k
+}
