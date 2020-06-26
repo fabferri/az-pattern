@@ -33,7 +33,7 @@ Office 365 IP prefixes that are advertised over ExpressRoute Microsoft peering a
 To run the script you need to login in your Azure subscription by **Login-AzAccount**
 To select all the prefixes associated with a specific BGP community, i.e. Skype for business:
 
-```console
+```powershell
 Get-AzBgpServiceCommunity | ? {$_.name -eq 'SkypeForBusiness' }
 
 Get-AzBgpServiceCommunity | ?{$_.Name -eq 'Exchange' -or $_.Name -eq 'Sharepoint' -or $_.Name -eq 'SkypeForBusiness' -or $_.Name -eq 'OtherOffice365Services'}
@@ -42,7 +42,7 @@ Get-AzBgpServiceCommunity | ?{$_.Name -eq 'Exchange' -or $_.Name -eq 'Sharepoint
 
 Powershell script to extract BGP communities names and BGP community value:
 
-```console
+```powershell
 $fullList=Get-AzBgpServiceCommunity 
 $BGPCommunityName=@()
 $BGPCommunity=@{}
