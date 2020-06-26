@@ -39,3 +39,37 @@ Get-AzBgpServiceCommunity | ? {$_.name -eq 'SkypeForBusiness' }
 Get-AzBgpServiceCommunity | ?{$_.Name -eq 'Exchange' -or $_.Name -eq 'Sharepoint' -or $_.Name -eq 'SkypeForBusiness' -or $_.Name -eq 'OtherOffice365Services'}
 
 ```
+
+Powershell script to extract BGP communities names and BGP community value:
+
+```console
+$fullList=Get-AzBgpServiceCommunity 
+$BGPCommunityName=@()
+$BGPCommunity=@{}
+
+# use the hash table to store (BGP community name, BGP community value)
+foreach ($i in $fullList)
+{
+  $BGPCommunity.Add($i.Name,$i.BgpCommunities.CommunityValue)
+} 
+$BGPCommunity
+
+foreach ($i in $fullList)
+{
+  $BGPCommunityName +=$i.Name
+} 
+Write-Host ''
+Write-Host 'full list of BGP community name:'
+Write-Host -Separator "`n" $BGPCommunityName -ForegroundColor Cyan
+
+# $str: substring to search
+# search all the BGP communities name for SQL
+$str= "SQL"
+foreach ($i in $BGPCommunityName )
+{
+  $s=$str.toLower()
+ if ($i.toLower().Contains($s)) { 
+   Write-Host $i -ForegroundColor Yellow
+ }
+}
+```
