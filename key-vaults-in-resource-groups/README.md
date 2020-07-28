@@ -17,7 +17,7 @@ editor=""/>
    ms.date="28/07/2020"
    ms.author="fabferri" />
 
-## Azure ARM template to create multiple Key Vaults in different resouce groups
+# Azure ARM template to create multiple Key Vaults in different resouce groups
 
 The ARM template creates multiple resource groups and then deploys in each of them a Key Vault. Inside the Key Vault are stored three secrets (user password).
 
