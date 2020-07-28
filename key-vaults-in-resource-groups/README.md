@@ -20,13 +20,16 @@ editor=""/>
 # Azure ARM template to create multiple Key Vaults in different resouce groups
 
 The ARM template creates multiple resource groups and then deploys in each of them a Key Vault. Inside the Key Vault are stored three secrets (user password).
+Below a graphical representation of ARM template deployment:
 
-The commands to deploy an ARM template requires you to provide a resource group name to deploy to:
+[![1]][1]
+
+ARM templates required you to supply the name of the resource group you want to deploy to as part the deployment command:
 
 ```powershell
 New-AzResourceGroupDeployment [-Name <String>] -ResourceGroupName <String> -TemplateFile <String>
 ```
-ARM templates required you to supply the name of the resource group you want to deploy to as part the deployment command. This restriction meant that the resource group always needed to exist before running your deployment.
+This restriction meant that the resource group always needed to exist before running your deployment, that doesn't fit with the task.
 The challenge to create resource group and then resources inside can be achieved by nested ARM templates. ARM Nested templates provides a way to call one template from an inline template inside the same file. When you use a nested template, you define the resource group in that template, and so this provides a way for resources to use the resource group just created.
 In the example below we are going to deploy a Key Vault into the resource group we create:
 
@@ -126,9 +129,7 @@ New-AzDeployment -Name <String> -TemplateFile <ARM-template> -Location <AzureReg
 ```
 
 The powershell command **New-AzDeployment** doesn't require the reference of resource group and fit well with our purpose.
-Below a graphical representation of ARM template deployment:
 
-[![1]][1]
 
 ## Files
 
