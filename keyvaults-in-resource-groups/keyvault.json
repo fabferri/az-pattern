@@ -1,0 +1,285 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "podIdStart": {
+            "type": "int",
+            "minValue": 10,
+            "maxValue": 50
+        },
+        "podIdEnd": {
+            "type": "int",
+            "minValue": 10,
+            "maxValue": 50
+        },
+        "rgName": {
+            "type": "string",
+            "defaultValue": "pod",
+            "metadata": {
+                "description": "Specifies the name of the resource group."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Specifies the Azure location where the key vault should be created."
+            }
+        },
+        "enabledForDeployment": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Specifies whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault."
+            }
+        },
+        "enabledForDiskEncryption": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Specifies whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys."
+            }
+        },
+        "enabledForTemplateDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Specifies whether Azure Resource Manager is permitted to retrieve secrets from the key vault."
+            }
+        },
+        "tenantId": {
+            "type": "string",
+            "defaultValue": "[subscription().tenantId]",
+            "metadata": {
+                "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+            }
+        },
+        "objectId": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADGroup or Get-AzADServicePrincipal cmdlets."
+            }
+        },
+        "keysPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "Get",
+                "List",
+                "Update",
+                "Create",
+                "Import",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore"
+            ],
+            "metadata": {
+                "description": "Specifies the permissions to keys in the vault. Valid values are: all, encrypt, decrypt, wrapKey, unwrapKey, sign, verify, get, list, create, update, import, delete, backup, restore, recover, and purge."
+            }
+        },
+        "secretsPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "Get",
+                "List",
+                "Set",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore"
+            ],
+            "metadata": {
+                "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+            }
+        },
+        "certificatesPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "Get",
+                "List",
+                "Update",
+                "Create",
+                "Import",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore",
+                "ManageContacts",
+                "ManageIssuers",
+                "GetIssuers",
+                "ListIssuers",
+                "SetIssuers",
+                "DeleteIssuers"
+            ],
+            "metadata": {
+                "description": "Specifies the permissions for the certificate"
+            }
+        },
+        "skuName": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Specifies whether the key vault is a standard vault or a premium vault."
+            }
+        },
+        "secretName1": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the secret that you want to create."
+            }
+        },
+        "secretName2": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the secret that you want to create."
+            }
+        },
+        "secretName3": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the secret that you want to create."
+            }
+        },
+        "arraySecrets": {
+            "type": "array",
+            "metadata": {
+                "description": "array of password"
+            }
+        },
+        "keyvaultSuffixName": {
+            "type": "string",
+            "defaultValue": "[take( replace(guid(subscription().id) ,'-',''),5)]"
+        }
+    },
+    "variables": {
+        "instanceCount": "[add( sub( parameters('podIdEnd'), parameters('podIdStart')), 1)]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2019-10-01",
+            "name": "[concat(parameters('rgName'), copyIndex(parameters('podIdStart')) )]",
+            "location": "[parameters('location')]",
+            "properties": {},
+            "copy": {
+                "name": "rgCopy",
+                "count": "[variables('instanceCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "[concat('keyVaultDeployment', copyIndex())]",
+            "resourceGroup": "[concat(parameters('rgName'), copyIndex(parameters('podIdStart')) )]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups',  concat(parameters('rgName'), copyIndex(parameters('podIdStart')) )  )]"
+            ],
+            "copy": {
+                "name": "rgCopy",
+                "count": "[variables('instanceCount')]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.KeyVault/vaults",
+                            "name": "[concat(parameters('rgName'), copyIndex(parameters('podIdStart')),'-kv-',parameters('keyvaultSuffixName') )]",
+                            "apiVersion": "2019-09-01",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [],
+                            "properties": {
+                                "tenantId": "[parameters('tenantId')]",
+                                "enabledForDeployment": "[parameters('enabledForDeployment')]",
+                                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+                                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+                                "enableSoftDelete": false,
+                                "accessPolicies": [
+                                    {
+                                        "tenantId": "[parameters('tenantId')]",
+                                        "objectId": "[parameters('objectId')]",
+                                        "permissions": {
+                                            "keys": "[parameters('keysPermissions')]",
+                                            "secrets": "[parameters('secretsPermissions')]",
+                                            "certificates": "[parameters('certificatesPermissions')]"
+                                        }
+                                    }
+                                ],
+                                "sku": {
+                                    "name": "[parameters('skuName')]",
+                                    "family": "A"
+                                },
+                                "networkAcls": {
+                                    "value": {
+                                        "defaultAction": "Allow",
+                                        "bypass": "AzureServices"
+                                    }
+                                }
+                            },
+                            "resources": [
+                                {
+                                    "type": "secrets",
+                                    "name": "[ parameters('secretName1')]",
+                                    "apiVersion": "2019-09-01",
+                                    "location": "[parameters('location')]",
+                                    "dependsOn": [
+                                        "[concat(parameters('rgName'), copyIndex(parameters('podIdStart')),'-kv-',parameters('keyvaultSuffixName') )]"
+                                    ],
+                                    "properties": {
+                                        "value": "[parameters('arraySecrets')[sub(mul(copyIndex(1),3),3)]]"
+
+                                    }
+                                },
+                                {
+                                    "type": "secrets",
+                                    "name": "[ parameters('secretName2')]",
+                                    "apiVersion": "2019-09-01",
+                                    "location": "[parameters('location')]",
+                                    "dependsOn": [
+                                        "[concat(parameters('rgName'), copyIndex(parameters('podIdStart')),'-kv-',parameters('keyvaultSuffixName') )]"
+                                    ],
+                                    "properties": {
+                                        "value": "[parameters('arraySecrets')[sub(mul(copyIndex(1),3),2)]]"
+                                    }
+                                },
+                                {
+                                    "type": "secrets",
+                                    "name": "[ parameters('secretName3')]",
+                                    "apiVersion": "2019-09-01",
+                                    "location": "[parameters('location')]",
+                                    "dependsOn": [
+                                        "[concat(parameters('rgName'), copyIndex(parameters('podIdStart')),'-kv-',parameters('keyvaultSuffixName') )]"
+                                    ],
+                                    "properties": {
+                                        "value": "[parameters('arraySecrets')[sub(mul(copyIndex(1),3),1)]]"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        }
+    ]
+}
