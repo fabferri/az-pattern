@@ -130,7 +130,8 @@ Below a graphical representation of ARM template deployment:
 
 [![1]][1]
 
-File
+## Files
+
 * **keyvault.ps1**: powershell script to deploy **keyvault.json**
 * **keyvault.json**: ARM template to create resource groups, each a Key Vault and secrets
 
