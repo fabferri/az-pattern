@@ -293,7 +293,7 @@ srx2> show security ipsec security-associations
   >131073 ESP:aes-cbc-256/sha1 18bdd9c9 2818/ unlim - root 4500 13.68.202.166
 ```
 
-Verify that the GR interface is up:
+Verify that the GRE interface is up:
 ```console
 srx1> show interfaces gr-0/0/0 terse
 Interface               Admin Link Proto    Local                 Remote
@@ -680,6 +680,12 @@ srx#commit
 ```
 
 Deactivation and activation commands can be used to generate VPN logs.
+
+## <a name="Juniper"></a>2. REFERENCE
+
+[Example: Configuring MPLS over GRE with IPsec Fragmentation and Reassembly](https://www.juniper.net/documentation/en_US/junos/topics/example/vpls-over-gre-ipsec.html)
+
+https://www.juniper.net/documentation/en_US/release-independent/nce/information-products/pathway-pages/nce/nce-140-srx-for-mpls-over-IPSec-1500byte-mtu-configuring.pdf
 
 <!--Image References-->
 [1]: ./media/network-diagram.png "network diagram"
