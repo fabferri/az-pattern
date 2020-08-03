@@ -308,7 +308,7 @@ mgmt_junos.inet.0: 3 destinations, 3 routes (3 active, 0 holddown, 0 hidden)
 0.0.0.0/0          *[Access-internal/12] 00:34:46, metric 0
                     >  to 10.0.1.1 via fxp0.0
 ```
-```
+```console
 srx1> show ospf route
 Topology default Route Table:
 
