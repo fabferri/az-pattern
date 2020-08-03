@@ -50,7 +50,7 @@ Inside the SRX, the IP addresses are associated with physical subinterfaces are 
 |lo0.0      |172.16.1.2/32 |statically inside the srx config|
 |st0.0      |192.168.1.2/30|statically inside the srx config|
 
-The configuration aims to establish a communication between the subnets in different VNets, through the same IPsec tunnel. The goal is to establish the following communications:
+The configuration aims to establish a communication between the subnets in different VNets, through the same IPsec tunnel, with the following communications:
 * [vnet1-subnet3] <-> [vnet2-subnet3]: allowed
 * [vnet1-subnet4] <-> [vnet2-subnet4]: allowed
 * [vnet1-subnet3] <-> [vnet1-subnet4]: deny
