@@ -79,6 +79,8 @@ A SRX device operate in two different modes:
  On SRX and J-Series MPLS can only be used in **packet mode**. 
 
 If you convert the device to packet-mode (e.g.  configuring MPLS), you will not be able to configure IPsec VPN. That means you will not be able to use IPsec with MPLS at the same time. Hence you can only have one or the other. 
+The issue can be overcome by generic routing encapsulation (GRE) over an IP Security (IPsec) tunnel.
+In a GRE over IPsec tunnel, all of the routing traffic can be routed through because when the original packet is GRE encapsulated, it will have an IP header (as defined by the GRE tunnel, which is normally the tunnel interface IP addresses). The IPsec protocol can, therefore, understand the IP packet and so it can encapsulate the GRE packet to make it GRE over IPsec.
 
 ### **Note**
 > To enable packet based forwarding (stateless), commit the following and reboot the SRX.
@@ -95,9 +97,6 @@ If you convert the device to packet-mode (e.g.  configuring MPLS), you will not 
 > ```console
 > request system reboot
 > ```
-
-The issue can be overcome by generic routing encapsulation (GRE) over an IP Security (IPsec) tunnel.
-In a GRE over IPsec tunnel, all of the routing traffic can be routed through because when the original packet is GRE encapsulated, it will have an IP header (as defined by the GRE tunnel, which is normally the tunnel interface IP addresses). The IPsec protocol can, therefore, understand the IP packet and so it can encapsulate the GRE packet to make it GRE over IPsec.
 
 ### **Note**
 >
