@@ -248,8 +248,10 @@ After you configure this management routing instance, management traffic no long
 ## <a name="AzureDeployment"></a>2. Check post srx configurations
 After application of configurations to srx1 and srx2, we can execute few checks.
 
-device: srx1, subinterface: ge-0/0/0.0 public IP associated with the subinterface: 13.68.202.166
-device: srx2, subinterface: ge-0/0/0.0 public IP associated with the subinterface: 13.68.203.192
+```
+device: srx1, subinterface: ge-0/0/0.0, public IP associated with the subinterface: 13.68.202.166
+device: srx2, subinterface: ge-0/0/0.0, public IP associated with the subinterface: 13.68.203.192
+```
 
 ```console
 srx1> show security ike security-associations
