@@ -124,17 +124,17 @@ In a GRE over IPsec tunnel, all of the routing traffic can be routed through bec
 The pre-shared key (PSK) for the IPsec tunnel is defined in the variable **$presharedKey** in the scripts **srx1-gen-config.ps1**, **srx2-gen-config.ps1**
 Before running those powershell scripts you might want to change the value of pre-shared key; please be sure that the variable **$presharedKey** has the same value in both scripts.
 
-Juniper recommend for production Standard_D4s_v3 (max 2 NICs) or Standard_D8s_v3 (max 4 NICs) SKUs.
+For production Juniper recommend Standard_D4s_v3 (max 2 NICs) or Standard_D8s_v3 (max 4 NICs) SKUs.
 The ARM templates **siteA.json**, **siteB.json** deploy the SRXs with Standard_B4ms SKU (pretty cost effective) and it should be used _ONLY_ for testing purposes. The  Standard_B4ms supports max 4 NICs. 
 
 ## <a name="AzureDeployment"></a>2. How to run the deployment
 ### <a name="AzureDeployment"></a>2.1 Fill out the values in the file **init.json**
-As first step, fill out the right value in the init.json file. The init.json file contains information on Azure subscription to deploy the two sites. Do not change the value of variables, but only change the assignment.
+As first step, fill up the right variables values in the init.json file. The init.json file contains information on Azure subscription to deploy the two sites. Do not change the name of variables, but only change their values (assignment).
 
 ```json
 {
  "siteA":{
-   "subscriptionName": "NAME_OF_AZURE_SUBSCRIPTION_TO_DEPLOY_SITEA",
+   "subscriptionName": "NAME_OF_YOUR_AZURE_SUBSCRIPTION_TO_DEPLOY_SITEA",
    "adminUsername": "ADMINISTRATOR_USERNAME_SITEA",
    "adminPassword": "ADMINISTRATOR_PASSWORD_SITEA",
    "rgName": "NAME_RESOURCE_GROUP_SITEA",
@@ -142,7 +142,7 @@ As first step, fill out the right value in the init.json file. The init.json fil
    "srx1_vmName":"NAME_SRX_IN_SITEA"
  },
  "siteB":{
-   "subscriptionName": "NAME_OF_AZURE_SUBSCRIPTION_TO_DEPLOY_SITEB",
+   "subscriptionName": "NAME_OF_YOUR_AZURE_SUBSCRIPTION_TO_DEPLOY_SITEB",
    "adminUsername": "ADMINISTRATOR_USERNAME_SITEB",
    "adminPassword": "ADMINISTRATOR_PASSWORD_SITEB",
    "rgName": "NAME_RESOURCE_GROUP_SITEB",
@@ -162,7 +162,7 @@ To find out the desired image run the powershell **getImages.ps1** and select th
 [![5]][5]
 [![6]][6]
 
-the ARM template uses the following image:
+The ARM template uses the following image:
   - "publisher" "juniper-networks"
   - "offer": "vsrx-next-generation-firewall"
   - "sku":  "vsrx-byol-azure-image"
