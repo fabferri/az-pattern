@@ -80,20 +80,21 @@ A SRX device operate in two different modes:
 
 If you convert the device to packet-mode (e.g.  configuring MPLS), you will not be able to configure IPsec VPN. That means you will not be able to use IPsec with MPLS at the same time. Hence you can only have one or the other. 
 
-To enable packet based forwarding (stateless), commit the following and reboot the SRX.
-```console
-set security forwarding-options family mpls mode packet-based
-```
-
-To enable flow based forwarding (statefull - the default), commit the following and reboot the SRX.  
-```console
-set security forwarding-options family mpls mode flow-based
-````
-
-then reboot the box: 
-```console
+### **Note**
+> To enable packet based forwarding (stateless), commit the following and reboot the SRX.
+> ```console
+> set security forwarding-options family mpls mode packet-based
+> ```
+>
+> To enable flow based forwarding (statefull - the default), commit the following and reboot the SRX.  
+> ```console
+> set security forwarding-options family mpls mode flow-based
+> ````
+>
+> then reboot the box: 
+> ```console
 > request system reboot
-```
+> ```
 
 The issue can be overcome turning to generic routing encapsulation (GRE) over an IP Security (IPsec) tunnel.
 In a GRE over IPsec tunnel, all of the routing traffic can be routed through because when the original packet is GRE encapsulated, it will have an IP header (as defined by the GRE tunnel, which is normally the tunnel interface IP addresses). The IPsec protocol can, therefore, understand the IP packet and so it can encapsulate the GRE packet to make it GRE over IPsec.
