@@ -209,13 +209,13 @@ Run the Junos command **commit check** to check the consistency of configuration
 
 
 #### Note
-The script **srx1-gen-config.ps1** collects the public IP addresses (local and remote) associated with the interface where IPsec tunnel has to be established. Below a snippet to get the public IPs
+The script **srx1-gen-config.ps1** collects the public IP addresses (local and remote) associated with the interface where IPsec tunnel has to be established. Below a snippet to get the public IPs associated with the SRXs:
 
 ```powershell
-$rgLocal='05-srx-siteA'
-$rgRemote='05-srx-siteB'
-$nicNameLocal='srx1-ge-0-0-0'
-$nicNameRemote='srx2-ge-0-0-0'
+$rgLocal='NAME_OF_LOCAL_RESOURCE_GROUP'
+$rgRemote='NAME_OF_REMOTE_RESOURCE_GROUP'
+$nicNameLocal='NAME_OF_LOCAL_SRX'+'-ge-0-0-0'
+$nicNameRemote='NAME_OF_REMOTE_SRX'+'-ge-0-0-0'
 
 $ip_srx_Local=(Get-AzPublicIpAddress  -ResourceGroupName $rgLocal -Name $nicNameLocal).IpAddress
 $ip_srx_Remote=(Get-AzPublicIpAddress  -ResourceGroupName $rgRemote -Name $nicNameRemote).IpAddress
@@ -223,7 +223,7 @@ $ip_srx_Remote=(Get-AzPublicIpAddress  -ResourceGroupName $rgRemote -Name $nicNa
 Write-Host "IP Local....: "$ip_srx_Local -ForegroundColor Yellow
 Write-Host "IP Remote...: "$ip_srx_Remote -ForegroundColor Yellow
 ``` 
-the snipped is integrated inside **srx1-gen-config.ps1**.
+The above powershell snippet is integrated inside **srx1-gen-config.ps1**.
 
 ### <a name="AzureDeployment"></a>1.5 Run the script srx2-gen-config.ps1
 The script **srx2-gen-config.ps1** generates a text file named **srx2-config.txt** 
@@ -232,26 +232,17 @@ The **srx2-config.txt** contains the Junos commands to setup the **srx2** in sit
 
 Run the Junos command **commit check** to check the consistency of configuration. If there is no error, proceed with the command **commit** to apply the configuration to the srx.
 
-#### Note
-**The name of the dedicated management instance is reserved and hardcoded as mgmt_junos. Once the mgmt_junos routing instance is deployed, management traffic no longer shares a routing table (that is, the default inet.0 table) with other control or protocol traffic in the system.Tables for the mgmt_junos table are set up for inet and inet6 and marked as private tables. The management interface fxp0 is moved to the mgmt_junos routing table. At the point where you commit the configuration, if you are using SSH, the connection to the device will be dropped and you will have to re-establish it (likewise our case).**
+#### Note: srx management interface
+By default,  the management Ethernet interface (usually fxp0) provides the out-of-band management network for the device. There is no clear separation between either out-of-band management traffic and in-band protocol control traffic, that is, user traffic at the routing-instance or routing-table level. Instead, all traffic is handled through the default routing instance (inet.0 table).
+In our configuration we move the fxp0 management interfaces in a nondefault virtual routing and forwarding (VRF) instance, the **mgmt_junos** routing instance. 
+```console
+set routing-instances mgmt_junos description "management routing instance"
+set system management-instance
+```
+The name of the dedicated management instance is reserved and hardcoded as mgmt_junos. Once the mgmt_junos routing instance is deployed, management traffic no longer shares a routing table (that is, the default inet.0 table) with other control or protocol traffic in the system.Tables for the mgmt_junos table are set up for inet and inet6 and marked as private tables. The management interface fxp0 is moved to the mgmt_junos routing table. At the point where you commit the configuration, if you are using SSH, the connection to the device will be dropped and you will have to re-establish it (likewise our case).
 
+After you configure this management routing instance, management traffic no longer has to share a routing table (that is, the default inet.0 table) with other control or protocol traffic in the system. This improves security and makes it easier to use the management interface to troubleshoot.
 
-#### Note
-Below a snippet to collects the public IPs associated with the srx interfaces (local and remote) where IPsec tunnel has to be established.
-
-```powershell
-$rgLocal='05-srx-siteB'
-$rgRemote='05-srx-siteA'
-$nicNameLocal='srx2-ge-0-0-0'
-$nicNameRemote='srx1-ge-0-0-0'
-
-$ip_srx_Local=(Get-AzPublicIpAddress  -ResourceGroupName $rgLocal -Name $nicNameLocal).IpAddress
-$ip_srx_Remote=(Get-AzPublicIpAddress  -ResourceGroupName $rgRemote -Name $nicNameRemote).IpAddress
-
-Write-Host "IP Local....: "$ip_srx_Local -ForegroundColor Yellow
-Write-Host "IP Remote...: "$ip_srx_Remote -ForegroundColor Yellow
-``` 
-the snipped is integrated inside **srx2-gen-config.ps1**.
 
 
 ## <a name="AzureDeployment"></a>2. Check post srx configurations
