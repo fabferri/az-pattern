@@ -151,7 +151,7 @@ As first step, fill out the right value in the init.json file. The init.json fil
  }
 }
 ```
-if you do not set the value of variable in init.json, your deployment will fail.
+if you do not set the value of the variables in init.json, your deployment will fail.
 
 ### <a name="AzureDeployment"></a>2.2 market terms and condition to run the srx image
 Deployment of NVAs in Azure marketplace requires three mandatory parameters: "publisher", "offer", "sku", "version"
@@ -205,15 +205,8 @@ The script **srx1-gen-config.ps1** generates a text file named **srx1-config.txt
 The **srx1-config.txt** contains the Junos commands to setup the **srx1** in siteA.
 Connect via SSH to the srx1 console and, in edit mode, paste the content of srx1-config.txt.
 
-Run the Junos command to check the consistency of configuration:
-```console
-commit check
-```
+Run the Junos command **commit check** to check the consistency of configuration. If there is no error, proceed with the command **commit** to apply the configuration.
 
-If there is no error, proceed with the commit to apply the configuration:
-```console
-commit
-```
 
 #### Note
 The script **srx1-gen-config.ps1** collects the public IP addresses (local and remote) associated with the interface where IPsec tunnel has to be established. Below a snippet to get the public IPs
@@ -237,15 +230,7 @@ The script **srx2-gen-config.ps1** generates a text file named **srx2-config.txt
 
 The **srx2-config.txt** contains the Junos commands to setup the **srx2** in siteB. Connect via SSH to the srx2 console and, in edit mode, paste the content of srx2-config.txt.
 
-Run the Junos command to check the consistency of configuration:
-```console
-commit check
-```
-
-If there is no error, proceed with the commit to apply the configuration:
-```console
-commit
-```
+Run the Junos command **commit check** to check the consistency of configuration. If there is no error, proceed with the command **commit** to apply the configuration.
 
 #### Note
 **The name of the dedicated management instance is reserved and hardcoded as mgmt_junos. Once the mgmt_junos routing instance is deployed, management traffic no longer shares a routing table (that is, the default inet.0 table) with other control or protocol traffic in the system.Tables for the mgmt_junos table are set up for inet and inet6 and marked as private tables. The management interface fxp0 is moved to the mgmt_junos routing table. At the point where you commit the configuration, if you are using SSH, the connection to the device will be dropped and you will have to re-establish it (likewise our case).**
