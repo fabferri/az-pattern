@@ -27,6 +27,7 @@ Below is shown the network diagram.
 The ARM template assigns:
 - dynamic private IP address to the management interface 
 - static private IP address to the other gigaEthernet interfaces
+
 Inside the SRX, the IP addresses are associated with physical subinterfaces are all acquired via dhcp; the IP addresses of logical interfaces are statically assigned.
 
 ### **srx1**
