@@ -60,12 +60,11 @@ The configuration aims to establish a communication between the subnets in diffe
 [![2]][2]
 
 The desired implementation can be achieved in SRX with different routing instances.
-A routing instance is a collection of routing tables, interfaces, and routing protocol parameters. The set of interfaces belongs to the routing tables, and the routing protocol parameters control the information in the routing tables. 
-Each routing instance consists of sets of the following:
+A routing instance is a collection of routing tables, interfaces, and routing protocol parameters. Each routing instance consists of sets of the following:
 * routing tables
 * interfaces that belong to these routing tables
 
-Junos supports different types of routing instances. In our setup, we use the VPN routing and forwarding routing (VRF) instance type for Layer 3 VPN. This routing instance type has a VPN routing table as well as a corresponding VPN forwarding table. For this instance type, there is a _one-to-one mapping between an interface and a routing instance_. Each VRF instance corresponds with a forwarding table. Routes on an interface go into the corresponding forwarding table. 
+Junos supports different types of routing instances. In our setup, we use the VPN routing and forwarding (VRF) routing instance type for Layer 3 VPN. This routing instance type has a VPN routing table as well as a corresponding VPN forwarding table. For this instance type, there is a _one-to-one mapping between an interface and a routing instance_. Each VRF instance corresponds with a forwarding table. Routes on an interface go into the corresponding forwarding table. 
 
 The interfaces are all still configured in the normal interface section, you just assign them to the specific routing-instance in the routing-instance section.  Within the routing-instance you also setup protocols and other "VRF" specific config you may need. 
 
