@@ -1,0 +1,18 @@
+{
+ "siteA":{
+   "subscriptionName": "Azure-Demo",
+   "adminUsername": "ADMINISTRATOR_USERNAME",
+   "adminPassword": "ADMINISTRATOR_PASSWORD",
+   "rgName": "siteA-srx",
+   "location":"eastus",
+   "srx1_vmName":"srx1"
+ },
+ "siteB":{
+   "subscriptionName": "Azure-Demo",
+   "adminUsername": "ADMINISTRATOR_USERNAME",
+   "adminPassword": "ADMINISTRATOR_PASSWORD",
+   "rgName": "siteB-srx",
+   "location":"eastus",
+   "srx1_vmName":"srx2"
+ }
+}
