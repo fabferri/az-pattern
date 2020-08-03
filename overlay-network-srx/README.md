@@ -199,7 +199,7 @@ When completed the siteA will be running with vnet1, srx1, vm1a and vm1b.
 The script **siteB.ps1** reads the file **init.json** and then deploys the ARM template **siteB.json**.
 When completed the siteB will be running with vnet2, srx2, vm2a and vm2b.
 
-To speed up the deployment you can run the scripts siteA.ps1 and siteB.ps1 in parallel in two powershell sessions.
+To speed up the deployment you can run the scripts **siteA.ps1** and **siteB.ps1** in parallel in two powershell sessions.
 
 ### <a name="AzureDeployment"></a>1.5 Run the script srx1-gen-config.ps1
 The script **srx1-gen-config.ps1** generates a text file named **srx1-config.txt** 
