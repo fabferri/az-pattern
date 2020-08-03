@@ -96,7 +96,7 @@ If you convert the device to packet-mode (e.g.  configuring MPLS), you will not 
 > request system reboot
 > ```
 
-The issue can be overcome turning to generic routing encapsulation (GRE) over an IP Security (IPsec) tunnel.
+The issue can be overcome by generic routing encapsulation (GRE) over an IP Security (IPsec) tunnel.
 In a GRE over IPsec tunnel, all of the routing traffic can be routed through because when the original packet is GRE encapsulated, it will have an IP header (as defined by the GRE tunnel, which is normally the tunnel interface IP addresses). The IPsec protocol can, therefore, understand the IP packet and so it can encapsulate the GRE packet to make it GRE over IPsec.
 
 > _**Note**_
