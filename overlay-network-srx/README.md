@@ -124,7 +124,7 @@ In a GRE over IPsec tunnel, all of the routing traffic can be routed through bec
 The pre-shared key (PSK) for the IPsec tunnel is defined in the variable **$presharedKey** in the scripts **srx1-gen-config.ps1**, **srx2-gen-config.ps1**
 Before running those powershell scripts you might want to change the value of pre-shared key; please be sure that the variable **$presharedKey** has the same value in both scripts.
 Juniper recommend for production Standard_D4s_v3 (max 2 NICs) or Standard_D8s_v3 (max 4 NICs) SKUs.
-The ARM templates **siteA.json**, **siteB.json** deploy the SRXs with Standard_B4ms SKU and it should be used only for testing purposes. The  Standard_B4ms supports max 4 NICs. 
+The ARM templates **siteA.json**, **siteB.json** deploy the SRXs with Standard_B4ms SKU (pretty cost effective) and it should be used _ONLY_ for testing purposes. The  Standard_B4ms supports max 4 NICs. 
 
 ## <a name="AzureDeployment"></a>2. How to run the deployment
 ### <a name="AzureDeployment"></a>2.1 Fill out the values in the file **init.json**
