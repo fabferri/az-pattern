@@ -24,18 +24,18 @@ Below is shown the network diagram.
 
 [![1]][1]
 
-The ARM template creates Juniper SRX with four NICs. The ARM template assign:
+The ARM template assigns:
 - dynamic private IP address to the management interface 
 - static private IP address to the other gigaEthernet interfaces
-Inside the SRX, the IP addresses are associated with physical subinterfaces are all acquire via dhcp; the IP addresses of logical interfaces are statically assigned:
+Inside the SRX, the IP addresses are associated with physical subinterfaces are all acquired via dhcp; the IP addresses of logical interfaces are statically assigned.
 
 ### **srx1**
 |interface  |priv IP Address | assigmement inside srx |
 |-----------|----------------|-------------|
 |fxp0.0     |10.0.1.4/27     | vnet-dhcp   |
 |ge-0/0/0.0 |10.0.1.50/27    | vnet-dhcp   |
-|ge-0/0/1.0 |10.0.1.50/27    | vnet-dhcp   |
-|ge-0/0/2.0 |10.0.1.50/27    | vnet-dhcp   |
+|ge-0/0/1.0 |10.0.1.80/27    | vnet-dhcp   |
+|ge-0/0/2.0 |10.0.1.120/27   | vnet-dhcp   |
 |lo0.0      |172.16.1.1/32   |statically inside the srx config|
 |st0.0      |192.168.1.1/30  |statically inside the srx config|
 
@@ -44,8 +44,8 @@ Inside the SRX, the IP addresses are associated with physical subinterfaces are 
 |-----------|--------------|-------------|
 |fxp0.0     |10.0.2.4/27   | vnet-dhcp   |
 |ge-0/0/0.0 |10.0.2.50/27  | vnet-dhcp   |
-|ge-0/0/1.0 |10.0.2.50/27  | vnet-dhcp   |
-|ge-0/0/2.0 |10.0.2.50/27  | vnet-dhcp   |
+|ge-0/0/1.0 |10.0.2.80/27  | vnet-dhcp   |
+|ge-0/0/2.0 |10.0.2.120/27 | vnet-dhcp   |
 |lo0.0      |172.16.1.2/32 |statically inside the srx config|
 |st0.0      |192.168.1.2/30|statically inside the srx config|
 
