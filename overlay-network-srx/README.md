@@ -190,11 +190,13 @@ Through the Azure management portal enable the automatic deployment through powe
 [![8]][8]
 
 ### <a name="AzureDeployment"></a>1.3 Run the powershell script siteA.ps1
-The script **siteA.ps1** reads the file init.json and then deployes the ARM template **siteA.json**.
+The script **siteA.ps1** reads the file **init.json** and then deployes the ARM template **siteA.json**.
 When completed the siteA will be running with vnet1, srx1, vm1a and vm1b.
 
+[![9]][9]
+
 ### <a name="AzureDeployment"></a>1.4 Run the powershell script siteB.ps1
-The script **siteB.ps1** reads the file init.json and then deploys the ARM template **siteB.json**.
+The script **siteB.ps1** reads the file **init.json** and then deploys the ARM template **siteB.json**.
 When completed the siteB will be running with vnet2, srx2, vm2a and vm2b.
 
 To speed up the deployment you can run the scripts siteA.ps1 and siteB.ps1 in parallel in two powershell sessions.
@@ -673,7 +675,7 @@ Deactivation and activation commands can be used to generate VPN logs.
 https://www.juniper.net/documentation/en_US/release-independent/nce/information-products/pathway-pages/nce/nce-140-srx-for-mpls-over-IPSec-1500byte-mtu-configuring.pdf
 
 <!--Image References-->
-[1]: ./media/network-diagram.png "network diagram"
+[1]: ./media/network-diagram.png  "network diagram"
 [2]: ./media/vrf-communication.png "communication between vrf"
 [3]: ./media/srx-marketplace-01.png "srx Azure marketplace"
 [4]: ./media/srx-marketplace-02.png "srx Azure marketplace"
@@ -681,5 +683,6 @@ https://www.juniper.net/documentation/en_US/release-independent/nce/information-
 [6]: ./media/srx-marketplace-04.png "srx Azure marketplace"
 [7]: ./media/srx-marketplace-05.png "srx -enable automatic deployment"
 [8]: ./media/srx-marketplace-06.png "srx -enable automatic deployment"
+[9]: ./media/deployment.png "site deployment"
 <!--Link References-->
 
