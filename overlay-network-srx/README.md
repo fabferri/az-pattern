@@ -24,21 +24,23 @@ Below is shown the network diagram.
 
 [![1]][1]
 
-The ARM template assigns to the the SRX static IP addresses to the NIC attached to the subnets.
-Inside the SRX, the IP addresses are associated with physical subinterfaces are acquire via dhcp; the IP addresses of logical interfaces are statically assigned:
+The ARM template creates Juniper SRX with four NICs. The ARM template assign:
+- dynamic private IP address to the management interface 
+- static private IP address to the other gigaEthernet interfaces
+Inside the SRX, the IP addresses are associated with physical subinterfaces are all acquire via dhcp; the IP addresses of logical interfaces are statically assigned:
 
 ### **srx1**
-|interface  |IP Address    | assigmement |
-|-----------|--------------|-------------|
-|fxp0.0     |10.0.1.4/27   | vnet-dhcp   |
-|ge-0/0/0.0 |10.0.1.50/27  | vnet-dhcp   |
-|ge-0/0/1.0 |10.0.1.50/27  | vnet-dhcp   |
-|ge-0/0/2.0 |10.0.1.50/27  | vnet-dhcp   |
-|lo0.0      |172.16.1.1/32 |statically inside the srx config|
-|st0.0      |192.168.1.1/30|statically inside the srx config|
+|interface  |priv IP Address | assigmement inside srx |
+|-----------|----------------|-------------|
+|fxp0.0     |10.0.1.4/27     | vnet-dhcp   |
+|ge-0/0/0.0 |10.0.1.50/27    | vnet-dhcp   |
+|ge-0/0/1.0 |10.0.1.50/27    | vnet-dhcp   |
+|ge-0/0/2.0 |10.0.1.50/27    | vnet-dhcp   |
+|lo0.0      |172.16.1.1/32   |statically inside the srx config|
+|st0.0      |192.168.1.1/30  |statically inside the srx config|
 
 ### **srx2**
-|interface  |IP Address    | assigmement |
+|interface  |IP Address    | assigmement inside srx |
 |-----------|--------------|-------------|
 |fxp0.0     |10.0.2.4/27   | vnet-dhcp   |
 |ge-0/0/0.0 |10.0.2.50/27  | vnet-dhcp   |
@@ -47,7 +49,7 @@ Inside the SRX, the IP addresses are associated with physical subinterfaces are 
 |lo0.0      |172.16.1.2/32 |statically inside the srx config|
 |st0.0      |192.168.1.2/30|statically inside the srx config|
 
-The configuration aims to establish a communication between the subnets in different VNets through the same IPsec tunnel. In the specific configuration the goal is to establish the following communications:
+The configuration aims to establish a communication between the subnets in different VNets, through the same IPsec tunnel. The goal is to establish the following communications:
 * [vnet1-subnet3] <-> [vnet2-subnet3]: allowed
 * [vnet1-subnet4] <-> [vnet2-subnet4]: allowed
 * [vnet1-subnet3] <-> [vnet1-subnet4]: deny
@@ -119,6 +121,8 @@ In a GRE over IPsec tunnel, all of the routing traffic can be routed through bec
 |**srx1-config.txt**| configuration file generated from the script **srx1-gen-config.ps1**|
 |**srx2-config.txt**| configuration file generated from the script **srx2-gen-config.ps1**|
 
+The pre-shared key (PSK) for the IPsec tunnel is defined in the variable **$presharedKey** in the scripts **srx1-gen-config.ps1**, **srx2-gen-config.ps1**
+Before running those powershell scripts you might want to change the value of pre-shared key; please be sure that the variable **$presharedKey** has the same value in both scripts.
 Juniper recommend for production Standard_D4s_v3 (max 2 NICs) or Standard_D8s_v3 (max 4 NICs) SKUs.
 The ARM templates **siteA.json**, **siteB.json** deploy the SRXs with Standard_B4ms SKU and it should be used only for testing purposes. The  Standard_B4ms supports max 4 NICs. 
 
