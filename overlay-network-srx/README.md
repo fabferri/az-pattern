@@ -248,11 +248,12 @@ After you configure this management routing instance, management traffic no long
 
 
 ## <a name="AzureDeployment"></a>2. Check post srx configurations
-After application of configurations to srx1 and srx2, we can execute few checks.
+After application of the configurations to srx1 and srx2, we can execute few checks.
 
+By Azure management portal is simple to get the public IPs assigned to the interfaces of the SRXs:
 ```
-device: srx1, subinterface: ge-0/0/0.0, public IP associated with the subinterface: 13.68.202.166
-device: srx2, subinterface: ge-0/0/0.0, public IP associated with the subinterface: 13.68.203.192
+device: srx1, public IP associated with the subinterface  ge-0/0/0.0: 13.68.202.166
+device: srx2, public IP associated with the subinterface ge-0/0/0.0: 13.68.203.192
 ```
 
 ```console
