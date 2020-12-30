@@ -19,12 +19,13 @@
 # Fab's Azure repository
 List of Azure ARM templates and scripts:
 * [Basic examples](./00-basic-examples)
-   * [How to generate traffic between two Azure VMs](./00-basic-examples/00-traffic-between-2vms/)
-   * [Communication between Azure VMs through an IP forwarder](./01-ip-forwarding/)
-   * [How to create hub-spoke VNets interconnected by VNet peering and UDR](./01-rt-hub-spokes/)
+   * [How to generate traffic between two Azure VMs](./00-basic-examples/00-traffic-between-2vms)
+   * [Azure VMs with custom script extension](./00-basic-examples/00-vm-script-extension)
+   * [Communication between Azure VMs through an IP forwarder](./00-basic-examples/01-ip-forwarding)
+   * [create multiple VNets and VMs in different Azure regions](./00-basic-examples/02-multiple-vnets-vms)
 * [Azure Load Balancer](./loadbalancer/)
-   * [Standard load balancer in HA ports](./loadbalancer/ilb-ha-ports-1vnet/)
-   * [Standard load balancer in HA ports with VNet peering](./loadbalancer/ilb-ha-ports-vnetpeering/)
+   * [Standard load balancer in HA ports](./loadbalancer/ilb-ha-ports-1vnet)
+   * [Standard load balancer in HA ports with VNet peering](./loadbalancer/ilb-ha-ports-vnetpeering)
    * [Standard load balancer in HA ports with two frontend IPs and two backend pools](./loadbalancer/ilb-ha-ports-2frontend-2backendpools)
    * [Standard internal load balancer with multiple frontend IPs and backend address pools](./loadbalancer/ilb-multiple-fe-be)
 *  [hub-spoke VNets](./hub-spoke-vnets)
