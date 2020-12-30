@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'Traffic generation between two Azure VMs'
-description= "Traffic generation between two Azure Virtual Machines"
+pageTitle= 'How to generate traffic between two Azure VMs'
+description= "How to generate traffic between two Azure Virtual Machines"
 documentationcenter: na
 services=""
 documentationCenter="na"
@@ -17,9 +17,9 @@ editor=""/>
    ms.date="18/08/2018"
    ms.author="fabferri" />
 
-## Traffic generation between two Azure VMs
+## How to generate traffic between two Azure VMs
 
-Traffic generation between Azure VMs is common in testing process.
+In testing and validation is common to generate traffic  between Azure VMs.
 The article shows few methods to generate traffic between two Azure VMs, vm1 and vm2, connected to the the same Azure subnet. The methods to generate traffic can be used between private and/or public IPs.
 
 [![1]][1]
