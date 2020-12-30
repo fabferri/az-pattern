@@ -1,7 +1,7 @@
 <properties
    pageTitle="Examples of Azure ARM templates and scripts"
    description="Examples of Azure ARM templates and scripts"
-   services=""
+   services="Azure VNet, Azure Load Balancer, Azure VNet peering, Azure VPN"
    documentationCenter="na"
    authors="fabferri"
    manager=""
@@ -11,7 +11,7 @@
    ms.service="Configuration-Example-Azure"
    ms.devlang="na"
    ms.topic="article"
-   ms.tgt_pltfrm="na"
+   ms.tgt_pltfrm="Azure"
    ms.workload="na"
    ms.date="21/11/2016"
    ms.author="fabferri" />
@@ -34,7 +34,12 @@ List of Azure ARM templates and scripts:
 * [IPv6](./ipv6)
    * [IPv6 in single VNet](./ipv6/ipv6-single-vnet)
    * [IPv6 in single VNet and load balancer](./ipv6/ipv6-single-vnet-lb)
-   * [IPv6 with hub-spoke VNet](./ipv6-vnet-peering)
+   * [IPv6 with hub-spoke VNet](./ipv6/ipv6-vnet-peering)
+* [VPN](./vpn)
+   * [site-to-site VPN between VNets](./vpn/s2s-vpn-vnets)
+   * [Site-to-site VPN between a Cisco CSR 1000v and Azure VPN Gateway](./vpn/vpn-gtw-cisco-csr)
+   * [Site-to-site VPN between two Juniper vSRX in Azure](./vpn/vpn-juniper-srx)
+   * [Multiple VNet-to-VNet connection with two hub VNets](./vpn/vpn-vnet-2-vnet)
 * [Multiple VNets and VMs in different Azure regions](./02-multiple-vnets-vms/)
 * [Azure VMs with multiple NICs](./02-vms-multiple-nics-01/README.md)
 * [Multiple VNet-to-VNet with VPN Gateways](./vpn-vnet-2-vnet/)
