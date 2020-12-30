@@ -1,0 +1,179 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": { "description": "Name VNet1" }
+        },
+        "vnet1NetworkPrefix": {
+            "type": "string",
+            "defaultValue": "10.1.0.0/16",
+            "metadata": {
+                "description": "Network VNet1"
+            }
+        },
+        "vnet1SubnetName": {
+            "type": "string",
+            "defaultValue": "subnet1",
+            "metadata": {
+                "description": "Subnet Name in VNet1"
+            }
+        },
+        "vnet1SubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.1.0.0/24",
+            "metadata": {
+                "description": "Subnet prefix in VNet1"
+            }
+        },
+        "peeringNamevnet1vnet2": {
+            "type": "string",
+            "defaultValue": "vnet1Tovnet2",
+            "metadata": {
+                "description": "name of the vnet peering"
+            }
+        },
+        "vnet2Name": {
+            "type": "string",
+            "defaultValue": "vnet2",
+            "metadata": { "description": "Name VNet1" }
+        },
+        "vnet2NetworkPrefix": {
+            "type": "string",
+            "defaultValue": "10.2.0.0/16",
+            "metadata": {
+                "description": "Network VNet1"
+            }
+        },
+        "vnet2SubnetName": {
+            "type": "string",
+            "defaultValue": "subnet1",
+            "metadata": {
+                "description": "Subnet Name in VNet2"
+            }
+        },
+        "vnet2SubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.2.0.0/24",
+            "metadata": {
+                "description": "Subnet prefix in VNet1"
+            }
+        },
+        "peeringNamevnet2vnet1": {
+            "type": "string",
+            "defaultValue": "vnet2Tovnet1",
+            "metadata": {
+                "description": "vnet peering name"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "vNet1": {
+            "name": "[parameters('vnet1Name')]",
+            "addressSpacePrefix": "[parameters('vnet1NetworkPrefix')]",
+            "subnetName": "[parameters('vnet1SubnetName')]",
+            "subnetPrefix": "[parameters('vnet1SubnetPrefix')]",
+            "peeringName": "[parameters('peeringNamevnet1vnet2')]"
+        },
+        "vNet2": {
+            "name": "[parameters('vnet2Name')]",
+            "addressSpacePrefix": "[parameters('vnet2NetworkPrefix')]",
+            "subnetName": "[parameters('vnet2SubnetName')]",
+            "subnetPrefix": "[parameters('vnet2SubnetPrefix')]",
+            "peeringName": "[parameters('peeringNamevnet2vnet1')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet1').name]",
+            "apiVersion": "2020-05-01",
+            "location": "[variables('location')]",
+            "comments": "This is the first vNet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet1').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnetPrefix]"
+                        }
+                    }
+                ]
+            },
+            "resources": [
+                {
+                    "type": "virtualNetworkPeerings",
+                    "name": "[variables('vNet1').peeringName]",
+                    "apiVersion": "2020-05-01",
+                    "location": "[variables('location')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]",
+                        "[concat('Microsoft.Network/virtualNetworks/', variables('vNet2').name)]"
+                    ],
+                    "comments": "This is the peering from vNet 1 to vNet 2",
+                    "properties": {
+                        "allowVirtualNetworkAccess": true,
+                        "allowForwardedTraffic": true,
+                        "allowGatewayTransit": false,
+                        "useRemoteGateways": false,
+                        "remoteVirtualNetwork": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet2').name)]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet2').name]",
+            "apiVersion": "2020-05-01",
+            "location": "[variables('location')]",
+            "comments": "This is the second vNet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet2').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet2').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnetPrefix]"
+                        }
+                    }
+                ]
+            },
+            "resources": [
+                {
+                    "type": "virtualNetworkPeerings",
+                    "name": "[variables('vNet2').peeringName]",
+                    "apiVersion": "2020-05-01",
+                    "location": "[variables('location')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Network/virtualNetworks/', variables('vNet1').name)]",
+                        "[concat('Microsoft.Network/virtualNetworks/', variables('vNet2').name)]"
+                    ],
+                    "comments": "This is the peering from vNet 2 to vNet 1",
+                    "properties": {
+                        "allowVirtualNetworkAccess": true,
+                        "allowForwardedTraffic": true,
+                        "allowGatewayTransit": false,
+                        "useRemoteGateways": false,
+                        "remoteVirtualNetwork": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet1').name)]"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

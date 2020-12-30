@@ -1,0 +1,2 @@
+azSubscriptionName=AzDev
+ResourceGroupName=test-vnet-peering1
