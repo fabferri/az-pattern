@@ -31,8 +31,9 @@ List of Azure ARM templates and scripts:
    * [Two hub-spoke VNets interconnected by global VNet peering](./vnet-peering-2hubspoke)
    * [Two hub-spoke VNets connected by VNet-to-VNet with load balancer in HA ports in the hub VNets](./vnet-peering-2hubspoke-ilb-vpn)
    * [Two hub-spoke VNets connected by VNet peering with load balancer in HA ports in the hub VNets](./vnet-peering-2hubspoke-ilb-vpn-2)
-* IPv6
-   * [IPv6 in single VNet](./ipv6-single-vnet)
+* [IPv6](./ipv6)
+   * [IPv6 in single VNet](./ipv6/ipv6-single-vnet)
+   * [IPv6 in single VNet and load balancer](./ipv6/ipv6-single-vnet-lb)
    * [IPv6 with hub-spoke VNet](./ipv6-vnet-peering)
 * [Multiple VNets and VMs in different Azure regions](./02-multiple-vnets-vms/)
 * [Azure VMs with multiple NICs](./02-vms-multiple-nics-01/README.md)
