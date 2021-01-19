@@ -246,7 +246,6 @@
     "imagePublisher": "OpenLogic",
     "imageOffer": "CentOS",
     "imageSKU": "7.6",
-    "OSDiskName": "osDisk",
     "vm1PublicIPName": "[concat(variables('vm1Name'), '-pubIP')]",
     "vm2PublicIPName": "[concat(variables('vm2Name'), '-pubIP')]",
     "vmSize": "[parameters('vmSize')]",
@@ -254,7 +253,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2018-12-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg1')]",
       "location": "[variables('location1')]",
@@ -332,7 +331,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet1Name')]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1'))]"
@@ -365,7 +364,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet2Name')]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2'))]"
@@ -398,7 +397,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway1PublicIP1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway1-instance 0",
       "location": "[variables('location1')]",
       "properties": {
@@ -408,7 +407,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway1PublicIP2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway1- instance 1",
       "location": "[variables('location1')]",
       "properties": {
@@ -418,7 +417,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway2PublicIP1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway2-instance 0",
       "location": "[variables('location2')]",
       "properties": {
@@ -428,7 +427,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway2PublicIP2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway2- instance 1",
       "location": "[variables('location2')]",
       "properties": {
@@ -438,7 +437,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[variables('gateway1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway1PublicIP1Name'))]",
@@ -489,7 +488,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[variables('gateway2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway2PublicIP1Name'))]",
@@ -540,7 +539,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('vm1PublicIPName')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -549,7 +548,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('vm2PublicIPName')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -558,7 +557,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nic1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm1PublicIPName'))]",
@@ -584,7 +583,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nic2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm2PublicIPName'))]",
@@ -610,7 +609,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vm1Name')]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nic1Name'))]"
@@ -652,7 +651,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vm2Name')]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nic2Name'))]"

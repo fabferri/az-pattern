@@ -442,9 +442,9 @@
   },
   "resources": [
     {
-      "apiVersion": "2019-09-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg1')]",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "properties": {
         "securityRules": [
@@ -480,7 +480,7 @@
       }
     },
     {
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg2')]",
       "location": "[variables('location2')]",
@@ -518,7 +518,7 @@
       }
     },
     {
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg3')]",
       "location": "[variables('location3')]",
@@ -556,7 +556,7 @@
       }
     },
     {
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg4')]",
       "location": "[variables('location4')]",
@@ -596,7 +596,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1'))]"
@@ -629,7 +629,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet2Name')]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2'))]"
@@ -662,7 +662,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet3Name')]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location3')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg3'))]"
@@ -695,7 +695,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet4Name')]",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location4')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg4'))]"
@@ -728,7 +728,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway1PublicIP1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway1-instance 0",
       "location": "[variables('location1')]",
       "properties": {
@@ -738,7 +738,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway1PublicIP2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway1- instance 1",
       "location": "[variables('location1')]",
       "properties": {
@@ -748,7 +748,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway2PublicIP1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway2-instance 0",
       "location": "[variables('location2')]",
       "properties": {
@@ -758,7 +758,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway2PublicIP2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway2- instance 1",
       "location": "[variables('location2')]",
       "properties": {
@@ -768,7 +768,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway3PublicIP1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway2-instance 0",
       "location": "[variables('location3')]",
       "properties": {
@@ -778,7 +778,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway3PublicIP2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway3- instance 1",
       "location": "[variables('location3')]",
       "properties": {
@@ -790,7 +790,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway4PublicIP1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway4-instance 0",
       "location": "[variables('location4')]",
       "properties": {
@@ -800,7 +800,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('gateway4PublicIP2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "comments": "public IP of the VPN Gateway4- instance 1",
       "location": "[variables('location4')]",
       "properties": {
@@ -811,7 +811,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[variables('gateway1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway1PublicIP1Name'))]",
@@ -862,7 +862,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[variables('gateway2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway2PublicIP1Name'))]",
@@ -913,7 +913,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[variables('gateway3Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location3')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway3PublicIP1Name'))]",
@@ -964,7 +964,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[variables('gateway4Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location4')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway4PublicIP1Name'))]",
@@ -1015,7 +1015,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('vm1PublicIPName')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -1024,7 +1024,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('vm2PublicIPName')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -1033,7 +1033,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('vm3PublicIPName')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location3')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -1042,7 +1042,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('vm4PublicIPName')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location4')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic"
@@ -1051,7 +1051,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nic1Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm1PublicIPName'))]",
@@ -1077,7 +1077,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nic2Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm2PublicIPName'))]",
@@ -1103,7 +1103,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nic3Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location3')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm3PublicIPName'))]",
@@ -1129,7 +1129,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nic4Name')]",
-      "apiVersion": "2019-09-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location4')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm4PublicIPName'))]",
@@ -1155,7 +1155,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vm1Name')]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location1')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nic1Name'))]"
@@ -1197,7 +1197,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vm2Name')]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location2')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nic2Name'))]"
@@ -1239,7 +1239,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vm3Name')]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location3')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nic3Name'))]"
@@ -1281,7 +1281,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vm4Name')]",
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('location4')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nic4Name'))]"

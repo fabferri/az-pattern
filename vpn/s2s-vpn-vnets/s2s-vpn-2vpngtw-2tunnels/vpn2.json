@@ -164,7 +164,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName11')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [],
@@ -180,7 +180,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName12')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [],
@@ -196,7 +196,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName21')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location1')]",
             "dependsOn": [],
@@ -212,7 +212,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName22')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location1')]",
             "dependsOn": [],
@@ -228,7 +228,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName11-21')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "VPN connection between [Gateway1] and [Gateway2-pubIP1]",
             "location": "[variables('location1')]",
             "dependsOn": [
@@ -250,7 +250,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName12-22')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "VPN connection between [Gateway1] and [Gateway2-pubIP2]",
             "location": "[variables('location1')]",
             "dependsOn": [
@@ -272,7 +272,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName21-11')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "VPN connection between [Gateway2] and [Gateway1-pubIP1]",
             "location": "[variables('location2')]",
             "dependsOn": [
@@ -294,7 +294,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName22-12')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2020-06-01",
             "comments": "VPN connection between [Gateway2] and [Gateway1-pubIP2]",
             "location": "[variables('location2')]",
             "dependsOn": [
