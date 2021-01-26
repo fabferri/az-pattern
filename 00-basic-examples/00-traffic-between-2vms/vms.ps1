@@ -10,7 +10,7 @@ param (
 ################# Input parameters #################
 $subscriptionName      = "AzureDemo2"     
 $location              = "eastus"
-$rgName                = "peering01"
+$rgName                = "vms01"
 $rgDeployment          = "dep02"
 $armTemplateFile       = "vms.json"
 ####################################################

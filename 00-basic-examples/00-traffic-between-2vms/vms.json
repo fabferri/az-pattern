@@ -26,13 +26,15 @@
     "windows": {
       "imagePublisher": "MicrosoftWindowsServer",
       "imageOffer": "WindowsServer",
-      "OSVersion": "2019-Datacenter",
-      "vmsize": "Standard_DS1_v2"
+      "sku": "2019-Datacenter",
+      "version": "latest",
+      "vmsize": "Standard_DS1_v2",
     },
     "linux": {
       "imagePublisher": "openlogic",
       "imageOffer": "CentOS",
-      "OSVersion": "7.7",
+      "sku": "8_3",
+      "version": "latest",
       "vmsize": "Standard_B1s"
     },
     "vNet": {
@@ -55,7 +57,8 @@
         "vmSize": "[variables('linux').vmsize]",
         "imagePublisher": "[variables('linux').imagePublisher]",
         "imageOffer": "[variables('linux').imageOffer]",
-        "OSVersion": "[variables('linux').OSVersion]",
+        "sku": "[variables('linux').sku]",
+        "version": "[variables('linux').version]",
         "VNetName": "[variables('vNet').name]",
         "SubnetName": "[variables('vNet').subnet1Name]",
         "privateIP": "10.0.1.10",
@@ -67,7 +70,8 @@
         "vmSize": "[variables('linux').vmsize]",
         "imagePublisher": "[variables('linux').imagePublisher]",
         "imageOffer": "[variables('linux').imageOffer]",
-        "OSVersion": "[variables('linux').OSVersion]",
+        "sku": "[variables('linux').sku]",
+        "version": "[variables('linux').version]",
         "VNetName": "[variables('vNet').name]",
         "SubnetName": "[variables('vNet').subnet1Name]",
         "privateIP": "10.0.1.20",
@@ -79,7 +83,8 @@
         "vmSize": "[variables('windows').vmsize]",
         "imagePublisher": "[variables('windows').imagePublisher]",
         "imageOffer": "[variables('windows').imageOffer]",
-        "OSVersion": "[variables('windows').OSVersion]",
+        "sku": "[variables('windows').sku]",
+        "version": "[variables('windows').version]",
         "VNetName": "[variables('vNet').name]",
         "SubnetName": "[variables('vNet').subnet1Name]",
         "privateIP": "10.0.1.30",
@@ -90,9 +95,9 @@
   },
   "resources": [
     {
-      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg').name]",
+      "apiVersion": "2020-06-01",
       "location": "[variables('nsg').location]",
       "properties": {
         "securityRules": [
@@ -128,9 +133,9 @@
       }
     },
     {
-      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet').name]",
+      "apiVersion": "2020-06-01",
       "location": "[variables('vNet').location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg').name)]"
@@ -156,9 +161,9 @@
       }
     },
     {
-      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+      "apiVersion": "2020-06-01",
       "location": "[variables('vmArray')[copyIndex()].location]",
       "comments": "Public IP address VMs",
       "properties": {
@@ -170,9 +175,9 @@
       }
     },
     {
-      "apiVersion": "2019-11-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "apiVersion": "2020-06-01",
       "location": "[variables('vmArray')[copyIndex()].location]",
       "comments": "NIC of the VMs",
       "dependsOn": [
@@ -205,7 +210,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmArray')[copyIndex()].vmName]",
-      "apiVersion": "2019-07-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('vmArray')[copyIndex()].location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
@@ -223,8 +228,8 @@
           "imageReference": {
             "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
             "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
-            "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
-            "version": "latest"
+            "sku": "[variables('vmArray')[copyIndex()].sku]",
+            "version": "[variables('vmArray')[copyIndex()].version]"
           },
           "osDisk": {
             "createOption": "FromImage",
@@ -244,5 +249,11 @@
         "count": "[variables('vmCount')]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
 }

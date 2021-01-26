@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "on-premises-removeIP": {
+    "on-premises-remoteIP": {
       "type": "string",
       "defaultValue": "100.100.100.1/32",
       "metadata": {
@@ -30,7 +30,7 @@
     }
   },
   "variables": {
-    "on-premises-removeIP": "[parameters('on-premises-removeIP')]",
+    "on-premises-remoteIP": "[parameters('on-premises-remoteIP')]",
     "adminUsername": "[parameters('adminUsername')]",
     "adminPassword": "[parameters('adminPassword')]",
     "windows": {
@@ -87,7 +87,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "22",
-              "sourceAddressPrefix": "[variables('on-premises-removeIP')]",
+              "sourceAddressPrefix": "[variables('on-premises-remoteIP')]",
               "destinationAddressPrefix": "VirtualNetwork",
               "access": "Allow",
               "priority": 500,
@@ -101,7 +101,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "3389",
-              "sourceAddressPrefix": "[variables('on-premises-removeIP')]",
+              "sourceAddressPrefix": "[variables('on-premises-remoteIP')]",
               "destinationAddressPrefix": "VirtualNetwork",
               "access": "Allow",
               "priority": 510,
