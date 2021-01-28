@@ -55,8 +55,8 @@ Each connection use the FQDN of public IP of the remote VPN Gateway.
 > **$adminPassword**
 > 3. The text file **init.txt** set the name of the resource group and the Azure regions of two VNets
 > 4. the powershell scripts **vpn1.ps1** and **vpn2.ps1** needs to be run in sequence: 
-   * first step: run the **vpn1.ps1**   
-   * second step: run the **vpn2.ps1**
+>    * first step: run the **vpn1.ps1**   
+>    * second step: run the **vpn2.ps1**
 
 
 
