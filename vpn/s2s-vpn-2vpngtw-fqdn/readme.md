@@ -20,12 +20,12 @@ editor=""/>
 # Azure ARM templates to create site-to-site VPN by FQDN
 This post contains two ARM templates to create site-to-site VPN between Azure VNets.
 
-| file          | description   |       
-| ------------- |:-------------:|
+| file              | description                                                                |       
+| ----------------- |:--------------------------------------------------------------------------:|
 | **vpn1.json**     |ARM template to create two VNets in two different regions with VPN Gateways |
-| **vpn1.ps1**      | powershell script to deploy the ARM template **vpn1.json**|
-| **vpn2.json**     |ARM template to create local networks and connections |
-| **vpn2.ps1**      | powershell script to deploy the ARM template **vpn2.json**|
+| **vpn1.ps1**      | powershell script to deploy the ARM template **vpn1.json** |
+| **vpn2.json**     |ARM template to create local networks and connections       |
+| **vpn2.ps1**      | powershell script to deploy the ARM template **vpn2.json** |
 
 
 The network configuration is reported in the diagram:
@@ -36,17 +36,17 @@ Each Azure VPN Gateway is configured in active-active.
 
 > **NOTE**
 >
-> **The ARM templates requires as mandatory Azure region with avaiablity zone** 
+> **The ARM templates require as mandatory Azure region with avaiablity zone** 
 
 The configuration of VPN Gateway is reported in the diagram below:
 
 [![2]][2]
 
-Each connctions use FQDN of public IP of remove VPN Gateway.
+Each connection use the FQDN of public IP of the remote VPN Gateway.
 
 > **NOTE**
 >
-> Before deploying the ARM template you should:
+> Before deploying the ARM template, you should:
 > 1. set the name of your Azure subscription in the files **vpn1.ps1** and **vpn2.ps1**
 > 2. in **vpn1.ps1**:  
 >     * the administrator username is specified in variable 
