@@ -36,7 +36,7 @@ Each Azure VPN Gateway is configured in active-active.
 
 > **NOTE**
 >
-> **The ARM templates require as mandatory Azure region with avaiablity zone** 
+> **The ARM templates require as mandatory Azure region with availability zone** 
 
 The configuration of VPN Gateway is reported in the diagram below:
 
@@ -54,7 +54,9 @@ Each connection use the FQDN of public IP of the remote VPN Gateway.
 >     * the administrator password is specified in variable 
 > **$adminPassword**
 > 3. The text file **init.txt** set the name of the resource group and the Azure regions of two VNets
-> 4. the powershell scripts **vpn1.ps1** and **vpn2.ps1** needs to be run in sequence: first run the **vpn1.ps1** and only when is completed run the second script **vpn2.ps1**
+> 4. the powershell scripts **vpn1.ps1** and **vpn2.ps1** needs to be run in sequence: 
+   * first step: run the **vpn1.ps1**   
+   * second step: run the **vpn2.ps1**
 
 
 
