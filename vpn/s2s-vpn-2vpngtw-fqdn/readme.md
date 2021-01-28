@@ -21,7 +21,7 @@ editor=""/>
 This post contains two ARM templates to create site-to-site VPN between Azure VNets.
 
 | file              | description                                                                |       
-| ----------------- |:--------------------------------------------------------------------------:|
+| ----------------- |:-------------------------------------------------------------------------- |
 | **vpn1.json**     |ARM template to create two VNets in two different regions with VPN Gateways |
 | **vpn1.ps1**      | powershell script to deploy the ARM template **vpn1.json** |
 | **vpn2.json**     |ARM template to create local networks and connections       |
