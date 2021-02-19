@@ -291,6 +291,6 @@
           "commandToExecute": "[variables('windowsCommand')]"
         }
       }
-    },
+    }
   ]
 }

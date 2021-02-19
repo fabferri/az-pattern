@@ -1,0 +1,399 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for the VMs, only certain regions support zones."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Virtual Machine."
+            }
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "sshPublicKey",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "prefixvmName": {
+            "type": "string",
+            "defaultValue": "vm"
+        },
+        "windowsOrUbuntu": {
+            "type": "string",
+            "defaultValue": "Ubuntu",
+            "allowedValues": [
+                "Windows",
+                "Ubuntu"
+            ],
+            "metadata": {
+                "description": "Operation System for the Virtual Machine."
+            }
+        },
+        "numberOfVms": {
+            "type": "int",
+            "defaultValue": 2,
+            "minValue": 1,
+            "maxValue": 10,
+            "metadata": {
+                "description": "Number of VMs to provision"
+            }
+        },
+
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of the virtual machine"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "storageAccountName": "[concat('diags', uniquestring(resourceGroup().id))]",
+        "prefixVMName": "[parameters('prefixVMName')]",
+        "nicName": "[concat(variables('prefixVMName'),'-nic')]",
+        "numberOfVms": "[parameters('numberOfVms')]",
+        "subnetName": "subnet1",
+        "virtualNetworkName": "vnet1",
+        "networkSecurityGroupName": "nsg1",
+        "lbName": "lb1",
+        "lbPubIPAddressName": "[concat(variables('lbName'),'-pubIP')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+        "frontEndIPConfigID": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), 'loadBalancerFrontend')]",
+        "inboundNatRuleName": "remoting",
+        "windowsImage": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2019-Datacenter",
+            "version": "latest"
+        },
+        "linuxImage": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "18.04-LTS",
+            "version": "latest"
+        },
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('adminPasswordOrKey')]"
+                    }
+                ]
+            }
+        },
+        "linuxCommandApache": "[concat('apt -y update && apt -y install  apache2 && systemctl enable apache2 && systemctl start apache2',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.html')]",
+        "linuxCommand": "[concat('apt -y update && apt -y install nginx && systemctl enable nginx && systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
+        "windowsCommand": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello from ' + $env:computername) && powershell.exe New-NetFirewallRule -Name 'allow_ICMPv4_in' -DisplayName 'Allow ICMPv4' -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4",
+        "extensionLinuxVMproperties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.1",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+                "commandToExecute": "[variables('linuxCommand')]"
+            }
+        },
+        "extensionWindowsVMproperties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+                "commandToExecute": "[variables('windowsCommand')]"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2019-06-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('lbPubIPAddressName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroupName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "comments": "network security group",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "MNG-RemoteConnection",
+                        "properties": {
+                            "description": "Allow RDP/SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "[if(equals(parameters('windowsOrUbuntu'), 'Windows'), 3389, 22)]",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "HTTP-Inbound",
+                        "properties": {
+                            "description": "Allow HTTP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": 80,
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('networkSecurityGroupName')]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(variables('nicName'), copyindex())]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "copy": {
+                "name": "nicLoop",
+                "count": "[variables('numberOfVms')]"
+            },
+            "dependsOn": [
+                "[variables('virtualNetworkName')]",
+                "[variables('lbName')]",
+                "lbNatLoop"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), 'LoadBalancerBackend')]"
+                                }
+                            ],
+                            "loadBalancerInboundNatRules": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', variables('lbName'), concat(variables('inboundNatRuleName'), copyindex()))]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('lbName')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "dependsOn": [
+                "[variables('lbPubIPAddressName')]"
+            ],
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontend",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('lbPubIPAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "LoadBalancerBackend"
+                    }
+                ],
+                "loadbalancingRules": [
+                    {
+                        "name": "port80",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('frontendIPConfigID')]"
+                            },
+                            "backendaddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), 'LoadBalancerBackend')]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), 'tcpProbe')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "tcpProbe",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers/inboundNatRules",
+            "name": "[concat(variables('lbName'), '/', variables('inboundNatRuleName'), copyIndex())]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "copy": {
+                "name": "lbNatLoop",
+                "count": "[variables('numberOfVms')]"
+            },
+            "dependsOn": [
+                "[variables('lbName')]"
+            ],
+            "properties": {
+                "frontendIPConfiguration": {
+                    "id": "[variables('frontEndIPConfigID')]"
+                },
+                "protocol": "Tcp",
+                "frontendPort": "[copyIndex(50000)]",
+                "backendPort": "[if(equals(parameters('windowsOrUbuntu'), 'Windows'), 3389, 22)]",
+                "enableFloatingIP": false
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(variables('prefixVMName'), copyindex())]",
+            "apiVersion": "2020-06-01",
+            "zones": "[split(string(add(mod(copyIndex(),3),1)), ',')]",
+            "copy": {
+                "name": "virtualMachineLoop",
+                "count": "[variables('numberOfVms')]"
+            },
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "nicLoop"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(variables('prefixVMName'), copyIndex())]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": "[if(equals(parameters('windowsOrUbuntu'), 'Windows'), variables('windowsImage'), variables('linuxImage'))]",
+                    "osDisk": {
+                        "name": "[concat(variables('prefixVMName'), copyindex(),'-OSdisk')]",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicName'),copyindex()))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2019-07-01",
+            "name": "[concat(variables('prefixVMName'), copyindex(), '/', 'installcustomscript')]",
+            "comments": "custom script extension to install httpd",
+            "location": "[variables('location')]",
+            "copy": {
+                "name": "vmLoopExtension",
+                "count": "[variables('numberOfVms')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', concat(variables('prefixVMName'), copyindex()) )]"
+            ],
+            "properties": "[if(equals(parameters('windowsOrUbuntu'), 'Windows'), variables('extensionWindowsVMproperties'), variables('extensionLinuxVMproperties'))]"
+        }
+    ],
+    "outputs": {
+    }
+}
