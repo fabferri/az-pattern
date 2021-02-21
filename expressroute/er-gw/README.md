@@ -65,6 +65,7 @@ assign the values in the public IP of the ExpressRoute Gateway:
 
 > **[!NOTE2]**
 > Deployment of ExpressRoute Gateway in availability zone is supported only in Azure region with zoning.
+>
 > [Azure regions with availability zone](https://docs.microsoft.com/en-us/azure/availability-zones/az-region)
 > 
 > 
