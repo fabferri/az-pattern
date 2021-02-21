@@ -16,7 +16,7 @@
    ms.date="05/01/2018"
    ms.author="fabferri" />
 
-# ExpressRoute Microsoft peering: powershell script
+# ExpressRoute Microsoft peering: how to retrieve the list of prefixes associated with BGP community
 Simple powershell script to get the list of prefixes in ExpressRoute Microsoft peering with specific BGP community.
 
 Office 365 IP prefixes that are advertised over ExpressRoute Microsoft peering are tagged with service specific BGP community values:
