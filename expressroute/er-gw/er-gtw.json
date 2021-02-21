@@ -1,0 +1,239 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "allowedValues": [
+                "southeastasia",
+                "japaneast",
+                "australiaeast",
+                "centralus",
+                "eastus",
+                "eastus2",
+                "southcentralus",
+                "canadacentral",
+                "uksouth",
+                "francecentral",
+                "germanywestcentral",
+                "northeurope",
+                "westeurope"
+            ],
+            "metadata": {
+                "description": "Location for all resources deployed in the ARM template"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "name of the Virtual Network"
+            }
+        },
+        "subnet1Name": {
+            "type": "string",
+            "defaultValue": "subnet1",
+            "metadata": {
+                "description": "name of the subnet"
+            }
+        },
+        "vnetAddressSpace": {
+            "type": "string",
+            "defaultValue": "10.10.10.0/24",
+            "metadata": {
+                "description": "address space assigned to the Virtual Network"
+            }
+        },
+        "subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.10.10.0/25",
+            "metadata": {
+                "description": "network prefix assigned to the subnet"
+            }
+        },
+        "gatewaySubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.10.192/26",
+            "metadata": {
+                "description": "network prefixes assigned to the gateway subnet. It has to be a network prefix with mask /27 or larger"
+            }
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "er-gw",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "ErGw1AZ",
+            "allowedValues": [
+                "Standard",
+                "HighPerformance",
+                "UltraPerformance",
+                "ErGw1AZ",
+                "ErGw2AZ",
+                "ErGw3AZ"
+            ],
+            "metadata": {
+                "description": "ExpressRoute Gateway SKU"
+            }
+        },
+        "ipZoning": {
+            "type": "bool",
+            "defaultValue": "[or( equals(parameters('gatewaySku'),'ErGw1AZ'), equals(parameters('gatewaySku'),'ErGw2AZ'), equals(parameters('gatewaySku'),'ErGw3AZ') )]",
+            "metadata": {
+                "description": "for ER Gateway in zoning: true, for ER Gateway not in zoning: false"
+            }
+        }
+
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnetName": "[parameters('vnetName')]",
+        "subnet1Name": "[parameters('subnet1Name')]",
+        "vnetAddressSpace": "[parameters('vnetAddressSpace')]",
+        "subnet1Prefix": "[parameters('subnet1Prefix')]",
+        "gatewaySubnetPrefix": "[parameters('gatewaySubnetPrefix')]",
+        "gatewayName": "[parameters('gatewayName')]",
+        "gatewayPublicIPName": "[concat(variables('gatewayName'),'-pubIP')]",
+        "gatewaySku": "[parameters('gatewaySku')]",
+        "pubIPSKU": "[if(parameters('ipZoning'),'Standard','Basic')]",
+        "pubIPAllocationMethod": "[if(parameters('ipZoning'),'Static','Dynamic')]",
+        "nsg": "nsg"
+    },
+    "resources": [
+        {
+            "comments": "NSG applied to the subnets in VNet1",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('nsg')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 600,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "it builds a Virtual Network with GatewaySubnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('vnetName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressSpace')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet1Prefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('gatewaySubnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "public IP of the ExpressRoute Gateway",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('gatewayPublicIPName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('pubIPSKU')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "[variables('pubIPAllocationMethod')]"
+            }
+        },
+        {
+            "comments": "ExpressRoute Gateway in the GatewaySubnet",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2020-07-01",
+            "name": "[variables('gatewayName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('gatewayPublicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('gatewayPublicIPName'))]"
+                            }
+                        },
+                        "name": "gwIPconf"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "vpnType": "RouteBased",
+                "vpnGatewayGeneration": "None",
+                "sku": {
+                    "name": "[variables('gatewaySku')]",
+                    "tier": "[variables('gatewaySku')]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "gatewayName": {
+            "type": "string",
+            "value": "[variables('gatewayName')]"
+        },
+        "gatewaySku": {
+            "type": "string",
+            "value": "[variables('gatewaySku')]"
+        }
+    }
+}

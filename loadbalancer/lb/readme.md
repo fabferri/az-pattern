@@ -20,12 +20,12 @@ editor=""/>
 # Two Azure ARM templates to deploy external load balancer
 Two different Azure load balancer configurations are available:
 
-| file                  | Description                                                           | 
-| --------------------- |---------------------------------------------------------------------- | 
-| **lb-inbound.json**   | ARM template to deploy a load balancer with inbound load balancer rule |
-| **lb-inbound.ps1**    | powershel script to deploy **lb-inbound.json**                        |
-| **lb-outbound.json**  | ARM template to deploy a load balancer with inbound load balancer rule and outbound rule|
-| **lb-outbound.ps1**   | powershel script to deploy **lb-outbound.json**                        |
+| file                  | Description                                                                | 
+| --------------------- |--------------------------------------------------------------------------- | 
+| **lb-inbound.json**   | ARM template to deploy a load balancer with inbound load balancer rule     |
+| **lb-inbound.ps1**    | powershel script to deploy **lb-inbound.json**                             |
+| **lb-outbound.json**  | ARM template to deploy a load balancer with inbound load balancer rule and outbound rule |
+| **lb-outbound.ps1**   | powershel script to deploy **lb-outbound.json**                            |
 
 
 ## External Load balancer with inbound rule and NAT
@@ -49,7 +49,7 @@ To manage the Azure VM, a management session (SSH in linux and RDP in Windows) c
 [![3]][3]
 
 |Name       |IP Version | Destination    |Target | Protocol | dest Port |
-| --------- |-----------|----------------|-------|--------------------- | 
+| --------- |-----------|----------------|-------|----------|---------- | 
 | remoting0 | IPv4      | public IP lb   | vm0   | TCP      | 50000     |
 | remoting1 | IPv4      | public IP lb   | vm1   | TCP      | 50001     |
 
