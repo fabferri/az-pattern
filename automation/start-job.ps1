@@ -92,7 +92,7 @@ $job=Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Na
                     if ($jobout) {Write-Error $jobout.Text}
                     
                     # Warning
-                    $jobout = Get-AzureAutomationJobOutput `
+                    $jobout = Get-AzAutomationJobOutput `
                                     -Id $job.JobId `
                                     -AutomationAccountName $automationAccountName `
                                     -ResourceGroupName $rgName `

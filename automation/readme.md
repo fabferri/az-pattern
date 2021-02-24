@@ -18,7 +18,7 @@ editor=""/>
    ms.author="fabferri" />
 
 # Deploy an ARM template in a PowerShell runbook
-The article walks throught the steps to deploy an ARM template through Azure Automation. The ARM template create Azure VNet with single Azure VM.
+The article walks through the steps to deploy an ARM template through Azure Automation. The ARM template creates Azure VNet with single Azure VM.
 The process can be extended to more complex deployments.
 
 The overview diagram is reported below: 
@@ -27,7 +27,7 @@ The overview diagram is reported below:
 
 The  PowerShell Runbook in Account Automation, makes the following actions:
 * check the presence of Azure VM, NIC, VNet, NSG. 
-* if an object in a specific resource group exists, an emtpy ARM template runs to delete the existing objects. The ARM template to delete resources is stored in azure storage container and exposed to internet with shared access signature (SAS).
+* if an object in a specific resource group exists, an empty ARM template runs to delete the existing objects. The ARM template to delete resources is stored in azure storage container and exposed to internet with shared access signature (SAS).
 * if the objects (VM, NIC, VNet, NSG) do not exist, it runs an ARM template to create the Azure VM runs. The ARM template to create Azure VM is stored in Azure storage container and exposed to internet with shared access signature (SAS).
 
 The powershell Runbook can be started as a child runbook with **Start-AzAutomationRunbook**.
@@ -36,12 +36,12 @@ The powershell Runbook can be started as a child runbook with **Start-AzAutomati
 | file                     | Description                                                           | 
 | ------------------------ |---------------------------------------------------------------------- | 
 | **ubuntuVM.json**        | ARM template to deploy an VNet with single ubuntu VM                  |
-| **delete.json**          | ARM template (empty) to deelete an existing deployment                |
+| **delete.json**          | ARM template (empty) to delete an existing deployment                 |
 | **storage-account-sas.ps1** | powershell script to create a storage account with storage container and SAS|
-| **start-job.ps1**        | powershel script to start an Azure automation job                     |
-| **rubook-script.ps1**    | powerhell script to be associated with the runbook - it doesn't run in interactive powershell section, becasue it is based on service principle associated withAutomation Account|
-| **ubuntuVM.ps1**         | powerhell script to deploy **ubuntuVM.json**; it is not a request file for our automation achivement  |
-| **delete.ps1**           | powerhell script to deploy **delete.json**; it is not a request file for our automation achivement    |
+| **start-job.ps1**        | powershell script to start an Azure automation job                    |
+| **rubook-script.ps1**    | powerhell script to be associated with the runbook - it doesn't run in interactive powershell section, becausue it is based on service principle associated with Automation Account|
+| **ubuntuVM.ps1**         | powershell script to deploy **ubuntuVM.json**; it is not a request file for our automation achievement  |
+| **delete.ps1**           | powershell script to deploy **delete.json**; it is not a request file for our automation achievement    |
 
 ## Create an Azure Automation account by Azure Management portal
 To create an Azure Automation account:
@@ -58,7 +58,7 @@ When you create an Automation account, the **Run As account** is created by defa
 
 When you create a **Run As account**, it performs the following tasks:
 * Creates an Azure AD application with a self-signed certificate, creates a service principal account for the application in Azure AD, and assigns the Contributor role for the account at the subscription level. The self-signed certificate that you have created for the **Run As account** expires one year from the date of creation.
-* Creates an Automation certificate asset named AzureRunAsCertificate in the specified Automation account. The certificate asset holds the certificate private key that the Azure AD application uses.
+* Creates an Automation certificate asset named **AzureRunAsCertificate** in the specified Automation account. The certificate asset holds the certificate private key that the Azure AD application uses.
 * Creates an Automation connection asset named AzureRunAsConnection in the specified Automation account. The connection asset holds the application ID, tenant ID, subscription ID, and certificate thumbprint.
 
 **Run As accounts** in Azure Automation provide authentication for managing resources on the ARM, using Automation runbooks. 
@@ -89,7 +89,7 @@ The imported Az module are visible in **Automation Account** -> **Modules** in A
 
 [![7]][7]
 
-The automation account is now ready to interprete the Azure powershell in runbook.
+The automation account is now ready to interpret the Azure powershell in runbook.
 
 
 
@@ -118,7 +118,7 @@ In **Edit PowerShell Rubook** paste in the powershell script you want to run:
 
 [![11]][11]
 
-Below the powershell asocated with the Runbook:
+Below the powershell associated with the Runbook:
 ```powershell
 param (
     [Parameter( Mandatory = $false,  HelpMessage='username administrator VMs')]
@@ -131,10 +131,10 @@ param (
     [string]$vmName = "vm1",
 
     [Parameter(Mandatory = $false, HelpMessage='Create VM-URI')]
-    [string]$templateCreateURI = "https://repo195471a7f0.blob.core.windows.net/home/ubuntuVM.json?sv=2019-07-07&sr=c&si=storage-policy&sig=CALTizVtnK0%2FB96JbGuCrhLF9AP78I8j1Ofcsr5wF4s%3D",
+    [string]$templateCreateURI = "https://repo392aa1a5f0.blob.core.windows.net/home/ubuntuVM.json?sv=2019-07-07&sr=c&si=storage-policy&sig=CELTizVtnK0%2FB96JbFuCqhLF9BP78I8j1Ofcsr5wF4s%3D",
 
     [Parameter(Mandatory = $false, HelpMessage='delete VM-URI')]
-    [string]$templateDeleteURI = "https://repo392871a3f0.blob.core.windows.net/home/delete.json?sv=2019-07-07&sr=c&si=storage-policy&sig=CALTizVtnK0%2FB96JbGuCrhLF9AP78I8j1Ofcsr5wF4s%3D"
+    [string]$templateDeleteURI = "https://repo392aa1a5f0.blob.core.windows.net/home/delete.json?sv=2019-07-07&sr=c&si=storage-policy&sig=CELTizVtnK0%2FB96JbFuCqhLF9BP78I8j1Ofcsr5wF4s%3D"
     )
 
 # Ensures you do not inherit an AzContext in your runbook
@@ -247,7 +247,7 @@ In the powershell script above, replace:
 <li>$templateCreateURI: URL to access to the ARM template to create the deployment. the template is stored in storage container</li>
 </h3>
 
-After the association of powershell script to the runbook is good pratice verify the workflow run as expected.
+After the association of powershell script to the runbook is good practice verify the workflow run as expected.
 
 In **Edit Powershell Runbook** select **Test pane**:
 [![12]][12]
@@ -410,7 +410,7 @@ $job=Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Na
         }
     }
 ``` 
-Runbook jobs are visibile inside the Rubook panel:
+Runbook jobs are visible inside the Rubook panel:
 
 [![15]][15]
 
