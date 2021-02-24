@@ -39,7 +39,7 @@ The powershell Runbook can be started as a child runbook with **Start-AzAutomati
 | **delete.json**          | ARM template (empty) to delete an existing deployment                 |
 | **storage-account-sas.ps1** | powershell script to create a storage account with storage container and SAS|
 | **start-job.ps1**        | powershell script to start an Azure automation job                    |
-| **rubook-script.ps1**    | powerhell script to be associated with the runbook - it doesn't run in interactive powershell section, becausue it is based on service principle associated with Automation Account|
+| **runbook-script.ps1**   | powerhell script to be associated with the runbook - it doesn't run in interactive powershell section, becausue it is based on service principle associated with Automation Account|
 | **ubuntuVM.ps1**         | powershell script to deploy **ubuntuVM.json**; it is not a request file for our automation achievement  |
 | **delete.ps1**           | powershell script to deploy **delete.json**; it is not a request file for our automation achievement    |
 
