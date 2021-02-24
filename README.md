@@ -53,6 +53,7 @@ List of Azure ARM templates and scripts:
 * [VNet peering](./vnet-peering)
    * [VNet peering-basic](./vnet-peering/vnet-peering-basic)
    * [VNets peering between VNets in different Azure subscriptions](./vnet-peering/vnet-peering-different-subscriptions)
+* [Deploy an ARM template in a PowerShell runbook](./automation)
 * [Azure VMs with multiple NICs](./02-vms-multiple-nics-01/README.md)
 * [Powershell script to capture Windows system counters](./win-sys-counters/)
 
