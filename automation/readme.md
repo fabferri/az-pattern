@@ -52,7 +52,7 @@ The powershell **storage-account-sas.ps1** script copies the two ARM templates *
 [![2]][2]
 
 <h3>
-NOTE: At the end of run two the ARM templates <bold>ubuntuVM.json</bold> and <bold>delete.json<bold> are downloaded in the local script folder, renamed file1.json and file2.json 
+NOTE: At the end of run two the ARM templates <bold>ubuntuVM.json</bold> and <bold>delete.json<bold> are downloaded in the local script folder, renamed File1.json and File2.json 
 </h3>
 
 ## Step2: Create an Azure Automation account by Azure Management portal
