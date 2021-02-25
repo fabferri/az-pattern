@@ -23,7 +23,7 @@ The process can be extended to more complex deployments.
 
 The overview diagram is reported below: 
 
-[![0]][0]
+[![1]][1]
 
 The  PowerShell Runbook in Account Automation, makes the following actions:
 * check the presence of Azure VM, NIC, VNet, NSG. 
@@ -43,16 +43,28 @@ The powershell Runbook can be started as a child runbook with **Start-AzAutomati
 | **ubuntuVM.ps1**         | powershell script to deploy **ubuntuVM.json**; it is not a request file for our automation achievement  |
 | **delete.ps1**           | powershell script to deploy **delete.json**; it is not a request file for our automation achievement    |
 
-## Create an Azure Automation account by Azure Management portal
+## Step1: Create a storage account to store the ARM templates
+When Automation executes runbook, it loads the modules into sandboxes where the runbooks can run. 
+To pass the ARM template file to the runbook, an Azure Storage is required as central repository.
+The powershell **storage-account-sas.ps1** creates an Azure Storage account with storage container (named /home) with SAS.
+The powershell **storage-account-sas.ps1** script copies the two ARM templates **ubuntuVM.json** and **delete.json** in the container: both 
+
+[![2]][2]
+
+<h3>
+NOTE: At the end of run two the ARM templates <bold>ubuntuVM.json</bold> and <bold>delete.json<bold> are downloaded in the local script folder, renamed file1.json and file2.json 
+</h3>
+
+## Step2: Create an Azure Automation account by Azure Management portal
 To create an Azure Automation account:
 1.	Click the Create a resource button found in the upper left corner of Azure portal.
 2.	Select **IT & Management Tools**, and then select **Automation**.
 
-[![1]][1]
+[![3]][3]
 
 For **Create Azure Run As account**, leave the default option **Yes**. This will create a **Run As account** in the Automation account which are useful for authenticating with Azure to manage Azure resources from Automation runbooks. 
 
-[![2]][2]
+[![4]][4]
 
 When you create an Automation account, the **Run As account** is created by default at the same time.
 
@@ -63,7 +75,7 @@ When you create a **Run As account**, it performs the following tasks:
 
 **Run As accounts** in Azure Automation provide authentication for managing resources on the ARM, using Automation runbooks. 
 
-## Import modules in Azure automation
+## Step3: Import modules in Azure automation
 Azure Automation uses a number of PowerShell modules to enable cmdlets in runbooks. Automation doesn't import the root Az module automatically into any new or existing Automation accounts.
 
 Let's import the following modules: **az.accounts, az.network, az.automation, az.profile, az.resources** and **az.compute**
@@ -73,50 +85,37 @@ Let's import the following modules: **az.accounts, az.network, az.automation, az
 
 In the **Automation Account** -> **Modules Gallery** search for **az.**:
 
-[![3]][3]
+[![5]][5]
 
 than import the modules **az.accounts, az.network, az.automation, az.profile, az.resources, az.Compute**
 
-[![4]][4]
+[![6]][6]
 
 An example of import of **Az.Accounts** modules:
-[![5]][5]
+[![7]][7]
 
-[![6]][6]
+[![8]][8]
 
 
 The imported Az module are visible in **Automation Account** -> **Modules** in Azure portal:
 
-[![7]][7]
+[![9]][9]
 
 The automation account is now ready to interpret the Azure powershell in runbook.
 
 
 
-## Create a storage account to store the ARM template
-When Automation executes runbook, it loads the modules into sandboxes where the runbooks can run. 
-To pass the ARM template and ARM parameter file to the runbook, an Azure Storage is required as central repository.
-The powershell **storage-account-sas.ps1** creates an Azure Storage account with storage container (named /home) with SAS.
-The powershell **storage-account-sas.ps1** script copies the two ARM templates **ubuntuVM.json** and **delete.json** in the container: both 
-
-[![8]][8]
-
-<h3>
-NOTE: At the end of run two the ARM templates <bold>ubuntuVM.json</bold> and <bold>delete.json<bold> are downloaded in the local script folder, renamed file1.json and file2.json 
-</h3>
-
-
-## Create a runbook
+## Step4: Create a runbook
 In **Automation Account** -> **Runbooks** click-on **Create a runbook**
-[![9]][9]
+[![10]][10]
 
 Assign a name to the runbook and in _Runbook type_ select **Powershell**:
 
-[![10]][10]
+[![11]][11]
 
 In **Edit PowerShell Rubook** paste in the powershell script you want to run:
 
-[![11]][11]
+[![12]][12]
 
 Below the powershell associated with the Runbook:
 ```powershell
@@ -244,23 +243,24 @@ In the powershell script above, replace:
 <ul>
 <li>"ADMINISTRATOR_USERNAME" with the administrator username of the VM</li>
 <li>"ADMINISTRATOR_PASSWORD" with the administrator password of the VM</li>
-<li>$templateCreateURI: URL to access to the ARM template to create the deployment. the template is stored in storage container</li>
+<li>$templateCreateURI: URL to access to the ARM template to create the deployment. The template is stored in storage container</li>
+<li>$templateDeleteURI:URL to access to the ARM template to delete the deployment. The template is stored in storage container</li>
 </h3>
 
 After the association of powershell script to the runbook is good practice verify the workflow run as expected.
 
 In **Edit Powershell Runbook** select **Test pane**:
-[![12]][12]
+[![13]][13]
 
 Click-on **Start** for starting the test.
-[![13]][13]
+[![14]][14]
 
 when you are satify of outcome, click-on **Save** button and then **Publish** button:
 
-[![14]][14]
+[![15]][15]
 
 
-## Submit a runbook job
+## Step5: Submit a runbook job
 If you want to start a runbook asynchronously from the PowerShell console or within a runbook, use the **Start-AzAutomationRunbook** cmdlet
 * Input parameters to the runbook that is started by **Start-AzAutomationRunbook** are passed in a hashtable as key/value pairs.
 
@@ -412,7 +412,7 @@ $job=Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Na
 ``` 
 Runbook jobs are visible inside the Rubook panel:
 
-[![15]][15]
+[![16]][16]
 
 In this specific example the job is queued, before executing.
 
@@ -420,21 +420,21 @@ In this specific example the job is queued, before executing.
 [Azure Automation: Runbook Input, Output, and Nested Runbooks](https://azure.microsoft.com/en-gb/blog/azure-automation-runbook-input-output-and-nested-runbooks/)
 
 <!--Image References-->
-[0]: ./media/network-diagram.png "Create an Azure Automation account"
-[1]: ./media/01.png "Create an Azure Automation account"
-[2]: ./media/02.png "network diagram load balancer with inbound rule and NAT"
-[3]: ./media/03.png "access to the Azure VM through the public IP of the external load balancer"
-[4]: ./media/04.png "network diagram load balancer with oubound rule"
-[5]: ./media/05.png "network diagram load balancer with oubound rule"
-[6]: ./media/06.png "network diagram load balancer with oubound rule"
-[7]: ./media/07.png "modules imported"
-[8]: ./media/08.png "modules imported"
-[9]: ./media/09.png "modules imported"
-[10]: ./media/10.png "modules imported"
-[11]: ./media/11.png "modules imported"
-[12]: ./media/12.png "modules imported"
-[13]: ./media/13.png "modules imported"
-[14]: ./media/14.png "modules imported"
-[15]: ./media/15.png "modules imported"
+[1]: ./media/network-diagram.png "Create an Azure Automation account"
+[2]: ./media/02.png "copy ARM templates into storage account"
+[3]: ./media/03.png "Create an Azure Automation account"
+[4]: ./media/04.png "Create Run As account"
+[5]: ./media/05.png "Search az. modules in Modules Gallery "
+[6]: ./media/06.png "import few az.modules from Module Gallery"
+[7]: ./media/07.png "import Az.Accounts module from Module Gallery"
+[8]: ./media/08.png "imported Az.Accounts module"
+[9]: ./media/09.png "list of imported Az modules"
+[10]: ./media/10.png "Create a Runbook"
+[11]: ./media/11.png "select the Runbook type"
+[12]: ./media/12.png "paste in the powershell script in Runbook"
+[13]: ./media/13.png "Runbook Test pane"
+[14]: ./media/14.png "start a Runbook test"
+[15]: ./media/15.png "publish the Runbook"
+[16]: ./media/16.png "track Runbook jobs in Azure management portal"
 <!--Link References-->
 
