@@ -266,7 +266,7 @@ If you want to start a runbook asynchronously from the PowerShell console or wit
 
 Here a basic example to invoke the powershell Runbook:
 
-```console
+```powershell
 $subscriptionName = "AzDev"
 $runbookName="createVM"
 $automationAccountName= "automation1"
@@ -283,7 +283,7 @@ $job=Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Na
 ```
 
 The script **start-job.ps1** has more useful job control:
-```
+```powershell
 $subscriptionName = "AzDev"
 $runbookName="createVM"
 $automationAccountName= "automation1"
