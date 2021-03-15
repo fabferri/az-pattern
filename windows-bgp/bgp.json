@@ -35,9 +35,7 @@
             "subnet3Name": "subnet3",
             "subnet1Prefix": "10.0.1.0/24",
             "subnet2Prefix": "10.0.2.0/24",
-            "subnet3Prefix": "10.0.3.0/24",
-            "peeringNameToSpoke1": "hubTospoke1",
-            "peeringNameToSpoke2": "hubTospoke2"
+            "subnet3Prefix": "10.0.3.0/24"
         },
         "nsgName": "nsg",
         "adminUsername": "[parameters('adminUsername')]",
