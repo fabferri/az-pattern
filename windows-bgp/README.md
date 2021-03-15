@@ -81,7 +81,7 @@ Add-BgpCustomRoute -network 192.168.1.0/24
 Add-BgpCustomRoute -network 192.168.2.0/24
 Add-BgpCustomRoute -network 192.168.3.0/24
 ```
-### <a name="BGP-check"></a>2. check BGP between vm1 and vm2
+### <a name="BGP-check"></a>2. Check BGP between vm1 and vm2
 Check out the BGP peer:
 ```powershell
 Get-BgpPeer
@@ -248,13 +248,16 @@ vm1-PS C:\> Remove-BgpCustomRoute -network 172.16.3.0/24
 >
 
 
-### <a name="BGP-remove-network"></a>4. Add  BGP polices
+### <a name="BGP-remove-network"></a>4. Add BGP polices
 In vm1
 ```powershell
 vm1-PS C:\> Add-BgpRoutingPolicy -Name RoutePolicy1 -MatchPrefix 172.16.1.0/24 -PolicyType ModifyAttribute -AddCommunity 100:101
  
 vm1-PS C:\> Add-BgpRoutingPolicyForPeer -PeerName vm2 -PolicyName RoutePolicy1 -Direction Egress
 ```
+
+[![3]][3]
+
 In vm2:
 ```powershell
 vm2-PS C:\> Get-BgpRouteInformation -Network 172.16.1.0/24 | fl
@@ -321,7 +324,8 @@ New-NetRoute -DestinationPrefix 172.16.1.0/24 -InterfaceIndex 5 -NextHop 10.0.1.
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
-[2]: ./media/bgp-peer.png "network diagram"
+[2]: ./media/bgp-peer.png "bgp peer"
+[3]: ./media/bgp-community.png "routing policy to send BGP community"
 
 <!--Link References-->
 
