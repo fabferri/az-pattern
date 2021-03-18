@@ -14,7 +14,7 @@ param (
 ################# Input parameters #################
 $subscriptionName  = "Pathfinders"     
 $location = "uksouth"
-$rgName = "fab-test-s2s-2"
+$rgName = "s2s-win"
 $deploymentName = "s2s"
 $armTemplateFile = "s2s.json"
 
