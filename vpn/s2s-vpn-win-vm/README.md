@@ -24,9 +24,10 @@ The network diagram is shown below:
 
 A site-to-site VPN is established between the Windows server 20219 and the Azure VPN.
 
-A static routing is set through the site-to-site VPN.
+The site-to-site VPN in Windows 2019 VM is implemented through the Routing and Remote Access (RRAS).
 
-The site-to-site VPN in Windows 2019 VM is implemented through the Routing and Remote Access (RRAS)
+In the site-to-site VPN is used a static routing to send traffic to the peer.
+
 
 <br>
 
