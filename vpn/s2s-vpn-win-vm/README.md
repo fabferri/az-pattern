@@ -47,6 +47,8 @@ The site-to-site VPN in Windows 2019 VM is implemented through the Routing and R
 > * the administrator username and password of the Azure VMs in the variables **$adminUsername**, **$adminPassword**
 >
 
+<br>
+
 > **_NOTE2_**
 >
 > The ARM template **connection.json** requires the public IP of the NVA to create the Connection **"Microsoft.Network/connections"**:
