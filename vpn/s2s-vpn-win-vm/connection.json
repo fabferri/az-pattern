@@ -1,0 +1,135 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "uksouth",
+            "metadata": {
+                "description": "Azure region of the vnet1"
+            }
+        },
+        "resourceGroupNVA": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group where is deployed the NVA"
+            }
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "gw1",
+            "metadata": {
+                "description": "name of the VPN Gateway in the vnet1"
+            }
+        },
+        "nvaName": {
+            "type": "string",
+            "defaultValue": "nva",
+            "metadata": {
+                "description": "name of the VPN Gateway in the vnet1"
+            }
+        },
+        "localNetworkGateways_to_vnet2_name": {
+            "type": "string",
+            "defaultValue": "to-vnet2",
+            "metadata": {
+                "description": "name of the local network Gateway"
+            }
+        },
+        "connections_gw1_to_vnet2_name": {
+            "type": "string",
+            "defaultValue": "gw1-to-vnet2",
+            "metadata": {
+                "description": "name of the connection between the gateway and the vnet2"
+            }
+        },
+        "vnet2_addressSpacePrefix1": {
+            "type": "string",
+            "defaultValue": "10.0.10.0/24",
+            "metadata": {
+                "description": "address prefixes 1  of the vnet1"
+            }
+        },
+        "vnet2_addressSpacePrefix2": {
+            "type": "string",
+            "defaultValue": "10.0.11.0/24",
+            "metadata": {
+                "description": "address prefixes 2  of the vnet1"
+            }
+        },
+        "vnet2_addressSpacePrefix3": {
+            "type": "string",
+            "defaultValue": "10.0.12.0/24",
+            "metadata": {
+                "description": "address prefixes 3  of the vnet1"
+            }
+        },
+        "sharedKey": {
+            "type": "string",
+            "defaultValue": "mYpassworD101",
+            "metadata": {
+                "description": "Shared key (PSK) for IPSec tunnel"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "gatewayName": "[parameters('gatewayName')]",
+        "nvaName": "[parameters('nvaName')]",
+        "nvaPublicIPName": "[concat(variables('nvaName'),'-pubIP')]",
+        "resourceGroupNVA": "[parameters('resourceGroupNVA')]",
+        "nvaPublicIP1Id": "[resourceId(variables('resourceGroupNVA'),'Microsoft.Network/publicIPAddresses',variables('nvaPublicIPName'))]",
+        "vnet2_addressSpacePrefix1": "[parameters('vnet2_addressSpacePrefix1')]",
+        "vnet2_addressSpacePrefix2": "[parameters('vnet2_addressSpacePrefix2')]",
+        "vnet2_addressSpacePrefix3": "[parameters('vnet2_addressSpacePrefix3')]",
+        "localNetworkGateways_to_vnet2_name": "[parameters('localNetworkGateways_to_vnet2_name')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('localNetworkGateways_to_vnet2_name')]",
+            "location": "[variables('location1')]",
+            "properties": {
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet2_addressSpacePrefix1')]",
+                        "[variables('vnet2_addressSpacePrefix2')]",
+                        "[variables('vnet2_addressSpacePrefix3')]"
+                    ]
+                },
+                "gatewayIpAddress": "[reference(variables('nvaPublicIP1Id'),'2020-06-01').ipAddress]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('connections_gw1_to_vnet2_name')]",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('localNetworkGateways_to_vnet2_name'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gatewayName'))]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('localNetworkGateways_to_vnet2_name'))]"
+                },
+                "connectionType": "IPsec",
+                "connectionProtocol": "IKEv2",
+                "routingWeight": 0,
+                "sharedKey": "[parameters('sharedKey')]",
+                "enableBgp": false,
+                "useLocalAzureIpAddress": false,
+                "usePolicyBasedTrafficSelectors": false,
+                "ipsecPolicies": [],
+                "trafficSelectorPolicies": [],
+                "expressRouteGatewayBypass": false,
+                "dpdTimeoutSeconds": 0,
+                "connectionMode": "Default"
+            }
+        }
+    ]
+}
