@@ -28,13 +28,15 @@ A static routing is set through the site-to-site VPN.
 
 The site-to-site VPN in Windows 2019 VM is implemented through the Routing and Remote Access (RRAS)
 
-List of files:
-- **s2s.json**: create all the object with exception of local network gateway and Connection.
-- **s2s.ps1**: powershell script to run the ARM template **s2s.json**
-- **connection.json**: create the locla network gateway for the VPN Gateway in vnet1 and a Connection between Azure VPN Gateway remote vnet2 
-- **connection.ps1**: powershell script to run the ARM template **connection.json**
+<br>
 
+**List of files:**
++ **s2s.json**: create all the object with exception of local network gateway and Connection.
++ **s2s.ps1**: powershell script to run the ARM template **s2s.json**
++ **connection.json**: create the locla network gateway for the VPN Gateway in vnet1 and a Connection between Azure VPN Gateway remote vnet2 
++ **connection.ps1**: powershell script to run the ARM template **connection.json**
 
+<br>
 
 > **_NOTE1_**
 >
@@ -45,9 +47,9 @@ List of files:
 > * the administrator username and password of the Azure VMs in the variables **$adminUsername**, **$adminPassword**
 >
 
-**_NOTE2_**
-
-The ARM template **connection.json** requires the public IP of the NVA to create the Connection **"Microsoft.Network/connections"**:
+> **_NOTE2_**
+>
+> The ARM template **connection.json** requires the public IP of the NVA to create the Connection **"Microsoft.Network/connections"**:
 ```json
 "nvaPublicIP1Id": "[resourceId(variables('resourceGroupNVA'),'Microsoft.Network/publicIPAddresses',variables('nvaPublicIPName'))]"
 
