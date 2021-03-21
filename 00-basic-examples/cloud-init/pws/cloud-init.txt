@@ -1,0 +1,6 @@
+#cloud-config
+package_upgrade: true
+packages:
+  - nginx
+runcmd:
+  - service nginx restart
