@@ -29,7 +29,7 @@ The network diagram is reported below:
 [![1]][1]
 
 
-**Files**
+**Files:**
 | File name     | Description                                        |
 | ------------- | -------------------------------------------------- |
 | **rs.json**   | deploy a VNet with route server and a Ubuntu VM    |
@@ -151,10 +151,10 @@ isisd           2608/tcp                        # ISISd vty (zebra)
 
 Run the necessary services:
 ```bash
-service zebra start
-service zebra status
-service bgpd start
-service bgpd status
+systemctl start zebra 
+systemctl status zebra 
+systemctl start bgpd 
+systemctl status bgpd 
 ```
 
 Check whether the services start at system startup:
