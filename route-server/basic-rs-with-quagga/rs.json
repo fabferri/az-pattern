@@ -1,0 +1,287 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "metadata": {
+                "description": "management IP to connect to the VM"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "VM default Admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "VM default Admin password"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "virtual network name"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "defaultValue": "vm1",
+            "metadata": {
+                "description": "virtual machine name"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnetName": "[parameters('vnetName')]",
+        "addressSpace1Prefix": "10.10.0.0/16",
+        "subnet1Name": "RouteServerSubnet",
+        "subnet1Prefix": "10.10.1.0/24",
+        "subnet2Name": "subnet2",
+        "subnet2Prefix": "10.10.2.0/24",
+        "subnet3Name": "subnet3",
+        "subnet3Prefix": "10.10.3.0/24",
+        "subnet4Name": "subnet4",
+        "subnet4Prefix": "10.10.4.0/24",
+        "gatewaysubnetPrefix": "10.10.5.0/24",
+        "rsName": "routesrv1",
+        "peering1IP": "10.10.4.10",
+        "peering1ASN": 65001,
+        "rsBGPconnectionName": "bgp-conn1",
+        "subnet_rs1_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'),'RouteServerSubnet' )]",
+        "vHubIPconfigName": "ipconfig1",
+        "bgpConnectionName": "[concat(variables('rsName'), '/', variables('rsBGPconnectionName'))]",
+        "vmName": "[parameters('vmName')]",
+        "nicName": "[concat(variables('vmName'),'-nic')]",
+        "pubIPName": "[concat(variables('vmName'),'-pubIP')]",
+        "vmPrivIP": "10.10.4.10",
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-focal",
+        "sku": "20_04-lts",
+        "vmSize": "Standard_B1s",
+        "nsgName": "nsg1",
+        "mngIP" :"[parameters('mngIP')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsgName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[variables('mngIP')]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnetName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+            ],
+            "comments": "Create VNet1",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressSpace1Prefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet1Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet2Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet2Prefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet3Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet3Prefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet4Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet4Prefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('gatewaysubnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('rsName')]",
+            "location": "[variables('location')]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnetName') )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('subnet_rs1_Id')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('bgpConnectionName')]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering1IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('pubIPName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "comments": "public IP of the VM",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "sku": {
+                "name": "Basic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('pubIPName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic0",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmPrivIP')]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('pubIPName')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet4Name') )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName') ]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('publisher')]",
+                        "offer": "[variables('offer')]",
+                        "sku": "[variables('sku')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vmName'),'-OSdisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName') )]"
+                        }
+                    ]
+                }
+            }
+        },
+    ]
+}

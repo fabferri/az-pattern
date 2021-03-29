@@ -36,10 +36,10 @@ The article shows few methods to generate traffic between two Azure VMs, vm1 and
 
 ### <a name="iperf3"></a>1. Linux and Windows VMs: iperf3
 Iperf3 works in Linux and Windows (see: [iperf3](https://iperf.fr/))
-Install iperf3 in Linux vm1 and vm2:
+
+To install iperf3 in Linux VM:
 
 ```bash
-yum -y iperf3
 yum -y iperf3
 ```
 
@@ -69,12 +69,10 @@ Install netcat (nc) in vm1 and vm2:
 
 ```bash
 yum -y install nmap-ncat
-yum -y install nmap-ncat
 ```
 Write down two bash scripts: one for the server _(traffic receiver)_ and one for the client _(traffic sender)_.
 
 file in vm1: **server.sh**
-
 ```bash
 #!/bin/bash
 #
@@ -85,8 +83,8 @@ do
  wait
 done
 ```
-file in vm2: **client.sh**
 
+file in vm2: **client.sh**
 ```bash
 #!/bin/bash
 #
@@ -96,6 +94,7 @@ do
   sleep 2
 done
 ```
+
 To send traffic from vm2 to vm1 run:
 
 ```bash
@@ -109,7 +108,7 @@ By tcpdump check the traffic:
 [root@vm1 ~]# tcpdump -nqttt -i eth0 host 10.0.1.10 and host 10.0.1.20
 ```
 
-To monitor the volume of traffic on vm1 and vm2 we can use a tool like **nload**:
+In Linux there are many tools to monitor the network traffic; **nload** is one you can use:
 
 ```bash
 yum install epel-release
@@ -139,7 +138,7 @@ for i in `seq 1 20`; do curl http://10.0.2.10; done
 To run HTTP queries in parallel, it can be used GNU parallel. In CentOS GNU parallel is in EPEL repository:
 
 ```bash
-yum install epel-release
+yum -y install epel-release
 yum -y install parallel
 ```
 
@@ -158,14 +157,14 @@ mycurl() {
 export -f mycurl
 seq 100000 | parallel -j0 mycurl
 ```
-Replace the _"some_url_here"_ with the IP address of web server.
--s option is for silent or quiet mode.
+* Replace the _"some_url_here"_ with the IP address of web server.
+* -s option is for silent or quiet mode.
 
-Same command with easier option :
+Same command with easier option:
 ```bash
  seq 5000 | parallel -n0 -j5 curl http://10.0.1.10/
 ```
-do it 5000 times, but at 5 a time
+it runs the command 5000 times, at 5 a time.
 
 
 #### <a name="HTTPpowershell"></a>4.5 generate HTTP traffic by powershell script
@@ -205,7 +204,7 @@ $req = $null
 ### <a name="ANNEX"></a>ANNEX
 
 #### <a name="iftop"></a>1. Bandwidth counters
-Traffic counters in the VMs we can track by a tool like iftop
+Traffic counters in the VMs we can track by a tool like iftop:
 
 ```bash
 #yum -y install libpcap libpcap-devel ncurses ncurses-devel
