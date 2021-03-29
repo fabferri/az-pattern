@@ -37,6 +37,7 @@ The network diagram is reported below:
 
  
 > **[!NOTE]**
+>
 > Before spinning up the ARM template you should edit the file **rs.ps1** and customize the variables:
 > * **$subscriptionName**: name of your Azure subscription 
 > * **$adminUsername**: the administrator username of the Azure VM 
