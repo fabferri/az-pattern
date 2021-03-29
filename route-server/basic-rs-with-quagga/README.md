@@ -37,10 +37,11 @@ The network diagram is reported below:
 
  
 > **[!NOTE]**
-> Before spinning up the ARM template you should edit the file **rs.ps1** and set:
-> * your Azure subscription name in the variable **$subscriptionName**
-> * the administrator username and password of the Azure VM in the variables **$adminUsername**, **$adminPassword**
-> the management public IP address to connect to the Azure VM  in the variable **$mngIP**
+> Before spinning up the ARM template you should edit the file **rs.ps1** and customize the variables:
+> * **$subscriptionName**: name of your Azure subscription 
+> * **$adminUsername**: the administrator username of the Azure VM 
+> * **$adminPassword**: the administrator password of the Azure VM 
+> * **$mngIP**: the management public IP address to connect to the Azure VM in SSH
 > 
 
 The ARM template  **rs.json** creates the Azure VNet, the route server and configure the BGP connection in route server an Ubuntu 20.04 VM.
