@@ -173,10 +173,12 @@ telnet localhost 2605
 telnet localhost 2601
 ```
 
-To configure the routing in quagga, connect use the vtysh command.
+Manual configuration of routing in quagga can be done through the **vtysh** shell.
 
 ## <a name="quagga"></a>2. Routing configuration in quagga
-Configured is automatically split up and saved in two different files: **/etc/quagga/zebra.conf** and **/etc/quagga/bgpd.conf**
+The quagga configuration can be saved by command **write**. 
+
+The **write** operation automatically split up the configuration in two different files: **/etc/quagga/zebra.conf** and **/etc/quagga/bgpd.conf**
 
 ```console
 !
