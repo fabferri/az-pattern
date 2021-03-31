@@ -175,7 +175,7 @@ telnet localhost 2601
 
 To configure the routing in quagga, connect use the vtysh command.
 
-## <a name="quagga"></a>2. Example of routing configuration
+## <a name="quagga"></a>2. Routing configuration in quagga
 Configured is automatically split up and saved in two different files: **/etc/quagga/zebra.conf** and **/etc/quagga/bgpd.conf**
 
 ```console
