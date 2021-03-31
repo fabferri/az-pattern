@@ -270,16 +270,17 @@ LocalAddress Network     NextHop    SourcePeer Origin AsPath Weight
 >
 
 ## <a name="quagga"></a>2. installation and setup of quagga in ubuntu VM by bash script
-The installation and setup of routing inside quagga can be done all together in one shot by bash script **quagga.sh**
+The installation and setup of routing in quagga can be done all together in one shot by bash script **quagga.sh**
+
 To run **quagga.sh**:
 * connect in SSH to the ubuntu VM
-* rise the proviledge by command: **sudo -i**
+* rise the privilege by command: **sudo -i**
 * copy the content of **quagga.sh** in ubuntu VM (in the folder /root)
 * set executable attribute the bash script by command: **chown +x quagga.sh**
-* run the script
+* run the script with root privilege
 
 At the end the BGP session between the quagga and route server is created.
-Check the BGP advertsiements inside vtysh quagga shell by the command:
+Check the BGP dvertisements inside **vtysh** quagga shell by the command:
 ```console
 show ip bgp
 ```
