@@ -34,6 +34,7 @@ The network diagram is reported below:
 | ------------- | -------------------------------------------------- |
 | **rs.json**   | deploy a VNet with route server and a Ubuntu VM    |
 | **rs.ps1**    | powershell script to run **rs.json**               |
+| **quagga.sh** | bash script to install and setup quagga            |
 
  
 > **[!NOTE]**
@@ -47,7 +48,7 @@ The network diagram is reported below:
 
 The ARM template  **rs.json** creates the Azure VNet, the route server and configure the BGP connection in route server an Ubuntu 20.04 VM.
 
-## <a name="quagga"></a>1. Install quagga in ubuntu VM
+## <a name="quagga"></a>1. Manual installation of quagga in ubuntu VM
  Check dependencies of quagga package:
  ```bash
  apt-cache depends quagga
@@ -268,6 +269,21 @@ LocalAddress Network     NextHop    SourcePeer Origin AsPath Weight
 > **If a manual changed in the file /etc/quagga/bgpd.conf is applied, a restart of quagga daemon is required.**
 >
 
+## <a name="quagga"></a>2. installation and setup of quagga in ubuntu VM by bash script
+The installation and setup of routing inside quagga can be done all together in one shot by bash script **quagga.sh**
+To run **quagga.sh**:
+* connect in SSH to the ubuntu VM
+* rise the proviledge by command: **sudo -i**
+* copy the content of **quagga.sh** in ubuntu VM (in the folder /root)
+* set executable attribute the bash script by command: **chown +x quagga.sh**
+* run the script
+
+At the end the BGP session between the quagga and route server is created.
+Check the BGP advertsiements inside vtysh quagga shell by the command:
+```console
+show ip bgp
+```
+
 ## <a name="quagga"></a>ANNEX
 
 ```bash
@@ -301,6 +317,9 @@ sudo systemctl restart ospf6d.service
 sudo systemctl restart isisd.service
 sudo systemctl restart ospfd.service
 ```
+
+
+
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
