@@ -270,7 +270,7 @@ LocalAddress Network     NextHop    SourcePeer Origin AsPath Weight
 >
 
 ## <a name="quagga"></a>2. installation and setup of quagga in ubuntu VM by bash script
-The installation and setup of routing in quagga can be done all together in one shot by bash script **quagga.sh**
+So far, we have discussed how to install manually quagga. The installation and setup of routing in quagga can be done all together in one shot by bash script **quagga.sh**
 
 To run **quagga.sh**:
 * connect in SSH to the ubuntu VM
