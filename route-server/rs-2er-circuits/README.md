@@ -580,12 +580,12 @@ Total number of prefixes 10
 ```
 
 
-### <a name="routing tables"></a>4.6 effetive routing table in the Azure VMs
+### <a name="routing tables"></a>4.6 effective routing table in the Azure VMs
 Below the effetive routing table appliedto the nic of the VMs.
 To keep the logs more readble, the networks with _nexthopeType_ set to **None** are not reported in the printout.
 
 
-Effective routes csr1 in vnet1:
+Effective routes in csr1-nic1 in vnet1:
 ```powershell
 Get-AzEffectiveRouteTable -ResourceGroupName ASH-Cust13-2 -NetworkInterfaceName ASH-Cust13-csr1-nic1 | select-object -Property Source,AddressPrefix,nextHoptype,nextHopIpAddress
 
@@ -602,7 +602,7 @@ Default               {10.100.0.0/24}  VNetGlobalPeering     {}
 Default               {10.200.0.0/24}  VNetGlobalPeering     {}            
 ```
 
-Effective routes csr2 in vnet2:
+Effective routes csr2-nic1 in vnet2:
 ```powershell
 Get-AzEffectiveRouteTable -ResourceGroupName ASH-Cust13-2 -NetworkInterfaceName ASH-Cust13-csr2-nic1 | select-object -Property Source,AddressPrefix,nextHoptype,nextHopIpAddress
 
