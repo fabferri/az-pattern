@@ -1,0 +1,79 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefixName": {
+            "type": "string",
+            "defaultValue": "ASH-Cust13-"
+        },
+        "location1": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "azure region where is deployed the vnet2"
+            }
+        }
+    },
+    "variables": {
+        "prefixName": "[parameters('prefixName')]",
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "vNet1": {
+            "location": "[parameters('location1')]",
+            "gatewayName": "[concat(variables('prefixName'),'vnet1','-gw-er')]"
+        },
+        "vNet2": {
+            "location": "[parameters('location2')]",
+            "gatewayName": "[concat(variables('prefixName'),'vnet2','-gw-er')]"
+        },
+        "ercircuit1Name": "ASH-Cust13-ER",
+        "ercircuit2Name": "ASH-Cust20-ER",
+        "rg_ercircuit1": "ASH-Cust13",
+        "rg_ercircuit2": "ASH-Cust20",
+        "connection1Name": "[concat(parameters('prefixName'),'gw-er-conn1')]",
+        "connection2Name": "[concat(parameters('prefixName'),'gw-er-conn2')]",
+        "erCircuit1Id": "[resourceId(subscription().subscriptionId,variables('rg_ercircuit1'), 'Microsoft.Network/expressRouteCircuits', variables('ercircuit1Name') )]",
+        "erCircuit2Id": "[resourceId(subscription().subscriptionId,variables('rg_ercircuit2'), 'Microsoft.Network/expressRouteCircuits', variables('ercircuit2Name') )]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('connection1Name')]",
+            "location": "[variables('location1')]",
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vNet1').gatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "peer": {
+                    "id": "[variables('erCircuit1Id')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('connection2Name')]",
+            "location": "[variables('location2')]",
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vNet2').gatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "peer": {
+                    "id": "[variables('erCircuit2Id')]"
+                }
+            }
+        }
+    ]
+}

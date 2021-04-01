@@ -1,0 +1,1056 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefixName": {
+            "type": "string",
+            "defaultValue": "ASH-Cust13-"
+        },
+        "location0": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "azure region where is deployed the vnet0"
+            }
+        },
+        "location1": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "azure region where is deployed the vnet2"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "size of VMs"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ]
+        }
+    },
+    "variables": {
+        "prefixName": "[parameters('prefixName')]",
+        "vmSize": "[parameters('vmSize')]",
+        "vNet0": {
+            "location": "[parameters('location0')]",
+            "name": "[concat(variables('prefixName'), 'vnet0')]",
+            "addressSpace1Prefix": "10.100.0.0/24",
+            "addressSpace2Prefix": "10.200.0.0/24",
+            "subnet1Name": "RouteServerSubnet",
+            "subnet1Prefix": "10.100.0.0/25",
+            "subnet2Name": "[concat(variables('prefixName'), 'subnet02')]",
+            "subnet2Prefix": "10.100.0.128/25",
+            "subnet3Name": "[concat(variables('prefixName'), 'subnet03')]",
+            "subnet3Prefix": "10.200.0.128/25",
+            "peeringNameTovNet1": "vnet0-to-vnet1",
+            "peeringNameTovNet2": "vnet0-to-vnet2"
+        },
+        "vNet1": {
+            "location": "[parameters('location1')]",
+            "name": "[concat(variables('prefixName'), 'vnet1')]",
+            "addressSpace1Prefix": "10.101.0.0/16",
+            "subnet1Name": "RouteServerSubnet",
+            "subnet1Prefix": "10.101.1.0/24",
+            "subnet2Name": "[concat(variables('prefixName'), 'subnet12')]",
+            "subnet2Prefix": "10.101.2.0/24",
+            "subnet3Name": "[concat(variables('prefixName'), 'subnet13')]",
+            "subnet3Prefix": "10.101.3.0/24",
+            "subnet4Name": "[concat(variables('prefixName'), 'subnet14')]",
+            "subnet4Prefix": "10.101.4.0/24",
+            "gatewayName": "[concat(variables('prefixName'),'vnet1','-gw-er')]",
+            "gatewaysubnetPrefix": "10.101.5.0/24",
+            "gatewayPublicIPName": "[concat(variables('prefixName'),'vnet1','-gw-er-pip')]",
+            "gatewaySku": "Standard",
+            "peeringNameTovNet0": "vnet1-to-vnet0"
+        },
+        "vNet2": {
+            "location": "[parameters('location2')]",
+            "name": "[concat(variables('prefixName'), 'vnet2')]",
+            "addressSpace1Prefix": "10.102.0.0/16",
+            "subnet1Name": "RouteServerSubnet",
+            "subnet1Prefix": "10.102.1.0/24",
+            "subnet2Name": "[concat(variables('prefixName'), 'subnet22')]",
+            "subnet2Prefix": "10.102.2.0/24",
+            "subnet3Name": "[concat(variables('prefixName'), 'subnet23')]",
+            "subnet3Prefix": "10.102.3.0/24",
+            "subnet4Name": "[concat(variables('prefixName'), 'subnet24')]",
+            "subnet4Prefix": "10.102.4.0/24",
+            "gatewayName": "[concat(variables('prefixName'),'vnet2','-gw-er')]",
+            "gatewaysubnetPrefix": "10.102.5.0/24",
+            "gatewayPublicIPName": "[concat(variables('prefixName'),'vnet2','-gw-er-pip')]",
+            "gatewaySku": "Standard",
+            "peeringNameTovNet0": "vnet2-to-vnet0"
+        },
+        "rs0": {
+            "rsName": "rs0",
+            "vHubIPconfigName": "ipconfig1",
+            "subnet_rs_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnet0').name,'RouteServerSubnet' )]",
+            "bgpConnection1Name": "bgpconn-nva1",
+            "peering1IP": "10.101.3.10",
+            "peering1ASN": 65001,
+            "bgpConnection2Name": "bgpconn-nva2",
+            "peering2IP": "10.102.3.10",
+            "peering2ASN": 65002
+        },
+        "rs1": {
+            "rsName": "rs1",
+            "vHubIPconfigName": "ipconfig1",
+            "subnet_rs_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name,'RouteServerSubnet' )]",
+            "bgpConnection1Name": "bgpconn-nva1",
+            "peering1IP": "10.101.3.10",
+            "peering1ASN": 65001
+        },
+        "rs2": {
+            "rsName": "rs2",
+            "vHubIPconfigName": "ipconfig1",
+            "subnet_rs_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnet2').name,'RouteServerSubnet' )]",
+            "bgpConnection1Name": "bgpconn-nva2",
+            "peering1IP": "10.102.3.10",
+            "peering1ASN": 65002
+        },
+        "nsg0": {
+            "name": "[concat(variables('prefixName'), 'nsg0')]",
+            "location": "[variables('vNet0').location]"
+        },
+        "nsg1": {
+            "name": "[concat(variables('prefixName'), 'nsg1')]",
+            "location": "[variables('vNet1').location]"
+        },
+        "nsg2": {
+            "name": "[concat(variables('prefixName'), 'nsg2')]",
+            "location": "[variables('vNet2').location]"
+        },
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "csrArray": [
+            {
+                "location": "[variables('vNet1').location]",
+                "csrName": "[concat(variables('prefixName'), 'csr01')]",
+                "imagePublisher": "cisco",
+                "imageOffer": "cisco-csr-1000v",
+                "imageSKU": "17_2_1-byol",
+                "vmSize": "Standard_B2ms",
+                "vnetName": "[variables('vNet1').name]",
+                "pubIPAddressName": "[concat(variables('prefixName'),'csr1','-pubIP' )]",
+                "subnet1Name": "[variables('vNet1').subnet2Name]",
+                "subnet2Name": "[variables('vNet1').subnet3Name]",
+                "nic0": "[concat(variables('prefixName'), 'csr1', '-nic0')]",
+                "nic1": "[concat(variables('prefixName'), 'csr1', '-nic1')]",
+                "subnet1csrAddress": "10.101.2.10",
+                "subnet2csrAddress": "10.101.3.10"
+            },
+            {
+                "location": "[variables('vNet2').location]",
+                "csrName": "[concat(variables('prefixName'), 'csr02')]",
+                "imagePublisher": "cisco",
+                "imageOffer": "cisco-csr-1000v",
+                "imageSKU": "17_2_1-byol",
+                "vmSize": "Standard_B2ms",
+                "vnetName": "[variables('vNet2').name]",
+                "pubIPAddressName": "[concat(variables('prefixName'),'csr2','-pubIP' )]",
+                "subnet1Name": "[variables('vNet2').subnet2Name]",
+                "subnet2Name": "[variables('vNet2').subnet3Name]",
+                "nic0": "[concat(variables('prefixName'), 'csr2', '-nic0')]",
+                "nic1": "[concat(variables('prefixName'), 'csr2', '-nic1')]",
+                "subnet1csrAddress": "10.102.2.10",
+                "subnet2csrAddress": "10.102.3.10"
+            }
+        ],
+        "csrCount": "[length(variables('csrArray'))]",
+        "vmArray": [
+            {
+                "location": "[variables('vNet0').location]",
+                "vmName": "[concat(variables('prefixName'), 'vm02')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "VNetName": "[variables('vNet0').name]",
+                "SubnetName": "[variables('vNet0').subnet2Name]",
+                "privateIP": "10.100.0.150",
+                "ipforwarding": false,
+                "storageAccountType": "Standard_LRS"
+            },
+            {
+                "location": "[variables('vNet0').location]",
+                "vmName": "[concat(variables('prefixName'), 'vm03')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "VNetName": "[variables('vNet0').name]",
+                "SubnetName": "[variables('vNet0').subnet3Name]",
+                "privateIP": "10.200.0.150",
+                "ipforwarding": false,
+                "storageAccountType": "Standard_LRS"
+            },
+            {
+                "location": "[variables('vNet1').location]",
+                "vmName": "[concat(variables('prefixName'), 'vm14')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "VNetName": "[variables('vNet1').name]",
+                "SubnetName": "[variables('vNet1').subnet4Name]",
+                "privateIP": "10.101.4.10",
+                "ipforwarding": false,
+                "storageAccountType": "Standard_LRS"
+            },
+            {
+                "location": "[variables('vNet2').location]",
+                "vmName": "[concat(variables('prefixName'), 'vm24')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "VNetName": "[variables('vNet2').name]",
+                "SubnetName": "[variables('vNet2').subnet4Name]",
+                "privateIP": "10.102.4.10",
+                "ipforwarding": false,
+                "storageAccountType": "Standard_LRS"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "storageAccountType": "[parameters('storageAccountType')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsg0').name]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('nsg0').location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsg1').name]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('nsg1').location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsg2').name]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('nsg2').location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet0').name]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet0').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg0').name)]"
+            ],
+            "comments": "Create vNet0",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet0').addressSpace1Prefix]",
+                        "[variables('vNet0').addressSpace2Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet0').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet0').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet0').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet0').subnet2Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg0').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet0').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet0').subnet3Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg0').name)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet1').name]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1').name)]"
+            ],
+            "comments": "Create VNet1",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet2Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet3Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet4Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet4Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').gatewaysubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet2').name]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet2').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2').name)]"
+            ],
+            "comments": "Create VNet2",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet2').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet2').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet2').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnet2Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet2').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnet3Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet2').subnet4Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnet4Prefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').gatewaysubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet0').name,'/',variables('vNet0').peeringNameTovNet1)]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet0').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet0').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]"
+            ],
+            "comments": "This is the peering from vNet0 to vNet1",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet1').name,'/',variables('vNet1').peeringNameTovNet0)]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "This is the peering from vNet1 to vNet0",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet0').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet0').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet0').name,'/',variables('vNet0').peeringNameTovNet2)]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet0').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet0').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet2').name)]"
+            ],
+            "comments": "This is the peering from vNet0 to vNet1",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet2').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet2').name,'/',variables('vNet2').peeringNameTovNet0)]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "This is the peering from vNet2 to vNet0",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet2').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet0').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet0').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('rs0').rsName]",
+            "location": "[variables('vnet0').location]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet0').name )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rs0').rsName, '/',variables('rs0').vHubIPconfigName)]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rs0').rsName)]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rs0').subnet_rs_Id]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rs0').rsName, '/', variables('rs0').bgpConnection1Name)]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rs0').rsName, variables('rs0').vHubIPconfigName)]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rs0').peering1IP]",
+                "peerAsn": "[variables('rs0').peering1ASN]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rs0').rsName, '/', variables('rs0').bgpConnection2Name)]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rs0').rsName, variables('rs0').vHubIPconfigName)]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rs0').peering2IP]",
+                "peerAsn": "[variables('rs0').peering2ASN]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('rs1').rsName]",
+            "location": "[variables('vnet1').location]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1').name )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rs1').rsName, '/',variables('rs1').vHubIPconfigName)]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rs1').rsName)]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rs1').subnet_rs_Id]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rs1').rsName, '/', variables('rs1').bgpConnection1Name)]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rs1').rsName, variables('rs1').vHubIPconfigName)]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rs1').peering1IP]",
+                "peerAsn": "[variables('rs1').peering1ASN]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2020-08-01",
+            "name": "[variables('rs2').rsName]",
+            "location": "[variables('vnet2').location]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2').name )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rs2').rsName, '/',variables('rs2').vHubIPconfigName)]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rs2').rsName)]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rs2').subnet_rs_Id]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name":  "[concat(variables('rs2').rsName, '/', variables('rs2').bgpConnection1Name)]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rs2').rsName, variables('rs2').vHubIPconfigName)]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rs2').peering1IP]",
+                "peerAsn": "[variables('rs2').peering1ASN]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet1').gatewayPublicIPName]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "This is the public IP of the ExpressRoute Gateway in vNet1",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vNet1').gatewayName]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "ExpressRoute Gateway in the vNet1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet1').gatewayPublicIPName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet1').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet1').gatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "ergwconf1"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[variables('vNet1').gatewaySku]",
+                    "tier": "[variables('vNet1').gatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet2').gatewayPublicIPName]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet2').location]",
+            "comments": "This is the public IP of the ExpressRoute Gateway in vNet2",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vNet2').gatewayName]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vNet2').location]",
+            "comments": "ExpressRoute Gateway in the vNet2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet2').gatewayPublicIPName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet2').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet2').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet2').gatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "ergwconf2"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[variables('vNet1').gatewaySku]",
+                    "tier": "[variables('vNet1').gatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('csrArray')[copyIndex()].pubIPAddressName]",
+            "apiVersion": "2020-06-01",
+            "comments": "public IP assigned to the CSR",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 30
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('csrArray')[copyIndex()].nic0]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('csrArray')[copyIndex()].VNetName)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('csrArray')[copyIndex()].pubIPAddressName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic0",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('csrArray')[copyIndex()].subnet1csrAddress]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('csrArray')[copyIndex()].pubIPAddressName  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('csrArray')[copyIndex()].vnetName, variables('csrArray')[copyIndex()].subnet1Name )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('csrArray')[copyIndex()].nic1]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('csrArray')[copyIndex()].VNetName)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('csrArray')[copyIndex()].pubIPAddressName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('csrArray')[copyIndex()].subnet2csrAddress]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('csrArray')[copyIndex()].vnetName, variables('csrArray')[copyIndex()].subnet2Name )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('csrArray')[copyIndex()].csrName ]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "plan": {
+                "name": "[variables('csrArray')[copyIndex()].imageSKU]",
+                "publisher": "[variables('csrArray')[copyIndex()].imagePublisher]",
+                "product": "[variables('csrArray')[copyIndex()].imageOffer]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic0)]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic1)]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('csrArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('csrArray')[copyIndex()].csrName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('csrArray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('csrArray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('csrArray')[copyIndex()].imageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('csrArray')[copyIndex()].csrName,'-OSDisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic0 )]"
+                        },
+                        {
+                            "properties": {
+                                "primary": false
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic1 )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Public IP addressws VMs",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].VNetName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].VNetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OSDisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmArray')[copyIndex()].storageAccountType]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}
