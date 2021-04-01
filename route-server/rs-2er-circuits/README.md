@@ -55,9 +55,10 @@ Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is 
    * route server in the "RouteServerSubnet"  10.100.0.0/25 with IPs: [10.100.0.4, 10.100.0.5] 
    * vm02 in the subnet 10.100.0.128/25
    * vm03 in the subnet 10.200.0.128/25
-* All the route servers are set with **AllowBranchToBranchTraffic** enabled.
+   
+   vnet0 is a spoke vnet and it is in peering with two hub vnets: vnet1 and vnet2.
 
-*  vnet0 is a spoke vnet and it is in peering with two hub vnets: vnet1 and vnet2.
+* All the route servers are set with **AllowBranchToBranchTraffic** enabled.
 
 * All the vnet peering have the same setup:
    * Traffic to remote virtual network: allow (default)
