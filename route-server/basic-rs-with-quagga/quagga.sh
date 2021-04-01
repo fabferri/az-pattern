@@ -1,5 +1,25 @@
 #!/bin/bash
 
+## NOTE:
+## before running the script, customize the values of variables suitable for your deployment. 
+## asn_quagga: Autonomous system number assigned to quagga
+## bgp_routerId: IP address of quagga VM
+## bgp_network1: first network advertised from quagga to the router server (inclusive of subnetmask)
+## bgp_network2: second network advertised from quagga to the router server (inclusive of subnetmask)
+## bgp_network3: third network advertised from quagga to the router server (inclusive of subnetmask)
+## routeserver_IP1: first IP address of the router server 
+## routeserver_IP2: second IP address of the router server
+
+asn_quagga=65001
+bgp_routerId=10.10.4.10
+bgp_network1=10.0.1.0/24
+bgp_network2=10.0.2.0/24
+bgp_network3=10.0.3.0/24
+routeserver_IP1=10.10.1.4
+routeserver_IP2=10.10.1.5
+
+
+
 apt update
 
 ## Install the Quagga routing daemon
@@ -69,15 +89,15 @@ EOF
 echo "add quagga config"
 cat <<EOF > /etc/quagga/bgpd.conf
 !
-router bgp 65001
- bgp router-id 10.10.4.10
- network 10.0.1.0/24
- network 10.0.2.0/24
- network 10.0.3.0/24
- neighbor 10.10.1.4 remote-as 65515
- neighbor 10.10.1.4 soft-reconfiguration inbound
- neighbor 10.10.1.5 remote-as 65515
- neighbor 10.10.1.5 soft-reconfiguration inbound
+router bgp $asn_quagga
+ bgp router-id $bgp_routerId
+ network $bgp_network1
+ network $bgp_network2
+ network $bgp_network3
+ neighbor $routeserver_IP1 remote-as 65515
+ neighbor $routeserver_IP1 soft-reconfiguration inbound
+ neighbor $routeserver_IP2 remote-as 65515
+ neighbor $routeserver_IP2 soft-reconfiguration inbound
 !
  address-family ipv6
  exit-address-family

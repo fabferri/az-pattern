@@ -274,10 +274,24 @@ LocalAddress Network     NextHop    SourcePeer Origin AsPath Weight
 ## <a name="quagga"></a>2. installation and setup of quagga in ubuntu VM by bash script
 So far, we have discussed how to install manually quagga. The installation and setup of routing in quagga can be done all together in one shot and faster by bash script **quagga.sh**
 
+
+
+**NOTE:**
+
+Before running the script **quagga.sh**, customize the values of variables suitable for your deployment. 
+* **asn_quagga**: Autonomous system number assigned to quagga
+* **bgp_routerId**: IP address of quagga VM
+* **bgp_network1**: first network advertised from quagga to the router server (inclusive of subnetmask)
+* **bgp_network2**: second network advertised from quagga to the router server (inclusive of subnetmask)
+* **bgp_network3**: third network advertised from quagga to the router server (inclusive of subnetmask)
+* **routeserver_IP1**: first IP address of the router server 
+* **routeserver_IP2**: second IP address of the router server
+
+
 To run **quagga.sh**:
 * connect in SSH to the ubuntu VM
-* rise the privilege by command: **sudo -i**
-* copy the content of **quagga.sh** in ubuntu VM (in the folder /root)
+* rise the privilege by command: **sudo -i** (or **sudo su -**)
+* copy the content of **quagga.sh** in ubuntu VM (i.e. in the folder /root)
 * set executable attribute the bash script by command: **chown +x quagga.sh**
 * run the script with root privilege
 
