@@ -23,7 +23,7 @@ The article describes the network configuration which diagram is shown below:
 
 [![1]][1]
 
-Configuration is based on two hub vnets, vnet1 and vnet2 in peering with spoke vnet named vnet0.
+Configuration is based on two hub vnets, vnet1 and vnet2, in peering with spoke vnet named vnet0.
 
 Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is the subnet number]
 * ExpressRoute circuit1 in Ashburn advertises through ExpressRoute private peering the network 10.2.13.0/25 to the ER Gateway1
@@ -32,7 +32,8 @@ Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is 
 * Two on-premises networks:
    * on-premises network 10.2.13.0/25 with a VM 10.2.13.10
    * on-premises network 10.2.20.0/25 with a VM 10.2.20.10
-* The on-premises networks 10.2.13.0/25 and 10.2.20.0/25 do not communicate each other becasue are associated with two different VRFs.
+
+   The on-premises networks 10.2.13.0/25 and 10.2.20.0/25 can't communicate each other becasue are associated with two different VRFs.
 
 * vnet1 (deployed in West US2) with address space 10.101.0.0/16 has:
    * ExpressRoute Gateway Standard (deployed in 10.101.5.0/24)
@@ -42,13 +43,13 @@ Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is 
    * a test vm named vm14, connected to the subnet14 (10.101.4.10)
    * a route server in the subnet 10.101.1.0/24 with IPs: [10.101.1.4, 10.101.1.5] 
 
-*	vnet2 (deployed in East us) with address space 10.102.0.0/16 has:
-   * ExpressRoute Gateway Standard (deployed in 10.102.5.0/24)
-   * csr2 with two interfaces:
+*	vnet2 (deployed in East US) with address space 10.102.0.0/16 has:
+    * ExpressRoute Gateway Standard (deployed in 10.102.5.0/24)
+    * csr2 with two interfaces:
       * one interface (nic0) for management purpose only (10.102.2.10)
       * one interface (nic1) to establish BGP peering with route servers (10.102.3.10)
-   * a test vm named vm24, connected to the subnet14 (10.102.4.10)
-   * route server in the "RouteServerSubnet"  10.102.1.0/24 with IPs: [10.102.1.4, 10.102.1.5] 
+    * a test vm named vm24, connected to the subnet14 (10.102.4.10)
+    * route server in the "RouteServerSubnet"  10.102.1.0/24 with IPs: [10.102.1.4, 10.102.1.5] 
 
 * vnet0 (deployed in East US) with address space [10.100.0.0/24, 10.200.0.0/24 ]has:
    * route server in the "RouteServerSubnet"  10.100.0.0/25 with IPs: [10.100.0.4, 10.100.0.5] 
