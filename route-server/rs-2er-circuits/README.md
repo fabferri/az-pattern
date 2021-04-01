@@ -668,7 +668,7 @@ VirtualNetworkGateway {10.2.13.0/25}   VirtualNetworkGateway {10.102.3.10}
 Default               {0.0.0.0/0}      Internet              {}               
 ```
 
-### <a name="routing tables"></a>4.6 edge routers routing tables
+### <a name="routing tables"></a>4.7 edge routers routing tables
 Network prefixes learned from the ExpressRoute circuit1:
 ```console
 ASH-ASR#show ip bgp vpnv4 vrf 20 neighbor 192.168.20.18 routes
