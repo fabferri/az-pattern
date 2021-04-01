@@ -64,7 +64,7 @@ Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is 
    * Traffic to remote virtual network: allow (default)
    * Traffic forwarded from remote virtual network: allow (default)
    * Virtual network gateway or Route Server: none (default)
-   * There is no UDR in all vnets.
+* There is no UDR in all vnets.
 
 
 **Files**:
@@ -76,6 +76,7 @@ Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is 
 | **02_connections.ps1**  | powershell script to run **02_connections.json**               |
  
 > **[!NOTE1]**
+>
 > Before spinning up the ARM template you should edit the file **01_vnets.ps1** and set:
 > * your Azure subscription name in the variable **$subscriptionName**
 > * the administrator username of the Azure VM in the variables **$adminUsername**
@@ -83,6 +84,7 @@ Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is 
 >
 
 > **[!NOTE2]**
+>
 > The full deployment is done in sequence: before run **01_vnets.json** and when completed run the second **02_connections.json** 
 >
 
@@ -91,10 +93,10 @@ The ARM template  **rs.json** creates the Azure VNet, the route server and confi
 ## <a name="summary"></a>1. Communication between VMs 
  
  Communication between VMs:
-* VMs (vm02, vm03) in spoke vnet can communicate with each VM in hub vnets 
-* VMs (vm02, vm03) in spoke vnet can communicate with on-premises ASH-vm13 with transit through ER circuit1.
-* VMs (vm02, vm03) in spoke vnet can communicate with on-premises ASH-vm20 with transit through ER circuit2.
-* VMs in vnet1 (hub1) and VMs in vnet2 (hub2) can't communicate (traffic create a loop).
+* VMs (vm02, vm03) in spoke vnet (vnet0) can communicate with each VM in hub vnets 
+* VMs (vm02, vm03) in spoke vnet (vnet0) can communicate with on-premises ASH-vm13 with transit through ER circuit1.
+* VMs (vm02, vm03) in spoke vnet (vnet0) can communicate with on-premises ASH-vm20 with transit through ER circuit2.
+* VMs in vnet1 (hub1) and VMs in vnet2 (hub2) can't communicate (traffic create a loop with packets discard due to TTL field reaching the zero).
 
 [![2]][2]
 
