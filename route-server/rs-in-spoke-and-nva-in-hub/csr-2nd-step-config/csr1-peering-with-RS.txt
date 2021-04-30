@@ -1,0 +1,19 @@
+router bgp 65001
+ neighbor 10.0.0.4 remote-as 65515
+ neighbor 10.0.0.4 ebgp-multihop 3
+ neighbor 10.0.0.4 update-source GigabitEthernet2
+ neighbor 10.0.0.5 remote-as 65515
+ neighbor 10.0.0.5 ebgp-multihop 3
+ neighbor 10.0.0.5 update-source GigabitEthernet2
+ !
+ address-family ipv4
+  neighbor 10.0.0.4 activate
+  neighbor 10.0.0.4 next-hop-self
+  neighbor 10.0.0.4 soft-reconfiguration inbound
+  neighbor 10.0.0.5 activate
+  neighbor 10.0.0.5 next-hop-self
+  neighbor 10.0.0.5 soft-reconfiguration inbound
+ exit-address-family
+
+ip route 10.0.0.4 255.255.255.255  10.101.2.1
+ip route 10.0.0.5 255.255.255.255  10.101.2.1

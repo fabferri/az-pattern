@@ -1,0 +1,6 @@
+route-map PREPEND permit 10
+  set as-path prepend 65005
+
+router bgp 65005
+  address-family ipv4
+    neighbor 192.168.0.2 route-map PREPEND out
