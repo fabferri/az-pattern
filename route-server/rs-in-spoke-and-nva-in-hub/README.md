@@ -362,6 +362,18 @@ There is no intercommunication between the VMs in vnet1 and vnet2:
 
 [![6]][6]
 
+```
+edge@vm12:~$ ping 10.102.3.10
+PING 10.102.3.10 (10.102.3.10) 56(84) bytes of data.
+From 10.101.2.10 icmp_seq=2 Time to live exceeded
+From 10.101.2.10 icmp_seq=3 Time to live exceeded
+
+edge@vm13:~$ ping 10.102.3.10
+PING 10.102.3.10 (10.102.3.10) 56(84) bytes of data.
+From 10.101.2.10 icmp_seq=1 Time to live exceeded
+From 10.101.2.10 icmp_seq=2 Time to live exceeded
+
+```
 
 # <a name="routing tables"></a>4. ANNEX2: Logs
 
