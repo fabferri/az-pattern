@@ -1,5 +1,5 @@
 <properties
-pageTitle= 'Spoke VNet with Azure Router Server in peering with NVAs in two hub VNets'
+pageTitle= 'dual-homed network with Azure Route Server and site-to-site VPNs'
 description= "Spoke VNet with Azure Router Server in peering with NVAs in two hub VNets"
 documentationcenter: na
 services=""
@@ -17,7 +17,7 @@ editor=""/>
    ms.date="29/04/2021"
    ms.author="fabferri" />
 
-# Spoke VNet with Azure Router Server in peering with NVAs in two hub VNets
+# dual-homed network with Azure Route Server and site-to-site VPNs
  
 The article describes the network configuration which diagram is shown below: 
 
