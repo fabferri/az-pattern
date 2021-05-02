@@ -1,5 +1,5 @@
 <properties
-pageTitle= 'spoke vnet in peering with two hub vnets and Azure route servers'
+pageTitle= 'dual-homed network with Azure Route Server and ExpressRoute'
 description= "spoke vnet in peering with two hub vnets and Azure route servers"
 documentationcenter: na
 services=""
@@ -17,13 +17,14 @@ editor=""/>
    ms.date="29/03/2021"
    ms.author="fabferri" />
 
-# Spoke vnet in peering with two hub vnets and Azure route servers
+# dual-homed network with Azure Route Server and ExpressRoute
  
 The article describes the network configuration which diagram is shown below: 
 
 [![1]][1]
 
 Configuration is based on two hub vnets, vnet1 and vnet2, in peering with spoke vnet named vnet0.
+The hub vnets have an Expressroute Gateway with connections to two different ExpressRoute circuits (ER circuit1 and ER circuit2).
 
 Naming convention: **vnetX-subnetXY** where [**X** is the vnet number, **Y** is the subnet number]
 * ExpressRoute circuit1 in Ashburn advertises through ExpressRoute private peering the network 10.2.13.0/25 to the ER Gateway1
