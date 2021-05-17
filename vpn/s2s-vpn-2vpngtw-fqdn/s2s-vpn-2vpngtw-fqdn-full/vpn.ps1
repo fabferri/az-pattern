@@ -10,10 +10,10 @@ param (
     )
 
 ################# Input parameters #################
-$subscriptionName  = "AzDev"     
+$subscriptionName  = "AzDev1"     
 $location          = "eastus"
 $deploymentName    = "vpn-1"
-$armTemplateFile   = "vpn1.json"
+$armTemplateFile   = "vpn.json"
 ####################################################
 
 $pathFiles      = Split-Path -Parent $PSCommandPath

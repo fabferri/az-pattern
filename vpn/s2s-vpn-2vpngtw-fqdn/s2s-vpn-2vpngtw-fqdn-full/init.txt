@@ -1,0 +1,3 @@
+ResourceGroupName=vpn06
+location1=westus2
+location2=eastus

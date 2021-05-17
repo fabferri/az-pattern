@@ -34,6 +34,7 @@ The network diagram for the deployment of the **lb-outbound.json** is reported b
 [![1]][1]
 
 > **[!NOTE]**
+>
 > Before spinning up the script **lb-outbound.ps1**  you should:
 > * set the Azure subscription name in variable **$subscriptionName**
 > * set the administrator username **$adminUsername** and password **$adminPassword**
@@ -78,7 +79,9 @@ apt -y update && apt -y install  apache2 && systemctl enable apache2 && systemct
 
 The **lb-inbound.json** support authentication to the Ubuntu VMs through password or RSA private key pairs.
 
-**[NOTE!] Azure currently supports SSH protocol 2 (SSH-2) RSA public-private key pairs with a minimum length of 2048 bits. Other key formats such as ED25519 and ECDSA are not supported.**
+**[NOTE!]**
+
+**Azure currently supports SSH protocol 2 (SSH-2) RSA public-private key pairs with a minimum length of 2048 bits. Other key formats such as ED25519 and ECDSA are not supported.**
 
 The RSA keys can be created by ssh-keygen in OpenSSH utilities. The ssh-keygen is also available in git bash.
 Example
@@ -119,7 +122,8 @@ The network diagram for the deployment of the **lb-outbound.json** is reported b
 [![4]][4]
 
 > **[!NOTE]**
-> Before spinning up the script **lb-outbound.ps1**  you should:
+>
+> Before spinning up the script **lb-inbound.ps1**  you should:
 > * set the Azure subscription name in variable **$subscriptionName**
 > * set the name of the resource group in the variable **$rgName**
 > * set the administrator username **$adminUsername** and password **$adminPassword**
