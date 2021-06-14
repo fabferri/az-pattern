@@ -30,12 +30,14 @@ The network diagram is reported below:
 
 
 **Files:**
-| File name     | Description                                        |
-| ------------- | -------------------------------------------------- |
-| **rs.json**   | deploy a VNet with route server and a Ubuntu VM    |
-| **rs.ps1**    | powershell script to run **rs.json**               |
-| **quagga.sh** | bash script to install and setup quagga            |
-
+| File name           | Folder name              |Description                                                |
+| ------------------- | ------------------------ |---------------------------------------------------------- |
+| **rs.json**         | quagga-manual-setup      | deploy a VNet with route server and a Ubuntu VM           |
+| **rs.ps1**          | quagga-manual-setup      | powershell script to run **rs.json**                      |
+| **quagga.sh**       | quagga-manual-setup      | bash script to install and setup quagga                   |
+| **rs.json**         | quagga-cloud-init-setup  | deploy a VNet with route server and a Ubuntu VM           |
+| **rs.ps1**          | quagga-cloud-init-setup  | powershell script to run **rs.json**                      |
+| **cloud-init.txt**  | quagga-cloud-init-setup  | cloud-init file to automatically install and setup quagga |
  
 > **[!NOTE]**
 >
@@ -275,7 +277,6 @@ LocalAddress Network     NextHop    SourcePeer Origin AsPath Weight
 So far, we have discussed how to install manually quagga. The installation and setup of routing in quagga can be done all together in one shot and faster by bash script **quagga.sh**
 
 
-
 **NOTE:**
 
 Before running the script **quagga.sh**, customize the values of variables suitable for your deployment. 
@@ -301,7 +302,97 @@ Check the BGP dvertisements inside **vtysh** quagga shell by the command:
 show ip bgp
 ```
 
-## <a name="quagga"></a>ANNEX
+
+## <a name="quagga"></a>ANNEX1: cloud-init file to install and setup quagga
+
+```yaml
+#cloud-config
+package_update: true
+packages:
+  - quagga
+write_files:
+  - path: /run/routertmp/zebraconf.txt
+    owner: root:root
+    permissions: '0664'
+    content: |
+      !
+      interface eth0
+      !
+      interface lo
+      !
+      ip forwarding
+      !
+      line vty
+      !
+  - path: /run/routertmp/quaggaconf.txt
+    owner: root:root
+    permissions: '0664'
+    content: |
+      !
+      router bgp 65001
+      bgp router-id 10.10.4.10
+      network 10.0.1.0/24
+      network 10.0.2.0/24
+      network 10.0.3.0/24
+      neighbor 10.10.1.4 remote-as 65515
+      neighbor 10.10.1.4 soft-reconfiguration inbound
+      neighbor 10.10.1.5 remote-as 65515
+      neighbor 10.10.1.5 soft-reconfiguration inbound
+      !
+      address-family ipv6
+      exit-address-family
+      exit
+      !
+      line vty
+      !
+runcmd:
+  # Enable IP forward
+  - [ sed, -i, -e, '$a\net.ipv4.ip_forward = 1', /etc/sysctl.conf]
+  # Apply kernel parameters
+  - [ sysctl, --system ]
+  - [ apt, install, quagga, quagga-doc, -y ]
+  - [ sh, -c, 'mkdir -p /var/log/quagga && sudo chown quagga:quagga /var/log/quagga' ]
+  - [ sh, -c, 'touch /var/log/zebra.log' ]
+  - [ sh, -c, 'chown quagga:quagga /var/log/zebra.log' ]
+  - [ sh, -c, 'touch /etc/quagga/babeld.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/bgpd.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/isisd.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/ospf6d.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/ospfd.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/ripd.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/ripngd.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/vtysh.conf' ]
+  - [ sh, -c, 'touch /etc/quagga/zebra.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/babeld.conf && chmod 640 /etc/quagga/babeld.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/bgpd.conf && chmod 640 /etc/quagga/bgpd.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/isisd.conf && chmod 640 /etc/quagga/isisd.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/ospf6d.conf && chmod 640 /etc/quagga/ospf6d.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/ospfd.conf && chmod 640 /etc/quagga/ospfd.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/ripd.conf && chmod 640 /etc/quagga/ripd.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/ripngd.conf && chmod 640 /etc/quagga/ripngd.conf' ]
+  - [ sh, -c, 'chown quagga:quaggavty /etc/quagga/vtysh.conf && chmod 660 /etc/quagga/vtysh.conf' ]
+  - [ sh, -c, 'chown quagga:quagga /etc/quagga/zebra.conf && chmod 640 /etc/quagga/zebra.conf' ]
+  - [ sh, -c, 'echo "zebra=yes" > /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "bgpd=yes" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "ospfd=no" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "ospf6d=no" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "ripd=no" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "ripngd=no" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "isisd=no" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'echo "babeld=no" >> /etc/quagga/daemons' ]
+  - [ sh, -c, 'cat /run/routertmp/zebraconf.txt > /etc/quagga/zebra.conf' ]
+  - [ sh, -c, 'cat /run/routertmp/quaggaconf.txt > /etc/quagga/bgpd.conf' ]
+  - [ systemctl, enable, zebra.service ]
+  - [ systemctl, enable, bgpd.service ]
+  - [ systemctl, start, zebra ]
+  - [ systemctl, start, bgpd ]
+```
+
+In cloud-init the recommended path to write temporary files is **/run/** 
+cloud-init writes the quagga config files in temporary folder: **/run/routertmp/**
+ 
+
+## <a name="quagga"></a>ANNEX2
 
 ```bash
 Prevent a daemon from running:
