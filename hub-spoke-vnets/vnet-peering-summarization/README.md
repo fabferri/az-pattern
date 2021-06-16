@@ -174,7 +174,7 @@ BGP routing table in the customer's edge routers:
 10.0.0.0/16, 10.1.0.0/16: major networks advertised from the ExpressRoute Gateway on the _left_ side
 
 ## <a name="route server"></a>4. Routing table in Azure route server
-```
+```console
 routes advertised to nva1:
 PS C:\> Get-AzVirtualRouterPeerAdvertisedRoute -ResourceGroupName $rgName -VirtualRouterName $vrName -PeerName $peer1Name
 LocalAddress Network      NextHop    SourcePeer Origin AsPath            Weight
@@ -214,9 +214,10 @@ LocalAddress Network     NextHop   SourcePeer Origin AsPath Weight
 |User	                  |Active	|10.0.0.0/16	|Virtual appliance	|10.0.1.5	|RT-majorNetwork1|
 |User	                  |Active	|10.1.0.0/16	|Virtual appliance	|10.0.1.5	|RT-majorNetwork2|
 |User	                  |Active	|10.6.0.0/15	|Virtual appliance	|10.6.0.68	|RT-majorRemote|
-
+<br>
 
 **There is no way to query the effective route table for a VMSS instance; the effective route table can't be fetched from the VMSS in the spoke01 and spoke61.**
+<br>
 
 **Effective routes in spoke04-vm1-NIC:**
 |Source                 |	State	| Address Prefixes|	Next Hop Type   |	Next Hop IP Address    | User Defined Route Name|
@@ -226,6 +227,7 @@ LocalAddress Network     NextHop   SourcePeer Origin AsPath Weight
 |Default	               |Invalid	|0.0.0.0/0	   |Internet	          |-	|-|
 |User	                  |Active	|0.0.0.0/0	   |Virtual appliance	 |10.0.1.5	|RT-Major10_0_0_0|
 
+<br>
 
 **Effective routes in hub60-nva1-NIC:**
 |Source                 |	State	| Address Prefixes|	Next Hop Type   |	Next Hop IP Address    | User Defined Route Name|
@@ -242,7 +244,6 @@ LocalAddress Network     NextHop   SourcePeer Origin AsPath Weight
 |User	                  |Active	|10.6.0.0/16	|Virtual appliance	  |10.6.1.5	              |RT-majorNetwork1|
 |User	                  |Active	|10.7.0.0/16	|Virtual appliance	  |10.6.1.5	              |RT-majorNetwork2|
 |User	                  |Active	|10.0.0.0/15	|Virtual appliance	  |10.0.0.68	           |RT-remoteMajorNetwork|
-
 
 
 <!--Image References-->
