@@ -1,0 +1,85 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "Name of the location of an existing VNet"
+            }
+        },
+        "parallelPeeringOperation": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+                "description": "Name of the location of an existing VNet"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnetName": "spoke61",
+        "spoke64": "spoke64",
+        "spoke65": "spoke65",
+        "vnetArray": [
+            {
+                "location": "[parameters('location')]",
+                "name": "[concat(variables('spoke64'),'-vnet')]"
+            },
+            {
+                "location": "[parameters('location')]",
+                "name": "[concat(variables('spoke65'),'-vnet')]"
+            }
+        ],
+        "vnetArrayCount": "[length(variables('vnetArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetName'), '/',  concat( variables('vnetName'),  '-to-', variables('vnetArray')[copyIndex()].name )  )]",
+            "apiVersion": "2020-08-01",
+            "location": "[variables('location')]",
+            "comments": "loop to create vnet peering",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetArray')[copyIndex()].name   )]"
+                }
+            },
+            "copy": {
+                "name": "vnetpeeringCopy",
+                "mode": "serial",
+                "batchSize": 1,
+                "count": "[variables('vnetArrayCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetArray')[copyIndex()].name ,'/', variables('vnetArray')[copyIndex()].name, '-to-', variables('vnetName') )]",
+            "apiVersion": "2020-08-01",
+            "location": "[variables('vnetArray')[copyIndex()].location]",
+            "comments": "loop to create vnet peering",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')  )]"
+                }
+            },
+            "copy": {
+                "name": "vnetpeeringCopy",
+                "mode": "serial",
+                "batchSize": "[parameters('parallelPeeringOperation')]",
+                "count": "[variables('vnetArrayCount')]"
+            }
+        }
+    ]
+}

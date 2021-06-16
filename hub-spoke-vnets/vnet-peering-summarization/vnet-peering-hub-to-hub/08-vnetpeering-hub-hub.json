@@ -1,0 +1,118 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "type": "string",
+            "defaultValue": "[subscription().subscriptionId]",
+            "metadata": {
+                "description": "ExpresssRoute subscription Id"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "Name of the location of an existing VNet"
+            }
+        },
+        "rg_hub1": {
+            "type": "string",
+            "defaultValue": "ASH-Cust13_02",
+            "metadata": {
+                "description": "Name of the resource group with hub00 vnet"
+            }
+        },
+        "rg_hub2": {
+            "type": "string",
+            "defaultValue": "ASH-Cust13_03",
+            "metadata": {
+                "description": "Name of the resource group with hub60 vnet"
+            }
+        }
+    },
+    "variables": {
+        "subscriptionId": "[parameters('subscriptionId')]",
+        "location": "[parameters('location')]",
+        "rg_hub1": "[parameters('rg_hub1')]",
+        "rg_hub2": "[parameters('rg_hub2')]",
+        "hub1vnetName": "hub00",
+        "hub2vnetName": "hub60"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "vnetpeeringDeployment1",
+            "subscriptionId": "[variables('subscriptionId')]",
+            "resourceGroup": "[variables('rg_hub1')]",
+            "dependsOn": [],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "name": "[concat(variables('hub1vnetName'), '/',  concat( variables('hub1vnetName'),  '-to-', variables('hub2vnetName') )  )]",
+                            "apiVersion": "2020-08-01",
+                            "location": "[variables('location')]",
+                            "comments": "vnet peering hub1 to hub2",
+                            "dependsOn": [],
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                   "id": "[concat('/subscriptions/',variables('subscriptionId'),'/resourceGroups/',variables('rg_hub2'),'/providers/Microsoft.Network/virtualNetworks/',variables('hub2vnetName'))]"
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "vnetpeeringDeployment1",
+            "subscriptionId": "[variables('subscriptionId')]",
+            "resourceGroup": "[variables('rg_hub2')]",
+            "dependsOn": [],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "name": "[concat(variables('hub2vnetName') ,'/', variables('hub2vnetName'), '-to-', variables('hub1vnetName') )]",
+                            "apiVersion": "2020-08-01",
+                            "location": "[variables('location')]",
+                            "comments": "vnet peering hub2 to hub1",
+                            "dependsOn": [],
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[concat('/subscriptions/',variables('subscriptionId'),'/resourceGroups/',variables('rg_hub1'),'/providers/Microsoft.Network/virtualNetworks/',variables('hub1vnetName'))]"
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        }
+    ]
+}

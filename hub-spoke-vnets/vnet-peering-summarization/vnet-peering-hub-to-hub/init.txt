@@ -1,0 +1,4 @@
+subscriptionName=ExpressRoute-Lab
+rgName_hub1=ASH-Cust13_02
+rgName_hub2=ASH-Cust13_03
+location=eastus2

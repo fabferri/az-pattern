@@ -1,0 +1,3 @@
+subscriptionName=ExpressRoute-Lab
+rgName=ASH-Cust13_02
+location=eastus2

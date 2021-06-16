@@ -1,0 +1,613 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus2",
+      "metadata": {
+        "description": "Location for the VM, only certain regions support Availability Zones"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for the Virtual Machine."
+      }
+    },
+    "numberOfVms": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The number of VMs to deploy in each VMSS."
+      }
+    },
+    "authenticationType": {
+      "type": "string",
+      "defaultValue": "sshPublicKey",
+      "allowedValues": [
+        "sshPublicKey",
+        "password"
+      ],
+      "metadata": {
+        "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "adminPasswordOrKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "cloudInitContent": {
+      "type": "string",
+      "metadata": {
+        "description": "content of cloud-init config file"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "spoke01",
+      "metadata": {
+        "description": "name of the spoke vnet"
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "vnetName": "[parameters('vnetName')]",
+    "addressPrefixes": "10.0.1.0/24",
+    "subnet1Name": "fe-subnet",
+    "subnet1AddressPrefix": "10.0.1.0/28",
+    "subnet2Name": "be-subnet",
+    "subnet2AddressPrefix": "10.0.1.16/28",
+    "subnet3Name": "subnet3",
+    "subnet3AddressPrefix": "10.0.1.32/28",
+    "subnet4Name": "subnet4",
+    "subnet4AddressPrefix": "10.0.1.48/28",
+    "nsgName": "[concat(variables('vnetName'),'-nsg')]",
+    "lbName": "[concat(variables('vnetName'),'-lb')]",
+    "lbProbeName": "[concat(variables('vnetName'),'-lbprobe')]",
+    "frontEndIPConfigID": "[concat(variables('lbID'), '/frontendIPConfigurations/loadBalancerFrontEnd')]",
+    "lbFrontEndIP": "10.0.1.5",
+    "remotelbFrontEndIP": "10.0.0.68",
+    "lbSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('vnetName'), variables('subnet1Name'))]",
+    "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
+    "lbBE": "[concat(variables('vnetName'),'-lbBE')]",
+    "myZones": [
+      "1",
+      "2"
+    ],
+    "linuxImage": {
+      "publisher": "Canonical",
+      "offer": "UbuntuServer",
+      "sku": "18.04-LTS",
+      "version": "latest"
+    },
+    "linuxImage1": {
+      "publisher": "canonical",
+      "offer": "0001-com-ubuntu-server-focal",
+      "sku": "20_04-lts",
+      "version": "latest"
+    },
+    "linuxConfiguration": {
+      "disablePasswordAuthentication": true,
+      "ssh": {
+        "publicKeys": [
+          {
+            "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('adminPasswordOrKey')]"
+          }
+        ]
+      }
+    },
+    "customData": "[ parameters('cloudInitContent') ]",
+    "vmSize": "Standard_B1s",
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPasswordOrKey": "[parameters('adminPasswordOrKey')]",
+    "vmarray": [
+      {
+        "location": "[variables('location')]",
+        "vmName": "[concat(variables('vnetName'),'-vm13')]",
+        "vmSize": "[variables('vmSize')]",
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-focal",
+        "sku": "20_04-lts",
+        "vNetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet3Name')]",
+        "privateIP": "10.0.1.40",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": false
+      },
+      {
+        "location": "[variables('location')]",
+        "vmName": "[concat(variables('vnetName'),'-vm14')]",
+        "vmSize": "[variables('vmSize')]",
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-focal",
+        "sku": "20_04-lts",
+        "vNetName": "[variables('vnetName')]",
+        "subnetName": "[variables('subnet4Name')]",
+        "privateIP": "10.0.1.55",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": false
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]",
+    "routeTable_subnet3": "[concat(variables('vnetName'),'-RT-subnet3')]",
+    "routeTable_subnet4": "[concat(variables('vnetName'),'-RT-subnet4')]",
+    "routeTable_be_subnet": "[concat(variables('vnetName'),'-RT-be-subnet')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefixes')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet1AddressPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet2AddressPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('subnet3Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet3AddressPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('subnet4Name')]",
+            "properties": {
+              "addressPrefix": "[variables('subnet4AddressPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('nsgName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "remoteConnection",
+            "properties": {
+              "description": "Allow SSH traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('lbName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "LoadBalancerFrontEnd",
+            "properties": {
+              "subnet": {
+                "id": "[variables('lbSubnetRef')]"
+              },
+              "privateIPAddress": "[variables('lbFrontEndIP')]",
+              "privateIPAllocationMethod": "Static"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('lbBE')]"
+          }
+        ],
+        "loadbalancingRules": [
+          {
+            "name": "lbAnyPortRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontendIPConfigID')]"
+              },
+              "backendaddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBE'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbProbeName') )]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('lbProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "apiVersion": "2020-12-01",
+      "name": "[concat(variables('vnetName'),'-vmss','-zone', variables('myZones')[copyindex()])]",
+      "location": "[parameters('location')]",
+      "zones": [
+        "[variables('myZones')[copyindex()]]"
+      ],
+      "copy": {
+        "name": "VMSScount",
+        "count": "[length(variables('myZones'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
+      ],
+      "sku": {
+        "name": "[variables('vmSize')]",
+        "capacity": "[parameters('numberOfVms')]"
+      },
+      "properties": {
+        "overprovision": false,
+        "scaleInPolicy": {
+          "rules": [ "Default" ]
+        },
+        "singlePlacementGroup": true,
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "createOption": "FromImage",
+              "caching": "ReadWrite",
+              "managedDisk": {
+                "storageAccountType": "Premium_LRS"
+              }
+            },
+            "imageReference": "[variables('linuxImage')]"
+          },
+          "osProfile": {
+            "computerNamePrefix": "[concat(variables('vnetName'),'-vm','-zone', variables('myZones')[copyindex()],'-')]",
+            "adminUsername": "[variables('adminUsername')]",
+            "adminPassword": "[variables('adminPasswordOrKey')]",
+            "customData": "[base64(variables('customData'))]",
+            "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+          },
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "[concat(variables('vnetName'),'-vmss')]",
+                "properties": {
+                  "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                  },
+                  "primary": true,
+                  "enableIPForwarding": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "ipConfig1",
+                      "properties": {
+                        "subnet": {
+                          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet2Name'))]"
+                        },
+                        "loadBalancerBackendAddressPools": [
+                          {
+                            "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBE'))]"
+                          }
+                        ],
+                        "publicipaddressconfiguration": {
+                          "name": "pub1",
+                          "properties": {
+                            "idleTimeoutInMinutes": 10
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+          //          "extensionProfile": {
+          //            "extensions": [
+          //              {
+          //                "name": "AppInstall",
+          //                "properties": {
+          //                  "publisher": "Microsoft.Azure.Extensions",
+          //                  "type": "CustomScript",
+          //                  "typeHandlerVersion": "2.0",
+          //                  "autoUpgradeMinorVersion": true,
+          //                  "settings": {
+          //                    "fileUris": [
+          //                      "https://raw.githubusercontent.com/Azure-Samples/compute-automation-configurations/master/automate_nginx.sh"
+          //                    ],
+          //                    "commandToExecute": "bash automate_nginx.sh"
+          //                  }
+          //                }
+          //              }
+          //            ]
+          //          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "comments": "Create public IPs",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      },
+      "copy": {
+        "name": "publicIpCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP' ) )]"
+      ],
+      "properties": {
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+        }
+      },
+      "copy": {
+        "name": "nicCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "apiVersion": "2020-12-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[parameters('adminPasswordOrKey')]",
+          "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+            "offer": "[variables('vmArray')[copyIndex()].offer]",
+            "sku": "[variables('vmArray')[copyIndex()].sku]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OS')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('routeTable_subnet3')]",
+      "location": "[variables('location')]",
+      "comments": "Create udr to send traffic to the subnet4",
+      "properties": {
+        "routes": [
+          {
+            "name": "RT-to-subnet4",
+            "properties": {
+              "addressPrefix": "[variables('subnet4AddressPrefix')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbFrontEndIP')]"
+            }
+          },
+          {
+            "name": "RT-to-Major10",
+            "properties": {
+              "addressPrefix": "10.0.0.0/8",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbFrontEndIP')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('routeTable_subnet4')]",
+      "location": "[variables('location')]",
+      "comments": "Create udr to send traffic to the subnet3",
+      "properties": {
+        "routes": [
+          {
+            "name": "RT-to-subnet3",
+            "properties": {
+              "addressPrefix": "[variables('subnet3AddressPrefix')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbFrontEndIP')]"
+            }
+          },
+          {
+            "name": "RT-to-Major10",
+            "properties": {
+              "addressPrefix": "10.0.0.0/8",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('lbFrontEndIP')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('routeTable_be_subnet')]",
+      "location": "[variables('location')]",
+      "comments": "Create udr to send traffic to the be-subnet",
+      "properties": {
+        "routes": [
+          {
+            "name": "RT-to-Major",
+            "properties": {
+              "addressPrefix": "10.0.0.0/8",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('remotelbFrontEndIP')]"
+            }
+          }
+        ]
+      }
+    },
+    // update the VNets with the routing tables and NSG
+    {
+      "apiVersion": "2020-08-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "updateVNet",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/routeTables',variables('routeTable_subnet3'))]",
+        "[resourceId('Microsoft.Network/routeTables',variables('routeTable_subnet4'))]",
+        "[resourceId('Microsoft.Network/routeTables',variables('routeTable_be_subnet'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "parameters": {},
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-11-01",
+              "name": "[variables('vnetName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('addressPrefixes')]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('subnet1Name')]",
+                    "properties": {
+                      "addressPrefix": "[variables('subnet1AddressPrefix')]"
+                    }
+                  },
+                  {
+                    "name": "[variables('subnet2Name')]",
+                    "properties": {
+                      "addressPrefix": "[variables('subnet2AddressPrefix')]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTable_be_subnet'))]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "[variables('subnet3Name')]",
+                    "properties": {
+                      "addressPrefix": "[variables('subnet3AddressPrefix')]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTable_subnet3'))]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "[variables('subnet4Name')]",
+                    "properties": {
+                      "addressPrefix": "[variables('subnet4AddressPrefix')]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTable_subnet4'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {}
+        }
+      }
+    }
+  ]
+}

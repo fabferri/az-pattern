@@ -1,0 +1,104 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "azure region where is deployed the vnetHub"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "hub00",
+            "metadata": {
+                "description": "name of the virtual network"
+            }
+        }
+
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnetHub": {
+            "location": "[variables('location')]",
+            "name": "[parameters('vnetName')]",
+            "addressSpace1": "10.0.0.0/24",
+            "gtwSubnetName": "GatewaySubnet",
+            "frontendSubnetName": "frontend",
+            "nvaSubnetName": "nvasubnet",
+            "RouteServerSubnetName": "RouteServerSubnet",
+            "subnet5Name": "subnet5",
+            "gtwSubnetPrefix": "10.0.0.0/26",
+            "frontendSubnetPrefix": "10.0.0.64/28",
+            "nvaSubnetPrefix": "10.0.0.80/28",
+            "RouteServerSubnetPrefix": "10.0.0.96/27",
+            "subnet5Prefix": "10.0.0.128/27"
+        },
+        "rsName": "[concat('rs-',variables('vnetHub').name)]",
+        "peering1IP": "10.0.0.85",
+        "peering2IP": "10.0.0.86",
+        "peering1ASN": 65000,
+        "rsBGPconnection1Name": "bgp-conn1",
+        "rsBGPconnection2Name": "bgp-conn2",
+        "subnet_rs1_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnetHub').name,'RouteServerSubnet' )]",
+        "vHubIPconfigName": "ipconfig1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('rsName')]",
+            "location": "[variables('location')]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('subnet_rs1_Id')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rsName'), '/', variables('rsBGPconnection1Name'))]", 
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering1IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-08-01",
+            "name": "[concat(variables('rsName'), '/', variables('rsBGPconnection2Name'))]", 
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]",
+                "[resourceId('Microsoft.Network/virtualHubs/bgpConnections',  variables('rsName'), variables('rsBGPconnection1Name'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering2IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        }
+    ]
+}

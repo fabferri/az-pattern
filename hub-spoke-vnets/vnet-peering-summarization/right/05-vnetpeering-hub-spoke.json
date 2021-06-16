@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "Name of the location of an existing VNet"
+            }
+        },
+        "vnetHubName": {
+            "type": "string",
+            "defaultValue": "hub60",
+            "metadata": {
+                "description": "name of the hub vnet"
+            }
+        },
+        "vnetSpokeName": {
+            "type": "string",
+            "defaultValue": "spoke61",
+            "metadata": {
+                "description": "name of the hub vnet"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnetHubName": "[parameters('vnetHubName')]",
+        "vnetSpokeName": "[parameters('vnetSpokeName')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetHubName'), '/',  concat( variables('vnetHubName'),  '-to-', variables('vnetSpokeName') )  )]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('location')]",
+            "comments": "loop to create vnet peering",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetSpokeName')   )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetSpokeName') ,'/', variables('vnetSpokeName'), '-to-', variables('vnetHubName') )]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('location')]",
+            "comments": "loop to create vnet peering",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetHubName')  )]"
+                }
+            }
+        }
+    ]
+}

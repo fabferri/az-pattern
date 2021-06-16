@@ -1,0 +1,321 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus2",
+      "metadata": {
+        "description": "Location for the VM, only certain regions support Availability Zones"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for the Virtual Machine."
+      }
+    },
+    "authenticationType": {
+      "type": "string",
+      "defaultValue": "sshPublicKey",
+      "allowedValues": [
+        "sshPublicKey",
+        "password"
+      ],
+      "metadata": {
+        "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "adminPasswordOrKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location')]",
+    "lbFrontEndIP": "10.0.1.5",
+
+    "linuxConfiguration": {
+      "disablePasswordAuthentication": true,
+      "ssh": {
+        "publicKeys": [
+          {
+            "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('adminPasswordOrKey')]"
+          }
+        ]
+      }
+    },
+    "vmSize": "Standard_B1s",
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPasswordOrKey": "[parameters('adminPasswordOrKey')]",
+    "spoke04": "[concat('spoke04')]",
+    "spoke05": "[concat('spoke05')]",
+    "vnetArray": [
+      {
+        "location": "[parameters('location')]",
+        "name": "[concat(variables('spoke04'),'-vnet')]",
+        "addressPrefixes": "10.0.4.0/24",
+        "subnet1Name": "subnet1",
+        "subnet1AddressPrefix": "10.0.4.0/24",
+        "RT_Name": "[concat(variables('spoke04'),'-RT')]",
+        "RT_entry1": "RT-Major10_0_0_0",
+        "RT_destinationAddress1": "0.0.0.0/0",
+        "RT_nextHopType1": "VirtualAppliance",
+        "RT_nextHopIpAddress1": "[variables('lbFrontEndIP')]"
+      },
+      {
+        "location": "[parameters('location')]",
+        "name": "[concat(variables('spoke05'),'-vnet')]",
+        "addressPrefixes": "10.0.5.0/24",
+        "subnet1Name": "subnet1",
+        "subnet1AddressPrefix": "10.0.5.0/24",
+        "RT_Name": "[concat(variables('spoke05'),'-RT')]",
+        "RT_entry1": "RT-Major10_0_0_0",
+        "RT_destinationAddress1": "0.0.0.0/0",
+        "RT_nextHopType1": "VirtualAppliance",
+        "RT_nextHopIpAddress1": "[variables('lbFrontEndIP')]"
+      }
+    ],
+    "vmArray": [
+      {
+        "location": "[variables('location')]",
+        "vmName": "[concat(variables('spoke04'),'-vm1')]",
+        "vmSize": "[variables('vmSize')]",
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-focal",
+        "sku": "20_04-lts",
+        "vNetName": "[variables('vnetArray')[0].name]",
+        "subnetName": "[variables('vnetArray')[0].subnet1Name]",
+        "privateIP": "10.0.4.10",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": false,
+        "nsgName": "[concat(variables('spoke04'),'-nsg')]"
+      },
+      {
+        "location": "[variables('location')]",
+        "vmName": "[concat(variables('spoke05'),'-vm1')]",
+        "vmSize": "[variables('vmSize')]",
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-focal",
+        "sku": "20_04-lts",
+        "vNetName": "[variables('vnetArray')[1].name]",
+        "subnetName": "[variables('vnetArray')[1].subnet1Name]",
+        "privateIP": "10.0.5.10",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": false,
+        "nsgName": "[concat(variables('spoke05'),'-nsg')]"
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('vnetArray')[copyIndex()].name]",
+      "location": "[variables('vnetArray')[copyIndex()].location]",
+      "copy": {
+        "name": "vnetCount",
+        "count": "[length(variables('vnetArray'))]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetArray')[copyIndex()].addressPrefixes]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnetArray')[copyIndex()].subnet1Name]",
+            "properties": {
+              "addressPrefix": "[variables('vnetArray')[copyIndex()].subnet1AddressPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('vmArray')[copyIndex()].nsgName]",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "nsgCopy",
+        "count": "[length(variables('vmArray'))]"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH-inbound",
+            "properties": {
+              "description": "Allow SSH traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vNetName)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+      ],
+      "properties": {
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+        }
+      },
+      "copy": {
+        "name": "nicCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "apiVersion": "2020-12-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPasswordOrKey')]",
+          "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+            "offer": "[variables('vmArray')[copyIndex()].offer]",
+            "sku": "[variables('vmArray')[copyIndex()].sku]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OS')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "apiVersion": "2020-11-01",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('vnetArray')[copyIndex()].RT_Name]",
+      "location": "[variables('vnetArray')[copyIndex()].location]",
+      "comments": "Create udr to send traffic to the spoke",
+      "copy": {
+        "name": "RTCopy",
+        "count": "[length(variables('vnetArray'))]"
+      },
+      "properties": {
+        "routes": [
+          {
+            "name": "[variables('vnetArray')[copyIndex()].RT_entry1]",
+            "properties": {
+              "addressPrefix": "[variables('vnetArray')[copyIndex()].RT_destinationAddress1]",
+              "nextHopType": "[variables('vnetArray')[copyIndex()].RT_nextHopType1 ]",
+              "nextHopIpAddress": "[variables('vnetArray')[copyIndex()].RT_nextHopIpAddress1 ]"
+            }
+          }
+        ]
+      }
+    },
+    // update the VNets with the routing tables 
+    {
+      "apiVersion": "2020-08-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat('updateVNet', copyIndex())]",
+      "dependsOn": [
+        "RTCopy",
+        "vnetCount"
+      ],
+      "copy": {
+        "name": "addRT",
+        "count": "[length(variables('vnetArray'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "parameters": {},
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-11-01",
+              "name": "[variables('vnetArray')[copyIndex()].name]",
+              "location": "[variables('vnetArray')[copyIndex()].location]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('vnetArray')[copyIndex()].addressPrefixes]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('vnetArray')[copyIndex()].subnet1Name]",
+                    "properties": {
+                      "addressPrefix": "[variables('vnetArray')[copyIndex()].subnet1AddressPrefix]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables', variables('vnetArray')[copyIndex()].RT_Name)]"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "outputs": {}
+        }
+      }
+    }
+  ]
+}
