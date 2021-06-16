@@ -89,6 +89,11 @@ The same consideration are valid for the **right** side. Below a network diagram
 
 [![3]][3]
 
+In the network diagram the communication path between spoke leaves vnets connected to different hubs:
+
+[![4]][4]
+
+<br>
 ## <a name="ARM templates"></a>2. ARM templates and scripts to make the full setup
 
 Scripts and ARM templates are stored in two folders:
@@ -251,6 +256,6 @@ LocalAddress Network     NextHop   SourcePeer Origin AsPath Weight
 [1]: ./media/high-level-diagram.png "high level network diagram"
 [2]: ./media/network-diagram.png "network diagram with details"
 [3]: ./media/bgp.png "bgp peering between NVAs and the Azure route server"
-
+[4]: ./media/transit.png "bgp peering between NVAs and the Azure route server"
 <!--Link References-->
 
