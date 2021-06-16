@@ -74,6 +74,7 @@ In summary, the convention name follows the rule:
 name**XY**
 
 where 
+- "name" is the vnet name
 - **X** is the second octet of the address space
 - **Y** is the third octet of the address space
 
