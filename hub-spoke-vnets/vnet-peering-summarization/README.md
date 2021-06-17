@@ -98,12 +98,12 @@ In the network diagram the communication path between spoke leaves vnets connect
 ## <a name="ARM templates"></a>2. ARM templates and scripts to make the full setup
 
 Scripts and ARM templates are stored in two folders:
-- the script in **_left_** folder creates the deployment: hub00, spoke01, spoke04, spoke05
-- the script in **_right_** folder creates the deployment: hub60, spoke61, spoke64, spoke65
+- the script in **left** folder creates the deployment: hub00, spoke01, spoke04, spoke05
+- the script in **right_* folder creates the deployment: hub60, spoke61, spoke64, spoke65
 
 The **_left_** side and **_right_** side use different Azure resource group in the same Azure subscription.
 
-Due to symmetrical nature of the design, the **_right_** and **_left_** deployment are identical. The scripts  in the **left** and **right** folders are different only in the resources name.
+Due to symmetrical nature of the design, the **_right_** and **_left_** deployment are identical. The scripts in the **left** and **right** folders are different only in the resources name.
 
 All the scripts (with related ARM templates) need to run in sequence; the order is established with the first two digit of the filename. The files are enumerated in the table below with short description.
 
