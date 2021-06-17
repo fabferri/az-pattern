@@ -47,7 +47,7 @@ Each of spoke vnet in leaf vnet has address space belonging to the major network
 - **the spoke vnets in the leaves have address space that belong to the major networks (summary networks)**
 - **there are no vnets with address in overlapping**
 
-Let's discuss the traffic from on-premises with destination address in the spoke04 (_left_ side); the traffic has the following path:
+Let's discuss the traffic from on-premises with destination address in the spoke04 (**_left_** side); the traffic has the following path:
 - the on-premises edge routes know the network 10.0.0.0/16; the traffic is routed to the ExpressRoute circuit and reach out the ExpressRoute gateway in the **hub00**
 - the ExpressRoute Gateway routes the traffic in the hub00 vnet; a UDR in the gateway subnet forward the traffic to the NVA1
 - the NVA1 is configured as ip fowarder and the traffic incoming is routed in egress
@@ -84,7 +84,7 @@ The diagram is similar to the previous one, with the only difference of presence
 - each hub vnet hub00 has an Azure Route Server to establish BGP peering with the Azure VMs nva1 and nva2 of the backend pool of the of the load balancer.
 - the router server in hub00 needs to know the IPs are to establish the peering. Usage of Virtual Machine Scale Set (VMSS) for the NVAs is good idea to scale up in throughput and number of flows, but it isn't great to establish a deterministic BGP peering with the Route Server becasue the internal IPs assigment is not deterministic.
 - in spoke01 the ILB is configured with two Virtual Machine Scale Set in different availability zones.
-The same consideration are valid for the **right** side. Below a network diagram with BGP peering between the nva1, nva2 and route server in hub00.
+The same consideration are valid for the **_right_** side. Below a network diagram with BGP peering between the nva1, nva2 and route server in hub00.
  
 
 [![3]][3]
@@ -94,15 +94,16 @@ In the network diagram the communication path between spoke leaves vnets connect
 [![4]][4]
 
 <br>
+
 ## <a name="ARM templates"></a>2. ARM templates and scripts to make the full setup
 
 Scripts and ARM templates are stored in two folders:
-- the script in **left** folder creates the deployment: hub00, spoke01, spoke04, spoke05
-- the script in **right** folder creates the deployment: hub60, spoke61, spoke64, spoke65
+- the script in **_left_** folder creates the deployment: hub00, spoke01, spoke04, spoke05
+- the script in **_right_** folder creates the deployment: hub60, spoke61, spoke64, spoke65
 
-The left side and right side use different Azure resource group in the same Azure subscription.
+The **_left_** side and **_right_** side use different Azure resource group in the same Azure subscription.
 
-Due to symmetrical nature of the design, the right and left deployment are identical. The scripts  in the left and right folders are different only in the resources name.
+Due to symmetrical nature of the design, the **_right_** and **_left_** deployment are identical. The scripts  in the **left** and **right** folders are different only in the resources name.
 
 All the scripts (with related ARM templates) need to run in sequence; the order is established with the first two digit of the filename. The files are enumerated in the table below with short description.
 
@@ -131,7 +132,7 @@ All the scripts (with related ARM templates) need to run in sequence; the order 
 
 To make the full setup, run the scripts in the **left** and **right** folder.
 
-The folder **vnet-peering-hub-to-hub** contains the ARM template to create the vnet peering between the vnets **hub00** and **hub60**. The script requires the presence of **hub00** and **hub60** to run successful. The script fails if the **hub00** (*left* side) and **hub60** (*right* side) are not present.
+The folder **vnet-peering-hub-to-hub** contains the ARM template to create the vnet peering between the vnets **hub00** and **hub60**. The script requires the presence of **hub00** and **hub60** to run successful. The script fails if the **hub00** (**_left_** side) and **hub60** (**_right_** side) are not present.
 
 The scripts **01-hub.json** **04-spoke1.json** deploy Ubuntu VMs with RSA key to authenticate and login.
 
@@ -173,11 +174,11 @@ BGP routing table in the customer's edge routers:
 
 10.0.0.0/24: address space of the hub00
 
-10.0.0.0/16, 10.1.0.0/16: major networks advertised from the ExpressRoute Gateway on the _left_ side
+10.0.0.0/16, 10.1.0.0/16: major networks advertised from the ExpressRoute Gateway on the **_left_** side
 
 10.6.0.0/24: address space of the hub60
 
-10.0.0.0/16, 10.1.0.0/16: major networks advertised from the ExpressRoute Gateway on the _left_ side
+10.0.0.0/16, 10.1.0.0/16: major networks advertised from the ExpressRoute Gateway on the **_left_** side
 
 ## <a name="route server"></a>4. Routing table in Azure route server
 ```console
