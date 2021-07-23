@@ -79,7 +79,17 @@ In on-premises client the HTTP/HTTPS traffic capture can be done by fiddler (or 
 * web.vortex.data.microsoft.com
 
 All the communications between the on-premises and the URLs reported above use the TCP port 443. 
-The file **capture1-client.xlsx** report the summary of fiddler capture in 
+The file **capture1-client.xlsx** reports the  fiddler capture in the on-premises client.
+
+<br>
+In the plots below the HTTPS traffic volume and number of request per URL in the on-premises client.
+
+
+[![4]][4]
+
+<br>
+
+[![5]][5]
 
 ## <a name="traffic capture in customer's edge routers"></a>4. Traffic capture in customer's edge router
 The capture in customer's edge router is reported in the file.
@@ -182,14 +192,14 @@ Aliases:  wns.windows.com
 ## <a name="traffic capture in customer's edge routers"></a>5. ANNEX: how to capture the traffic in customer's edge (CE) router
 A network diagram with ExpressRoute Microsoft peering, with more details is reported below:
 
-[![4]][4]
+[![6]][6]
 
 In ExpressRoute Microsoft peering, the customer's edge routers CE1 and CE2 routers are generally configured to advertise via eBGP the same public network prefixes (NAT pool) to the primary and secondary link of the same ExpressRoute circuit, without AS path prepending. The traffic between on-premises and Azure pass through both of ExpressRoute physical links, in load balancing. 
 <br>
 
 To capture all the traffic in transit across the ExpressRoute Microsoft peering, it is favourable setting up a BGP policy to force the traffic to transit only through one CE router. To force the traffic to pass through CE1, we can increase the AS PATH length on the CE2.
 
-[![5]][5]
+[![7]][7]
 
 <br>
 
@@ -323,7 +333,9 @@ The capture in CE1 is reported in the file **capture-CE1.txt**
 [1]: ./media/high-level.png "high level network diagram"
 [2]: ./media/network-diagram.png "network diagram"
 [3]: ./media/access-internet.png "security policy in on-premises firewall to access to internet in HTTPS and DNS"
-[4]: ./media/network-details.png "network diagram inclusive of IPs"
-[5]: ./media/bgp-peering.png "BGP peering"
+[4]: ./media/traffic-volume.png "traffic volume in client"
+[5]: ./media/number-url-requests.png "number of request for URL"
+[6]: ./media/network-details.png "network diagram inclusive of IPs"
+[7]: ./media/bgp-peering.png "BGP peering"
 <!--Link References-->
 
