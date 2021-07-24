@@ -18,12 +18,13 @@ editor=""/>
    ms.author="fabferri" />
 
 # Traffic of Azure management portal across ExpressRoute Microsoft peering
-This article provides some information on how to configure the ExpressRoute Microsoft peering to allow to the Azure Management portal traffic to pass across ExpressRoute Microsoft peering. 
+This article provides some information on how to configure the ExpressRoute Microsoft peering, to allow to the Azure Management portal traffic to pass across ExpressRoute Microsoft peering. 
 
 ## Summary
-A good part of the Azure management portal traffic can pass through ExpressRoute Microsoft peering, but access to internet in on-premises network is anyway mandatory, to resolve URLs by public DNS and establish HTTPS connections with public endpoints only available in internet.
-To have the traffic of Azure management portal routed through ExpressRoute Microsoft peering, customers have to include in the route filter the *"nearest"* Azure regional BGP community. If the *"nearest"* Azure regional BGP community is not selected, the traffic of Azure management portal will pass across internet.
-The communication with Azure Active Directory endpoints can pass across ExpressRoute Microsoft peering if the **Azure Active Directory (12076:5060)** BGP community is enclosed in the route filter.
+A good part of the Azure management portal traffic can pass through ExpressRoute Microsoft peering, but access to internet in on-premises network is anyway mandatory. In on-premises network the access to internet is compulsory to resolve URLs by public DNS and to establish HTTPS connections with required Azure public endpoints only available in internet.
+<br>
+
+To have most of the traffic of Azure management portal routed through ExpressRoute Microsoft peering, customers have to include in the route filter the *"nearest"* Azure regional BGP community. Access to the Azure Management portal requires authetication on Azure Active Directory. The communication with Azure Active Directory endpoints can pass across ExpressRoute Microsoft peering if the **Azure Active Directory (12076:5060)** BGP community is enclosed in the route filter.
 
 [![1]][1]
 
