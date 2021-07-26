@@ -1,0 +1,11 @@
+
+SubscriptionID: <SUBSCRIPTION_ID>
+TenantID      : <TENANT_ID>
+============================================
+applicationID (SrvPriciple Id): <APPLICATION_ID>
+DislayName                    : ffDemoApp1
+ObjectId                      : <OBJECT_ID>
+Password SrvPrinciple         : <PASSWORD_SERVICE_PRINCIPLE>
+============================================
+Role assignment
+

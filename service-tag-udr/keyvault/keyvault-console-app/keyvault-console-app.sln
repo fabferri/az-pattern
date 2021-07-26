@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "keyvault-console-app", "keyvault-console-app.csproj", "{C28B9788-C2F1-4BF2-81F5-81BCB5EFB82B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C28B9788-C2F1-4BF2-81F5-81BCB5EFB82B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C28B9788-C2F1-4BF2-81F5-81BCB5EFB82B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C28B9788-C2F1-4BF2-81F5-81BCB5EFB82B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C28B9788-C2F1-4BF2-81F5-81BCB5EFB82B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB0BB462-45BE-4A86-A5E0-F62006BA36BD}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,4 @@
+{
+  "connectionString": "Endpoint=sb://eh-ns-jcrtni7alphga.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=ly/jOVd5LSbLvid48YOYi9g+11R2ACnheTFVs/SjnsQ=",
+  "eventHubName": "eh"
+}
