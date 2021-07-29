@@ -38,10 +38,15 @@ Run the scripts in sequence:
 
 > **NOTE**
 > the powershell scripts read get the values of some variables from the file init.txt
+>
 >  $rgName: name of resource group
+>
 >  $RGTagExpireDate: set an expiration date in the tag value
+>
 >  $RGTagContact: set a contact in the tag value
+>
 >  $RGTagNinja: set the alias in the tag value
+>
 >  $RGTagUsage: purpose of deployment in the tag value
 >
 
