@@ -1,0 +1,5 @@
+rgName=test-vnets2
+RGTagExpireDate=08/01/21
+RGTagContact=user1@contoso.com
+RGTagNinja=user1
+RGTagUsage=hub-spoke with high number of spoke vnets

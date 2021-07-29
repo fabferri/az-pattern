@@ -1,0 +1,102 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "westeurope",
+            "metadata": {
+                "description": "Name of the location of an existing VNet"
+            }
+        },
+        "numSpokes": {
+            "type": "int",
+            "defaultValue": 400,
+            "minValue": 1,
+            "maxValue": 480,
+            "metadata": {
+                "description": "number of spoke vnets"
+            }
+        }
+    },
+    "variables": {
+        "vnet1Name": "hub1",
+        "vnethub1": {
+            "Name": "[variables('vnet1Name')]",
+            "location": "[parameters('location')]",
+            "addressPrefix": "100.1.0.0/24",
+            "subnet1Name": "frontend",
+            "subnet1Prefix": "100.1.0.0/26",
+            "subnet2Name": "backend",
+            "subnet2Prefix": "100.1.0.64/26",
+            "subnet3Name": "subnet3",
+            "subnet3Prefix": "100.1.0.128/26",
+            "subnet4Name": "GatewaySubnet",
+            "subnet4Prefix": "100.1.0.192/26"
+        },
+
+        "firstOctet": 10,
+        "secondOctet": 0,
+        "thirdOctet": 0,
+        "numSpokes":  "[parameters('numspokes')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnethub1').name, '/',  
+                             concat( variables('vnethub1').name,  '-to-', 
+                                      concat('spoke-', padleft(string( add(variables('secondOctet'),div(copyIndex(),255 )) ), 3,'0'),'-',padleft( string(mod(copyIndex(),255)), 3,'0') ) 
+                                    )    
+                            )]",
+            "apiVersion": "2020-08-01",
+            "location": "[variables('vnethub1').location]",
+            "comments": "loop to create vnet peering hub-to-spoke",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', 
+                              concat('spoke-', padleft(string( add(variables('secondOctet'),div(copyIndex(),255 )) ), 3,'0'),'-', padleft( string(mod(copyIndex(),255)), 3,'0')  )  
+                            )]"
+                }
+            },
+            "copy": {
+                "name": "vnetpeeringCopy",
+                "mode": "serial",
+                "batchSize": 1,
+                "count": "[variables('numSpokes')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat( 
+                             concat('spoke-', padleft(string( add(variables('secondOctet'),div(copyIndex(),255 )) ), 3,'0'),'-',padleft( string(mod(copyIndex(),255)), 3,'0') ) 
+                            , '/', 
+                            concat('spoke-', padleft(string( add(variables('secondOctet'),div(copyIndex(),255 )) ), 3,'0'),'-',padleft( string(mod(copyIndex(),255)), 3,'0') ),
+                            '-to-',variables('vnethub1').name    
+                            )]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnethub1').location]",
+            "comments": "loop to create vnet peering spoke-to-hub",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnethub1').name )]"
+                }
+            },
+            "copy": {
+                "name": "vnetpeeringCopy",
+                "mode": "serial",
+                "batchSize": 1,
+                "count": "[variables('numSpokes')]"
+            }
+        }
+    ]
+}
