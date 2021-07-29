@@ -78,9 +78,17 @@ string( add(variables('thirdOctet'),mod(copyIndex(),255)) )
 >
 > The cycles in ARM template to create the vnet peering are established sequentially by **"batchSize": 1** to avoid deployment collisions and failure. Due to sequential operations the execution of the **vnets-peering.json** takes longer runtime. The runtime to create 400 vnet peering takes more or less 3 hours.
 >
+
+[![1]][1]
+
 ## Caveats
 The ARM template is able to deploy max 400 spoke vnets. If you set a with high number of spoke vnets, you might get the error message:
 ```console
 Error: Code=InvalidTemplate; Message=Deployment template validation failed: 'The number of template resources limit exceeded. Limit: '800'
 ```
- 
+
+<!--Image References-->
+
+[1]: ./media/network-diagram.png "network diagram"
+
+<!--Link References-->
