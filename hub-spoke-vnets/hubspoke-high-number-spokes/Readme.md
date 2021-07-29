@@ -20,6 +20,8 @@
 
 ARM templates to deploy a single hub vnet with large number of spoke vnets in peering.  
 
+[![1]][1]
+
 List of files:
 
 | Name                    | Description                                                                   |
@@ -35,6 +37,7 @@ Run the scripts in sequence:
 <br>
 
 **vnets-peering.ps1** will fail if the hub and spoke vnets are not already deployed. 
+
 
 > **NOTE**
 > the powershell scripts read get the values of some variables from the file init.txt
@@ -79,7 +82,7 @@ string( add(variables('thirdOctet'),mod(copyIndex(),255)) )
 > The cycles in ARM template to create the vnet peering are established sequentially by **"batchSize": 1** to avoid deployment collisions and failure. Due to sequential operations the execution of the **vnets-peering.json** takes longer runtime. The runtime to create 400 vnet peering takes more or less 3 hours.
 >
 
-[![1]][1]
+
 
 ## Caveats
 The ARM template is able to deploy max 400 spoke vnets. If you set a with high number of spoke vnets, you might get the error message:
