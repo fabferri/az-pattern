@@ -27,6 +27,7 @@ List of Azure ARM templates and scripts:
    * [VNet with ExpressRoute gateway](./expressroute/er-gw)
    * [Two Azure VNets connected to an ExpressRoute circuit](./expressroute/er-circuit-2vnets)
    * [BGP communities in ExpressRoute Microsoft peering](./expressroute/er-ms-peering-bgp-community)
+   * [Azure management portal across ExpressRoute Microsoft peering](./expressroute/er-ms-peering-azure-mng-portal)
 * [Azure Load Balancer](./loadbalancer/)
    * [Standard load balancer in HA ports](./loadbalancer/ilb-ha-ports-1vnet)
    * [Standard load balancer in HA ports with VNet peering](./loadbalancer/ilb-ha-ports-vnetpeering)
