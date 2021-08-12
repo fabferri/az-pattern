@@ -499,7 +499,6 @@
             "location": "[variables('location1')]",
             "comments": "Virtual Network1",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1'))]"
             ],
             "properties": {
                 "addressSpace": {
@@ -536,7 +535,6 @@
             "location": "[variables('location2')]",
             "comments": "Virtual Network 2",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2'))]"
             ],
             "properties": {
                 "addressSpace": {
