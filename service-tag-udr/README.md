@@ -98,6 +98,7 @@ Let's activate the ip fowarding and **firewalld** in nva.
 
 <br>
 Enable ip forwarding in the nva:
+
 ```bash
 sed -i -e '$a\net.ipv4.ip_forward = 1' /etc/sysctl.conf
 sysctl --system
@@ -136,6 +137,7 @@ default via 10.0.0.1 dev eth0 proto dhcp metric 100
 169.254.169.254 via 10.0.0.1 dev eth0 proto dhcp metric 100
 
 ```
+
 The command **nmcli connection up** restart the network connection.
 
 Let's start firewalld:
