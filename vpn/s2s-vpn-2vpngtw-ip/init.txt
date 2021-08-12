@@ -1,4 +1,4 @@
-mngIP=81.150.26.218
+mngIP=YOUR_PUBLIC_IP
 subscriptionName=AzureDemo
 ResourceGroupName=test-vpn
 location1=centralus

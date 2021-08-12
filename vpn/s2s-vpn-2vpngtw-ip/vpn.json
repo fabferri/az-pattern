@@ -511,10 +511,7 @@
                     {
                         "name": "[variables('subnet11Name')]",
                         "properties": {
-                            "addressPrefix": "[variables('subnet11Prefix')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg1'))]"
-                            }
+                            "addressPrefix": "[variables('subnet11Prefix')]"
                         }
                     },
                     {
@@ -551,10 +548,7 @@
                     {
                         "name": "[variables('subnet21Name')]",
                         "properties": {
-                            "addressPrefix": "[variables('subnet21Prefix')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg2'))]"
-                            }
+                            "addressPrefix": "[variables('subnet21Prefix')]"
                         }
                     },
                     {
