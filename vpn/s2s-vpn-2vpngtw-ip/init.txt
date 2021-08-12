@@ -1,0 +1,5 @@
+mngIP=81.150.26.218
+subscriptionName=AzureDemo
+ResourceGroupName=test-vpn
+location1=centralus
+location2=westus2
