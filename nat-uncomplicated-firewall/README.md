@@ -36,7 +36,13 @@ The traffic from vm3 with destination internet (traffic matching the default rou
 | **vnet-vms.json**   | ARM template to create VNet and VMs                                       |
 | **vnet-vms.ps1**    | powershell script to deploy the ARM template **vnet-vms.json**            |
 
-
+**vnet-vms.json** deploys the nva through the image:
+```
+"publisher": "canonical",
+"offer": "0001-com-ubuntu-server-focal",
+"sku": "20_04-lts",
+"version": "latest",
+```
 
 > [!NOTE]
 >
