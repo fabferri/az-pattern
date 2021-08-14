@@ -1,0 +1,4 @@
+mngIP=REPLACE_WITH_YOUR_PUBLIC_IP
+subscriptionName=AzureDemo
+ResourceGroupName=nat01
+location1=centralus

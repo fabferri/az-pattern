@@ -182,7 +182,10 @@ See ANNEX paragraph for more information on firewalld.
 ## <a name="azcopy"></a>2. Verifying Resource Manager traffic passes across the nva
 * Install the azure powershell in the **vm100** (Windows Server 2019)
 * run tcpdump in nva to capture the traffic in transit through the internal interface eth1: **tcpdump -i eth1 -n**
+<br>
+
 In **vm100**, run an Azure powershell command i.e. **Get-AzResourceGroup**. Below the tcpdump snippet in **nva**: 
+
 ```
 21:02:42.411035 IP 10.0.0.100.50687 > 20.44.16.113.https: Flags [SEW], seq 2890795757, win 64240, options [mss 1418,nop,wscale 8,nop,nop,sackOK], length 0
 21:02:42.412293 IP 20.44.16.113.https > 10.0.0.100.50687: Flags [S.E], seq 2721688330, ack 2890795758, win 65535, options [mss 1440,nop,wscale 8,nop,nop,sackOK], length 0
@@ -676,6 +679,7 @@ dotnet run
 <br>
 
 In the nva run the command to watch the traffic from/to the vm100: **tcpdump -n -i eth1** 
+<br>
 The tcpdump shows the traffic to/from azure even hub pass cross nva. Below a snippet of the capture:
 
 ```
