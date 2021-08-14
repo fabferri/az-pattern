@@ -48,7 +48,7 @@ The nva is deployed by the image:
 >
 > Before spinning up the powershell script **vnet-vms.ps1** you should:
 >
-> 1. customize the values of variables stored in the **init.txt** file. Replace the value of **YOUR_PUBLIC_IP** with your public management IP. This IP is used to access in SSH to the Azure VMs.
+> 1. customize the values of variables stored in the **init.txt** file. Replace **YOUR_ADMINISTRATOR_PUBLIC_IP** with your public management IP. This IP is used to access in SSH to the Azure VMs.
 > 2. edit the file **vms.ps1** and set the administrator _username_ and _password_ of the Azure VMs in the variables **$adminUsername**, **$adminPassword**
 >
 
