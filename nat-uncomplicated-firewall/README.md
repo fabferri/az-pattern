@@ -231,7 +231,7 @@ Setting the logging level:
 ufw logging medium
 ```
 
-- **low**:    logs  all  blocked packets not matching the defined policy (with rate limiting), as well as packets matching logged rules
+- **low**: logs  all  blocked packets not matching the defined policy (with rate limiting), as well as packets matching logged rules
 - **medium**: log level low, plus all allowed  packets  not  matching  the  defined  policy,  all INVALID packets, and all new connections.  All logging is done with rate limiting.
 
 The UFW logging is direct to the file **/var/log/syslog** and **/var/log/kern.log**
@@ -247,8 +247,10 @@ tail -f /var/log/ufw.log
 ```
 
 
+### 1.9 trace the traffic passing across nva
 
-### 1.9 trace the traffic passing across nva:
+[![2]][2]
+
 Run tcpdump in nva to capture the traffic from/to the vm3 (10.0.1.70):
 ```
 tcpdump -n -i eth1 host 10.0.1.70
@@ -268,6 +270,7 @@ By tcpdump in nva, you should see the bidirectional traffic passing through the 
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
+[1]: ./media/network-diagram2.png "network diagram"
 
 <!--Link References-->
 
