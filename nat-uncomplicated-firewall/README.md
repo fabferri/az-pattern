@@ -55,8 +55,10 @@ The nva is deployed by the image:
 <br>
 
 ## <a name="Uncomplicated firewall"></a>1. Setup of Uncomplicated firewall in the nva 
-Linux kernel includes the Netfilter subsystem, which is used to manage of the network traffic headed into or through the host. The default firewall configuration tool for Ubuntu is ufw, developed to facilitate the iptables firewall configuration.
-The setup of IP Masquerading allows to the VMs in the VNet with private, to access the Internet through the VM doing the masquerading. Traffic from the VNet destined for the Internet must be manipulated for replies to be routable back to the VM that made the request. To do this, the kernel must modify the source IP address of each packet so that replies will be routed back to it.
+Linux kernel includes the Netfilter subsystem, which is used to manage of the network traffic headed into or through the host. The default firewall configuration tool for Ubuntu is **ufw**, developed to facilitate the iptables firewall configuration.
+<br>
+
+IP Masquerading in nva applies a packet manipulation: the source IP of the traffic coming from the VMs in the subnets are modified and translated in the private IP of the external interface of the nva. 
 
 ### 1.1 Enable IP forwarding:
 
@@ -96,7 +98,7 @@ network:
                 metric: 10
     version: 2
 ```
-**NOTE: the structure of yaml file is indentation-oriented. Indentation is defined as space characters at the start of a line. If indentation is not properly netplan returns failures with the network configuration**
+**NOTE: the structure of yaml file is indentation-oriented. Indentation is defined as space characters at the start of a line. If indentation is not properly set, netplan returns failures with the network configuration**
 
 Apply the new network configuration:
 
