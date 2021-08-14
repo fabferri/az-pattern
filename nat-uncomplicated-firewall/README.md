@@ -58,7 +58,7 @@ The nva is deployed by the image:
 Linux kernel includes the Netfilter subsystem, which is used to manage of the network traffic headed into or through the host. The default firewall configuration tool for Ubuntu is **ufw**, developed to facilitate the iptables firewall configuration.
 <br>
 
-IP Masquerading in nva applies a packet manipulation: the source IP of the traffic coming from the VMs in the subnets are modified and translated in the private IP of the external interface of the nva. 
+IP Masquerading in nva applies a packet manipulation: the source IP of the traffic coming from the VMs in the subnets are modified and translated in the private IP (10.0.1.10) of the external interface (eth0) of the nva. 
 
 ### 1.1 Enable IP forwarding:
 
