@@ -251,7 +251,7 @@ tail -f /var/log/ufw.log
 
 [![2]][2]
 
-Run tcpdump in nva to capture the traffic from/to the vm3 (10.0.1.70):
+Run **tcpdump** in nva to capture the traffic from/to the vm3 (10.0.1.70):
 ```
 tcpdump -n -i eth1 host 10.0.1.70
 ```
@@ -261,7 +261,7 @@ From vm4, connect to the vm3 and run some curl queries to access to internet.
 curl https://twitter.com
 ```
 
-By tcpdump in nva, you should see the bidirectional traffic passing through the nva.
+By **tcpdump** in nva, you should see the bidirectional traffic passing through the nva.
 
 
 ## Reference
@@ -270,7 +270,7 @@ By tcpdump in nva, you should see the bidirectional traffic passing through the 
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
-[1]: ./media/network-diagram2.png "network diagram"
+[2]: ./media/network-diagram2.png "network diagram"
 
 <!--Link References-->
 
