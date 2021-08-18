@@ -1,0 +1,6 @@
+mngIP=YOUR_PUBLIC_IP
+subscriptionName=AzureDemo
+ResourceGroupName=test20
+location1=centralus
+location2=westus2
+location3=centralus

@@ -1,0 +1,143 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "location3": {
+            "type": "string",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "vNet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "name of existing vnet with RouteServerSubnet"
+            }
+        },
+        "vNet3Name": {
+            "type": "string",
+            "defaultValue": "vnet3",
+            "metadata": {
+                "description": "name of existing vnet 3"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location3": "[parameters('location3')]",
+        "vNet1Name": "[parameters('vNet1Name')]",
+        "vNet3Name": "[parameters('vNet3Name')]",
+        "rsName": "routesrv1",
+        "peering1IP": "10.0.1.40",
+        "peering2IP": "10.0.1.41",
+        "peering1ASN": 65010,
+        "rsBGPconnection1Name": "bgp-conn1",
+        "rsBGPconnection2Name": "bgp-conn2",
+        "bgpConnection1Name": "[concat(variables('rsName'), '/', variables('rsBGPconnection1Name'))]",
+        "bgpConnection2Name": "[concat(variables('rsName'), '/', variables('rsBGPconnection2Name'))]",
+        "rs1_subnet_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets',variables('vNet1Name'),'RouteServerSubnet' )]",
+        "vHubIPconfigName": "vHubipconfig1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('rsName')]",
+            "location": "[variables('location1')]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rs1_subnet_Id')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('bgpConnection1Name')]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering1IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('bgpConnection2Name')]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]",
+                "[resourceId('Microsoft.Network/virtualHubs/bgpConnections',  variables('rsName'), variables('rsBGPconnection1Name'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering2IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet1Name'),'/',variables('vNet1Name'),'To',variables('vNet3Name'))]",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/bgpConnections',  variables('rsName'), variables('rsBGPconnection2Name'))]"
+            ],
+            "comments": "This is the peering from vNet1 to vNet3",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet3Name'))]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet3Name'),'/',variables('vNet3Name'),'To',variables('vNet1Name'))]",
+            "location": "[variables('location3')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',  variables('vNet1Name'), concat(variables('vNet1Name'),'To',variables('vNet3Name')))]"
+            ],
+            "comments": "This is the peering from vNet3 to vNet1",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet1Name'))]"
+                }
+            }
+        }
+    ]
+}
