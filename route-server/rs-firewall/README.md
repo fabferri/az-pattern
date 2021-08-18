@@ -68,7 +68,7 @@ in vnet3:
 "allowGatewayTransit": false,
 "useRemoteGateways": true,
 ```
-This setting is required to enable the propagation of vnet3 address space to the Azure Router Server.
+This setting is required to enable the propagation of vnet2 and vnet3 address space to the Azure Router Server.
 
 <br>
 
