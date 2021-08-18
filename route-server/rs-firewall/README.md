@@ -30,7 +30,11 @@ An ARM template creates three vnets: vnet1, vnet2 and vnet3.
 - Each NVA has two NICs: the first interface (eth0) is used as external interface to communicate with internet. The second interface (eth1) is used as internal interface to receive the traffic from the VMs. In each NVA is enabled the IP forwarding, to route the received traffic between eth0 and eth1. quagga is installed in to advertise the default route 0.0.0.0/0 from nva1 and nva2 to the Azure Route Server. The Azure Route Server receives the default route and pushes the routes learned to the VMs.
 - to establish BGP peering, the Route Server presents two private IPs in the RouteServerSubnet: 10.0.1.68 and 10.0.1.69
 - a UDR with default route to internet is applied to the subnet1, to avoid traffic loop with routing to/from internet (more details are described in routing paragraph).
+- the VPN Gateways in vnet1 and vnet2 run in active-active configuration; each VPN Gateway has two public IPs. The IPsec tunnels are established between the public interface associate with the VPN Gateways, with BGP over IPsec:
 
+[![2]][2]
+
+<br>
 
 | file                    | description                                                               |       
 | ----------------------- |:------------------------------------------------------------------------- |
@@ -43,12 +47,7 @@ An ARM template creates three vnets: vnet1, vnet2 and vnet3.
 | **04-bastion.json**     | ARM template to deploy Azure Bastion in vnet1                             |
 | **04-bastion.ps1**      | powershell script to deploy the ARM template **04-bastion.json**          |
 
-
-The VPN Gateways in vnet1 and vnet2 run in active-active configuration; each VPN Gateway has two public IPs. The IPsec tunnels are established between the public interface associate with the VPN Gateways, with BGP over IPsec:
-
-[![2]][2]
-
-Each ARM object **"Microsoft.Network/localNetworkGateways"** references a public IP of the remote VPN Gateway, the remote BGP peering address and the remote ASN.
+In **02-s2s.json**, each ARM object **"Microsoft.Network/localNetworkGateways"** references a public IP of the remote VPN Gateway, the remote BGP peering address and the remote ASN.
 <br>
 
 The ARM template **03-routeserver.json** create the Azure Route Server in vnet1 and set the vnet peering between vnet1 and vnet3 with the following attributes:<br>
