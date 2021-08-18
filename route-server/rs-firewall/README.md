@@ -197,7 +197,7 @@ The network diagram below shows the right effective routes when UDR applied to t
 
 ### <a name="effective routes"></a>3.1 Effective routes <ins>without</ins> advertisement of the default route to the route server
 
-Routing table **vm1** without advertisement of default route from quagga to the route server:
+Effective routes applied to **vm1** without advertisement of default route from quagga to the route server:
 |Source            |	    State|	Address Prefixes|	Next Hop Type  | Next Hop IP Address| User Defined Route Name|
 | ---------------- | ----------- | ---------------- | ---------------- | ------------------ | ---------------------- |
 |Default           |	   Active|	10.0.1.0/24     | Virtual network  |                   -|	-|
@@ -207,7 +207,7 @@ Routing table **vm1** without advertisement of default route from quagga to the 
 
 <br>
 
-Routing table **vm2** without advertisement of default route from quagga to the route server:
+Effective routes applied to **vm2** without advertisement of default route from quagga to the route server:
 |Source            |	    State|	Address Prefixes|	Next Hop Type  | Next Hop IP Address| User Defined Route Name|
 | ---------------- | ----------- | ---------------- | ---------------- | ------------------ | ---------------------- |
 |Default	       |       Active|	10.0.2.0/24     |Virtual network   |	               -|	-|
@@ -225,7 +225,7 @@ Routing table **vm2** without advertisement of default route from quagga to the 
 
 ### <a name="effective routes"></a>3.2 Effective routes <ins>with</ins> advertisement of the default route 0.0.0.0/0 to the route server
 
-Routing table **vm3** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
+Effective routes applied to **vm3** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
 |Source            |	    State|	Address Prefixes|	Next Hop Type  | Next Hop IP Address| User Defined Route Name|
 | ---------------- | ----------- | ---------------- | ---------------- | ------------------ | ---------------------- |
 |Default           |	Active   | 10.0.3.0/24      |	Virtual network|	               -|	-|
@@ -235,7 +235,7 @@ Routing table **vm3** with advertisement of default route 0.0.0.0/0 from quagga 
 |Virtual network gateway| Active | 0.0.0.0/0	    |Virtual network gateway|	10.0.1.40   |	-|
 |Virtual network gateway| Active | 0.0.0.0/0	    |Virtual network gateway|	10.0.1.41   |	-|
 
-Routing table **vm1** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
+Effective routes applied to **vm1** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
 |Source            |	    State|	Address Prefixes|	Next Hop Type  | Next Hop IP Address| User Defined Route Name|
 | ---------------- | ----------- | ---------------- | ---------------- | ------------------ | ---------------------- |
 |Default	       | Active	     | 10.0.1.0/24	    | Virtual network  |	               -|	-|
@@ -247,7 +247,7 @@ Routing table **vm1** with advertisement of default route 0.0.0.0/0 from quagga 
 
 **The current release of the Azure VPN Gateway does not propagate the default route 0.0.0.0/0 to the remote VPN peer. The missing presence of default route in the vnet2 does not allow to Azure vm2 to use nva1 and nva2 in vnet1 for internet breakout.** 
 
-Routing table **nva1-NIC1** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
+Effective routes applied to **nva1-NIC1** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
 |Source            |	    State|	Address Prefixes|	Next Hop Type  | Next Hop IP Address| User Defined Route Name|
 | ---------------- | ----------- | ---------------- | ---------------- | ------------------ | ---------------------- |
 |Default	       | Active	     | 10.0.1.0/24      | Virtual network  |                  -	|-|
@@ -258,7 +258,7 @@ Routing table **nva1-NIC1** with advertisement of default route 0.0.0.0/0 from q
 |Virtual network gateway |Invalid| 0.0.0.0/0	    | Virtual network gateway|	10.0.1.41	|-|
 |User	           |Active	     | 0.0.0.0/0	    | Internet	             |             -| default|
 
-Routing table **nva1-NIC2** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
+Effective routes applied to **nva1-NIC2** with advertisement of default route 0.0.0.0/0 from quagga to the route server:
 |Source            |	    State|	Address Prefixes|	Next Hop Type  | Next Hop IP Address| User Defined Route Name|
 | ---------------- | ----------- | ---------------- | ---------------- | ------------------ | ---------------------- |
 |Default	       | Active	     | 10.0.1.0/24	    | Virtual network  |	              -	| -|
