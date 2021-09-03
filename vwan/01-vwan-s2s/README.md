@@ -102,7 +102,7 @@ $vpnGateway.IpConfigurations.PublicIpAddress[1]
 $vpnGateway.BgpSettings.BgpPeeringAddresses[0].DefaultBgpIpAddresses
 $vpnGateway.BgpSettings.BgpPeeringAddresses[1].DefaultBgpIpAddresses
 ```
-The same values can be grab from the Azure management portal:
+The same values can be grabbed from the Azure management portal:
 
 [![3]][3]
 

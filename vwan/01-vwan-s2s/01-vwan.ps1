@@ -1,13 +1,18 @@
 #
-#  variables in init.txt file:
-#    $subscriptionName
-#    $ResourceGroupName
-#    $location
-#    $mngIP
-#    $RGTagExpireDate
-#    $RGTagContact
-#    $RGTagNinja
-#    $RGTagUsage
+#  variables in init.json file:
+#    $dminUsername     : administrator username of the Azure VMs
+#    $adminPassword    : administrator password of the Azure VMs
+#    $subscriptionName : Azure subscription name
+#    $ResourceGroupName: name of the resource group
+#    $hub1location     : Azure region of the virtual hub1
+#    $branch1location  : Azure region to deploy the branch1
+#    $hub1Name         : name of the virtual hub1
+#    $sharedKey        : VPN shared secret
+#    $mngIP            : public IP used to connect in SSH to the Azure VMs 
+#    $RGTagExpireDate  : tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
+#    $RGTagContact     : tag assigned to the resource group. It is used to email to the owner of the deployment
+#    $RGTagNinja       : alias of the user
+#    $RGTagUsage       : short description of the deployment purpose
 #
 ################# Input parameters #################
 $deploymentName = 'vwan1'
