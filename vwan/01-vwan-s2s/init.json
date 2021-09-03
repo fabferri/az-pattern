@@ -1,0 +1,15 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan1-s2s",
+    "hub1location": "westus2",
+    "branch1location": "westus2",
+    "hub1Name": "hub1",
+    "sharedKey": "VPN_SHARED_SECRET",
+    "mngIP": "MANAGEMENT_PUBLIC_IP_ADDRESS",
+    "RGTagExpireDate": "09/30/2021",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "vWAN-configuration with site-to-site VPN"
+}

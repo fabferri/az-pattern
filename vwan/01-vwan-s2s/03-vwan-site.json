@@ -1,0 +1,172 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "branch1vpnPublicIP1": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "branch1vpnPublicIP2": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "branch1vpnBGPpeer1": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "branch1vpnBGPpeer2": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1location": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "vwanName": {
+            "type": "string",
+            "defaultValue": "vwan1",
+            "metadata": {
+                "description": "Name of the Virtual Wan."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "branch1vpnASN": {
+            "type": "int",
+            "defaultValue": 65020,
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "vpnsiteAddressspaceList": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "A list of static routes corresponding to the vpn site. These are configured on the vpn gateway."
+            }
+        },
+        "vpnsiteName": {
+            "type": "string",
+            "defaultValue": "vwan-branch1",
+            "metadata": {
+                "description": "vpn site name in hub1"
+            }
+        },
+        "sharedKey": {
+            "type": "string",
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        }
+    },
+    "variables": {
+        "hub1location": "[parameters('hub1location')]",
+        "vwanName": "[parameters('vwanName')]",
+        "hub1Name" : "[parameters('hub1Name')]",
+        "hub1vpnGatewayName": "[format('{0}_S2SvpnGW', variables('hub1Name'))]",
+        "branch1vpnASN": "[parameters('branch1vpnASN')]",
+        "vpnsiteAddressspaceList": "[parameters('vpnsiteAddressspaceList')]",
+        "vpnsiteName": "[parameters('vpnsiteName')]",
+        "branch1vpnPublicIP1": "[parameters('branch1vpnPublicIP1')]",
+        "branch1vpnPublicIP2": "[parameters('branch1vpnPublicIP2')]",
+        "branch1vpnBGPpeer1": "[parameters('branch1vpnBGPpeer1')]",
+        "branch1vpnBGPpeer2": "[parameters('branch1vpnBGPpeer2')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/vpnSites",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('vpnsiteName')]",
+            "location": "[variables('hub1location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[variables('vpnsiteAddressspaceList')]"
+                },
+                "deviceProperties": {
+                    "deviceVendor": "Microsoft",
+                    "deviceModel": "AzureVPNGateway",
+                    "linkSpeedInMbps": 0
+                },
+                "virtualWan": {
+                    "id": "[resourceId('Microsoft.Network/virtualWans', variables('vwanName'))]"
+                },
+                "vpnSiteLinks": [
+                    {
+                        "name": "tunnel1",
+                        "properties": {
+                            "ipAddress": "[variables('branch1vpnPublicIP1')]",
+                            "bgpProperties": {
+                                "asn": "[variables('branch1vpnASN')]",
+                                "bgpPeeringAddress": "[variables('branch1vpnBGPpeer1')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "tunnel2",
+                        "properties": {
+                            "ipAddress": "[variables('branch1vpnPublicIP2')]",
+                            "bgpProperties": {
+                                "asn": "[variables('branch1vpnASN')]",
+                                "bgpPeeringAddress": "[variables('branch1vpnBGPpeer2')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/vpnGateways/vpnConnections",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('hub1vpnGatewayName'),'/','hubTobranch1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/vpnSites', variables('vpnsiteName'))]"
+            ],
+            "properties": {
+                "remoteVpnSite": {
+                    "id": "[resourceId('Microsoft.Network/vpnSites', variables('vpnsiteName'))]"
+                },
+                "vpnLinkConnections": [
+                    {
+                        "name": "conn1",
+                        "properties": {
+                            "connectionBandwidth": 10,
+                            "vpnConnectionProtocolType": "IKEv2",
+                            "enableBgp": true,
+                            "sharedKey": "[parameters('sharedKey')]",
+                            "vpnSiteLink": {
+                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteName'),'tunnel1')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "conn2",
+                        "properties": {
+                            "connectionBandwidth": 10,
+                            "vpnConnectionProtocolType": "IKEv2",
+                            "enableBgp": true,
+                            "sharedKey": "[parameters('sharedKey')]",
+                            "vpnSiteLink": {
+                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteName'),'tunnel2')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
