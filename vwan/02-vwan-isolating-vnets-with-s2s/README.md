@@ -35,12 +35,14 @@ The goal of this scenario is to allow and deny the following communications:
 
 <br>
 
-Communications in the **red** group:
+Allow communications in the **red** group:
+
 [![3]][3]
 
 <br>
 
-Communications in the **blue** group:
+Allow communications in the **blue** group:
+
 [![4]][4]
 
 Below the network diagram with more details:
