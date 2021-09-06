@@ -1,0 +1,18 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzDemo",
+    "ResourceGroupName": "vwan-02",
+    "hub1location": "westus2",
+    "hub2location": "westus2",
+    "branch1location": "westus2",
+    "branch2location": "westus2",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "sharedKey": "SHARED_SECRET_SITE_TO_SITE_VPN",
+    "mngIP": "MANAGEMENT_PUBLIC_IP",
+    "RGTagExpireDate": "09/30/2021",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "test vWAN: isolating VNets"
+}

@@ -19,7 +19,7 @@ editor=""/>
 
 ## Virtual WAN: simple configuration with isolating VNets
 
-The article reports a configuration with VNets connected to two virtual hubs. The configuration establishes a selective interconnection between VNets. Only VNets belonging to the same group can communicate each other. This configuration is known as **isolating VNets**. Below the network diagram:
+The article reports a virtual WAN configuration with spoke VNets connected to two virtual hubs. The configuration establishes a selective interconnection between spoke VNets. Only spoke VNets belonging to the same group can communicate each other. This configuration is known as **isolating VNets**. Below the network diagram:
 
 [![1]][1]
 
