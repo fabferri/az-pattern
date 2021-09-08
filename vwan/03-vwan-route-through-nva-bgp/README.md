@@ -17,7 +17,7 @@ editor=""/>
    ms.date="30/08/2021"
    ms.author="fabferri" />
 
-## Virtual WAN: route traffic through an NVA in BGP peering with virtual hub
+# Virtual WAN: route traffic through an NVA in BGP peering with virtual hub
 
 This article walks you through a configuration with two virtual hubs with NVAs in spoke VNets. Two spoke VNets have NVAs (nva2 and nva4) with BGP configured in peering with the Virtual Router in the hub. Below the network diagram:
 
@@ -34,7 +34,7 @@ This article walks you through a configuration with two virtual hubs with NVAs i
 
 
 
-### <a name="UDR"></a>1. UDRs applied to the spoke VNets not directed connected to the virtual hubs
+## <a name="UDR"></a>1. UDRs applied to the spoke VNets not directed connected to the virtual hubs
 The configuration does not require any static route in the virtual hubs, but a UDR is applied to the subnets in vnet5, vnet6, vnet7 vnet8 to allow to the traffic to be routed through the NVAs. 
 <br>
 
@@ -120,7 +120,7 @@ Meaning of the variables:
 The file **init.json** guarantees a consistency by assignment of same input parameters across all the ARM templates.
 <br>
 
-### <a name="how to run the deployment"></a>1. How to run the deployment
+## <a name="how to run the deployment"></a>3. How to run the deployment
 Deployment needs to be carried out in sequence:
 - _1st step_: customize the values in **init.json**
 - _2nd step_: run the script **01-vwan.ps1**
@@ -213,7 +213,7 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
                     10.11.0.68                             0 65515 65011 i
 ```
 
-## <a name="routing table association"></a>3. Routing Table and association of the connections  
+## <a name="routing table association"></a>4. Routing Table and association of the connections  
 
 The network diagram below shows the **defaultRoutingTable** in hub1 and hub2:
 
@@ -318,7 +318,7 @@ Effective routes in vm-branch1:
 
 
 
-### <a name="estimated deployment time"></a>3. Estimated deployment time
+## <a name="estimated deployment time"></a>5. Estimated deployment time
 Estimated time of deployment:
 
 - **01-vwan.json**: 35 minutes
