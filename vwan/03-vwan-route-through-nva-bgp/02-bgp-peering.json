@@ -1,0 +1,87 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hub1location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub2location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "hub2Name": {
+            "type": "string",
+            "defaultValue": "hub2",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        }
+    },
+    "variables": {
+        
+        "hub1Name": "[parameters('hub1Name')]",
+        "hub2Name": "[parameters('hub2Name')]",
+        "hub1location": "[parameters('hub1location')]",
+        "hub2location": "[parameters('hub2location')]",
+        "vnet1Name": "vnet1",
+        "vnet2Name": "vnet2",
+        "vnet3Name": "vnet3",
+        "vnet4Name": "vnet4",
+        "vnet5Name": "vnet5",
+        "vnet6Name": "vnet6",
+        "vnet7Name": "vnet7",
+        "vnet8Name": "vnet8",
+        "ip_nva_vnet2": "10.0.2.10",
+        "ip_nva_vnet4": "10.0.4.10",
+        "bgp_conn_nva2": "bgp_nva2",
+        "bgp_conn_nva4": "bgp_nva4",
+        "asn_nva_vnet2": 65002,
+        "asn_nva_vnet4": 65004
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[concat(variables('hub1Name'),'/',variables('bgp_conn_nva2'))]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('hub1location')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "peerIp": "[variables('ip_nva_vnet2')]",
+                "peerAsn": "[variables('asn_nva_vnet2')]",
+                "hubVirtualNetworkConnection": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet2Name')))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[concat(variables('hub2Name'),'/',variables('bgp_conn_nva4'))]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('hub2location')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "peerIp": "[variables('ip_nva_vnet4')]",
+                "peerAsn": "[variables('asn_nva_vnet4')]",
+                "hubVirtualNetworkConnection": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]"
+                }
+            }
+        }
+    ]
+}
