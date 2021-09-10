@@ -1,0 +1,15 @@
+{
+        "subscriptionName": "name_of_my_subscription",
+        "ResourceGroupName": "myResourceGroup1",
+        "hub1location": "northcentralus",
+        "hub2location": "northcentralus",
+        "locationBranch1": "northcentralus",
+        "locationBranch2": "northcentralus",
+        "hub1Name": "hub1",
+        "hub2Name": "hub2",
+        "sharedKey": "my_beautiful_secret_you should_never_tell_anyone",
+        "mngIP": "100.100.100.100",
+        "RGTagExpireDate": "09/30/2021",
+        "RGTagContact": "user1@contoso.com",
+        "RGTagUsage": "reading variables from file init"
+}
