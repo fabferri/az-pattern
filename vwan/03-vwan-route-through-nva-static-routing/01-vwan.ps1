@@ -1,21 +1,21 @@
 #
-#  Vriables defined in init.json file:
-# $adminUsername
-# $adminPassword
-# $subscriptionName
-# $ResourceGroupName
-# $hub1location
-# $hub2location
-# $branch1location
-# $Branch2location
-# $hub1Name
-# $hub2Name
-# $sharedKey
-# $mngIP
-# $RGTagExpireDate
-# $RGTagContact
-# $RGTagNinja
-# $RGTagUsage
+#  variables in init.json file:
+#   $adminUsername: administrator username
+#   $adminPassword: administrator password
+#   $subscriptionName: Azure subscription name
+#   $ResourceGroupName: resource group name
+#   $hub1location: Azure region to deploy the virtual hub1
+#   $hub2location: Azure region to deploy the virtual hub2
+#   $branch1location: Azure region to deploy the branch1
+#   $branch2location: Azure region to deploy the branch2
+#   $hub1Name: name of the virtual hub1
+#   $hub2Name: name of the virtual hub2 
+#   $sharedKey: Share secret of the site-to-site VPN
+#   $mngIP:management public IP to connect in SSH to the Azure VMs
+#   $RGTagExpireDate: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
+#   $RGTagContact: tag assigned to the resource group. It is used to email to the owner of th deployment
+#   $RGTagNinja: tag assigned to the resource group. Alias of the user
+#   $RGTagUsage: tag assigned to the resource group. Short description of the deployment purpose
 #
 ################# Input parameters #################
 $deploymentName = 'vwan1'
@@ -60,6 +60,8 @@ if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit
 if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host '   resource group name...: '$ResourceGroupName -ForegroundColor Yellow }
 if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit } else { Write-Host '   location1.............: '$hub1location -ForegroundColor Yellow }
 if (!$hub2location) { Write-Host 'variable $hub2location is null' ; Exit } else { Write-Host '   location1.............: '$hub2location -ForegroundColor Yellow }
+if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit } else { Write-Host '   hub1 name.............: '$hub1Name -ForegroundColor Yellow }
+if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit } else { Write-Host '   hub2 name.............: '$hub2Name -ForegroundColor Yellow }
 if (!$branch1location) { Write-Host 'variable $branch1location is null' ; Exit } else { Write-Host '   branch1 location......: '$branch1location -ForegroundColor Yellow }
 if (!$branch2location) { Write-Host 'variable $branch2location is null' ; Exit } else { Write-Host '   branch2 location......: '$branch2location -ForegroundColor Yellow }
 if (!$sharedKey) { Write-Host 'variable $sharedKey is null' ; Exit } else { Write-Host '   shared secret S2S -VPN: '$sharedKey -ForegroundColor Yellow }
@@ -69,7 +71,6 @@ if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit } else 
 if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit } else { Write-Host '   RGTagNinja............: '$RGTagNinja -ForegroundColor Yellow }
 if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit } else { Write-Host '   RGTagUsage............: '$RGTagUsage -ForegroundColor Yellow }
 $rgName = $ResourceGroupName
-
 
 $subscr = Get-AzSubscription -SubscriptionName $subscriptionName
 Select-AzSubscription -SubscriptionId $subscr.Id
@@ -86,11 +87,13 @@ Catch {
 
 
 $parameters = @{
-     "mngIP"         = $mngIP;
      "hub1location" = $hub1location;
      "hub2location" = $hub2location;
+     "hub1Name" = $hub1Name;
+     "hub2lName" = $hub2Name;
      "adminUsername" = $adminUsername;
-     "adminPassword" = $adminPassword
+     "adminPassword" = $adminPassword;
+     "mngIP"         = $mngIP
 }
 
 $location = $hub1location

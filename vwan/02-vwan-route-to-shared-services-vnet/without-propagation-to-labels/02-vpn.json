@@ -1,0 +1,774 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mngIP": {
+            "type": "string",
+            "metadata": {
+                "description": "management IP"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "VpnGw2",
+            "allowedValues": [
+                "VpnGw2",
+                "VpnGw2AZ",
+                "VpnGw3",
+                "VpnGw3AZ",
+                "VpnGw4",
+                "VpnGw4AZ",
+                "VpnGw5",
+                "VpnGw5AZ"
+            ],
+            "metadata": {
+                "description": "The Sku of the Gateway"
+            }
+        },
+        "hub1_vpnASN": {
+            "type": "int",
+            "defaultValue": 65515,
+            "metadata": {
+                "description": "BGP Autonomous System Number of the VNet"
+            }
+        },
+        "hub2_vpnASN": {
+            "type": "int",
+            "defaultValue": 65515,
+            "metadata": {
+                "description": "BGP Autonomous System Number of the VNet"
+            }
+        },
+        "hub1vpn_PublicIP1": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW- public IP1"
+            }
+        },
+        "hub1vpn_PublicIP2": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW- public IP1"
+            }
+        },
+        "hub1vpn_BGPIP1": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW- BGP private IP1 Address"
+            }
+        },
+        "hub1vpn_BGPIP2": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW- BGP private IP2 Address"
+            }
+        },
+        "branch1location": {
+            "type": "string",
+            "defaultValue": "northcentralus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "branch1vNetName": {
+            "type": "string",
+            "defaultValue": "branch1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "branch1vNetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.1.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "branch1subnet1Name": {
+            "type": "string",
+            "defaultValue": "subnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "branch1subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "192.168.1.0/25",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of branch1vNetAddressPrefix address space"
+            }
+        },
+        "branch1gatewaysubnetPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.1.224/27",
+            "metadata": {
+                "description": "CIDR block for gateway subnet, subset of branch1vNetAddressPrefix address space"
+            }
+        },
+        "branch1gatewayPublicIP1Name": {
+            "type": "string",
+            "defaultValue": "vpnGw1IP1",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "branch1gatewayPublicIP2Name": {
+            "type": "string",
+            "defaultValue": "vpnGw1IP2",
+            "metadata": {
+                "description": "Arbitrary name for public IP2 resource used for the new azure gateway1"
+            }
+        },
+        "branch1gatewayName": {
+            "type": "string",
+            "defaultValue": "vpnGw1",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "branch1gtwASN": {
+            "type": "int",
+            "defaultValue": 65010,
+            "metadata": {
+                "description": "BGP Autonomous System Number of the VNet"
+            }
+        },
+        "branch1localgatewayName1": {
+            "type": "string",
+            "defaultValue": "hub1localGateway1",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway2"
+            }
+        },
+        "branch1localgatewayName2": {
+            "type": "string",
+            "defaultValue": "hub1localGateway2",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway2"
+            }
+        },
+        "branch1connectionGtwName1": {
+            "type": "string",
+            "defaultValue": "gtw1-to-hub1-vpn-pubIP1",
+            "metadata": {
+                "description": "Arbitrary name for the new connection between Azure VNet and other network"
+            }
+        },
+        "branch1connectionGtwName2": {
+            "type": "string",
+            "defaultValue": "gtw1-to-hub1-vpn-pubIP2",
+            "metadata": {
+                "description": "Arbitrary name for the new connection between Azure VNet and other network"
+            }
+        },
+        "sharedKey": {
+            "type": "string",
+            "defaultValue": "s3cretPSK-101---!@",
+            "metadata": {
+                "description": "Shared key (PSK) for IPSec tunnel"
+            }
+        },
+        "hub2vpn_PublicIP1": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW hub2-public IP1"
+            }
+        },
+        "hub2vpn_PublicIP2": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW hub2-public IP1"
+            }
+        },
+        "hub2vpn_BGPIP1": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW hub2- BGP private IP1 Address"
+            }
+        },
+        "hub2vpn_BGPIP2": {
+            "type": "string",
+            "metadata": {
+                "description": "vWAN VPN GTW hub2- BGP private IP2 Address"
+            }
+        },
+        "branch2location": {
+            "type": "string",
+            "defaultValue": "northcentralus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "branch2vNetName": {
+            "type": "string",
+            "defaultValue": "branch2",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "branch2vNetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.2.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "branch2subnet1Name": {
+            "type": "string",
+            "defaultValue": "subnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "branch2subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "192.168.2.0/25",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of branch1vNetAddressPrefix address space"
+            }
+        },
+        "branch2gatewaysubnetPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.2.224/27",
+            "metadata": {
+                "description": "CIDR block for gateway subnet, subset of branch1vNetAddressPrefix address space"
+            }
+        },
+        "branch2gatewayPublicIP1Name": {
+            "type": "string",
+            "defaultValue": "vpnGw2IP1",
+            "metadata": {
+                "description": "name for public IP1 resource used for the new azure gateway2"
+            }
+        },
+        "branch2gatewayPublicIP2Name": {
+            "type": "string",
+            "defaultValue": "vpnGw2IP2",
+            "metadata": {
+                "description": "name for public IP2 resource used for the new azure gateway2"
+            }
+        },
+        "branch2gatewayName": {
+            "type": "string",
+            "defaultValue": "vpnGw2",
+            "metadata": {
+                "description": "name for the vpn gateway in branch2"
+            }
+        },
+        "branch2gtwASN": {
+            "type": "int",
+            "defaultValue": 65011,
+            "metadata": {
+                "description": "BGP Autonomous System Number of the branch2"
+            }
+        },
+        "branch2localgatewayName1": {
+            "type": "string",
+            "defaultValue": "hub2localGateway1",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway2"
+            }
+        },
+        "branch2localgatewayName2": {
+            "type": "string",
+            "defaultValue": "hub2localGateway2",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway2"
+            }
+        },
+        "branch2connectionGtwName1": {
+            "type": "string",
+            "defaultValue": "gtw2-to-hub2-vpn-pubIP1",
+            "metadata": {
+                "description": "Arbitrary name for the new connection between Azure VNet and other network"
+            }
+        },
+        "branch2connectionGtwName2": {
+            "type": "string",
+            "defaultValue": "gtw2-to-hub2-vpn-pubIP2",
+            "metadata": {
+                "description": "Arbitrary name for the new connection between Azure VNet and other network"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of the Virtual Machine."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for sample VM"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "User password for sample VM"
+            }
+        }
+    },
+    "variables": {
+        "hub1_vpnASN": "[parameters('hub1_vpnASN')]",
+        "hub2_vpnASN": "[parameters('hub2_vpnASN')]",
+        "branch1location": "[parameters('branch1location')]",
+        "branch1vNetName": "[parameters('branch1vNetName')]",
+        "branch1subnet1Name": "[parameters('branch1subnet1Name')]",
+        "branch1vNetAddressPrefix": "[parameters('branch1vNetAddressPrefix')]",
+        "branch1subnet1Prefix": "[parameters('branch1subnet1Prefix')]",
+        "branch1gatewaysubnetPrefix": "[parameters('branch1gatewaysubnetPrefix')]",
+        "branch1gatewayName": "[parameters('branch1gatewayName')]",
+        "branch1gatewayPublicIP1Name": "[parameters('branch1gatewayPublicIP1Name')]",
+        "branch1gatewayPublicIP2Name": "[parameters('branch1gatewayPublicIP2Name')]",
+        "branch1gtwASN": "[parameters('branch1gtwASN')]",
+        "branch1localgatewayName1": "[parameters('branch1localgatewayName1')]",
+        "branch1localgatewayName2": "[parameters('branch1localgatewayName2')]",
+        "hub1vpn_PublicIP1": "[parameters('hub1vpn_PublicIP1')]",
+        "hub1vpn_PublicIP2": "[parameters('hub1vpn_PublicIP2')]",
+        "hub1vpn_BGPIP1": "[parameters('hub1vpn_BGPIP1')]",
+        "hub1vpn_BGPIP2": "[parameters('hub1vpn_BGPIP2')]",
+        "branch1connectionGtwName1": "[parameters('branch1connectionGtwName1')]",
+        "branch1connectionGtwName2": "[parameters('branch1connectionGtwName2')]",
+
+        "branch2location": "[parameters('branch2location')]",
+        "branch2vNetName": "[parameters('branch2vNetName')]",
+        "branch2subnet1Name": "[parameters('branch2subnet1Name')]",
+        "branch2vNetAddressPrefix": "[parameters('branch2vNetAddressPrefix')]",
+        "branch2subnet1Prefix": "[parameters('branch2subnet1Prefix')]",
+        "branch2gatewaysubnetPrefix": "[parameters('branch2gatewaysubnetPrefix')]",
+        "branch2gatewayName": "[parameters('branch2gatewayName')]",
+        "branch2gatewayPublicIP1Name": "[parameters('branch2gatewayPublicIP1Name')]",
+        "branch2gatewayPublicIP2Name": "[parameters('branch2gatewayPublicIP2Name')]",
+        "branch2gtwASN": "[parameters('branch2gtwASN')]",
+        "branch2localgatewayName1": "[parameters('branch2localgatewayName1')]",
+        "branch2localgatewayName2": "[parameters('branch2localgatewayName2')]",
+        "hub2vpn_PublicIP1": "[parameters('hub2vpn_PublicIP1')]",
+        "hub2vpn_PublicIP2": "[parameters('hub2vpn_PublicIP2')]",
+        "hub2vpn_BGPIP1": "[parameters('hub2vpn_BGPIP1')]",
+        "hub2vpn_BGPIP2": "[parameters('hub2vpn_BGPIP2')]",
+        "branch2connectionGtwName1": "[parameters('branch2connectionGtwName1')]",
+        "branch2connectionGtwName2": "[parameters('branch2connectionGtwName2')]",
+
+        "branchArray": [
+            {
+                "location": "[variables('branch1location')]",
+                "vnetName": "[variables('branch1vNetName')]",
+                "addressSpace1Prefix": "[variables('branch1vNetAddressPrefix')]",
+                "subnet1Name": "[variables('branch1subnet1Name')]",
+                "subnet1Prefix": "[variables('branch1subnet1Prefix')]",
+                "gatewaysubnetPrefix": "[variables('branch1gatewaysubnetPrefix')]",
+
+                "gatewayName": "[variables('branch1gatewayName')]",
+                "gatewayPublicIP1Name": "[variables('branch1gatewayPublicIP1Name')]",
+                "gatewayPublicIP2Name": "[variables('branch1gatewayPublicIP2Name')]",
+                "asnGtw": "[variables('branch1gtwASN')]",
+                "localGatewayName1": "[variables('branch1localgatewayName1')]",
+                "localGatewayName2": "[variables('branch1localgatewayName2')]",
+                "vpnRemote_PublicIP1": "[variables('hub1vpn_PublicIP1')]",
+                "vpnRemote_PublicIP2": "[variables('hub1vpn_PublicIP2')]",
+                "vpnRemote_BGPIP1": "[variables('hub1vpn_BGPIP1')]",
+                "vpnRemote_BGPIP2": "[variables('hub1vpn_BGPIP2')]",
+                "connectionGtwName1": "[variables('branch1connectionGtwName1')]",
+                "connectionGtwName2": "[variables('branch1connectionGtwName2')]",
+                "remoteASN": "[variables('hub1_vpnASN')]",
+                "sharedKey": "[parameters('sharedKey')]"
+            },
+            {
+                "location": "[variables('branch2location')]",
+                "vnetName": "[variables('branch2vNetName')]",
+                "addressSpace1Prefix": "[variables('branch2vNetAddressPrefix')]",
+                "subnet1Name": "[variables('branch2subnet1Name')]",
+                "subnet1Prefix": "[variables('branch2subnet1Prefix')]",
+                "gatewaysubnetPrefix": "[variables('branch2gatewaysubnetPrefix')]",
+
+                "gatewayName": "[variables('branch2gatewayName')]",
+                "gatewayPublicIP1Name": "[variables('branch2gatewayPublicIP1Name')]",
+                "gatewayPublicIP2Name": "[variables('branch2gatewayPublicIP2Name')]",
+                "asnGtw": "[variables('branch2gtwASN')]",
+                "localGatewayName1": "[variables('branch2localgatewayName1')]",
+                "localGatewayName2": "[variables('branch2localgatewayName2')]",
+                "vpnRemote_PublicIP1": "[variables('hub2vpn_PublicIP1')]",
+                "vpnRemote_PublicIP2": "[variables('hub2vpn_PublicIP2')]",
+                "vpnRemote_BGPIP1": "[variables('hub2vpn_BGPIP1')]",
+                "vpnRemote_BGPIP2": "[variables('hub2vpn_BGPIP2')]",
+                "connectionGtwName1": "[variables('branch2connectionGtwName1')]",
+                "connectionGtwName2": "[variables('branch2connectionGtwName2')]",
+                "remoteASN": "[variables('hub2_vpnASN')]",
+                "sharedKey": "[parameters('sharedKey')]"
+            }
+        ],
+        "branchCount": "[length(variables('branchArray'))]",
+
+        "vmSize": "[parameters('vmSize')]",
+        "vmArray": [
+            {
+                "vmName": "vm-branch1",
+                "location": "[variables('branchArray')[0].location]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('branchArray')[0].vnetName]",
+                "subnetName": "[variables('branchArray')[0].subnet1Name]",
+                "ipforwarding": false,
+                "nsgName": "nsg1-vm-branch1"
+            },
+            {
+                "vmName": "vm-branch2",
+                "location": "[variables('branchArray')[1].location]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('branchArray')[1].vnetName]",
+                "subnetName": "[variables('branchArray')[1].subnet1Name]",
+                "ipforwarding": false,
+                "nsgName": "nsg2-vm-branch2"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('branchArray')[copyIndex()].vnetName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('branchArray')[copyIndex()].location]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('branchArray')[copyIndex()].addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('branchArray')[copyIndex()].subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('branchArray')[copyIndex()].subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('branchArray')[copyIndex()].gatewaysubnetPrefix]"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "vnetCopy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('branchArray')[copyIndex()].gatewayPublicIP1Name]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of the VPN Gateway-instance0",
+            "location": "[variables('branchArray')[copyIndex()].location]",
+            "sku": {
+                "name": "[if(endsWith(toUpper(parameters('gatewaySku')), 'AZ'), 'Standard','Basic')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "[if(endsWith(toUpper(parameters('gatewaySku')), 'AZ'), 'Static','Dynamic')]"
+            },
+            "copy": {
+                "name": "gtwpubIP1Copy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('branchArray')[copyIndex()].gatewayPublicIP2Name ]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of the VPN Gateway- instance1",
+            "location": "[variables('branchArray')[copyIndex()].location]",
+            "sku": {
+                "name": "[if(endsWith(toUpper(parameters('gatewaySku')), 'AZ'), 'Standard','Basic')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "[if(endsWith(toUpper(parameters('gatewaySku')), 'AZ'), 'Static','Dynamic')]"
+            },
+            "copy": {
+                "name": "gtwpubIP2Copy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('branchArray')[copyIndex()].gatewayName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('branchArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('branchArray')[copyIndex()].vnetName)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('branchArray')[copyIndex()].gatewayPublicIP1Name  )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('branchArray')[copyIndex()].gatewayPublicIP2Name  )]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('branchArray')[copyIndex()].vnetName,'GatewaySubnet') ]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('branchArray')[copyIndex()].gatewayPublicIP1Name )]"
+                            }
+                        },
+                        "name": "[concat('gtw-',string(copyIndex()),'config1')]"
+                    },
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('branchArray')[copyIndex()].vnetName,'GatewaySubnet') ]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('branchArray')[copyIndex()].gatewayPublicIP2Name )]"
+                            }
+                        },
+                        "name": "[concat('gtw-',string(copyIndex()),'config2')]"
+                    }
+                ],
+                "sku": {
+                    "name": "[parameters('gatewaySku')]",
+                    "tier": "[parameters('gatewaySku')]"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": true,
+                "activeActive": true,
+                "vpnGatewayGeneration": "Generation2",
+                "bgpSettings": {
+                    "asn": "[variables('branchArray')[copyIndex()].asnGtw ]"
+                }
+            },
+            "copy": {
+                "name": "gtwCopy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('branchArray')[copyIndex()].localGatewayName1]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of remote IPSec peer",
+            "location": "[variables('branchArray')[copyIndex()].location ]",
+            "dependsOn": [],
+            "properties": {
+                "gatewayIpAddress": "[variables('branchArray')[copyIndex()].vpnRemote_PublicIP1 ]",
+                "bgpSettings": {
+                    "asn": "[variables('branchArray')[copyIndex()].remoteASN]",
+                    "bgpPeeringAddress": "[variables('branchArray')[copyIndex()].vpnRemote_BGPIP1]",
+                    "peerWeight": 0
+                }
+            },
+            "copy": {
+                "name": "localGtw1Copy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('branchArray')[copyIndex()].localGatewayName2]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of remote IPSec peer",
+            "location": "[variables('branchArray')[copyIndex()].location ]",
+            "dependsOn": [],
+            "properties": {
+                "gatewayIpAddress": "[variables('branchArray')[copyIndex()].vpnRemote_PublicIP2 ]",
+                "bgpSettings": {
+                    "asn": "[variables('branchArray')[copyIndex()].remoteASN]",
+                    "bgpPeeringAddress": "[variables('branchArray')[copyIndex()].vpnRemote_BGPIP2]",
+                    "peerWeight": 0
+                }
+            },
+            "copy": {
+                "name": "localGtw2Copy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('branchArray')[copyIndex()].ConnectionGtwName1]",
+            "apiVersion": "2020-06-01",
+            "comments": "VPN connection between VPN Gateway in the branch and VPN Gateway-instance0 in the hub",
+            "location": "[variables('branchArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('branchArray')[copyIndex()].gatewayName )]",
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('branchArray')[copyIndex()].localGatewayName1 )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('branchArray')[copyIndex()].gatewayName )]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('branchArray')[copyIndex()].localGatewayName1)]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[variables('branchArray')[copyIndex()].sharedKey]",
+                "enableBGP": true
+            },
+            "copy": {
+                "name": "connection1Copy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('branchArray')[copyIndex()].connectionGtwName2]",
+            "apiVersion": "2020-11-01",
+            "comments": "VPN connection between VPN Gateway in the branch and VPN Gateway-instance1 in the hub",
+            "location": "[variables('branchArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('branchArray')[copyIndex()].gatewayName)]",
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('branchArray')[copyIndex()].localgatewayName2)]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('branchArray')[copyIndex()].gatewayName)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('branchArray')[copyIndex()].localGatewayName2)]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[variables('branchArray')[copyIndex()].sharedKey]",
+                "enableBGP": true
+            },
+            "copy": {
+                "name": "connection2Copy",
+                "count": "[variables('branchCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[parameters('mngIP')]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Public IP address VMs",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpVMCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-nic' )]",
+            "apiVersion": "2020-06-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "NIC of the VMs",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName  )]"
+                },
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-03-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-nic')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OS')]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-nic')  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "vmCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}

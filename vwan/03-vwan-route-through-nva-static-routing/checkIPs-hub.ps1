@@ -49,6 +49,7 @@ If (Test-Path -Path $pathFiles\$inputParams)
 else { Write-Warning "$inputParams file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
 
 
+Write-Host ''
 # checking the values of variables
 Write-Host "$(Get-Date) - values from file: $inputParams" -ForegroundColor Yellow
 if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit } else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green }
@@ -57,6 +58,8 @@ if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit
 if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host '   resource group name...: '$ResourceGroupName -ForegroundColor Yellow }
 if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit } else { Write-Host '   location1.............: '$hub1location -ForegroundColor Yellow }
 if (!$hub2location) { Write-Host 'variable $hub2location is null' ; Exit } else { Write-Host '   location1.............: '$hub2location -ForegroundColor Yellow }
+if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit } else { Write-Host '   hub1 name.............: '$hub1Name -ForegroundColor Yellow }
+if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit } else { Write-Host '   hub2 name.............: '$hub2Name -ForegroundColor Yellow }
 if (!$branch1location) { Write-Host 'variable $branch1location is null' ; Exit } else { Write-Host '   branch1 location......: '$branch1location -ForegroundColor Yellow }
 if (!$branch2location) { Write-Host 'variable $branch2location is null' ; Exit } else { Write-Host '   branch2 location......: '$branch2location -ForegroundColor Yellow }
 if (!$sharedKey) { Write-Host 'variable $sharedKey is null' ; Exit } else { Write-Host '   shared secret S2S -VPN: '$sharedKey -ForegroundColor Yellow }
@@ -66,6 +69,7 @@ if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit } else 
 if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit } else { Write-Host '   RGTagNinja............: '$RGTagNinja -ForegroundColor Yellow }
 if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit } else { Write-Host '   RGTagUsage............: '$RGTagUsage -ForegroundColor Yellow }
 $rgName = $ResourceGroupName
+
 
 
 # VPN GTW for site-to-site in vWAN

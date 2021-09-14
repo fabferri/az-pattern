@@ -1,0 +1,18 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_VMs",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan-sharedservices",
+    "hub1location": "westus2",
+    "hub2location": "westus2",
+    "branch1location": "westus2",
+    "branch2location": "westus2",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "sharedKey": "VPN_SHARED_SECRET",
+    "mngIP": "PUBLIC_MANAGEMENT_IP_ADDRESS_TO_CONNECT_TO_THE_VMs",
+    "RGTagExpireDate": "09/30/2021",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "vWAN: route to shared services"
+}

@@ -34,7 +34,7 @@
                 "Basic"
             ]
         },
-        "hubName1": {
+        "hub1Name": {
             "type": "string",
             "defaultValue": "hub1",
             "metadata": {
@@ -55,7 +55,7 @@
                 "description": "Scale Units for Site-to-Site (S2S) VPN Gateway in the hub1"
             }
         },
-        "hubName2": {
+        "hub2Name": {
             "type": "string",
             "defaultValue": "hub2",
             "metadata": {
@@ -97,8 +97,8 @@
     },
     "variables": {
         "vwanName": "[parameters('vwanName')]",
-        "hubName1": "[parameters('hubName1')]",
-        "hubName2": "[parameters('hubName2')]",
+        "hub1Name": "[parameters('hub1Name')]",
+        "hub2Name": "[parameters('hub2Name')]",
         "hub1location": "[parameters('hub1location')]",
         "hub2location": "[parameters('hub2location')]",
         "hub1addressPrefix": "[parameters('hub1addressPrefix')]",
@@ -655,7 +655,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs",
-            "name": "[variables('hubName1')]",
+            "name": "[variables('hub1Name')]",
             "apiVersion": "2021-02-01",
             "location": "[variables('hub1location')]",
             "dependsOn": [
@@ -670,7 +670,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs",
-            "name": "[variables('hubName2')]",
+            "name": "[variables('hub2Name')]",
             "apiVersion": "2021-02-01",
             "location": "[variables('hub2location')]",
             "dependsOn": [
@@ -686,9 +686,9 @@
         {
             "type": "Microsoft.Network/virtualHubs/hubRouteTables",
             "apiVersion": "2021-02-01",
-            "name": "[concat(variables('hubName1'), '/', 'defaultRouteTable')]",
+            "name": "[concat(variables('hub1Name'), '/', 'defaultRouteTable')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName1'))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]"
             ],
             "properties": {
                 "labels": [
@@ -699,9 +699,9 @@
         {
             "type": "Microsoft.Network/virtualHubs/hubRouteTables",
             "apiVersion": "2021-02-01",
-            "name": "[concat(variables('hubName2'), '/', 'defaultRouteTable')]",
+            "name": "[concat(variables('hub2Name'), '/', 'defaultRouteTable')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName2'))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name'))]"
             ],
             "properties": {
                 "labels": [
@@ -711,24 +711,24 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
-            "name": "[format('{0}/{1}_conn', variables('hubName1'), variables('vnet1Name'))]",
+            "name": "[format('{0}/{1}_conn', variables('hub1Name'), variables('vnet1Name'))]",
             "apiVersion": "2021-02-01",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
             ],
             "properties": {
                 "routingConfiguration": {
                     "associatedRouteTable": {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]"
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
                     },
                     "propagatedRouteTables": {
                         "ids": [
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
                             },
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
                             }
                         ]
                     }
@@ -741,24 +741,24 @@
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
             "apiVersion": "2021-02-01",
-            "name": "[format('{0}/{1}_conn', variables('hubName1'), variables('vnet2Name'))]",
+            "name": "[format('{0}/{1}_conn', variables('hub1Name'), variables('vnet2Name'))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName1'), format('{0}_conn', variables('vnet1Name')))]"
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet1Name')))]"
             ],
             "properties": {
                 "routingConfiguration": {
                     "associatedRouteTable": {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]"
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
                     },
                     "propagatedRouteTables": {
                         "ids": [
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
                             },
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
                             }
                         ]
                     },
@@ -783,24 +783,24 @@
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
             "apiVersion": "2021-02-01",
-            "name": "[format('{0}/{1}_conn', variables('hubName2'), variables('vnet3Name'))]",
+            "name": "[format('{0}/{1}_conn', variables('hub2Name'), variables('vnet3Name'))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName1'), format('{0}_conn', variables('vnet2Name')))]"
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet2Name')))]"
             ],
             "properties": {
                 "routingConfiguration": {
                     "associatedRouteTable": {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
                     },
                     "propagatedRouteTables": {
                         "ids": [
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
                             },
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
                             }
                         ]
                     }
@@ -813,24 +813,24 @@
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
             "apiVersion": "2021-02-01",
-            "name": "[format('{0}/{1}_conn', variables('hubName2'), variables('vnet4Name'))]",
+            "name": "[format('{0}/{1}_conn', variables('hub2Name'), variables('vnet4Name'))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet3Name')))]"
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet3Name')))]"
             ],
             "properties": {
                 "routingConfiguration": {
                     "associatedRouteTable": {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
                     },
                     "propagatedRouteTables": {
                         "ids": [
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
                             },
                             {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]"
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
                             }
                         ]
                     },
@@ -854,17 +854,17 @@
         },
         {
             "type": "Microsoft.Network/vpnGateways",
-            "name": "[format('{0}_S2SvpnGW', variables('hubName1'))]",
+            "name": "[format('{0}_S2SvpnGW', variables('hub1Name'))]",
             "apiVersion": "2021-02-01",
             "location": "[variables('hub1location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName1'))]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet4Name')))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]"
             ],
             "properties": {
                 "vpnGatewayScaleUnit": "[parameters('hub1_S2SvpnGatewayScaleUnit')]",
                 "virtualHub": {
-                    "id": "[resourceId('Microsoft.Network/virtualHubs', variables('hubName1'))]"
+                    "id": "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]"
                 },
                 "bgpSettings": {
                     "asn": 65515
@@ -873,17 +873,17 @@
         },
         {
             "type": "Microsoft.Network/vpnGateways",
-            "name": "[format('{0}_S2SvpnGW', variables('hubName2'))]",
+            "name": "[format('{0}_S2SvpnGW', variables('hub2Name'))]",
             "apiVersion": "2021-02-01",
             "location": "[variables('hub2location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName2'))]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet4Name')))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name'))]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]"
             ],
             "properties": {
                 "vpnGatewayScaleUnit": "[parameters('hub2_S2SvpnGatewayScaleUnit')]",
                 "virtualHub": {
-                    "id": "[resourceId('Microsoft.Network/virtualHubs', variables('hubName2'))]"
+                    "id": "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name'))]"
                 },
                 "bgpSettings": {
                     "asn": 65515
@@ -1254,14 +1254,14 @@
             "apiVersion": "2021-01-01",
             "name": "hub1-StaticRoutes",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName1') )]",
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName2') )]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName1'), format('{0}_conn', variables('vnet2Name')))]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet4Name')))]",
-                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hubName1')))]",
-                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hubName2')))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name') )]",
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name') )]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet2Name')))]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]",
+                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')))]",
+                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub2Name')))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -1274,7 +1274,7 @@
                         {
                             "type": "Microsoft.Network/virtualHubs/hubRouteTables",
                             "apiVersion": "2021-02-01",
-                            "name": "[concat(variables('hubName1'), '/', 'defaultRouteTable')]",
+                            "name": "[concat(variables('hub1Name'), '/', 'defaultRouteTable')]",
                             "dependsOn": [],
                             "properties": {
                                 "labels": [
@@ -1288,7 +1288,7 @@
                                         ],
                                         "destinationType": "CIDR",
                                         "name": "hub1-to-vnet5-vnet6",
-                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName1'), format('{0}_conn', variables('vnet2Name')))]",
+                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet2Name')))]",
                                         "nextHopType": "ResourceId"
                                     },
                                     {
@@ -1298,7 +1298,7 @@
                                         ],
                                         "destinationType": "CIDR",
                                         "name": "hub1-to-vnet7-vnet8",
-                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet4Name')))]",
+                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]",
                                         "nextHopType": "ResourceId"
                                     }
                                 ]
@@ -1314,14 +1314,14 @@
             "apiVersion": "2021-01-01",
             "name": "hub2-StaticRoutes",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName1') )]",
-                "[resourceId('Microsoft.Network/virtualHubs', variables('hubName2') )]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName1'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hubName2'), 'defaultRouteTable')]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName1'), format('{0}_conn', variables('vnet2Name')))]",
-                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet4Name')))]",
-                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hubName1')))]",
-                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hubName2')))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name') )]",
+                "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name') )]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet2Name')))]",
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]",
+                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')))]",
+                "[resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub2Name')))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -1334,7 +1334,7 @@
                         {
                             "type": "Microsoft.Network/virtualHubs/hubRouteTables",
                             "apiVersion": "2021-02-01",
-                            "name": "[concat(variables('hubName2'), '/', 'defaultRouteTable')]",
+                            "name": "[concat(variables('hub2Name'), '/', 'defaultRouteTable')]",
                             "dependsOn": [],
                             "properties": {
                                 "labels": [
@@ -1348,7 +1348,7 @@
                                         ],
                                         "destinationType": "CIDR",
                                         "name": "hub2-to-vnet7-vnet8",
-                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName2'), format('{0}_conn', variables('vnet4Name')))]",
+                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), format('{0}_conn', variables('vnet4Name')))]",
                                         "nextHopType": "ResourceId"
                                     },
                                     {
@@ -1358,7 +1358,7 @@
                                         ],
                                         "destinationType": "CIDR",
                                         "name": "hub2-to-vnet5-vnet6",
-                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hubName1'), format('{0}_conn', variables('vnet2Name')))]",
+                                        "nextHop": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet2Name')))]",
                                         "nextHopType": "ResourceId"
                                     }
                                 ]
