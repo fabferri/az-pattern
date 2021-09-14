@@ -138,8 +138,8 @@ Each virtual hub advertised the learned routes to the peer hub through BGP by AS
 
 ## <a name="list of ARM templates and scripts"></a>6. List of ARM templates and powershell scripts
 The full deployment can be executed by ARM templates and scripts are stored in two different folders:
-* folder: **without-propagation-to-labels**. This folder contains a list of script and ARM templates; the connections are created <u>without propagation to labels</u>. Each connection requires a propagation to routing tables in hub1 and hub2.
-* folder: **propagation-to-labels**. This folder uses <u>propagation to labels</u> to simply the propagation of connections.
+* folder: **without-propagation-to-labels**. This folder contains a list of script and ARM templates; the connections are created <ins>without propagation to labels</uINS>. Each connection requires a propagation to routing tables in hub1 and hub2.
+* folder: **propagation-to-labels**. This folder uses <ins>propagation to labels</ins> to simply the propagation of connections.
 To create the deployment, use all the scripts in **without-propagation-to-labels** folder OR as alternative option the scripts in the folder **propagation-to-labels**.   
 
 | file                        | description                                                               |       
