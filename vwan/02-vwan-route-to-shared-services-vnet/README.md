@@ -138,17 +138,20 @@ Each virtual hub advertised the learned routes to the peer hub through BGP by AS
 
 ## <a name="list of ARM templates and scripts"></a>6. List of ARM templates and powershell scripts
 The full deployment can be executed by ARM templates and scripts are stored in two different folders:
-* folder: **without-propagation-to-labels**. This folder contains a list of script and ARM templates; the connections are created <ins>without propagation to labels</uINS>. Each connection requires a propagation to routing tables in hub1 and hub2.
+* folder: **without-propagation-to-labels**. This folder contains a list of script and ARM templates; the connections are created <ins>without propagation to labels </ins>. Each connection requires a propagation to routing tables in hub1 and hub2.
 * folder: **propagation-to-labels**. This folder uses <ins>propagation to labels</ins> to simply the propagation of connections.
+
+<br>
+
 To create the deployment, use all the scripts in **without-propagation-to-labels** folder OR as alternative option the scripts in the folder **propagation-to-labels**.   
 
 | file                        | description                                                               |       
 | --------------------------- |:------------------------------------------------------------------------- |
-| **01-vwan.json**            | ARM template to create virtual WAN the virtual hub, VNets, routing tables and connections between VNets and virtual hub  |
+| **01-vwan.json**            | ARM template to create virtual WAN the virtual hubs, VNets, routing tables and connections between VNets and virtual hubs  |
 | **01-vwan.ps1**             | powershell script to deploy the ARM template **01-vwan.json**             |
-| **02-vpn.json**             | ARM template to create the remote branch1<br> The ARM template create the vnet, VPN gateway and VM in the branch1 |
+| **02-vpn.json**             | ARM template to create the remote branch1<br> The ARM template create the vnet, VPN gateway and VM in the branch1 and branch2 |
 | **02-vpn.ps1**              | powershell script to deploy the ARM template **02-vpn.json**              |
-| **03-vwan-site.json**       | create in the hub1 a site-to-site connection with the branch1             |
+| **03-vwan-site.json**       | create in the hub1 a site-to-site connection to the branch1 and site-to-site connection to the branch2  |
 | **03-vwan-site.ps1**        | powershell script to deploy the ARM template **03-vwan-site.json**        |
 | **init.json**               | it contains a list of input variables. <br>All the powershell scripts read the init.json to assign the variables values|
 
