@@ -63,7 +63,7 @@ Below a network diagram with more details:
 [![3]][3]
 
 
-## <a name="routing table association"></a>2. Connection <u>without</u> propagation to labels 
+## <a name="routing table association"></a>2. Connection <ins>without</ins> propagation to labels 
 The network diagrams below show the association and propagation of connections, with propagation to labels:
 
 
@@ -73,7 +73,7 @@ The network diagrams below show the association and propagation of connections, 
 
 [![5]][5]
 
-## <a name="routing table association"></a>3. Connection <u>with</u> propagation to labels 
+## <a name="routing table association"></a>3. Connection <ins>with</ins> propagation to labels 
 The network diagram below shows the association and propagation of connections in hub2, with propagation to labels **default**, **LBL_SHARED**:
 
 [![6]][6]
