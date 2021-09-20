@@ -232,8 +232,8 @@ Deployment needs to be carried out in sequence:
 - _3rd step_: run the script **02-bgp-peering.ps1**
 - _4rd step_: run the script **03-vpn.ps1**
 - _5th step_: run the script **04-vwan-site.ps1**
-- _6th step_: connect in SSH to the nva2 in vnet2 and run the bash script **bgp-ip-foward-nva2.sh**
-- _7th step_: connect in SSH to the nva4 in vnet4 and run the bash script **bgp-ip-foward-nva4.sh**
+- _6th step_: connect in SSH to the nva2 in vnet2 and run the bash script **bgp-ip-foward-nva2.sh**. The script install and configure quagga in **nva2**.
+- _7th step_: connect in SSH to the nva4 in vnet4 and run the bash script **bgp-ip-foward-nva4.sh**. The script install and configure quagga in **nva4**.
 
 **NOTE**<br>
 Before running the bash scripts **bgp-ip-foward-nva2.sh** and **bgp-ip-foward-nva4.sh**, check the right assignment of IP addresses of virtual router in hub1 and hub2, i.e. by powershell:
