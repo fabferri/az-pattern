@@ -177,6 +177,7 @@ The variable **ercircuitId** in **init.json** file has the following format:
 ```
 
 <br>
+
 ## <a name="how to run the deployment"></a>3. How to run the deployment
 Deployment needs to be carried out in sequence:
 - _1st step_: customize the values in **init.json**
