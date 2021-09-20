@@ -44,6 +44,9 @@ The diagram below shows the selective interconnections between VNets:
 
 [![2]][2]
 
+
+### <a name="List of files"></a>1. List of files 
+
 | file                        | description                                                               |       
 | --------------------------- |:------------------------------------------------------------------------- |
 | **vwan-without-labels.json**| ARM template to create virtual WAN the virtual hubs, VNets, routing tables and connections between VNets and virtual hubs  |
@@ -52,9 +55,7 @@ The diagram below shows the selective interconnections between VNets:
 | **vwan-with-labels.ps1**    | powershell script to deploy the ARM template **vwan-with-labels.json**    |
 
 <br>
-
-
-### <a name="routing table association"></a>1. Structure of init.json file
+ 
 Before spinning up the powershell scripts, **vwan-without-labels.ps1** and **vwan-with-labels.ps1**, you should edit the file **init.json** and customize the values:
 The structure of **init.json** file is shown below:
 ```json
@@ -96,7 +97,20 @@ Meaning of the variables:
 
 <br>
 
-### <a name="routing table association"></a>2. Virtual Network Connection without propagating to labels and hub Routing Tables
+### <a name="routing table association"></a>2. Virtual Hubs Routing Tables
+Two routing tables are required to implement the configuration: **red** and **blue**
+* virtual networks vnet1, vnet3:
+   * Associated route table: **red**
+   * Propagated route table: **red**
+* virtual networks vnet2, vnet4:
+   * Associated route table: **blue**
+   * Propagated route table: **blue**  
+
+Target configuration can be achieved with two different approach: 
+- without propagation to labels
+- with propagation to labels
+
+### <a name="without propagation to labels"></a>3. Virtual Network Connection without propagation to labels
 
 [![3]][3]
 
@@ -134,8 +148,6 @@ Propagating to labels:
 </pre>
 
 <br>
-
-
 
 
 Routing table <font color='red'><b>red</b></font> in virtual <b>hub1</b>:<br>
@@ -176,7 +188,7 @@ Microsoft.Network/virtualHubs/<b>hub2</b>/hubRouteTables/<font color='blue'><b>b
 |10.0.4.0/24	|Virtual Network Connection	|vnet4_connection  |vnet4_connection|           |
 
 
-### <a name="routing table association"></a>2. Virtual Network Connection with propagation to labels
+### <a name="with propagation to labels"></a>4. Virtual Network Connection with propagation to labels
 
 Connection of vnet1 and vnet2 to the **hub1** without propagating to labels:
 
