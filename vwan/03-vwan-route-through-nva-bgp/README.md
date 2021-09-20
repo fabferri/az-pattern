@@ -58,162 +58,9 @@ The list of major private IPv4 networks in UDRs work as expected, if all the VNe
 
 [![2]][2]
 
-## <a name="List of files"></a>2. List of ARM templates and scripts
 
-| file                        | description                                                                |       
-| --------------------------- |:-------------------------------------------------------------------------- |
-| **01-vwan.json**            | ARM template to create virtual WAN the virtual hubs, VNets, routing table and connections between VNets and virtual hubs  |
-| **01-vwan.ps1**             | powershell script to deploy the ARM template **01-vwan.json**              |
-| **02-bgp-peering.json**     | ARM template to create the bgp peering between the hub1 and nva2 <br>and<br> the bgp peering between hub2 and nva4  |
-| **02-bgp-peering.ps1**      | powershell script to deploy the ARM template **02-bgp-peering.json**       |
-| **03-vpn.json**             | ARM template to create the branch1 and branch2<br> The ARM template create  vnet, VPN gateway and one VM in each branch. |
-| **03-vpn.ps1**              | powershell script to deploy the ARM template **03-vpn.json**               |
-| **04-vwan-site.json**       | create in the hub1 a site-to-site connections with the branch1 and <br> in the hub2 a site-to-site connection with the branch2 |
-| **04-vwan-site.ps1**        | powershell script to deploy the ARM template **04-vwan-site.json**         |
-| **bgp-ip-foward-nva2.sh**   | bash script to run in nva2. Install and configure quagga. Enable IP forwarding. |
-| **bgp-ip-foward-nva4.sh**   | bash script to run in nva4. Install and configure quagga. Enable IP forwarding. |
 
-<br>
-
-Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values:
-The structure of **init.json** file is shown below:
-```json
-{
-    "adminUsername": "ADMINISTRATOR_USERNAME",
-    "adminPassword": "ADMINISTRATOR_PASSWORD",
-    "subscriptionName": "AzureDemo",
-    "ResourceGroupName": "vwan1-grp",
-    "hub1location": "westus2",
-    "hub2location": "westus2",
-    "branch1location": "westus2",
-    "branch2location": "westus2",
-    "hub1Name": "hub1",
-    "hub2Name": "hub2",
-    "sharedKey": "SHARED_SECRET_SITE_TO_SITE_VPN",
-    "mngIP": "PUBLIC_MANAGEMENT_IP_TO_CONNECT_TO_THE_VMs",
-    "RGTagExpireDate": "09/30/2021",
-    "RGTagContact": "user1@contoso.com",
-    "RGTagNinja": "user1",
-    "RGTagUsage": "vWAN: route through NVAs in BGP peering with the hubs"
-}
-```
-<br>
-
-Meaning of the variables:
-- **adminUsername**: administrator username of the Azure VMs
-- **adminPassword**: administrator password of the Azure VMs
-- **subscriptionName**: Azure subscription name
-- **ResourceGroupName**: name of the resource group
-- **hub1location**: Azure region of the virtual hub1
-- **hub2location**: Azure region of the virtual hub2
-- **branch1location**: Azure region to deploy the branch1
-- **branch2location**: Azure region to deploy the branch2
-- **hub1Name**: name of the virtual hub1
-- **hub2Name**: name of the virtual hub2
-- **sharedKey**: VPN shared secret
-- **mngIP**: public IP used to connect to the Azure VMs in SSH
-- **RGTagExpireDate**: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
-- **RGTagContact**: tag assigned to the resource group. It is used to email to the owner of the deployment
-- **RGTagNinja**: alias of the user
-- **RGTagUsage**: short description of the deployment purpose
-
-The file **init.json** guarantees a consistency by assignment of same input parameters across all the ARM templates.
-<br>
-
-## <a name="how to run the deployment"></a>3. How to run the deployment
-Deployment needs to be carried out in sequence:
-- _1st step_: customize the values in **init.json**
-- _2nd step_: run the script **01-vwan.ps1**
-- _3rd step_: run the script **02-bgp-peering.ps1**
-- _4rd step_: run the script **03-vpn.ps1**
-- _5th step_: run the script **04-vwan-site.ps1**
-- _6th step_: connect in SSH to the nva2 in vnet2 and run the bash script **bgp-ip-foward-nva2.sh**
-- _7th step_: connect in SSH to the nva4 in vnet4 and run the bash script **bgp-ip-foward-nva4.sh**
-
-**NOTE**<br>
-Before running the bash scripts **bgp-ip-foward-nva2.sh** and **bgp-ip-foward-nva4.sh**, check the right assignment of IP addresses of virtual router in hub1 and hub2, i.e. by powershell:
-```powershell
-(Get-AzVirtualHub -ResourceGroupName $rgName -Name hub1).VirtualRouterIps
-10.10.0.69
-10.10.0.68
-
-(Get-AzVirtualHub -ResourceGroupName $rgName -Name hub2).VirtualRouterIps
-10.11.0.69
-10.11.0.68
-```
-The IPs of the virtual routers are used in the bash scripts **bgp-ip-foward-nva2.sh**,**bgp-ip-foward-nva4.sh** in the variables: **virtualrouter_IP1, virtualrouter_IP2** 
-
-<br>
-
-After running the bash script on nva2 and nva4 check the BGP routing table by quagga command line:
-```console
-show ip bgp
-```
-
-- The nva2 advertises in BGP the network 10.0.5.0/24 and 10.0.6.0/24 to the hub2.
-- The networks of the branch1 (192.168.1.0/24) and branch2 (192.168.2.0/24) are advertised from the virtual router (10.10.0.68, 10.10.0.69) to the nva2.
-```console
-nva2# show ip bgp
-BGP table version is 0, local router ID is 10.0.2.10
-Status codes: s suppressed, d damped, h history, * valid, > best, = multipath,
-              i internal, r RIB-failure, S Stale, R Removed
-Origin codes: i - IGP, e - EGP, ? - incomplete
-
-   Network          Next Hop            Metric LocPrf Weight Path
-   10.0.1.0/24      10.10.0.69                             0 65515 i
-                    10.10.0.68                             0 65515 i
-   10.0.2.0/24      10.10.0.69                             0 65515 i
-                    10.10.0.68                             0 65515 i
-   10.0.3.0/24      10.10.0.69                             0 65515 65520 65520 e
-                    10.10.0.68                             0 65515 65520 65520 e
-   10.0.4.0/24      10.10.0.69                             0 65515 65520 65520 e
-                    10.10.0.68                             0 65515 65520 65520 e
-*> 10.0.5.0/24      0.0.0.0                  0         32768 i
-*> 10.0.6.0/24      0.0.0.0                  0         32768 i
-   10.0.7.0/24      10.10.0.68                             0 65515 65520 65520 65004 e
-                    10.10.0.69                             0 65515 65520 65520 65004 e
-   10.0.8.0/24      10.10.0.68                             0 65515 65520 65520 65004 e
-                    10.10.0.69                             0 65515 65520 65520 65004 e
-   10.10.0.0/23     10.10.0.69                             0 65515 i
-                    10.10.0.68                             0 65515 i
-   192.168.1.0      10.10.0.69                             0 65515 65010 i
-                    10.10.0.68                             0 65515 65010 i
-   192.168.2.0      10.10.0.69                             0 65515 65520 65520 65011 e
-                    10.10.0.68                             0 65515 65520 65520 65011 e
-```
-
-- The nva4 advertises to the virtual router in hub2, the network 10.0.7.0/24 and 10.0.8.0/24:
-```console
-nva4# show ip bgp
-BGP table version is 0, local router ID is 10.0.4.10
-Status codes: s suppressed, d damped, h history, * valid, > best, = multipath,
-              i internal, r RIB-failure, S Stale, R Removed
-Origin codes: i - IGP, e - EGP, ? - incomplete
-
-   Network          Next Hop            Metric LocPrf Weight Path
-   10.0.1.0/24      10.11.0.69                             0 65515 65520 65520 e
-                    10.11.0.68                             0 65515 65520 65520 e
-   10.0.2.0/24      10.11.0.69                             0 65515 65520 65520 e
-                    10.11.0.68                             0 65515 65520 65520 e
-   10.0.3.0/24      10.11.0.69                             0 65515 i
-                    10.11.0.68                             0 65515 i
-   10.0.4.0/24      10.11.0.69                             0 65515 i
-                    10.11.0.68                             0 65515 i
-   10.0.5.0/24      10.11.0.69                             0 65515 65520 65520 65002 e
-                    10.11.0.68                             0 65515 65520 65520 65002 e
-   10.0.6.0/24      10.11.0.69                             0 65515 65520 65520 65002 e
-                    10.11.0.68                             0 65515 65520 65520 65002 e
-*> 10.0.7.0/24      0.0.0.0                  0         32768 i
-*> 10.0.8.0/24      0.0.0.0                  0         32768 i
-   10.11.0.0/23     10.11.0.69                             0 65515 i
-                    10.11.0.68                             0 65515 i
-   192.168.1.0      10.11.0.69                             0 65515 65520 65520 65010 e
-                    10.11.0.68                             0 65515 65520 65520 65010 e
-   192.168.2.0      10.11.0.69                             0 65515 65011 i
-                    10.11.0.68                             0 65515 65011 i
-```
-
-## <a name="routing table association"></a>4. Routing Table and association of the connections  
+## <a name="routing table association"></a>2. Routing Table and association of the connections  
 
 The network diagram below shows the **defaultRoutingTable** in hub1 and hub2:
 
@@ -316,7 +163,160 @@ Effective routes in vm-branch1:
 - 192.168.1.228: BGP IP address of the site-to-site VPN-instance0 in branch1
 - 192.168.1.229: BGP IP address of the site-to-site VPN-instance1 in branch1
 
+## <a name="List of files"></a>3. List of ARM templates and scripts
 
+| file                        | description                                                                |       
+| --------------------------- |:-------------------------------------------------------------------------- |
+| **01-vwan.json**            | ARM template to create virtual WAN the virtual hubs, VNets, routing table and connections between VNets and virtual hubs  |
+| **01-vwan.ps1**             | powershell script to deploy the ARM template **01-vwan.json**              |
+| **02-bgp-peering.json**     | ARM template to create the bgp peering between the hub1 and nva2 <br>and<br> the bgp peering between hub2 and nva4  |
+| **02-bgp-peering.ps1**      | powershell script to deploy the ARM template **02-bgp-peering.json**       |
+| **03-vpn.json**             | ARM template to create the branch1 and branch2<br> The ARM template create  vnet, VPN gateway and one VM in each branch. |
+| **03-vpn.ps1**              | powershell script to deploy the ARM template **03-vpn.json**               |
+| **04-vwan-site.json**       | create in the hub1 a site-to-site connections with the branch1 and <br> in the hub2 a site-to-site connection with the branch2 |
+| **04-vwan-site.ps1**        | powershell script to deploy the ARM template **04-vwan-site.json**         |
+| **bgp-ip-foward-nva2.sh**   | bash script to run in nva2. Install and configure quagga. Enable IP forwarding. |
+| **bgp-ip-foward-nva4.sh**   | bash script to run in nva4. Install and configure quagga. Enable IP forwarding. |
+
+<br>
+
+Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values:
+The structure of **init.json** file is shown below:
+```json
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan1-grp",
+    "hub1location": "westus2",
+    "hub2location": "westus2",
+    "branch1location": "westus2",
+    "branch2location": "westus2",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "sharedKey": "SHARED_SECRET_SITE_TO_SITE_VPN",
+    "mngIP": "PUBLIC_MANAGEMENT_IP_TO_CONNECT_TO_THE_VMs",
+    "RGTagExpireDate": "09/30/2021",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "vWAN: route through NVAs in BGP peering with the hubs"
+}
+```
+<br>
+
+Meaning of the variables:
+- **adminUsername**: administrator username of the Azure VMs
+- **adminPassword**: administrator password of the Azure VMs
+- **subscriptionName**: Azure subscription name
+- **ResourceGroupName**: name of the resource group
+- **hub1location**: Azure region of the virtual hub1
+- **hub2location**: Azure region of the virtual hub2
+- **branch1location**: Azure region to deploy the branch1
+- **branch2location**: Azure region to deploy the branch2
+- **hub1Name**: name of the virtual hub1
+- **hub2Name**: name of the virtual hub2
+- **sharedKey**: VPN shared secret
+- **mngIP**: public IP used to connect to the Azure VMs in SSH
+- **RGTagExpireDate**: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
+- **RGTagContact**: tag assigned to the resource group. It is used to email to the owner of the deployment
+- **RGTagNinja**: alias of the user
+- **RGTagUsage**: short description of the deployment purpose
+
+The file **init.json** guarantees a consistency by assignment of same input parameters across all the ARM templates.
+<br>
+
+## <a name="how to run the deployment"></a>4. How to run the deployment
+Deployment needs to be carried out in sequence:
+- _1st step_: customize the values in **init.json**
+- _2nd step_: run the script **01-vwan.ps1**
+- _3rd step_: run the script **02-bgp-peering.ps1**
+- _4rd step_: run the script **03-vpn.ps1**
+- _5th step_: run the script **04-vwan-site.ps1**
+- _6th step_: connect in SSH to the nva2 in vnet2 and run the bash script **bgp-ip-foward-nva2.sh**
+- _7th step_: connect in SSH to the nva4 in vnet4 and run the bash script **bgp-ip-foward-nva4.sh**
+
+**NOTE**<br>
+Before running the bash scripts **bgp-ip-foward-nva2.sh** and **bgp-ip-foward-nva4.sh**, check the right assignment of IP addresses of virtual router in hub1 and hub2, i.e. by powershell:
+```powershell
+(Get-AzVirtualHub -ResourceGroupName $rgName -Name hub1).VirtualRouterIps
+10.10.0.69
+10.10.0.68
+
+(Get-AzVirtualHub -ResourceGroupName $rgName -Name hub2).VirtualRouterIps
+10.11.0.69
+10.11.0.68
+```
+The IPs of the virtual routers are used in the bash scripts **bgp-ip-foward-nva2.sh**,**bgp-ip-foward-nva4.sh** in the variables: **virtualrouter_IP1, virtualrouter_IP2** 
+
+<br>
+
+After running the bash script on nva2 and nva4 check the BGP routing table by quagga command line:
+```console
+show ip bgp
+```
+
+- The nva2 advertises in BGP the network 10.0.5.0/24 and 10.0.6.0/24 to the hub2.
+- The networks of the branch1 (192.168.1.0/24) and branch2 (192.168.2.0/24) are advertised from the virtual router (10.10.0.68, 10.10.0.69) to the nva2.
+```console
+nva2# show ip bgp
+BGP table version is 0, local router ID is 10.0.2.10
+Status codes: s suppressed, d damped, h history, * valid, > best, = multipath,
+              i internal, r RIB-failure, S Stale, R Removed
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+   10.0.1.0/24      10.10.0.69                             0 65515 i
+                    10.10.0.68                             0 65515 i
+   10.0.2.0/24      10.10.0.69                             0 65515 i
+                    10.10.0.68                             0 65515 i
+   10.0.3.0/24      10.10.0.69                             0 65515 65520 65520 e
+                    10.10.0.68                             0 65515 65520 65520 e
+   10.0.4.0/24      10.10.0.69                             0 65515 65520 65520 e
+                    10.10.0.68                             0 65515 65520 65520 e
+*> 10.0.5.0/24      0.0.0.0                  0         32768 i
+*> 10.0.6.0/24      0.0.0.0                  0         32768 i
+   10.0.7.0/24      10.10.0.68                             0 65515 65520 65520 65004 e
+                    10.10.0.69                             0 65515 65520 65520 65004 e
+   10.0.8.0/24      10.10.0.68                             0 65515 65520 65520 65004 e
+                    10.10.0.69                             0 65515 65520 65520 65004 e
+   10.10.0.0/23     10.10.0.69                             0 65515 i
+                    10.10.0.68                             0 65515 i
+   192.168.1.0      10.10.0.69                             0 65515 65010 i
+                    10.10.0.68                             0 65515 65010 i
+   192.168.2.0      10.10.0.69                             0 65515 65520 65520 65011 e
+                    10.10.0.68                             0 65515 65520 65520 65011 e
+```
+
+- The nva4 advertises to the virtual router in hub2, the network 10.0.7.0/24 and 10.0.8.0/24:
+```console
+nva4# show ip bgp
+BGP table version is 0, local router ID is 10.0.4.10
+Status codes: s suppressed, d damped, h history, * valid, > best, = multipath,
+              i internal, r RIB-failure, S Stale, R Removed
+Origin codes: i - IGP, e - EGP, ? - incomplete
+
+   Network          Next Hop            Metric LocPrf Weight Path
+   10.0.1.0/24      10.11.0.69                             0 65515 65520 65520 e
+                    10.11.0.68                             0 65515 65520 65520 e
+   10.0.2.0/24      10.11.0.69                             0 65515 65520 65520 e
+                    10.11.0.68                             0 65515 65520 65520 e
+   10.0.3.0/24      10.11.0.69                             0 65515 i
+                    10.11.0.68                             0 65515 i
+   10.0.4.0/24      10.11.0.69                             0 65515 i
+                    10.11.0.68                             0 65515 i
+   10.0.5.0/24      10.11.0.69                             0 65515 65520 65520 65002 e
+                    10.11.0.68                             0 65515 65520 65520 65002 e
+   10.0.6.0/24      10.11.0.69                             0 65515 65520 65520 65002 e
+                    10.11.0.68                             0 65515 65520 65520 65002 e
+*> 10.0.7.0/24      0.0.0.0                  0         32768 i
+*> 10.0.8.0/24      0.0.0.0                  0         32768 i
+   10.11.0.0/23     10.11.0.69                             0 65515 i
+                    10.11.0.68                             0 65515 i
+   192.168.1.0      10.11.0.69                             0 65515 65520 65520 65010 e
+                    10.11.0.68                             0 65515 65520 65520 65010 e
+   192.168.2.0      10.11.0.69                             0 65515 65011 i
+                    10.11.0.68                             0 65515 65011 i
+```
 
 ## <a name="estimated deployment time"></a>5. Estimated deployment time
 Estimated time of deployment:
