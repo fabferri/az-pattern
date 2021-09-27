@@ -124,12 +124,9 @@ The network diagram below shows the Local Network Gateways and the Connections i
 
 
 ## <a name="summary"></a>3. Conclusions
-The deployment proofs that's possible connect an on-premises network and remote site, with partial overlapping networks, to the same VNet.  
-<br>
+The deployment proofs that's possible connect an on-premises network and remote site, with partial overlapping networks, to the same VNet.  <br>
+A deterministic path to the destinations is established by the **Longest Prefix Match** routing in Azure VNet.
 
- A deterministic path to the destinations is established by the **Longest Prefix Match** routing in Azure VNet.
-
-<br>
 
 ## <a name="List of files"></a>4. List of ARM templates and scripts
 
