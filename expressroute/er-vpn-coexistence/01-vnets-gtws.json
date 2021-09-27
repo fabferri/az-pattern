@@ -1,0 +1,693 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgName_erCircuit1": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Resource group of the pre-existing ExpressRoute circuit "
+            }
+        },
+        "erCircuit1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-ER",
+            "metadata": {
+                "description": "pre-existing ExpressRoute circuit name"
+            }
+        },
+        "erConnection1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-er-conn",
+            "metadata": {
+                "description": "connection ExpressRoute circuit 1"
+            }
+        },
+        "location1": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "azure region where is deployed the first VNet"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "azure region where is deployed the first VNet"
+            }
+        },
+        "vNet1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet1AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.12.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "vNet2AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.2.12.64/26",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "vnet1subnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1-Tenant",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "vnet2subnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet2-Tenant",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "vnet1subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.10.12.0/25",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+            }
+        },
+        "gateway1subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.12.128/25",
+            "metadata": {
+                "description": "CIDR block for gateway subnet, subset of vNet1AddressPrefix address space"
+            }
+        },
+        "vnet2subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.2.12.64/27",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of vNet2AddressPrefix address space"
+            }
+        },
+        "gateway2subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.2.12.96/27",
+            "metadata": {
+                "description": "CIDR block for gateway subnet, subset of vNet2AddressPrefix address space"
+            }
+        },
+        "erGateway1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-er",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "erGateway1PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-er-pip",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-vpn",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "vpnGateway2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02-gw-vpn",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "vpnGateway1PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-vpn-pip1",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway1PublicIP2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-vpn-pip2",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway2PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02-gw-vpn-pip1",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway2PublicIP2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02-gw-vpn-pip2",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "erGatewaySku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "HighPerformance",
+                "UltraPerformance"
+            ],
+            "metadata": {
+                "description": "The SKU for the ExpressRoute Gateway"
+            }
+        },
+        "vpnGatewaySku": {
+            "type": "string",
+            "defaultValue": "VpnGw2",
+            "allowedValues": [
+                "VpnGw2",
+                "VpnGw2AZ",
+                "VpnGw3",
+                "VpnGw3AZ",
+                "VpnGw4",
+                "VpnGw4AZ",
+                "VpnGw5",
+                "VpnGw5AZ"
+            ],
+            "metadata": {
+                "description": "The Sku of the Gateway"
+            }
+        },
+        "vm1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VM1",
+            "metadata": {
+                "description": "Name of the sample VM to create"
+            }
+        },
+        "vm2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VM2",
+            "metadata": {
+                "description": "Name of the sample VM to create"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password for the VMs"
+            }
+        },
+        "vmsize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "VM SKU"
+            }
+        }
+    },
+    "variables": {
+        "vNet1": {
+            "location": "[parameters('location1')]",
+            "name": "[parameters('vNet1Name')]",
+            "addressSpacePrefix": "[parameters('vNet1AddressPrefix')]",
+            "subnet1Name": "[parameters('vnet1subnet1Name')]",
+            "subnet1Prefix": "[parameters('vnet1subnet1Prefix')]",
+            "subnet2Name": "GatewaySubnet",
+            "subnet2Prefix": "[parameters('gateway1subnetPrefix')]",
+            "RGerCircuit": "[parameters('rgName_erCircuit1')]",
+            "erCircuitName": "[parameters('erCircuit1Name')]",
+            "erGatewayPublicIPName": "[parameters('erGateway1PublicIP1Name')]",
+            "erGatewayName": "[parameters('erGateway1Name')]",
+            "erGatewaySku": "[parameters('erGatewaySku')]",
+            "erConnectionName": "[parameters('erConnection1Name')]",
+            "vpnGatewayName": "[parameters('vpnGateway1Name')]",
+            "vpnGatewayPublicIP1Name": "[parameters('vpnGateway1PublicIP1Name')]",
+            "vpnGatewayPublicIP2Name": "[parameters('vpnGateway1PublicIP2Name')]",
+            "vpnGatewaySku": "[parameters('vpnGatewaySku')]"
+        },
+        "vNet2": {
+            "location": "[parameters('location2')]",
+            "name": "[parameters('vNet2Name')]",
+            "addressSpacePrefix": "[parameters('vNet2AddressPrefix')]",
+            "subnet1Name": "[parameters('vnet2subnet1Name')]",
+            "subnet1Prefix": "[parameters('vnet2subnet1Prefix')]",
+            "subnet2Name": "GatewaySubnet",
+            "subnet2Prefix": "[parameters('gateway2subnetPrefix')]",
+            "vpnGatewayName": "[parameters('vpnGateway2Name')]",
+            "vpnGatewayPublicIP1Name": "[parameters('vpnGateway2PublicIP1Name')]",
+            "vpnGatewayPublicIP2Name": "[parameters('vpnGateway2PublicIP2Name')]",
+            "vpnGatewaySku": "[parameters('vpnGatewaySku')]"
+        },
+        "vmsize": "[parameters('vmsize')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "vmarray": [
+            {
+                "location": "[variables('vNet1').location]",
+                "vmName": "[parameters('vm1Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vNetName": "[variables('vNet1').name]",
+                "subnetName": "[variables('vNet1').subnet1Name]",
+                "publicIPName": "[concat(parameters('vm1Name'),'-pubIP')]",
+                "nicName": "[concat(parameters('vm1Name'),'-nic')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(parameters('vm1Name'),'-nsg')]"
+            },
+            {
+                "location": "[variables('vNet2').location]",
+                "vmName": "[parameters('vm2Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vNetName": "[variables('vNet2').name]",
+                "subnetName": "[variables('vNet2').subnet1Name]",
+                "publicIPName": "[concat(parameters('vm2Name'),'-pubIP')]",
+                "nicName": "[concat(parameters('vm2Name'),'-nic')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(parameters('vm2Name'),'-nsg')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "storageAccountType": "Standard_LRS"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet1').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "Creation of the VNet 1",
+            "dependsOn": [
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet1').subnet2Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet2').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "Creation of the VNet 2",
+            "dependsOn": [
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet2').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet2').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vNet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet2').subnet2Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet1').erGatewayPublicIPName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "This is the public IP for ExpressRoute Gateway",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vNet1').erGatewayName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "This is the ExpressRoute Gateway for the vNet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet1').erGatewayPublicIPName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet1').name, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet1').erGatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "gwipconf1"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[variables('vNet1').erGatewaySku]",
+                    "tier": "[variables('vNet1').erGatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2021-02-01",
+            "name": "[variables('vNet1').erconnectionName]",
+            "location": "[variables('vNet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vNet1').erGatewayName  )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vNet1').erGatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "peer": {
+                    "id": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('vNet1').RGerCircuit), 'Microsoft.Network/expressRouteCircuits', variables('vNet1').erCircuitName )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet1').vpnGatewayPublicIP1Name]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of the VPN Gateway1-instance 0",
+            "location": "[variables('vNet1').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet1').vpnGatewayPublicIP2Name]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of the VPN Gateway1-instance 1",
+            "location": "[variables('vNet1').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vnet1').vpnGatewayName]",
+            "apiVersion": "2020-11-01",
+            "comments": "VPN Gateway in vnet1",
+            "location": "[variables('vNet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet1').vpnGatewayPublicIP1Name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet1').vpnGatewayPublicIP2Name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
+                "[resourceId('Microsoft.Network/connections',variables('vNet1').erconnectionName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet1').name,'GatewaySubnet') ]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet1').vpnGatewayPublicIP1Name)]"
+                            }
+                        },
+                        "name": "vpnGtw1Config1"
+                    },
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet1').name,'GatewaySubnet') ]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet1').vpnGatewayPublicIP2Name)]"
+                            }
+                        },
+                        "name": "vpnGtw1Config2"
+                    }
+                ],
+                "sku": {
+                    "name": "[variables('vnet1').vpnGatewaySku]",
+                    "tier": "[variables('vnet1').vpnGatewaySku]"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": false,
+                "activeActive": true,
+                "vpnGatewayGeneration": "Generation2"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet2').vpnGatewayPublicIP1Name]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of the VPN Gateway2-instance 0",
+            "location": "[variables('vNet2').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vNet2').vpnGatewayPublicIP2Name]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of the VPN Gateway2-instance 1",
+            "location": "[variables('vNet2').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vnet2').vpnGatewayName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vNet2').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet2').vpnGatewayPublicIP1Name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet2').vpnGatewayPublicIP2Name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet2').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet2').name,'GatewaySubnet') ]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet2').vpnGatewayPublicIP1Name)]"
+                            }
+                        },
+                        "name": "vpnGtw2Config1"
+                    },
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet2').name,'GatewaySubnet') ]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet2').vpnGatewayPublicIP2Name)]"
+                            }
+                        },
+                        "name": "vpnGtw2Config2"
+                    }
+                ],
+                "sku": {
+                    "name": "[variables('vnet2').vpnGatewaySku]",
+                    "tier": "[variables('vnet2').vpnGatewaySku]"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": false,
+                "activeActive": true,
+                "vpnGatewayGeneration": "Generation2"
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('vmArray')[copyIndex()].nsgName)]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "NSG applied to the VM",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vmArray')[copyIndex()].publicIPName]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "crate public IP for the VMs",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIPCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vNetName )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].publicIPName )]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].publicIPName )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',concat(variables('vmArray')[copyIndex()].nsgName) )]"
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "apiVersion": "2021-03-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OsDisk')]",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}

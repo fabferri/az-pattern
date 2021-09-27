@@ -1,0 +1,410 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "azure region where is deployed the first VNet"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "eastus2",
+            "metadata": {
+                "description": "azure region where is deployed the first VNet"
+            }
+        },
+        "vNet1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet1AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.12.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "vNet2AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.2.12.64/26",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "vnet1subnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1-Tenant",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "vnet2subnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet2-Tenant",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "vnet1subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.10.12.0/25",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+            }
+        },
+        "gateway1subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.10.12.128/25",
+            "metadata": {
+                "description": "CIDR block for gateway subnet, subset of vNet1AddressPrefix address space"
+            }
+        },
+        "vnet2subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.2.12.64/27",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of vNet2AddressPrefix address space"
+            }
+        },
+        "gateway2subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.2.12.96/27",
+            "metadata": {
+                "description": "CIDR block for gateway subnet, subset of vNet2AddressPrefix address space"
+            }
+        },
+        "vpnGateway1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-vpn",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "vpnGateway2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02-gw-vpn",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "vpnGateway1PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-vpn-pip1",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway1PublicIP2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet01-gw-vpn-pip2",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway2PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02-gw-vpn-pip1",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "vpnGateway2PublicIP2Name": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-VNet02-gw-vpn-pip2",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "localGatewayName11": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-localGateway11",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway1-IP1"
+            }
+        },
+        "localGatewayName12": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-localGateway12",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway1-IP2"
+            }
+        },
+        "localGatewayName21": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-localGateway21",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway2-IP1"
+            }
+        },
+        "localGatewayName22": {
+            "type": "string",
+            "defaultValue": "ASH-Cust12-localGateway22",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway2-IP2"
+            }
+        },
+        "connectionName11-21": {
+            "type": "string",
+            "defaultValue": "vpnGtw1IP1-to-vpnGtw2IP1",
+            "metadata": {
+                "description": "Name connection from GtW1-IP1 to GTW2-IP1"
+            }
+        },
+        "connectionName21-11": {
+            "type": "string",
+            "defaultValue": "vpnGtw2IP1-to-vpnGtw1IP1",
+            "metadata": {
+                "description": "Name connection from GtW2-IP1 to GTW1-IP1"
+            }
+        },
+        "connectionName12-22": {
+            "type": "string",
+            "defaultValue": "vpnGtw1IP2-to-vpnGtw2IP2",
+            "metadata": {
+                "description": "Name connection from GtW2-IP2 to GTW2-IP2"
+            }
+        },
+        "connectionName22-12": {
+            "type": "string",
+            "defaultValue": "vpnGtw2IP2-to-vpnGtw1IP2",
+            "metadata": {
+                "description": "Name connection from GtW1-IP2 to GTW1-IP2"
+            }
+        },
+        "sharedKey": {
+            "type": "string",
+            "defaultValue": "secretPSK-101---++",
+            "metadata": {
+                "description": "Shared key (PSK) for IPSec tunnel"
+            }
+        },
+        "vpnGatewaySku": {
+            "type": "string",
+            "defaultValue": "VpnGw2",
+            "allowedValues": [
+                "VpnGw2",
+                "VpnGw2AZ",
+                "VpnGw3",
+                "VpnGw3AZ",
+                "VpnGw4",
+                "VpnGw4AZ",
+                "VpnGw5",
+                "VpnGw5AZ"
+            ],
+            "metadata": {
+                "description": "The Sku of the Gateway"
+            }
+        }
+    },
+    "variables": {
+        "vNet1": {
+            "location": "[parameters('location1')]",
+            "name": "[parameters('vNet1Name')]",
+            "addressSpacePrefix": "[parameters('vNet1AddressPrefix')]",
+            "subnet1Name": "[parameters('vnet1subnet1Name')]",
+            "subnet1Prefix": "[parameters('vnet1subnet1Prefix')]",
+            "subnet2Name": "GatewaySubnet",
+            "subnet2Prefix": "[parameters('gateway1subnetPrefix')]",
+            "vpnGatewayName": "[parameters('vpnGateway1Name')]",
+            "vpnGatewayPublicIP1Name": "[parameters('vpnGateway1PublicIP1Name')]",
+            "vpnGatewayPublicIP2Name": "[parameters('vpnGateway1PublicIP2Name')]",
+            "vpnGatewaySku": "[parameters('vpnGatewaySku')]"
+        },
+        "vNet2": {
+            "location": "[parameters('location2')]",
+            "name": "[parameters('vNet2Name')]",
+            "addressSpacePrefix": "[parameters('vNet2AddressPrefix')]",
+            "subnet1Name": "[parameters('vnet2subnet1Name')]",
+            "subnet1Prefix": "[parameters('vnet2subnet1Prefix')]",
+            "subnet2Name": "GatewaySubnet",
+            "subnet2Prefix": "[parameters('gateway2subnetPrefix')]",
+            "vpnGatewayName": "[parameters('vpnGateway2Name')]",
+            "vpnGatewayPublicIP1Name": "[parameters('vpnGateway2PublicIP1Name')]",
+            "vpnGatewayPublicIP2Name": "[parameters('vpnGateway2PublicIP2Name')]",
+            "vpnGatewaySku": "[parameters('vpnGatewaySku')]"
+        },
+
+        "localGatewayName11": "[parameters('localGatewayName11')]",
+        "localGatewayName12": "[parameters('localGatewayName12')]",
+        "localGatewayName21": "[parameters('localGatewayName21')]",
+        "localGatewayName22": "[parameters('localGatewayName22')]",
+
+        "gateway1PublicIP1Id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIPAddresses',variables('vnet1').vpnGatewayPublicIP1Name)]",
+        "gateway1PublicIP2Id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIPAddresses',variables('vnet1').vpnGatewayPublicIP2Name)]",
+        "gateway2PublicIP1Id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIPAddresses',variables('vnet2').vpnGatewayPublicIP1Name)]",
+        "gateway2PublicIP2Id": "[resourceId(resourceGroup().name,'Microsoft.Network/publicIPAddresses',variables('vnet2').vpnGatewayPublicIP2Name)]",
+
+        "connectionName11-21": "[parameters('connectionName11-21')]",
+        "connectionName21-11": "[parameters('connectionName21-11')]",
+        "connectionName12-22": "[parameters('connectionName12-22')]",
+        "connectionName22-12": "[parameters('connectionName22-12')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('localGatewayName11')]",
+            "apiVersion": "2020-11-01",
+            "comments": "local network gateway to reach out the vnet1 -IP1",
+            "location": "[variables('vNet2').location]",
+            "dependsOn": [],
+            "properties": {
+                "gatewayIpAddress": "[reference(variables('gateway1PublicIP1Id'),'2020-11-01').ipAddress]",
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpacePrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('localGatewayName12')]",
+            "apiVersion": "2020-11-01",
+            "comments": "public IP of remote IPSec peer",
+            "location": "[variables('vNet2').location]",
+            "dependsOn": [],
+            "properties": {
+                "gatewayIpAddress": "[reference(variables('gateway1PublicIP2Id'),'2020-11-01').ipAddress]",
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet1').addressSpacePrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('localGatewayName21')]",
+            "apiVersion": "2020-11-01",
+            "comments": "local network gateway to reach out the vnet2 -IP1",
+            "location": "[variables('vNet2').location]",
+            "dependsOn": [],
+            "properties": {
+                "gatewayIpAddress": "[reference(variables('gateway2PublicIP1Id'),'2020-11-01').ipAddress]",
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet2').addressSpacePrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('localGatewayName22')]",
+            "apiVersion": "2020-11-01",
+            "comments": "local network gateway to reach out the vnet2 -IP2",
+            "location": "[variables('vNet2').location]",
+            "dependsOn": [],
+            "properties": {
+                "gatewayIpAddress": "[reference(variables('gateway2PublicIP2Id'),'2020-11-01').ipAddress]",
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet2').addressSpacePrefix]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('connectionName11-21')]",
+            "apiVersion": "2021-02-01",
+            "comments": "VPN connection between [Gateway1] and [Gateway2-pubIP1]",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName21'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('vNet1').vpnGatewayName)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName21'))]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[parameters('sharedKey')]",
+                "enableBGP": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('connectionName21-11')]",
+            "apiVersion": "2020-11-01",
+            "comments": "VPN connection between [Gateway2-pubIP1] and [Gateway1-pubIP1]",
+            "location": "[variables('vnet2').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName11'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('vNet2').vpnGatewayName)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName11'))]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[parameters('sharedKey')]",
+                "enableBGP": false
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('connectionName12-22')]",
+            "apiVersion": "2021-02-01",
+            "comments": "VPN connection between [Gateway1-pubIP2] and [Gateway2-pubIP2]",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName22'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('vNet1').vpnGatewayName)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName22'))]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[parameters('sharedKey')]",
+                "enableBGP": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('connectionName22-12')]",
+            "apiVersion": "2020-11-01",
+            "comments": "VPN connection between [Gateway2-pubIP2] and [Gateway1-pubIP2]",
+            "location": "[variables('vnet2').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName12'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('vNet2').vpnGatewayName)]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName12'))]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[parameters('sharedKey')]",
+                "enableBGP": false
+            }
+        }
+    ]
+}
