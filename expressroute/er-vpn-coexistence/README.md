@@ -14,7 +14,7 @@ editor="fabferri"/>
    ms.date="26/09/2021"
    ms.author="fabferri" />
 
-## Example of configuration with ExpressRoute Gateway and Azure VPN Gateway in coexistence
+# Example of configuration with ExpressRoute Gateway and Azure VPN Gateway in coexistence
 The article walks through a configuration with Azure Virtual Network (VNet) connected to an on-premises network and a remote site. The network diagram is shown below:
 
 [![1]][1]
