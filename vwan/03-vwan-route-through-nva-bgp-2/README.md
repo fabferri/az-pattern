@@ -137,6 +137,10 @@ All the scripts and ARM templates consume the values defined in the file **init.
     "RGTagUsage": "test BGP peering with virtual hubs"
 }
 ```
+The variable "mngIP" is the managment public IP used to access in SSH to the Azure VMs. The variable is used to allow traffic inbound in the NSGs applied to the NIC of the VMs.  
+
+<br>
+
 Before running any powershell script, please customize the values in the file **init.json**. The file **init.json** guarantees a consistency of input parameters across all the ARM templates. This is crucial to get a successful deployment.
 
 <br>
