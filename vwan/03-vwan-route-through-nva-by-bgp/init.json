@@ -1,0 +1,21 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan-test",
+    "hub1location": "westus2",
+    "hub2location": "westus2",
+    "branch1location": "westus2",
+    "branch2location": "westus2",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "sharedKey": "SITE_TO_SITE_VPN_SHARED_SECRET",
+    "mngIP": "PUBLIC_MANAGEMENT_IP_TO_ACCESS_IN_SSH_TO_THE_VMs",
+    "ercircuitId": "/subscriptions/<subscriptionID>/resourceGroups/ASH-Cust13/providers/Microsoft.Network/expressRouteCircuits/ASH-Cust13-ER",
+    "authorizationKey": "00000000-a821-4f2c-8884-be05123a865a",
+    "er1AddressPrefix": "10.2.12.0/25",
+    "RGTagExpireDate": "10/30/2021",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "test vWAN with NVAs in BGP peering with hub1 and hub2"
+}

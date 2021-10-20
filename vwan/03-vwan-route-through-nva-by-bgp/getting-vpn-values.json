@@ -1,0 +1,52 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hubName1": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub1. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "hubName2": {
+            "type": "string",
+            "defaultValue": "hub2",
+            "metadata": {
+                "description": "Name of the Virtual Hub2. A virtual hub is created inside a virtual wan."
+            }
+        }
+    },
+    "variables": {
+        "hubName1": "[parameters('hubName1')]",
+        "hubName2": "[parameters('hubName2')]"
+    },
+    "resources": [
+    ],
+    "outputs": {
+        "hub1pubIP1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hubName1')),'2021-02-01').virtualRouterIps[0]]"
+        },
+        "hub1pubIP2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hubName1')),'2021-02-01').virtualRouterIps[1]]"
+        },
+        "hub2pubIP1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hubName2')),'2021-02-01').virtualRouterIps[0]]"
+        },
+        "hub2pubIP2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hubName2')),'2021-02-01').virtualRouterIps[1]]"
+        },
+        "hub1vpn_ASN": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hubName1')) ),'2021-02-01').bgpSettings.asn]"
+        },
+        "hub2vpn_ASN": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hubName2')) ),'2021-02-01').bgpSettings.asn]"
+        }
+    }
+}

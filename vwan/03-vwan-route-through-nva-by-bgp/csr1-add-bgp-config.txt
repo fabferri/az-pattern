@@ -1,0 +1,13 @@
+!
+router bgp 65001
+ neighbor 10.10.0.68 remote-as 65515
+ neighbor 10.10.0.68 ebgp-multihop 5
+ neighbor 10.10.0.68 update-source Loopback0
+ neighbor 10.10.0.69 remote-as 65515
+ neighbor 10.10.0.69 ebgp-multihop 5
+ neighbor 10.10.0.69 update-source Loopback0
+ !
+!
+ip route 10.10.0.68 255.255.255.255 10.0.0.65
+ip route 10.10.0.69 255.255.255.255 10.0.0.65
+

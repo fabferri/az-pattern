@@ -1,0 +1,78 @@
+interface GigabitEthernet2
+ ip address dhcp
+ no shut
+!
+interface Loopback0
+ ip address 192.168.0.1 255.255.255.255
+ no shut
+!
+crypto ikev2 proposal az-PROPOSAL
+ encryption aes-cbc-256 aes-cbc-128 3des
+ integrity sha1
+ group 2
+!
+crypto ikev2 policy az-POLICY
+ proposal az-PROPOSAL
+!
+crypto ikev2 keyring key-peer1
+ peer azvpn1
+  address 20.109.190.190
+  pre-shared-key <SHARED_SECRET>
+!
+!
+crypto ikev2 profile az-PROFILE1
+ match address local interface GigabitEthernet1
+ match identity remote address 10.0.102.10 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local key-peer1
+!
+!
+crypto ipsec transform-set az-IPSEC-PROPOSAL-SET esp-aes 256 esp-sha-hmac
+ mode tunnel
+!
+crypto ipsec profile az-VTI1
+ set transform-set az-IPSEC-PROPOSAL-SET
+ set ikev2-profile az-PROFILE1
+!
+!
+interface Tunnel0
+ ip address 172.16.0.1 255.255.255.252
+ ip tcp adjust-mss 1350
+ tunnel source GigabitEthernet1
+ tunnel mode ipsec ipv4
+ tunnel destination 20.109.190.190
+ tunnel protection ipsec profile az-VTI1
+!
+!
+router bgp 65002
+ bgp router-id interface Loopback0
+ bgp log-neighbor-changes
+ neighbor 192.168.0.2 remote-as 65102
+ neighbor 192.168.0.2 ebgp-multihop 5
+ neighbor 192.168.0.2 update-source Loopback0
+ !
+ address-family ipv4
+  network 10.0.2.64 mask 255.255.255.192
+  network 10.0.2.128 mask 255.255.255.192
+  network 10.0.2.0 mask 255.255.255.192
+  neighbor 192.168.0.2 activate
+  neighbor 192.168.0.2 next-hop-self
+  neighbor 192.168.0.2 soft-reconfiguration inbound
+ exit-address-family
+!
+crypto ikev2 dpd 10 2 on-demand
+!
+! route set by ARM template
+ip route 0.0.0.0 0.0.0.0 10.0.2.1
+!
+!
+ip route 192.168.0.2 255.255.255.255 Tunnel0
+!ip route 10.0.2.64 255.255.255.192 10.0.2.65
+ip route 10.0.2.128 255.255.255.192 10.0.2.65
+
+
+line vty 0 4
+ exec-timeout 25 0
+exit
+

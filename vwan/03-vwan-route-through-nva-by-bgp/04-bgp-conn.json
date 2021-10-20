@@ -1,0 +1,182 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hub1location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub2location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "hub2Name": {
+            "type": "string",
+            "defaultValue": "hub2",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "nva1BGPpeer": {
+            "type": "string",
+            "defaultValue": "10.0.0.100",
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "nva1ASN": {
+            "type": "int",
+            "defaultValue": 65001,
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "nva2ASN": {
+            "type": "int",
+            "defaultValue": 65002,
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "nva2BGPpeer": {
+            "type": "string",
+            "defaultValue": "10.0.2.100",
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        }
+    },
+    "variables": {
+        "hub1Name": "[parameters('hub1Name')]",
+        "hub2Name": "[parameters('hub2Name')]",
+        "hub1location": "[parameters('hub1location')]",
+        "hub2location": "[parameters('hub2location')]",
+        "nva1ASN": "[parameters('nva1ASN')]",
+        "nva2ASN": "[parameters('nva2ASN')]",
+        "nva1BGPpeer": "[parameters('nva1BGPpeer')]",
+        "nva2BGPpeer": "[parameters('nva2BGPpeer')]",
+        "vnet1Name": "vnet1",
+        "vnet2Name": "vnet2",
+        "hub1connectionNamevnet1": "[concat(variables('vnet1Name'),'_conn')]",
+        "hub2connectionNamevnet2": "[concat(variables('vnet2Name'),'_conn')]",
+        "bgpConnName_nva1": "bgp-to-csr1",
+        "bgpConnName_nva2": "bgp-to-csr2"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[format('{0}/{1}', variables('hub1Name'), variables('bgpConnName_nva1'))]",
+            "apiVersion": "2021-02-01",
+            "properties": {
+                "peerIp": "[variables('nva1BGPpeer')]",
+                "peerAsn": "[variables('nva1ASN')]",
+                "hubVirtualNetworkConnection": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), variables('hub1connectionNamevnet1'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
+            "name": "[format('{0}/{1}', variables('hub1Name'), variables('hub1connectionNamevnet1'))]",
+            "apiVersion": "2021-02-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/bgpConnections', variables('hub1Name'), variables('bgpConnName_nva1'))]"
+            ],
+            "properties": {
+                "enableInternetSecurity": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+                },
+                "routingConfiguration": {
+                    "associatedRouteTable": {
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                    },
+                    "propagatedRouteTables": {
+                        "ids": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                            },
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
+                            }
+                        ],
+                        "labels": [
+                        ]
+                    },
+                    "vnetRoutes": {
+                        "staticRoutes": [],
+                        "bgpConnections": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/bgpConnections', variables('hub1Name'), variables('bgpConnName_nva1'))]"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[format('{0}/{1}', variables('hub2Name'), variables('bgpConnName_nva2'))]",
+            "apiVersion": "2021-02-01",
+            "properties": {
+                "peerIp": "[variables('nva2BGPpeer')]",
+                "peerAsn": "[variables('nva2ASN')]",
+                "hubVirtualNetworkConnection": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub2Name'), variables('hub2connectionNamevnet2'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
+            "name": "[format('{0}/{1}', variables('hub2Name'), variables('hub2connectionNamevnet2'))]",
+            "apiVersion": "2021-02-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/bgpConnections', variables('hub2Name'), variables('bgpConnName_nva2'))]"
+            ],
+            "properties": {
+                "enableInternetSecurity": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+                },
+                "routingConfiguration": {
+                    "associatedRouteTable": {
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
+                    },
+                    "propagatedRouteTables": {
+                        "ids": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                            },
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub2Name'), 'defaultRouteTable')]"
+                            }
+                        ],
+                        "labels": [
+                        ]
+                    },
+                    "vnetRoutes": {
+                        "staticRoutes": [],
+                        "bgpConnections": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/bgpConnections', variables('hub2Name'), variables('bgpConnName_nva2'))]"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

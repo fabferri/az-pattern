@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hub1Name": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "hub2Name": {
+            "type": "string",
+            "defaultValue": "hub2",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        }
+    },
+    "variables": {
+        "hub1Name": "[parameters('hub1Name')]",
+        "hub2Name": "[parameters('hub2Name')]"
+    },
+    "resources": [],
+    "outputs": {
+        "hub1VirtualRouterPubIP1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hub1Name')),'2021-02-01').virtualRouterIps[0]]"
+        },
+        "hub1VirtualRouterPubIP2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hub1Name')),'2021-02-01').virtualRouterIps[1]]"
+        },
+        "hub2VirtualRouterPubIP1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hub2Name')),'2021-02-01').virtualRouterIps[0]]"
+        },
+        "hub2VirtualRouterPubIP2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/virtualHubs', variables('hub2Name')),'2021-02-01').virtualRouterIps[1]]"
+        },
+        "hub1S2Svpn_ASN": {
+            "type": "int",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')) ),'2021-02-01').bgpSettings.asn]"
+        },
+        "hub1S2Svpn_BGP_IP1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')) ),'2021-02-01').bgpSettings.bgpPeeringAddresses[0].defaultBgpIpAddresses[0]]"
+        },
+        "hu1bS2Svpn_BGP_IP2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')) ),'2021-02-01').bgpSettings.bgpPeeringAddresses[1].defaultBgpIpAddresses[0]]"
+        },
+        "hub2S2Svpn_ASN": {
+            "type": "int",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub2Name')) ),'2021-02-01').bgpSettings.asn]"
+        },
+        "hub2S2Svpn_BGP_IP1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub2Name')) ),'2021-02-01').bgpSettings.bgpPeeringAddresses[0].defaultBgpIpAddresses[0]]"
+        },
+        "hub2S2Svpn_BGP_IP2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub2Name')) ),'2021-02-01').bgpSettings.bgpPeeringAddresses[1].defaultBgpIpAddresses[0]]"
+        }
+    }
+}
