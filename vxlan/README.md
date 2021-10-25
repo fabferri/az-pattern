@@ -157,6 +157,12 @@ The traffic in the vm1 can be capture by reference of vxlan0 device:
 ```console
 tcpdump -i vxlan0 -n host 172.16.0.2
 ```
+<br>
+
+Traffic capture of VXLAN UDP in vm1:
+```console
+tcpdump -i eth0 -n host 10.0.0.20
+```
 
 <!--Image References-->
 
