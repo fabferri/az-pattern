@@ -152,7 +152,7 @@ bridge fdb show dev vxlan0
 ip -d link show vxlan0
 ```
 
-### <a name="VXLAN"></a>1.5 capture traffic with tcpdump
+### <a name="VXLAN"></a>1.5 traffic capture by tcpdump
 The traffic in the vm1 can be capture by reference of vxlan0 device:
 ```console
 tcpdump -i vxlan0 -n host 172.16.0.2
