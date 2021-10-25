@@ -2,16 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "on-premises-remoteIP": {
+    "azureRegion1": {
       "type": "string",
-      "defaultValue": "100.100.100.1/32",
-      "metadata": {
-        "description": "remote public IP assigned to the on-premises desktop. it is used to set the NSG for traffic inbound to the VNet"
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "eastus",
+      "defaultValue": "uksouth",
       "metadata": {
         "description": "azure region where is deployed the vnet"
       }
@@ -30,43 +23,49 @@
     }
   },
   "variables": {
-    "on-premises-remoteIP": "[parameters('on-premises-remoteIP')]",
-    "adminUsername": "[parameters('adminUsername')]",
-    "adminPassword": "[parameters('adminPassword')]",
-    "windows": {
-      "imagePublisher": "MicrosoftWindowsServer",
-      "imageOffer": "WindowsServer",
-      "OSVersion": "2019-Datacenter",
-      "vmsize": "Standard_DS1_v2"
-    },
-    "linux": {
-      "imagePublisher": "canonical",
-      "imageOffer": "0001-com-ubuntu-server-focal",
-      "OSVersion": "20_04-lts",
-      "vmsize": "Standard_B1s"
-    },
+    "publisher": "canonical",
+    "offer": "0001-com-ubuntu-server-focal",
+    "sku": "20_04-lts",
+    "version": "latest",
+    "vmsize": "Standard_B1s",
     "vNet": {
-      "location": "[parameters('location')]",
+      "location": "[parameters('azureRegion1')]",
       "name": "vnet1",
-      "addressSpace1Prefix": "10.0.1.0/24",
+      "addressSpace1Prefix": "10.0.0.0/24",
       "subnet1Name": "subnet1",
-      "subnet1Prefix": "10.0.1.0/24"
+      "subnet1Prefix": "10.0.0.0/24"
     },
     "nsg": {
-      "name": "nsg1",
+      "name": "nsg",
       "location": "[variables('vNet').location]"
     },
+    "adminUsername": "[parameters('adminUsername')]",
+    "adminPassword": "[parameters('adminPassword')]",
     "vmarray": [
       {
         "location": "[variables('vNet').location]",
         "vmName": "vm1",
-        "vmSize": "[variables('windows').vmsize]",
-        "imagePublisher": "[variables('windows').imagePublisher]",
-        "imageOffer": "[variables('windows').imageOffer]",
-        "OSVersion": "[variables('windows').OSVersion]",
+        "vmSize": "[variables('vmsize') ]",
+        "imagePublisher": "[variables('publisher')]",
+        "imageOffer": "[variables('offer')]",
+        "sku": "[variables('sku')]",
+        "version": "[variables('version')]",
         "VNetName": "[variables('vNet').name]",
-        "subnetName": "[variables('vNet').subnet1Name]",
-        "privateIP": "10.0.1.10",
+        "SubnetName": "[variables('vNet').subnet1Name]",
+        "privateIP": "10.0.0.10",
+        "ipforwarding": false
+      },
+      {
+        "location": "[variables('vNet').location]",
+        "vmName": "vm2",
+        "vmSize": "[variables('vmsize')]",
+        "imagePublisher": "[variables('publisher')]",
+        "imageOffer": "[variables('offer')]",
+        "sku": "[variables('sku')]",
+        "version": "[variables('version')]",
+        "VNetName": "[variables('vNet').name]",
+        "SubnetName": "[variables('vNet').subnet1Name]",
+        "privateIP": "10.0.0.20",
         "ipforwarding": false
       }
     ],
@@ -76,7 +75,7 @@
     {
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsg').name]",
-      "apiVersion": "2021-02-01",
+      "apiVersion": "2020-11-01",
       "location": "[variables('nsg').location]",
       "properties": {
         "securityRules": [
@@ -87,24 +86,10 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "22",
-              "sourceAddressPrefix": "[variables('on-premises-remoteIP')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "VirtualNetwork",
               "access": "Allow",
               "priority": 500,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "RDP-rule",
-            "properties": {
-              "description": "allow RDP",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "sourceAddressPrefix": "[variables('on-premises-remoteIP')]",
-              "destinationAddressPrefix": "VirtualNetwork",
-              "access": "Allow",
-              "priority": 510,
               "direction": "Inbound"
             }
           }
@@ -114,7 +99,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet').name]",
-      "apiVersion": "2021-02-01",
+      "apiVersion": "2020-06-01",
       "location": "[variables('vNet').location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsg').name)]"
@@ -142,7 +127,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
-      "apiVersion": "2021-02-01",
+      "apiVersion": "2020-11-01",
       "location": "[variables('vmArray')[copyIndex()].location]",
       "comments": "Public IP address VMs",
       "properties": {
@@ -156,7 +141,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
-      "apiVersion": "2021-02-01",
+      "apiVersion": "2020-11-01",
       "location": "[variables('vmArray')[copyIndex()].location]",
       "comments": "NIC of the VMs",
       "dependsOn": [
@@ -174,7 +159,7 @@
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
               },
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].VNetName, variables('vmArray')[copyIndex()].subnetName)]"
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].VNetName, variables('vmArray')[copyIndex()].SubnetName)]"
               }
             }
           }
@@ -207,8 +192,8 @@
           "imageReference": {
             "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
             "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
-            "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
-            "version": "latest"
+            "sku": "[variables('vmArray')[copyIndex()].sku]",
+            "version": "[variables('vmArray')[copyIndex()].version]"
           },
           "osDisk": {
             "createOption": "FromImage",
@@ -228,5 +213,11 @@
         "count": "[variables('vmCount')]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
 }
