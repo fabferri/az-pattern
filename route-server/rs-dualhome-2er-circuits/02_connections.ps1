@@ -8,8 +8,8 @@ $deploymentName = "vnets"
 $armTemplateFile = "02_connections.json"
 
 $RGTagExpireDate = '4/15/2021'
-$RGTagContact = 'fabferri@microsoft.com'
-$RGTagNinja = 'fabferri'
+$RGTagContact = 'user01@contoso.com'
+$RGTagNinja = 'user01'
 $RGTagUsage = 'testing RS with multiple ER circuits'
 ####################################################
 

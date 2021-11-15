@@ -3,10 +3,10 @@
 [CmdletBinding()]
 param (
     [Parameter( Mandatory = $false, ValueFromPipeline=$false, HelpMessage='VMs administrator username')]
-    [string]$adminUsername = "PathLabUser",
+    [string]$adminUsername = "ADMINISTRATOR_USERNAME",
  
     [Parameter(Mandatory = $false, HelpMessage='VMs administrator password')]
-    [string]$adminPassword = ")oIcXdv1P0_RT2t:qsJ"
+    [string]$adminPassword = "ADMINISTRATOR_PASSWORD"
     )
 ################# Input parameters #################
 $subscriptionName  = "ExpressRoute-Lab"     
@@ -16,8 +16,8 @@ $deploymentName = "vnets"
 $armTemplateFile = "01_vnets.json"
 
 $RGTagExpireDate = '4/15/2021'
-$RGTagContact = 'fabferri@microsoft.com'
-$RGTagNinja = 'fabferri'
+$RGTagContact = 'user01@contoso.com'
+$RGTagNinja = 'user01'
 $RGTagUsage = 'testing RS with multiple ER circuits'
 ####################################################
 
