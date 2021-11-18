@@ -326,10 +326,10 @@ RPKI validation codes: V valid, I invalid, N Not found
 ## <a name="BGP update message"></a>6. Trigger the update BGP message
 
 To see the message of debug on the vty session:
-1. disable the console logging
-2. activate the loggin in the terminal
+1. disable the console logging (**no logging console**)
+2. activate the loggin in the terminal (**terminal monitor**)
 3. to watch the update BGP messages use the command: **debug ip bgp updates**
-4. to trigger the update BGP message clear the existing BGP message by command: **debug ip bgp updates**
+4. to trigger the update BGP message clear the existing BGP message by command: **clear ip bgp \***
 
 ```
 csr2#terminal monitor
