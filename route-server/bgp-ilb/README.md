@@ -64,7 +64,7 @@ To keep simple the ARM template compact the nic associated with the CSRs are cre
     }
 ]
 ```
-The "loadBalancerBackendAddressPools" is set to json('null') if the  variables('csrArray')[copyIndex()].loadBalancerBackendAddressPools is empty.
+The **"loadBalancerBackendAddressPools"** is set to **json('null')** if the **variables('csrArray')[copyIndex()].loadBalancerBackendAddressPools** is empty.
 The function resolves the creation of the nic1 in the csr1, that's no associated with the backendpool of the LB. 
 
 **Files:**
