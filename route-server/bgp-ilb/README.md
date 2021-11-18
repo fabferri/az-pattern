@@ -48,6 +48,7 @@ The static routes in the cisco CSRs are important to define the interface the BG
 
 <br>
 To keep simple the ARM template compact the nic associated with the CSRs are created in the loop with reference to the LB:
+
 ```json
 "ipConfigurations": [
     {
