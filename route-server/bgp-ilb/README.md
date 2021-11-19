@@ -102,7 +102,7 @@ route-map LB permit 10
  set ip next-hop 10.0.3.10
 ```
 
-The ARM template sets as healtprobe message the TCP port 80. The csr1 and crs2 answer to the HTTP requests becasue the HTTP server is set UP in the cofiguration:
+The ARM template sets an healtprobe LB to the TCP port 80. The csr2 and crs3 answer to the HTTP requests becasue the in the configuration HTTP server is UP:
 ```
 ip http server
 ```
