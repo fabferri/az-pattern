@@ -47,7 +47,7 @@ The static routes in the cisco CSRs are important to define the interface the BG
 
 
 <br>
-To keep simple the ARM template compact the nic associated with the CSRs are created in the loop with reference to the LB:
+To keep compact the ARM template, the nic1 associated with the CSRs are created in the loop with reference to the LB:
 
 ```json
 "ipConfigurations": [
@@ -64,8 +64,9 @@ To keep simple the ARM template compact the nic associated with the CSRs are cre
     }
 ]
 ```
-The **"loadBalancerBackendAddressPools"** is set to **json('null')** if the **variables('csrArray')[copyIndex()].loadBalancerBackendAddressPools** is empty.
-The function resolves the creation of the nic1 in the csr1, that's no associated with the backendpool of the LB. 
+This function provides an easy to assign different value to **"loadBalancerBackendAddressPools"**: 
+- **"loadBalancerBackendAddressPools"** is set to **json('null')** when the content of **variables('csrArray')[copyIndex()].loadBalancerBackendAddressPools** is empty. It is the case of nic1 in the csr1, that's no associated with the backendpool of the LB.
+- **"loadBalancerBackendAddressPools"** is _NOT_ set to **json('null')** if the value specified in **variables('csrArray')[copyIndex()].loadBalancerBackendAddressPools)** is different from empty string. it is the case of csr2 and csr3.
 
 **Files:**
 | File name           | Description                                                   |
