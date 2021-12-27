@@ -26,24 +26,9 @@ editor=""/>
 | **sql-dbs.json**    | Azure ARM template to deploy the SQL server with databases          |
 | **sql-dbs-pws.ps1** | powershell script to deploy the SQL server with databases           |
 
-> *Note1*
+>> *Note1*
 >
-> Before running **sql-dbs.ps1** set the input variables:
-> $administratorLogin: name of the SQL administrator
->
-> $administratorLoginPassword: password of the SQL server
->
-> $subscriptionName : name of the Azure subscription
->
-> $location         : name of the Azure region
->
-> $rgName           : name of the Azure resource group
->
-
-> *Note2*
->
-> Before running **sql-dbs-pws.ps1** set the input variables:
->
+>  Input variables in **sql-dbs.ps1**:
 >
 > $administratorLogin: name of the SQL administrator
 >
@@ -56,7 +41,27 @@ editor=""/>
 > $rgName           : name of the Azure resource group
 >
 
-The  **sql-dbs.json** and **sql-dbs-pws.ps1** are possibile alternative ways to make the same deployment: use one of them.
+>> *Note2*
+>
+>  Input variables in **sql-dbs-pws.ps1**:
+>
+> $administratorLogin: name of the SQL administrator
+>
+> $administratorLoginPassword: password of the SQL server
+>
+> $subscriptionName : name of the Azure subscription
+>
+> $location         : name of the Azure region
+>
+> $rgName           : name of the Azure resource group
+>
+<br>
+
+You can use two possibile alternative way to run the deployment:  **sql-dbs.json** OR **sql-dbs-pws.ps1** 
+
+<br>
+
+Use one of them.
 
 <!--Image References-->
 
