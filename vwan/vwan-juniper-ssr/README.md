@@ -32,11 +32,9 @@ The network diagram is shown below:
 * the Virtual WAN (vWAN) has a single virtual hub with only a connection with a spoke vnet
 * The target configuration is to establish an any-to-any communication between all the VMs, attached to the VNets with smart routers and in spoke vnet connected to virtual hub.
 
-<h2> Caveats
-<br>
-This article can be used in testbed environment and it is not extensive tested.
-The scripts and ARM templates are not ready to be used in production.
-Deployment of SSR routers and conductor use BYOL; installation can be completed only by Juniper license. To get the right license, please contact a Juniper representative to ask for. Without license you won't be able to make the setup. </h2>
+### Caveats
+### - This article can be used in testbed environment and it is not extensive tested. The scripts and ARM templates are not ready to be used in production.
+### - Deployment of SSR routers and conductor use BYOL; installation can be completed only by Juniper license. To get the right license, please contact a Juniper representative to ask for. Without license you won't be able to make the setup. </h2>
 <br>
 
 ### <a name="List"></a>1. List of files
