@@ -1,0 +1,22 @@
+
+*********** r1:"
+     NIC-management - Private IP:"10.0.1.10 
+     NIC-public     - Private IP:"10.0.1.50 
+     NIC-private    - Private IP:"10.0.1.90  
+     NIC-management - Public IP :"20.80.181.230  
+     NIC-public     - Public IP :"20.80.182.1 
+------------------------------------------------
+*********** r2:"
+     NIC-management - Private IP:"10.0.2.10 
+     NIC-public     - Private IP:"10.0.2.50  
+     NIC-private    - Private IP:"10.0.2.90  
+     NIC-management - Public IP :"20.83.252.57  
+     NIC-public     - Public IP :"20.83.253.255  
+     ------------------------------------------------
+*********** r3:"
+     NIC-management - Private IP:"10.0.3.10
+     NIC-public     - Private IP:"10.0.3.50
+     NIC-private    - Private IP:"10.0.3.90
+     NIC-management - Public IP :"20.83.110.58
+     NIC-public     - Public IP :"20.114.60.232
+     ------------------------------------------------

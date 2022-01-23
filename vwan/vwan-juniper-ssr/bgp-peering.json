@@ -1,0 +1,76 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hub1location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Name of vnet1."
+            }
+        }
+    },
+    "variables": {
+        "hub1Name": "[parameters('hub1Name')]",
+        "hub1location": "[parameters('hub1location')]",
+        "vnet1Name": "[parameters('vnet1Name')]",
+        "ip_r1": "10.0.1.90",
+        "asn_r1": 65001,
+        "bgp_conn_r1": "bgp_r1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
+            "name": "[format('{0}/{1}_conn', variables('hub1Name'), variables('vnet1Name'))]",
+            "apiVersion": "2021-05-01",
+            "dependsOn": [],
+            "properties": {
+                "routingConfiguration": {
+                    "associatedRouteTable": {
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                    },
+                    "propagatedRouteTables": {
+                        "ids": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                            }
+                        ]
+                    }
+                },
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[concat(variables('hub1Name'),'/',variables('bgp_conn_r1'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('hub1location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet1Name')))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('ip_r1')]",
+                "peerAsn": "[variables('asn_r1')]",
+                "hubVirtualNetworkConnection": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'), format('{0}_conn', variables('vnet1Name')))]"
+                }
+            }
+        }
+    ]
+}

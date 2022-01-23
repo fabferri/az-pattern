@@ -1,0 +1,32 @@
+[root@r1 ~]# sudo basename $(readlink /sys/class/net/eth0/device)
+000d3a6c-e3c6-000d-3a6c-e3c6000d3a6c
+[root@r1 ~]# sudo basename $(readlink /sys/class/net/eth1/device)
+000d3a6c-ed37-000d-3a6c-ed37000d3a6c
+[root@r1 ~]# sudo basename $(readlink /sys/class/net/eth2/device)
+000d3a6c-e668-000d-3a6c-e668000d3a6c
+-----------------------------------------------------------------
+[root@r1 ~]# sudo dpdk-devbind.py --status
+
+Network devices using kernel driver
+===================================
+22d7:00:02.0 'MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function                                                          ] 1004' if=eth4 drv=mlx4_core unused=igb_uio,vfio-pci
+5826:00:02.0 'MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function                                                          ] 1004' if=eth5 drv=mlx4_core unused=igb_uio,vfio-pci
+d2e3:00:02.0 'MT27500/MT27520 Family [ConnectX-3/ConnectX-3 Pro Virtual Function                                                          ] 1004' if=eth3 drv=mlx4_core unused=igb_uio,vfio-pci
+
+VMBus devices
+=============
+000d3a6c-e3c6-000d-3a6c-e3c6000d3a6c 'Synthetic network adapter' if=eth0 drv=hv_                                                          netvsc
+000d3a6c-e668-000d-3a6c-e668000d3a6c 'Synthetic network adapter' if=eth2 drv=hv_                                                          netvsc
+000d3a6c-ed37-000d-3a6c-ed37000d3a6c 'Synthetic network adapter' if=eth1 drv=hv_                                                          netvsc
+
+No 'Crypto' devices detected
+============================
+
+No 'Eventdev' devices detected
+==============================
+
+No 'Mempool' devices detected
+=============================
+
+No 'Compress' devices detected
+==============================

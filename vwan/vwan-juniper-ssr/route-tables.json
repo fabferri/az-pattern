@@ -1,0 +1,391 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnet1location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Name of the location of an existing VNet the 128T Technology Router should be deployed to."
+      }
+    },
+    "vnet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1",
+      "metadata": {
+        "description": "Name of an existing VNet within the resource group the 128 Technology Router should be deployed to."
+      }
+    },
+    "vnet2location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Name of the location of an existing VNet the 128T Technology Router should be deployed to."
+      }
+    },
+    "vnet2Name": {
+      "type": "string",
+      "defaultValue": "vnet2",
+      "metadata": {
+        "description": "Name of an existing VNet within the resource group the 128 Technology Router should be deployed to."
+      }
+    },
+    "vnet3location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Name of the location of an existing VNet the 128T Technology Router should be deployed to."
+      }
+    },
+    "vnet3Name": {
+      "type": "string",
+      "defaultValue": "vnet3",
+      "metadata": {
+        "description": "Name of an existing VNet within the resource group the 128 Technology Router should be deployed to."
+      }
+    }
+
+  },
+  "variables": {
+    "vnet1NVAPrivIP": "10.0.1.90",
+    "vnet2NVAPrivIP": "10.0.2.90",
+    "vnet3NVAPrivIP": "10.0.3.90",
+    "spoke1AddressSpace": "10.101.1.0/24",
+    "vnet1": {
+      "location": "[parameters('vnet1location')]",
+      "name": "[parameters('vnet1Name')]",
+      "addressSpacePrefix": "10.0.1.0/24",
+      "managementSubnetName": "management",
+      "managementSubnetPrefix": "10.0.1.0/27",
+      "publicSubnetName": "public",
+      "publicSubnetPrefix": "10.0.1.32/27",
+      "privateSubnetName": "private",
+      "privateSubnetPrefix": "10.0.1.64/27",
+      "workloadSubnetName": "workload",
+      "workloadSubnetPrefix": "10.0.1.96/27",
+      "rtName": "[concat(parameters('vnet1Name'),'-RT')]"
+    },
+    "vnet2": {
+      "location": "[parameters('vnet2location')]",
+      "name": "[parameters('vnet2Name')]",
+      "addressSpacePrefix": "10.0.2.0/24",
+      "managementSubnetName": "management",
+      "managementSubnetPrefix": "10.0.2.0/27",
+      "publicSubnetName": "public",
+      "publicSubnetPrefix": "10.0.2.32/27",
+      "privateSubnetName": "private",
+      "privateSubnetPrefix": "10.0.2.64/27",
+      "workloadSubnetName": "workload",
+      "workloadSubnetPrefix": "10.0.2.96/27",
+      "rtName": "[concat(parameters('vnet2Name'),'-RT')]"
+    },
+    "vnet3": {
+      "location": "[parameters('vnet3location')]",
+      "name": "[parameters('vnet3Name')]",
+      "addressSpacePrefix": "10.0.3.0/24",
+      "managementSubnetName": "management",
+      "managementSubnetPrefix": "10.0.3.0/27",
+      "publicSubnetName": "public",
+      "publicSubnetPrefix": "10.0.3.32/27",
+      "privateSubnetName": "private",
+      "privateSubnetPrefix": "10.0.3.64/27",
+      "workloadSubnetName": "workload",
+      "workloadSubnetPrefix": "10.0.3.96/27",
+      "rtName": "[concat(parameters('vnet3Name'),'-RT')]"
+    },
+    "RT-vnet1": {
+      "name": "[concat(parameters('vnet1Name'),'-RT')]",
+      "location": "[parameters('vnet1location')]",
+      "nameRTEntry1": "to-vnet2",
+      "destinationAddressPrefix1": "[variables('vnet2').addressSpacePrefix]",
+      "nextHopType1": "VirtualAppliance",
+      "nextHopIpAddress1": "[variables('vnet1NVAPrivIP')]",
+      "nameRTEntry2": "to-vnet3",
+      "destinationAddressPrefix2": "[variables('vnet3').addressSpacePrefix]",
+      "nextHopType2": "VirtualAppliance",
+      "nextHopIpAddress2": "[variables('vnet1NVAPrivIP')]",
+      "nameRTEntry3": "to-spoke1",
+      "destinationAddressPrefix3": "[variables('spoke1AddressSpace')]",
+      "nextHopType3": "VirtualAppliance",
+      "nextHopIpAddress3": "[variables('vnet1NVAPrivIP')]"
+    },
+    "RT-vnet2": {
+      "name": "[concat(parameters('vnet2Name'),'-RT')]",
+      "location": "[parameters('vnet2location')]",
+      "nameRTEntry1": "to-vnet1",
+      "destinationAddressPrefix1": "[variables('vnet1').addressSpacePrefix]",
+      "nextHopType1": "VirtualAppliance",
+      "nextHopIpAddress1": "[variables('vnet2NVAPrivIP')]",
+      "nameRTEntry2": "to-vnet3",
+      "destinationAddressPrefix2": "[variables('vnet3').addressSpacePrefix]",
+      "nextHopType2": "VirtualAppliance",
+      "nextHopIpAddress2": "[variables('vnet2NVAPrivIP')]",
+      "nameRTEntry3": "to-spoke1",
+      "destinationAddressPrefix3": "[variables('spoke1AddressSpace')]",
+      "nextHopType3": "VirtualAppliance",
+      "nextHopIpAddress3": "[variables('vnet2NVAPrivIP')]"
+    },
+    "RT-vnet3": {
+      "name": "[concat(parameters('vnet3Name'),'-RT')]",
+      "location": "[parameters('vnet3location')]",
+      "nameRTEntry1": "to-vnet1",
+      "destinationAddressPrefix1": "[variables('vnet1').addressSpacePrefix]",
+      "nextHopType1": "VirtualAppliance",
+      "nextHopIpAddress1": "[variables('vnet3NVAPrivIP')]",
+      "nameRTEntry2": "to-vnet2",
+      "destinationAddressPrefix2": "[variables('vnet2').addressSpacePrefix]",
+      "nextHopType2": "VirtualAppliance",
+      "nextHopIpAddress2": "[variables('vnet3NVAPrivIP')]",
+      "nameRTEntry3": "to-spoke1",
+      "destinationAddressPrefix3": "[variables('spoke1AddressSpace')]",
+      "nextHopType3": "VirtualAppliance",
+      "nextHopIpAddress3": "[variables('vnet3NVAPrivIP')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-vnet1').name]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('RT-vnet1').location]",
+      "comments": "Routing Table vnetHub1-subnet2",
+      "properties": {
+        "routes": [
+          {
+            "name": "[variables('RT-vnet1').nameRTEntry1]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet1').destinationAddressPrefix1]",
+              "nextHopType": "[variables('RT-vnet1').nextHopType1]",
+              "nextHopIpAddress": "[variables('RT-vnet1').nextHopIpAddress1]"
+            }
+          },
+          {
+            "name": "[variables('RT-vnet1').nameRTEntry2]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet1').destinationAddressPrefix2]",
+              "nextHopType": "[variables('RT-vnet1').nextHopType2]",
+              "nextHopIpAddress": "[variables('RT-vnet1').nextHopIpAddress2]"
+            }
+          },
+          {
+            "name": "[variables('RT-vnet1').nameRTEntry3]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet1').destinationAddressPrefix3]",
+              "nextHopType": "[variables('RT-vnet1').nextHopType3]",
+              "nextHopIpAddress": "[variables('RT-vnet1').nextHopIpAddress3]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-vnet2').name]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('RT-vnet2').location]",
+      "comments": "Routing Table vnetHub1-subnet2",
+      "properties": {
+        "routes": [
+          {
+            "name": "[variables('RT-vnet2').nameRTEntry1]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet2').destinationAddressPrefix1]",
+              "nextHopType": "[variables('RT-vnet2').nextHopType1]",
+              "nextHopIpAddress": "[variables('RT-vnet2').nextHopIpAddress1]"
+            }
+          },
+          {
+            "name": "[variables('RT-vnet2').nameRTEntry2]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet2').destinationAddressPrefix2]",
+              "nextHopType": "[variables('RT-vnet2').nextHopType2]",
+              "nextHopIpAddress": "[variables('RT-vnet2').nextHopIpAddress2]"
+            }
+          },
+          {
+            "name": "[variables('RT-vnet2').nameRTEntry3]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet2').destinationAddressPrefix3]",
+              "nextHopType": "[variables('RT-vnet2').nextHopType3]",
+              "nextHopIpAddress": "[variables('RT-vnet2').nextHopIpAddress3]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-vnet3').name]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('RT-vnet3').location]",
+      "comments": "Routing Table vnetHub1-subnet2",
+      "properties": {
+        "routes": [
+          {
+            "name": "[variables('RT-vnet3').nameRTEntry1]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet3').destinationAddressPrefix1]",
+              "nextHopType": "[variables('RT-vnet3').nextHopType1]",
+              "nextHopIpAddress": "[variables('RT-vnet3').nextHopIpAddress1]"
+            }
+          },
+          {
+            "name": "[variables('RT-vnet3').nameRTEntry2]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet3').destinationAddressPrefix2]",
+              "nextHopType": "[variables('RT-vnet3').nextHopType2]",
+              "nextHopIpAddress": "[variables('RT-vnet3').nextHopIpAddress2]"
+            }
+          },
+          {
+            "name": "[variables('RT-vnet3').nameRTEntry3]",
+            "properties": {
+              "addressPrefix": "[variables('RT-vnet3').destinationAddressPrefix3]",
+              "nextHopType": "[variables('RT-vnet3').nextHopType3]",
+              "nextHopIpAddress": "[variables('RT-vnet3').nextHopIpAddress3]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet1').name]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables', variables('RT-vnet1').name)]"
+      ],
+      "comments": "update/create virtual network with RT applied to workload subnet",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet1').addressSpacePrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnet1').managementSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').managementSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet1').publicSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').publicSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet1').privateSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').privateSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet1').workloadSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').workloadSubnetPrefix]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-vnet1').name)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet2').name]",
+      "apiVersion": "2020-05-01",
+      "location": "[variables('vnet2').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables', variables('RT-vnet2').name)]"
+      ],
+      "comments": "update/create virtual network with RT applied to workload subnet",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet2').addressSpacePrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnet2').managementSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2').managementSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet2').publicSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2').publicSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet2').privateSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2').privateSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet2').workloadSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2').workloadSubnetPrefix]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-vnet2').name)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet3').name]",
+      "apiVersion": "2020-05-01",
+      "location": "[variables('vnet3').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables', variables('RT-vnet3').name)]"
+      ],
+      "comments": "update/create virtual network with RT applied to workload subnet",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet3').addressSpacePrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnet3').managementSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet3').managementSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet3').publicSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet3').publicSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet3').privateSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet3').privateSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet3').workloadSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet3').workloadSubnetPrefix]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-vnet3').name)]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {}
+}

@@ -1,0 +1,20 @@
+{
+    "subscriptionName": "AzDev",
+    "resourceGroupName": "vWAN-rg",
+    "keyVaultName": "juniper128T-kv",
+    "keyVaultAccessPoliciesObjectId": "AZURE_ACTIVE_DIRECTORY_OBJECT_TO_ASSIGN_RIGHTS_TO_ACCESS_TO_KEYVAULT",
+    "conductorlocation": "westus2",
+    "conductorAdministratorUsername":"ADMINISTRATOR_USERNAME_CONDUCTOR",
+    "conductorPubRSAKey": "RSA_PUBLIC_KEY_ASSOCIATED_TO_ADMINISTRATOR_USERNAME_CONDUCTOR",
+    "ssrlocation": "westus2",
+    "ssrAdministratorUsername":"ADMINISTRATOR_USERNAME_SSR",
+    "ssrPubRSAKey": "RSA_PUBLIC_KEY_ASSOCIATED_TO_ADMINISTRATOR_USERNAME_SSR",
+    "location": "westus2",
+    "adminUsername": "ADMINISTRATOR_USERNAME_VMs",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_VMs",
+    "mngIP": "",
+    "RGTagExpireDate": "02/15/2022",
+    "RGTagContact": "user01@contoso.com",
+    "RGTagNinja": "user01",
+    "RGTagUsage": "128 test"
+}
