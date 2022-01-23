@@ -181,7 +181,7 @@ It is possible to copy-and-paste snippets or full directly into conductor. The P
 <br>
 
 ### PASTE the content of the file ssr-config.txt into the PCLI
-### by PCLI command: commit, commits the candidate config as the new running config.
+### Use the PCLI commit command to apply the candidate config as the new running config.
 <br>
 
 The 'commit' command causes the 128T router to validate the candidate configuration, and then replace the running
