@@ -33,8 +33,8 @@ The network diagram is shown below:
 * The target configuration is to establish an any-to-any communication between all the VMs, attached to the VNets with smart routers and in spoke vnet connected to virtual hub.
 
 ### Caveats
-### - This article can be used in testbed environment and it is not extensive tested. The scripts and ARM templates are not ready to be used in production.
-### - Deployment of SSR routers and conductor use BYOL; installation can be completed only by Juniper license. To get the right license, please contact a Juniper representative to ask for. Without license you won't be able to make the setup. </h2>
+### - This article can be used in testbed environment and it is not extensive tested. The scripts and ARM templates are not ready for production.
+### - Deployment of SSR routers and conductor use BYOL; installation can be completed only by Juniper license. Without license you won't be able to make the setup. To get the right license, please contact a Juniper representative and ask for.
 <br>
 
 ### <a name="List"></a>1. List of files
@@ -61,7 +61,7 @@ The network diagram is shown below:
 | **bgp-peering.json**|  ARM template to configure in vWAN the BGP peering in Virtual Router |
 | **bgp-peering.ps1** |  powershell script to run **bgp-peering.json**             |
 | **ssr-generate-full-config** | powershell script collects all the parameters required to generate the full configuration of all SSRs. The script generates in output a text file named **ssr-config.txt**. The content of this file needs to be cut-and-pasted in the CLI of the conductor. |
-| **grab-IPs**        | powershell script grabs private and public IP addresses of all ethernet interface of router r1, r2,r3|
+| **grab-IPs**        | powershell script grabs private and public IP addresses of all ethernet interface of router r1, r2,r3. Before completion, the script writes the values in a text file named **List-IPs.txt**|
 
 ### <a name="Dependency"></a>2. Dependency
 Let's discuss in summary some dependencies in execution of the ARM templates.
@@ -81,7 +81,7 @@ After bootstrapping of the router r1, r2, r3 connect in SSH to each VM. A screen
 [![3]][3]
 <br>
 
-Skip the Username and Token and paste the full content of .PEM file Juniper provided you:
+Skip the Username and Token and paste the full content of .PEM file Juniper gave you:
 
 [![4]][4]
 
@@ -96,15 +96,18 @@ Select the option **Conductor** or **Router**, based on what you want to install
 [![6]][6]
 
 Specify standalone or HA installation type:
+
 [![7]][7]
 
-Installation of session smart router requires the public IP of the conductor:
+Installation of session smart router (SSR) requires the public IP of the conductor:
+
 [![10]][10]
 
 ## <a name="SSRconfiguration"></a>3. Generate the full configuration of Session Smart Routers (SSRs)
-Connect in SSH to each SSR to pickup the VM BUS ID for each ethernet interfaces; two commands can be used for the purpose as reported below: 
+Installation of SSRs requires the VM BUS ID of public and private (internal) interfaces. <br>
+Connect in SSH to each SSR to pickup the VMBus ID for each ethernet interfaces; two commands can be used for the purpose as reported below: 
 
-```console
+```bash
 [root@r1 ~]# sudo basename $(readlink /sys/class/net/eth0/device)
 000d3a6c-e3c6-000d-3a6c-e3c6000d3a6c
 [root@r1 ~]# sudo basename $(readlink /sys/class/net/eth1/device)
@@ -127,7 +130,7 @@ VMBus devices
 000d3a6c-ed37-000d-3a6c-ed37000d3a6c 'Synthetic network adapter' if=eth1 drv=hv_ 
 ```
 
-Write the values of VMBUS IDs of ethernet interfaces of r1, r2, r3 in the script **ssr-generate-full-config.ps1**:
+Write the values of VMBus IDs of ethernet interfaces of r1, r2, r3 in the script **ssr-generate-full-config.ps1**:
 ```console
 $r1_nicMng_vmbusId  = '000d3a6c-e3c6-000d-3a6c-e3c6000d3a6c'
 $r1_nicPub_vmbusId  = '000d3a6c-ed37-000d-3a6c-ed37000d3a6c'
@@ -181,12 +184,11 @@ It is possible to copy-and-paste snippets or full directly into conductor. The P
 <br>
 
 ### PASTE the content of the file ssr-config.txt into the PCLI
-### Use the PCLI commit command to apply the candidate config as the new running config.
+### Use the PCLI 'commit' command to apply the candidate config as the new running config.
 <br>
 
-The 'commit' command causes the 128T router to validate the candidate configuration, and then replace the running
+The **commit** command causes the 128T router to validate the candidate configuration, and then replace the running
 configuration with the candidate configuration (assuming it passes the validation step). 
-<br>
 When run from a 128T conductor, the conductor will first validate the configuration itself before distributing
 configuration to all of its managed routers for each of them to validate the configuration. After the managed routers
 have all reported the results of their validation, the commit activity takes place (assuming a successful validation).
