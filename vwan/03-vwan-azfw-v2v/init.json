@@ -1,0 +1,14 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "vwan-test4",
+    "vwanName" : "vwan3",
+    "hub1location": "westus2",
+    "hub1Name": "hub1",
+    "mngIP": "81.150.26.218/32",
+    "RGTagExpireDate": "02/21/2022",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "test vWAN transit NVA"
+}
