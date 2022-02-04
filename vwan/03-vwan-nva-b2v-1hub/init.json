@@ -1,0 +1,20 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "vwan-hub1-nva",
+    "keyVaultName": "vwan-kv",
+    "keyVaultAccessPoliciesObjectId": "AAD_OBJECT_ID (i.e. AAD username object Id) to access to keyvault",
+    "vwanName": "vwan1",
+    "hub1location": "westus2",
+    "branch1location": "westus2",
+    "branch2location": "westus2",
+    "ResourceGroupNameBranch": "vwan-hub1-nva",
+    "hub1Name": "hub1",
+    "sharedKey": "SHARED_KEY_SITE_TO_SITE_VPN",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": "MANAGEMENT_PUBLIC_IP_TO_CONNECT_TO_VMs",
+    "RGTagExpireDate": "02/15/2022",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "vWAN: test one hub with NVA"
+}
