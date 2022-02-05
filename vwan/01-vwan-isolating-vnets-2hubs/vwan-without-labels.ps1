@@ -4,8 +4,8 @@
 #   $adminPassword
 #   $subscriptionName
 #   $ResourceGroupName
-#   $hub1_location
-#   $hub2_location
+#   $hub1location
+#   $hub2location
 #   $hub1Name
 #   $hub2Name
 #   $mngIP
@@ -16,7 +16,7 @@
 #
 ################# Input parameters #################
 $deploymentName = 'vwan1'
-$armTemplateFile = 'vwan-with-labels.json'
+$armTemplateFile = 'vwan-without-labels.json'
 $inputParams = 'init.json'
 ####################################################
 
@@ -53,20 +53,21 @@ else { Write-Warning "$inputParams file not found, please change to the director
 
 # checking the values of variables
 Write-Host "$(Get-Date) - values from file: $inputParams" -ForegroundColor Yellow
-if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit } else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green}
-if (!$adminPassword) { Write-Host 'variable $adminPassword is null' ; Exit } else { Write-Host '   administrator password: '$adminPassword -ForegroundColor Green}
-if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit } else { Write-Host '   subscription name..: '$subscriptionName -ForegroundColor Yellow}
+if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit }         else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green}
+if (!$adminPassword) { Write-Host 'variable $adminPassword is null' ; Exit }         else { Write-Host '   administrator password: '$adminPassword -ForegroundColor Green}
+if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit }   else { Write-Host '   subscription name..: '$subscriptionName -ForegroundColor Yellow}
 if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host '   resource group name: '$ResourceGroupName -ForegroundColor Yellow}
-if (!$hub1_location) { Write-Host 'variable $hub1_location is null' ; Exit } else { Write-Host '   hub1 location...........: '$hub1_location -ForegroundColor Yellow}
-if (!$hub2_location) { Write-Host 'variable $hub2_location is null' ; Exit } else { Write-Host '   hub2 location...........: '$hub2_location -ForegroundColor Yellow}
-if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit } else { Write-Host '   hub1 name...............: '$hub1Name -ForegroundColor Yellow}
-if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit } else { Write-Host '   hub2 name...............: '$hub2Name -ForegroundColor Yellow}
-if (!$mngIP) { Write-Host 'variable $mngIP is null' ; Exit } else { Write-Host '   mngIP..............: '$mngIP -ForegroundColor Yellow}
-if (!$RGTagExpireDate) { Write-Host 'variable $RGTagExpireDate is null' ; Exit } else { Write-Host '   RGTagExpireDate....: '$RGTagExpireDate -ForegroundColor Yellow}
-if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit } else { Write-Host '   RGTagContact.......: '$RGTagContact -ForegroundColor Yellow}
-if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit } else { Write-Host '   RGTagNinja.........: '$RGTagNinja -ForegroundColor Yellow}
-if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit } else { Write-Host '   RGTagUsage.........: '$RGTagUsage -ForegroundColor Yellow}
+if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit }           else { Write-Host '   hub1 location...........: '$hub1location -ForegroundColor Yellow}
+if (!$hub2location) { Write-Host 'variable $hub2location is null' ; Exit }           else { Write-Host '   hub2 location...........: '$hub2location -ForegroundColor Yellow}
+if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit }                   else { Write-Host '   hub1 name...............: '$hub1Name -ForegroundColor Yellow}
+if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit }                   else { Write-Host '   hub2 name...............: '$hub2Name -ForegroundColor Yellow}
+if (!$mngIP) { Write-Host 'variable $mngIP is null' ; Exit }                         else { Write-Host '   mngIP..............: '$mngIP -ForegroundColor Yellow}
+if (!$RGTagExpireDate) { Write-Host 'variable $RGTagExpireDate is null' ; Exit }    else { Write-Host '   RGTagExpireDate....: '$RGTagExpireDate -ForegroundColor Yellow}
+if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit }          else { Write-Host '   RGTagContact.......: '$RGTagContact -ForegroundColor Yellow}
+if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit }              else { Write-Host '   RGTagNinja.........: '$RGTagNinja -ForegroundColor Yellow}
+if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit }              else { Write-Host '   RGTagUsage.........: '$RGTagUsage -ForegroundColor Yellow}
 $rgName=$ResourceGroupName
+
 
 
 $subscr=Get-AzSubscription -SubscriptionName $subscriptionName
@@ -82,8 +83,8 @@ Catch {
 
 $parameters=@{
               "mngIP"= $mngIP;
-              "hub1_location"= $hub1_location;
-              "hub2_location"= $hub2_location;
+              "hub1location"= $hub1location;
+              "hub2location"= $hub2location;
               "hub1Name"= $hub1Name;
               "hub2Name"= $hub2Name;
               "adminUsername"= $adminUsername;
@@ -95,7 +96,7 @@ Write-Host (Get-Date)' - ' -NoNewline
 Write-Host 'Creating Resource Group' -ForegroundColor Cyan
 Try { Get-AzResourceGroup -Name $rgName -ErrorAction Stop
      Write-Host 'Resource exists, skipping'}
-Catch { New-AzResourceGroup -Name $rgName -Location $hub1_location}
+Catch { New-AzResourceGroup -Name $rgName -Location $hub1location}
 
 # set a tag on the resource group if it doesn't exist.
 if ((Get-AzResourceGroup -Name $rgName).Tags -eq $null)

@@ -33,23 +33,27 @@ The article describes a virtual WAN configuration with spoke VNets (vnet1, vnet2
 * che connection to **vnet2** is associated with routing table **RT_VNET** and propagated to the hub routing table **RT_VNET**,**RT_NVA**
 * the connection to **vnet3** is associated with routing table **RT_VNET** and propagated to the hub routing table **RT_VNET**,**RT_NVA**
 * the connection to **vnet4** is associated with routing table **RT_VNET** and propagated to the hub routing table **RT_VNET**,**RT_NVA**
+<br>
 
-| Routing Configuration of  vnet1conn     || 
+|Routing Configuration of **vnet1conn**|   
 | -------------------- |:---------------- | 
 | associatedRouteTable | RT_NVA           | 
 | propagatedRouteTable | default, RT_VNET | 
+
 <br>
 
-| Routing Configuration of vnetconn2, vnetconn3, vnetconn4 || 
+|Routing Configuration of **vnetconn2, vnetconn3, vnetconn4** |
 | -------------------- |:---------------- | 
 | associatedRouteTable | RT_VNET          | 
 | propagatedRouteTable | RT_VNET, RT_NVA  | 
+
 <br>
 
-| Routing Configuration of VPN connections || 
+|Routing Configuration of VPN connections|
 | -------------------- |:---------------- | 
 | associatedRouteTable | defaultRouteTable| 
 | propagatedRouteTable | defaultRouteTable, RT_NVA | 
+
 <br>
 
 The routing table **RT_NVA**, **RT_VNET**, **defaultRouteTable** do not communicate. To establish a communication are required static routes in each routing table:
@@ -61,6 +65,7 @@ The routing table **RT_NVA**, **RT_VNET**, **defaultRouteTable** do not communic
 | RT_V2B1     | CIDR             | 192.168.1.0/24     |10.1.0.4   |
 | RT_V2B2     | CIDR             | 192.168.1.0/24     |10.1.0.4   |
 | RT_B2V      | CIDR             | 10.0.0.0/16        |10.1.0.4   |
+
 <br>
 
 * static routes added to the routing table **RT_VNET**:
