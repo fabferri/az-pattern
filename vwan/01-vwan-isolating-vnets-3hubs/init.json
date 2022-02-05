@@ -1,0 +1,18 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "vwan-isolating3",
+    "vwanName" : "vwan1",
+    "hub1location": "westus2",
+    "hub2location": "centralus",
+    "hub3location": "northcentralus",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "hub3Name": "hub3",
+    "mngIP": "MANAGEMENT_PUBLIC_IP_TO_CONNECT_IN_SSH_TO_THE_VMs",
+    "RGTagExpireDate": "03/21/2022",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "test vWAN isolating VNets"
+}
