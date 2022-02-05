@@ -23,9 +23,6 @@ $inputParams = 'init.json'
 $pathFiles  = Split-Path -Parent $PSCommandPath
 $templateFile = "$pathFiles\$armTemplateFile"
 
-$pathFiles = Split-Path -Parent $PSCommandPath
-$templateFile = "$pathFiles\$armTemplateFile"
-
 # reading the input parameter file $inputParams and convert the values in hashtable 
 If (Test-Path -Path $pathFiles\$inputParams) 
 {
@@ -68,6 +65,17 @@ if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit } else { Wr
 if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit } else { Write-Host '   RGTagUsage.........: '$RGTagUsage -ForegroundColor Yellow}
 $rgName=$ResourceGroupName
 
+$subscr=Get-AzSubscription -SubscriptionName $subscriptionName
+Select-AzSubscription -SubscriptionId $subscr.Id
+
+# Login Check
+Try {Write-Host 'Using Subscription: ' -NoNewline
+     Write-Host $((Get-AzContext).Name) -ForegroundColor Green}
+Catch {
+    Write-Warning 'You are not logged in dummy. Login and try again!'
+    Return}
+
+
 Write-Host 'getting the branch VPN GTW:'
 $branch1vpnGtwName ='vpnGw1'
 try {($branch1vpnGtw = Get-AzVirtualNetworkGateway -ResourceGroupName $rgName -Name $branch1vpnGtwName -ErrorAction Stop) | Out-Null}
@@ -83,18 +91,6 @@ if (!$branch1vpnPublicIP1) { Write-Host 'variable $branch1vpnPublicIP1 is null' 
 if (!$branch1vpnPublicIP2) { Write-Host 'variable $branch1vpnPublicIP2 is null' ; Exit } else { Write-Host '   remote VPN public IP1....: '$branch1vpnPublicIP2 -ForegroundColor Cyan}
 if (!$branch1vpnBGPpeer1) { Write-Host 'variable $branch1vpnBGPpeer1 is null' ; Exit } else { Write-Host '   remote VPN-BGP peer IP1..: '$branch1vpnBGPpeer1 -ForegroundColor Cyan}
 if (!$branch1vpnBGPpeer2) { Write-Host 'variable $branch1vpnBGPpeer2 is null' ; Exit } else { Write-Host '   remote VPN-BGP peer IP2..: '$branch1vpnBGPpeer2 -ForegroundColor Cyan}
-
-
-$subscr=Get-AzSubscription -SubscriptionName $subscriptionName
-Select-AzSubscription -SubscriptionId $subscr.Id
-
-# Login Check
-Try {Write-Host 'Using Subscription: ' -NoNewline
-     Write-Host $((Get-AzContext).Name) -ForegroundColor Green}
-Catch {
-    Write-Warning 'You are not logged in dummy. Login and try again!'
-    Return}
-
 
 $parameters=@{
               "hub1location" = $hub1location;
@@ -121,15 +117,21 @@ if ((Get-AzResourceGroup -Name $rgName).Tags -eq $null)
   Set-AzResourceGroup -Name $rgName -Tag @{Expires=$RGTagExpireDate; Contacts=$RGTagContact; Pathfinder=$RGTagNinja; Usage=$RGTagUsage} | Out-Null
 }
 
-$startTime = "$(Get-Date)"
+$startTime = Get-Date
 $runTime=Measure-Command {
-   write-host "running ARM template:"$templateFile
+   write-host "$startTime - running ARM template:"$templateFile
    New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
 }
  
-write-host "runtime...: "$runTime.ToString() -ForegroundColor Yellow
-write-host "start time: "$startTime -ForegroundColor Yellow
-write-host "endt time.: "$(Get-Date) -ForegroundColor Yellow
+# End and printout the runtime
+$endTime = Get-Date
+$TimeDiff = New-TimeSpan $startTime $endTime
+$Mins = $TimeDiff.Minutes
+$Secs = $TimeDiff.Seconds
+$RunTime = '{0:00}:{1:00} (M:S)' -f $Mins,$Secs
+Write-Host (Get-Date)' - ' -NoNewline
+Write-Host "Script completed" -ForegroundColor Green
+Write-Host "  Time to complete: $RunTime" -ForegroundColor Yellow
 
 
 

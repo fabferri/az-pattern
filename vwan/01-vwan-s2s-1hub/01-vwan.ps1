@@ -53,18 +53,19 @@ else { Write-Warning "$inputParams file not found, please change to the director
 
 # checking the values of variables
 Write-Host "$(Get-Date) - values from file: $inputParams" -ForegroundColor Yellow
-if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit } else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green}
-if (!$adminPassword) { Write-Host 'variable $adminPassword is null' ; Exit } else { Write-Host '   administrator password: '$adminPassword -ForegroundColor Green}
-if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit } else { Write-Host '   subscription name..: '$subscriptionName -ForegroundColor Yellow}
-if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host '   resource group name: '$ResourceGroupName -ForegroundColor Yellow}
-if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit } else { Write-Host '   hub1 location......: '$hub1location -ForegroundColor Yellow}
-if (!$branch1location) { Write-Host 'variable $branch1_location is null' ; Exit } else { Write-Host '   branch1 location...: '$branch1location -ForegroundColor Yellow}
-if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit } else { Write-Host '   hub1 name..........: '$hub1Name -ForegroundColor Yellow}
-if (!$mngIP) { Write-Host 'variable $mngIP is null' ; Exit } else { Write-Host '   mngIP..............: '$mngIP -ForegroundColor Yellow}
-if (!$RGTagExpireDate) { Write-Host 'variable $RGTagExpireDate is null' ; Exit } else { Write-Host '   RGTagExpireDate....: '$RGTagExpireDate -ForegroundColor Yellow}
-if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit } else { Write-Host '   RGTagContact.......: '$RGTagContact -ForegroundColor Yellow}
-if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit } else { Write-Host '   RGTagNinja.........: '$RGTagNinja -ForegroundColor Yellow}
-if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit } else { Write-Host '   RGTagUsage.........: '$RGTagUsage -ForegroundColor Yellow}
+if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit }         else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green}
+if (!$adminPassword) { Write-Host 'variable $adminPassword is null' ; Exit }         else { Write-Host '   administrator password: '$adminPassword -ForegroundColor Green}
+if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit }   else { Write-Host '   subscription name.....: '$subscriptionName -ForegroundColor Yellow}
+if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host '   resource group name...: '$ResourceGroupName -ForegroundColor Yellow}
+if (!$vwanName) { Write-Host 'variable $vwanName is null' ; Exit }                   else { Write-Host '   virtual WAN name......: '$vwanName -ForegroundColor Yellow}
+if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit }           else { Write-Host '   hub1 location.........: '$hub1location -ForegroundColor Yellow}
+if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit }                   else { Write-Host '   hub1 name.............: '$hub1Name -ForegroundColor Yellow}
+if (!$branch1location) { Write-Host 'variable $branch1_location is null' ; Exit }    else { Write-Host '   branch1 location......: '$branch1location -ForegroundColor Yellow}
+if (!$mngIP) { Write-Host 'variable $mngIP is null' ; Exit }                         else { Write-Host '   mngIP.................: '$mngIP -ForegroundColor Yellow}
+if (!$RGTagExpireDate) { Write-Host 'variable $RGTagExpireDate is null' ; Exit }     else { Write-Host '   RGTagExpireDate.......: '$RGTagExpireDate -ForegroundColor Yellow}
+if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit }           else { Write-Host '   RGTagContact..........: '$RGTagContact -ForegroundColor Yellow}
+if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit }               else { Write-Host '   RGTagNinja............: '$RGTagNinja -ForegroundColor Yellow}
+if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit }               else { Write-Host '   RGTagUsage............: '$RGTagUsage -ForegroundColor Yellow}
 $rgName=$ResourceGroupName
 
 
@@ -81,6 +82,7 @@ Catch {
 
 $parameters=@{
               "mngIP"= $mngIP;
+              "vwanName" = $vwanName;
               "hub1location"= $hub1location;
               "vnet1location"= $hub1location;
               "vnet2location"= $hub1location;
@@ -103,15 +105,22 @@ if ((Get-AzResourceGroup -Name $rgName).Tags -eq $null)
   Set-AzResourceGroup -Name $rgName -Tag @{Expires=$RGTagExpireDate; Contacts=$RGTagContact; Pathfinder=$RGTagNinja; Usage=$RGTagUsage} | Out-Null
 }
 
-$startTime = "$(Get-Date)"
+$startTime = Get-Date
 $runTime=Measure-Command {
-   write-host "running ARM template:"$templateFile
+   write-host "$startTime - running ARM template:"$templateFile
    New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
 }
  
-write-host "runtime...: "$runTime.ToString() -ForegroundColor Yellow
-write-host "start time: "$startTime -ForegroundColor Yellow
-write-host "endt time.: "$(Get-Date) -ForegroundColor Yellow
+# End and printout the runtime
+$endTime = Get-Date
+$TimeDiff = New-TimeSpan $startTime $endTime
+$Mins = $TimeDiff.Minutes
+$Secs = $TimeDiff.Seconds
+$RunTime = '{0:00}:{1:00} (M:S)' -f $Mins,$Secs
+Write-Host (Get-Date)' - ' -NoNewline
+Write-Host "Script completed" -ForegroundColor Green
+Write-Host "  Time to complete: $RunTime" -ForegroundColor Yellow
+
 
 
 

@@ -30,6 +30,12 @@ The configuration support any-to-any communication between VNets:
 - vnet2 can communicate with the branch1
 <br>
 
+### <a name="routing of the connection"></a>1. Routing configuration of the connections  
+
+[![2]][2]
+
+
+### <a name="file list"></a>2. File list
 | file                        | description                                                               |       
 | --------------------------- |:------------------------------------------------------------------------- |
 | **01-vwan.json**            | ARM template to create virtual WAN the virtual hub, VNets, routing tables and connections between VNets and virtual hub  |
@@ -41,7 +47,7 @@ The configuration support any-to-any communication between VNets:
 
 <br>
 
-### <a name="routing table association"></a>1. Structure of init.json file
+### <a name="structure of the file init.json"></a>13. Structure of init.json file
 Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values:
 The structure of **init.json** file is shown below:
 ```json
@@ -50,6 +56,7 @@ The structure of **init.json** file is shown below:
     "adminPassword": "ADMINISTRATOR_PASSWORD",
     "subscriptionName": "AzureDemo",
     "ResourceGroupName": "vwan1-grp",
+    "vwanName" : "vwan2",
     "hub1location": "westus2",
     "branch1location": "westus2",
     "hub1Name": "hub1",
@@ -68,6 +75,7 @@ Meaning of the variables:
 - **adminPassword**: administrator password of the Azure VMs
 - **subscriptionName**: Azure subscription name
 - **ResourceGroupName**: name of the resource group
+- **vwanName**: virtual WAN name
 - **hub1location**: Azure region of the virtual hub1
 - **branch1location**: Azure region to deploy the branch1
 - **hub1Name**: name of the virtual hub1
@@ -92,7 +100,7 @@ Deployment needs to be carried out in sequence:
 
 The diagram below shows how to fetch the public IPs and BGP peering IPs in site-to-site VPN and in the branch1:
 
-[![2]][2]
+[![3]][3]
 
 To get the public IPs and the BGP peering IPs of the site-to-site VPN Gateway in **hub1**:
 ```powershell
@@ -104,7 +112,7 @@ $vpnGateway.BgpSettings.BgpPeeringAddresses[1].DefaultBgpIpAddresses
 ```
 The same values can be grabbed from the Azure management portal:
 
-[![3]][3]
+[![4]][4]
 
 <br>
 
@@ -122,15 +130,10 @@ To retrieve the routing table setting in hub1:
 (Get-AzVpnConnection -ResourceGroupName $rgName  -ParentResourceName hub1_S2SvpnGW).RoutingConfiguration
 ```
 
-### <a name="routing table association"></a>3. Routing Table and association of the connections  
-
-[![4]][4]
-
-
 
 <!--Image References-->
 
-[1]: ./media/network-diagram.png "network diagram"
+[1]: ./media/network-diagram1.png "network diagram"
 [2]: ./media/network-diagram2.png "network diagram"
 [3]: ./media/network-diagram3.png "network diagram"
 [4]: ./media/network-diagram4.png "network diagram"

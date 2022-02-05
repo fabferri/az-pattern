@@ -36,7 +36,7 @@
         },
         "hub1addressPrefix1": {
             "type": "string",
-            "defaultValue": "10.10.0.0/24",
+            "defaultValue": "10.10.0.0/23",
             "metadata": {
                 "description": "The hub address prefix. This address prefix will be used as the address prefix for the hub vnet"
             }
@@ -83,7 +83,10 @@
 
     },
     "variables": {
+        "vwanName": "[parameters('vwanName')]",
+        "hub1location": "[parameters('hub1location')]",
         "hub1Name": "[parameters('hub1Name')]",
+        "hub1addressPrefix1": "[parameters('hub1addressPrefix1')]",
         "vnet1Name": "vnet1",
         "vnet2Name": "vnet2",
         "vnet1": {
@@ -100,9 +103,8 @@
             "subnet1Name": "subnet1",
             "subnet1Prefix": "10.0.2.0/25"
         },
-        "hub1connectionNamevnet1": "[concat(variables('vnet1Name'),'_conn')]",
-        
-        "hub1connectionNamevnet2":"[concat(variables('vnet2Name'),'_conn')]",
+        "hub1connectionNamevnet1": "[concat(variables('vnet1Name'),'conn')]",
+        "hub1connectionNamevnet2": "[concat(variables('vnet2Name'),'conn')]",
 
         "adminUsername": "[parameters('adminUsername')]",
         "adminPassword": "[parameters('adminPassword')]",
@@ -141,7 +143,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vnet1').name]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vnet1').location]",
             "dependsOn": [],
             "comments": "This is the vnet1",
@@ -164,7 +166,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vnet2').name]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vnet2').location]",
             "dependsOn": [],
             "comments": "This is the vnet2",
@@ -186,33 +188,32 @@
         },
         {
             "type": "Microsoft.Network/virtualWans",
-            "name": "[parameters('vwanName')]",
-            "apiVersion": "2020-11-01",
-            "location": "[parameters('hub1location')]",
+            "name": "[variables('vwanName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('hub1location')]",
             "properties": {
                 "type": "[parameters('vwanSKU')]"
             }
         },
         {
             "type": "Microsoft.Network/virtualHubs",
-            "name": "[parameters('hub1Name')]",
-            "apiVersion": "2020-11-01",
-            "location": "[parameters('hub1location')]",
+            "name": "[variables('hub1Name')]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('hub1location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualWans', parameters('vwanName'))]"
+                "[resourceId('Microsoft.Network/virtualWans', variables('vwanName'))]"
             ],
             "properties": {
-                "addressPrefix": "[parameters('hub1addressPrefix1')]",
+                "addressPrefix": "[variables('hub1addressPrefix1')]",
                 "virtualWan": {
-                    "id": "[resourceId('Microsoft.Network/virtualWans',parameters('vwanName'))]"
+                    "id": "[resourceId('Microsoft.Network/virtualWans',variables('vwanName'))]"
                 }
             }
         },
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
-            
             "name": "[format('{0}/{1}', variables('hub1Name'), variables('hub1connectionNamevnet1'))]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]"
             ],
@@ -236,7 +237,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2021-05-01",
             "name": "[format('{0}/{1}', variables('hub1Name'), variables('hub1connectionNamevnet2'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]",
@@ -263,8 +264,8 @@
         {
             "type": "Microsoft.Network/vpnGateways",
             "name": "[format('{0}_S2SvpnGW', variables('hub1Name'))]",
-            "apiVersion": "2020-11-01",
-            "location": "[parameters('hub1location')]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('hub1location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs/hubVirtualNetworkConnections', variables('hub1Name'),  variables('hub1connectionNamevnet2'))]"
@@ -282,7 +283,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('vmArray')[copyIndex()].nsgName]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "properties": {
                 "securityRules": [
@@ -293,7 +294,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[parameters('mngIP')]",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 500,
@@ -310,7 +311,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "Public IP address VMs",
             "properties": {
@@ -324,7 +325,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-nic' )]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "NIC of the VMs",
             "dependsOn": [
@@ -360,7 +361,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
-            "apiVersion": "2021-03-01",
+            "apiVersion": "2021-07-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-nic')  )]"
