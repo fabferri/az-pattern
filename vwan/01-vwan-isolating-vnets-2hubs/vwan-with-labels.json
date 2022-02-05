@@ -460,7 +460,7 @@
         {
             "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
             "apiVersion": "2021-05-01",
-            "name": "[format('{0}/{1}conn', variables('hub2Name'), variables('vnet4ConnectionName'))]",
+            "name": "[format('{0}/{1}', variables('hub2Name'), variables('vnet4ConnectionName'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet4Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name'))]",
