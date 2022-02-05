@@ -95,7 +95,7 @@ Propagating to labels:  <b>blue-lb</b>
 
 Connection to vnet1 and vnet2 to the **hub1** without propagating to labels:
 <pre>
-Microsoft.Network/virtualHubs/<b>hub1</b>/hubVirtualNetworkConnections/<b>vnet1conn 
+Microsoft.Network/virtualHubs/<b>hub1</b>/hubVirtualNetworkConnections/<b>vnet1conn</b> 
 associatedRouteTable: <b>RT_RED</b> 
 propagatedRouteTables:{hub1: <b>RT_RED</b>
                        hub2: <b>RT_RED</b> }
