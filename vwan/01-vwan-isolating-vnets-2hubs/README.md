@@ -126,7 +126,7 @@ Propagating to labels:
 
 <br>
 
-## <a name="without propagation to labels"></a>2. Routing tables in the virtual hubs
+## <a name="effective routes in virtual hubs"></a>2. Effective routes in the virtual hubs
 
 Routing table <b>RT_RED</b> in virtual <b>hub1</b>: <br>
 Microsoft.Network/virtualHubs/hub1/hubRouteTables/RT_RED
@@ -134,7 +134,7 @@ Microsoft.Network/virtualHubs/hub1/hubRouteTables/RT_RED
 |Prefix 	 |Next Hop Type              |   Next Hop       | Origin 	     |AS path    |
 | ---------- | ------------------------- | ---------------- | -------------- | --------- |
 |10.0.1.0/24 |Virtual Network Connection |vnet1conn         |vnet1conn       |	         |
-|10.0.3.0/24 |Remote Hub	              |hub2	            |hub2	         |65520-65520|
+|10.0.3.0/24 |Remote Hub	             |hub2	            |hub2	         |65520-65520|
 
 <br>
 Routing table <b>RT_BLUE</b> in virtual <b>hub1</b>: <br>
