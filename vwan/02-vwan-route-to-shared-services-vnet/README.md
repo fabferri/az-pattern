@@ -55,6 +55,7 @@ The network diagram below shows the association and propagation to labels **defa
 <br>
 
 The network diagram below shows more details in the association and propagation of connections in hub1 and hub2, with propagation to labels **default**, **LBL_SHARED**:
+
 [![5]][5]
 [![6]][6]
 
