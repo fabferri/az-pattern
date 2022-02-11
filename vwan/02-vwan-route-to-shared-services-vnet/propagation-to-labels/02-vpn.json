@@ -163,7 +163,6 @@
         },
         "sharedKey": {
             "type": "string",
-            "defaultValue": "s3cretPSK-101---!@",
             "metadata": {
                 "description": "Shared key (PSK) for IPSec tunnel"
             }
@@ -438,7 +437,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('branchArray')[copyIndex()].vnetName]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('branchArray')[copyIndex()].location]",
             "dependsOn": [],
             "properties": {
@@ -470,7 +469,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('branchArray')[copyIndex()].gatewayPublicIP1Name]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "comments": "public IP of the VPN Gateway-instance0",
             "location": "[variables('branchArray')[copyIndex()].location]",
             "sku": {
@@ -504,7 +503,7 @@
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[variables('branchArray')[copyIndex()].gatewayName]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('branchArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('branchArray')[copyIndex()].vnetName)]",
@@ -559,7 +558,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('branchArray')[copyIndex()].localGatewayName1]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('branchArray')[copyIndex()].location ]",
             "dependsOn": [],
@@ -579,7 +578,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('branchArray')[copyIndex()].localGatewayName2]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('branchArray')[copyIndex()].location ]",
             "dependsOn": [],
@@ -599,7 +598,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('branchArray')[copyIndex()].ConnectionGtwName1]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "comments": "VPN connection between VPN Gateway in the branch and VPN Gateway-instance0 in the hub",
             "location": "[variables('branchArray')[copyIndex()].location]",
             "dependsOn": [
@@ -626,7 +625,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('branchArray')[copyIndex()].connectionGtwName2]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "comments": "VPN connection between VPN Gateway in the branch and VPN Gateway-instance1 in the hub",
             "location": "[variables('branchArray')[copyIndex()].location]",
             "dependsOn": [
@@ -653,7 +652,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('vmArray')[copyIndex()].nsgName]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "properties": {
                 "securityRules": [
@@ -681,7 +680,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "Public IP address VMs",
             "properties": {
@@ -695,7 +694,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-nic' )]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "NIC of the VMs",
             "dependsOn": [
@@ -731,7 +730,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
-            "apiVersion": "2021-03-01",
+            "apiVersion": "2021-07-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-nic')  )]"

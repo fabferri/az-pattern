@@ -125,7 +125,6 @@
         },
         "sharedKey": {
             "type": "string",
-            "defaultValue": "s3cretPSK-101---!@",
             "metadata": {
                 "description": "remote autonomous system number"
             }
@@ -207,7 +206,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/vpnSites",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "name": "[variables('vpnsiteArray')[copyIndex()].vpnsiteName]",
             "location": "[variables('vpnsiteArray')[copyIndex()].hub_location]",
             "properties": {
@@ -224,7 +223,7 @@
                 },
                 "vpnSiteLinks": [
                     {
-                        "name": "tunnel1",
+                        "name": "linksite1",
                         "properties": {
                             "ipAddress": "[variables('vpnsiteArray')[copyIndex()].branchvpnPublicIP1]",
                             "bgpProperties": {
@@ -234,7 +233,7 @@
                         }
                     },
                     {
-                        "name": "tunnel2",
+                        "name": "linksite2",
                         "properties": {
                             "ipAddress": "[variables('vpnsiteArray')[copyIndex()].branchvpnPublicIP2]",
                             "bgpProperties": {
@@ -252,7 +251,7 @@
         },
         {
             "type": "Microsoft.Network/vpnGateways/vpnConnections",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2021-05-01",
             "name": "[concat(variables('vpnsiteArray')[copyIndex()].hubvpnGatewayName,'/',variables('vpnsiteArray')[copyIndex()].hubToBranchConnectionName)]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/vpnSites', variables('vpnsiteArray')[copyIndex()].vpnsiteName)]"
@@ -266,9 +265,6 @@
                         "ids": [
                             {
                                 "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('vpnsiteArray')[copyIndex()].hubName, 'defaultRouteTable')]"
-                            },
-                            {
-                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('vpnsiteArray')[copyIndex()].hubName, 'RT_SHARED')]"
                             }
                         ],
                         "labels": [
@@ -289,7 +285,7 @@
                             "enableBgp": true,
                             "sharedKey": "[parameters('sharedKey')]",
                             "vpnSiteLink": {
-                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteArray')[copyIndex()].vpnsiteName,'tunnel1')]"
+                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteArray')[copyIndex()].vpnsiteName,'linksite1')]"
                             }
                         }
                     },
@@ -301,7 +297,7 @@
                             "enableBgp": true,
                             "sharedKey": "[parameters('sharedKey')]",
                             "vpnSiteLink": {
-                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteArray')[copyIndex()].vpnsiteName,'tunnel2')]"
+                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteArray')[copyIndex()].vpnsiteName,'linksite2')]"
                             }
                         }
                     }

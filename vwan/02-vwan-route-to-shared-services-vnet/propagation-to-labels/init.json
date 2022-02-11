@@ -1,7 +1,7 @@
 {
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "adminPassword": "ADMINISTRATOR_PASSWORD_VMs",
-    "subscriptionName": "AzureDemo",
+    "subscriptionName": "AzDev",
     "ResourceGroupName": "vwan-sharedservices",
     "hub1location": "westus2",
     "hub2location": "westus2",

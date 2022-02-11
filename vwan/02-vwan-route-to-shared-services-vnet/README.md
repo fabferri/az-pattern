@@ -37,7 +37,29 @@ The configuration can be described with the following matrix of communications:
 
 [![2]][2]
 
-## <a name="routing table association"></a>1. Routing Tables and association of the connections   
+
+<br>
+
+A network diagram with more details is reported below:
+
+[![3]][3]
+
+
+
+
+## <a name="routing table association"></a>1. Connection <ins>with</ins> propagation to labels 
+The network diagram below shows the association and propagation to labels **default**, **LBL_SHARED**:
+
+[![4]][4]
+
+<br>
+
+The network diagram below shows more details in the association and propagation of connections in hub1 and hub2, with propagation to labels **default**, **LBL_SHARED**:
+[![5]][5]
+[![6]][6]
+
+## <a name="routing table association"></a>2. Connection <ins>without</ins> propagation to labels 
+
 Two routing tables are required to implement the configuration: **defaultRoutingTable** and **RT_SHARED**
 * Isolated virtual networks (vnet2, vnet3,vnet4):
    * Associated route table: **RT_SHARED**
@@ -59,32 +81,18 @@ then the **RT_SHARED** route table will learn routes from all branch connections
 
 <br>
 
-Below a network diagram with more details:
-[![3]][3]
+The network diagrams below shows the association and propagation of connections, without propagation to labels:
 
 
-## <a name="routing table association"></a>2. Connection <ins>without</ins> propagation to labels 
-The network diagrams below show the association and propagation of connections, with propagation to labels:
-
-
-[![4]][4]
-
-<br>
-
-[![5]][5]
-
-## <a name="routing table association"></a>3. Connection <ins>with</ins> propagation to labels 
-The network diagram below shows the association and propagation of connections in hub2, with propagation to labels **default**, **LBL_SHARED**:
-
-[![6]][6]
-
-<br>
-
-The network diagram below shows the association and propagation of connections in hub2, with propagation to labels **default**, **LBL_SHARED**:
 [![7]][7]
 
+<br>
 
-## <a name="Routing tables"></a>4. Routing tables in hub1
+[![8]][8]
+
+[![9]][9]
+
+## <a name="Routing tables"></a>3. Routing tables in hub1
 The branch1 advertises his network through BGP to the hub1 by AS 65010.
 The network of the branch2 is advertised through BGP to the hub2 by AS 65011.
 Each virtual hub advertised the learned routes to the peer hub through BGP by AS65520.
@@ -95,7 +103,7 @@ Each virtual hub advertised the learned routes to the peer hub through BGP by AS
 | Default    | Succeeded          | default         | 2                      | 3                       |
 | RT\_Shared | Succeeded          | LBL\_RT\_SHARED | 1                      | 2                       |
 
-**DefaultRouteTable in hub1**
+**defaultRouteTable in hub1**
 | Prefix         | Next Hop Type              | Next Hop       | Origin         | AS path           |
 | -------------- | -------------------------- | -------------- | -------------- | ----------------- |
 | 192.168.1.0/24 | VPN\_S2S\_Gateway          | hub1\_S2SvpnGW | hub1\_S2SvpnGW | 65010             |
@@ -115,7 +123,7 @@ Each virtual hub advertised the learned routes to the peer hub through BGP by AS
 | 192.168.2.0/24 | Remote Hub                 | hub2           | hub2           | 65520-65520-65011 |
 <br>
 
-## <a name="Routing tables"></a>5. Routing tables in hub2
+## <a name="Routing tables"></a>4. Routing tables in hub2
 
 **Routing tables in hub2**
 | Name       | Provisioning State | Labels          | Associated connections | Propagating connections |
@@ -136,7 +144,7 @@ Each virtual hub advertised the learned routes to the peer hub through BGP by AS
 
 
 
-## <a name="list of ARM templates and scripts"></a>6. List of ARM templates and powershell scripts
+## <a name="list of ARM templates and scripts"></a>5. List of ARM templates and powershell scripts
 The full deployment can be executed by ARM templates and scripts are stored in two different folders:
 * folder: **without-propagation-to-labels**. This folder contains a list of script and ARM templates; the connections are created <ins>without propagation to labels </ins>. Each connection requires a propagation to routing tables in hub1 and hub2.
 * folder: **propagation-to-labels**. This folder uses <ins>propagation to labels</ins> to simply the propagation of connections.
@@ -200,19 +208,19 @@ Meaning of the variables:
 The file **init.json** guarantees a consistency by assignment of same values of input parameters across all the ARM templates.
 <br>
 
-## <a name="how to run the deployment"></a>7. How to run the deployment
+## <a name="how to run the deployment"></a>6. How to run the deployment
 Deployment needs to be carried out in sequence:
 - _1st step_: customize the values in **init.json**
 - _2nd step_: run the script **01-vwan.ps1**
 - _3rd step_: run the script **02-vpn.ps1**
 - _4th step_: run the script **03-vwan-site.ps1**
 
-## <a name="example of connection with propagation to labels"></a>8. ARM template snippets with propagation of connection to labels
+## <a name="example of connection with propagation to labels"></a>7. ARM template snippets with propagation of connection to labels
 Connection for the vnet1 with propagation to the labels **LBL_RT_SHARED**, **default**
 ```json
 {
    "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
-   "name": "hub1/vnet1_conn",
+   "name": "hub1/vnet1conn",
    "apiVersion": "2021-02-01",
    "dependsOn": [
          "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]",
@@ -224,14 +232,7 @@ Connection for the vnet1 with propagation to the labels **LBL_RT_SHARED**, **def
                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables','hub1', 'defaultRouteTable')]"
             },
             "propagatedRouteTables": {
-               "ids": [
-                     {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', 'hub1', 'defaultRouteTable')]"
-                     },
-                     {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', 'hub1', 'RT_SHARED')]"
-                     }
-               ],
+               "ids": [],
                "labels": [
                      "LBL_RT_SHARED",
                      "default"
@@ -250,7 +251,7 @@ Connection for the vnet4 with propagation to the label **default**:
 {
    "type": "Microsoft.Network/virtualHubs/hubVirtualNetworkConnections",
    "apiVersion": "2021-02-01",
-   "name": "hub2/vnet4_conn",
+   "name": "hub2/vnet4conn",
    "dependsOn": [
          "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', 'hub2', 'defaultRouteTable')]",
          "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', 'hub2', 'RT_SHARED')]",
@@ -261,11 +262,7 @@ Connection for the vnet4 with propagation to the label **default**:
                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', 'hub2', 'RT_SHARED')]"
             },
             "propagatedRouteTables": {
-               "ids": [
-                     {
-                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', 'hub2', 'defaultRouteTable')]"
-                     }
-               ],
+               "ids": [],
                "labels": [
                      "default"
                ]
@@ -280,13 +277,15 @@ Connection for the vnet4 with propagation to the label **default**:
 
 <!--Image References-->
 
-[1]: ./media/network-diagram.png "network diagram"
+[1]: ./media/network-diagram1.png "network diagram"
 [2]: ./media/network-diagram2.png "communications"
 [3]: ./media/network-diagram3.png "network diagram"
 [4]: ./media/network-diagram4.png "network diagram"
 [5]: ./media/network-diagram5.png "network diagram"
 [6]: ./media/network-diagram6.png "routing tables"
 [7]: ./media/network-diagram7.png "routing tables"
+[8]: ./media/network-diagram8.png "routing tables"
+[9]: ./media/network-diagram9.png "routing tables"
 
 <!--Link References-->
 
