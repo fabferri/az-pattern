@@ -1,0 +1,301 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptions": {
+            "type": "array",
+            "defaultValue": [
+                "[concat('/subscriptions/',subscription().subscriptionId)]"
+            ],
+            "metadata": {
+                "description": "subscription array"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all Network Manager."
+            }
+        },
+        "networkManagerName": {
+            "type": "string",
+            "defaultValue": "ntw-mgr1",
+            "metadata": {
+                "description": "The name for Network Manager"
+            }
+        },
+        "networkConnenctivtyConfigurationName1": {
+            "type": "string",
+            "defaultValue": "netcfg1",
+            "metadata": {
+                "description": "network connectivity configuration 1"
+            }
+        },
+        "networkConnenctivtyConfigurationName2": {
+            "type": "string",
+            "defaultValue": "netcfg2",
+            "metadata": {
+                "description": "network connectivity configuration 2"
+            }
+        },
+        "resourceGroupNameHub1VNet": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "resourceGroupNameHub2VNet": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "hub1vnetName": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "name of the  hub vnet"
+            }
+        },
+        "hub2vnetName": {
+            "type": "string",
+            "defaultValue": "hub2",
+            "metadata": {
+                "description": "name of the  hub vnet"
+            }
+        },
+        "resourceGroupNameVNet1": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "name of the  vnet1"
+            }
+        },
+        "resourceGroupNameVNet2": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet2"
+            }
+        },
+        "vnet2Name": {
+            "type": "string",
+            "defaultValue": "vnet2",
+            "metadata": {
+                "description": "name of the  vnet2"
+            }
+        },
+        "resourceGroupNameVNet3": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet3"
+            }
+        },
+        "vnet3Name": {
+            "type": "string",
+            "defaultValue": "vnet3",
+            "metadata": {
+                "description": "name of the  vnet3"
+            }
+        },
+        "resourceGroupNameVNet4": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet4"
+            }
+        },
+        "vnet4Name": {
+            "type": "string",
+            "defaultValue": "vnet4",
+            "metadata": {
+                "description": "name of the  vnet4"
+            }
+        },
+        "networkGroup1Name": {
+            "type": "string",
+            "defaultValue": "grp1",
+            "metadata": {
+                "description": "The name for Network Manager"
+            }
+        },
+        "networkGroup2Name": {
+            "type": "string",
+            "defaultValue": "grp2",
+            "metadata": {
+                "description": "The name for Network Manager"
+            }
+        }
+    },
+    "variables": {
+        "empty": [],
+        "hub1vnet": {
+            "resourceGroupName": "[parameters('resourceGroupNameHub1VNet')]",
+            "name": "[parameters('hub1vnetName')]"
+        },
+        "hub2vnet": {
+            "resourceGroupName": "[parameters('resourceGroupNameHub2VNet')]",
+            "name": "[parameters('hub2vnetName')]"
+        },
+        "vnet1": {
+            "resourceGroupName": "[parameters('resourceGroupNameVNet1')]",
+            "name": "[parameters('vnet1Name')]"
+        },
+        "vnet2": {
+            "resourceGroupName": "[parameters('resourceGroupNameVNet2')]",
+            "name": "[parameters('vnet2Name')]"
+        },
+        "vnet3": {
+            "resourceGroupName": "[parameters('resourceGroupNameVNet3')]",
+            "name": "[parameters('vnet3Name')]"
+        },
+        "vnet4": {
+            "resourceGroupName": "[parameters('resourceGroupNameVNet4')]",
+            "name": "[parameters('vnet4Name')]"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('networkManagerName')]",
+            "type": "Microsoft.Network/networkManagers",
+            "apiVersion": "2021-02-01-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+                "displayName": "[parameters('networkManagerName')]",
+                "description": "basic Network Manager",
+                "networkManagerScopes": {
+                    "subscriptions": "[if(not(empty(parameters('subscriptions'))), parameters('subscriptions'), variables('empty'))]"
+                },
+                "networkManagerScopeAccesses": [
+                    "Connectivity"
+                ]
+            }
+        },
+        {
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup1Name'))]",
+            "type": "Microsoft.Network/networkManagers/networkGroups",
+            "apiVersion": "2021-02-01-preview",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+            ],
+            "properties": {
+                "displayName": "[parameters('networkGroup1Name')]",
+                "description": "network group1",
+                "groupMembers": [
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, variables('vnet1').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('vnet1').name)]"
+                    },
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, variables('vnet2').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('vnet2').name)]"
+                    }
+                ],
+                "conditionalMembership": ""
+            }
+        },
+        {
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup2Name'))]",
+            "type": "Microsoft.Network/networkManagers/networkGroups",
+            "apiVersion": "2021-02-01-preview",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+            ],
+            "properties": {
+                "displayName": "[parameters('networkGroup2Name')]",
+                "description": "network group 2",
+                "groupMembers": [
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, variables('vnet3').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('vnet3').name)]"
+                    },
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, variables('vnet4').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('vnet4').name)]"
+                    }
+                ],
+                "conditionalMembership": ""
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkConnenctivtyConfigurationName1'))]",
+            "apiVersion": "2021-02-01-preview",
+            "dependsOn": [
+                "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
+                "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
+            ],
+            "properties": {
+                "displayName": "myConnectivityConfig",
+                "description": "configuration hub-and-spoke with hub1",
+                "connectivityTopology": "HubAndSpoke",
+                "hubs": [
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, variables('hub1vnet').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('hub1vnet').name)]",
+                        "resourceType": "Microsoft.Network/virtualNetworks"
+                    }
+                ],
+                "isGlobal": "True",
+                "deleteExistingPeering": "True",
+                "appliesToGroups": [
+                    {
+                        "networkGroupId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
+                        "useHubGateway": false,
+                        "groupConnectivity": "DirectlyConnected",
+                        "isGlobal": "False"
+                    },
+                    {
+                        "networkGroupId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]",
+                        "useHubGateway": false,
+                        "groupConnectivity": "DirectlyConnected",
+                        "isGlobal": "False"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkConnenctivtyConfigurationName2'))]",
+            "apiVersion": "2021-02-01-preview",
+            "dependsOn": [
+                "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
+                "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]",
+                "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/connectivityConfigurations', parameters('networkManagerName'),parameters('networkConnenctivtyConfigurationName1'))]"
+            ],
+            "properties": {
+                "displayName": "myConnectivityConfig",
+                "description": "configuration hub-and-spoke with hub2",
+                "connectivityTopology": "HubAndSpoke",
+                "hubs": [
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, variables('hub2vnet').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('hub2vnet').name)]",
+                        "resourceType": "Microsoft.Network/virtualNetworks"
+                    }
+                ],
+                "isGlobal": "True",
+                "deleteExistingPeering": "True",
+                "appliesToGroups": [
+                    {
+                        "networkGroupId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
+                        "useHubGateway": false,
+                        "groupConnectivity": "DirectlyConnected",
+                        "isGlobal": "False"
+                    },
+                    {
+                        "networkGroupId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]",
+                        "useHubGateway": false,
+                        "groupConnectivity": "DirectlyConnected",
+                        "isGlobal": "False"
+                    }
+                ]
+            }
+        }
+    ]
+}
