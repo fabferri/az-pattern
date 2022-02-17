@@ -59,7 +59,7 @@ To dynamic membership for the network group **grp1** is established with the fol
 
 The string of dynamic membership can be along in single line, by the control character <b>\n</b> , but the format is less readable:
 
-```json
+```console
 "{ \n   \"allOf\": [\n   {\n    \"value\": \"[resourceGroup().Name]\", \n   \"contains\": \"PROD\" \n   }\n   ]\n  }"
 ```
 
