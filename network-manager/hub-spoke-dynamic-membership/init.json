@@ -1,0 +1,22 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzDev",
+    "resourceGroupName": "anm",
+    "resourceGroupNameHubVNet": "anm-SHARED",
+    "resourceGroupNameVNet1": "anm-PROD",
+    "resourceGroupNameVNet2": "anm-PROD",
+    "resourceGroupNameVNet3": "anm-TEST",
+    "resourceGroupNameVNet4": "anm-TEST",
+    "location": "westus2",
+    "locationhub": "westus2",
+    "location1": "westus2",
+    "location2": "westus2",
+    "location3": "westus2",
+    "location4": "westus2",
+    "mngIP": "MANAGEMENT_PUBLIC_IP_ADDRESS_TO_CONNECT_IN_SSH_TO_THE_VMs",
+    "RGTagExpireDate": "03/17/2022",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "test azure network manager"
+}
