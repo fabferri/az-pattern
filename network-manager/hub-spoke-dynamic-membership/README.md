@@ -46,7 +46,7 @@ The following communications are allow/denied:
 - the network group **grp2** with dynamic membership includes all the VNets for "TEST" environment
 
 To dynamic membership for the network group **grp1** is established with the following structure:  
-```json
+```console
 "{ 
         \"allOf\": [
             {
