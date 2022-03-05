@@ -19,7 +19,7 @@ editor=""/>
 
 ## Azure Bastion to access to Azure VMs
 
-The article describes a configuration to deploy Azure Bastion to connect to the Azure VMs in subnet1
+The article describes a configuration with Azure Bastion to connect to the Azure VMs
 
 [![1]][1]
 
