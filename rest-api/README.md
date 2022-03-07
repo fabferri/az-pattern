@@ -19,8 +19,8 @@ editor=""/>
 
 ## How to deploy Azure resources through REST API
 The powershell scripts use the commands:
-* **Get-AzAccessToken** acquires dthe authetication token 
-* **Invoke-RestMethod**  sends REST calls
+* **Get-AzAccessToken** acquires the authentication token 
+* **Invoke-RestMethod**  sends REST call
 
 
 
