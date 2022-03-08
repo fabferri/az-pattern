@@ -1,0 +1,16 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "csr-test3",
+    "location1": "eastus",
+    "location2": "eastus",
+    "csr1Name": "csr1",
+    "csr2Name": "csr2",
+    "sharedKey": "PRESHARED_KEY_IPsec_TUNNEL",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": "MANAGEMENT_PUBLIC_IP_TO_CONNECT_TO_AZURE_VMs_AND_CSRs",
+    "RGTagExpireDate": "04/01/2022",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user",
+    "RGTagUsage": "S2S VPN between two CSRs"
+}
