@@ -1,0 +1,11 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "test-log",
+    "location" : "eastus2",
+    "vm1Name" : "vm1",
+    "vm2Name" : "vm2",
+    "vm3Name" : "vm3",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}
