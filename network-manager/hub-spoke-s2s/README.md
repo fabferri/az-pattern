@@ -25,8 +25,8 @@ The netwrk diagram is shown:
 <br>
 
 The allow communications:
-- vnet1 and vnet2  belong to the same network group **grp1** ; vnet1 and vnet2 can communicate with **Direct connection**
-- vnet3 and vnet4  belong to the same network group **grp2** ; vnet3 and vnet4 can communicate with **Direct connection**
+- vnet1 and vnet2  belong to the same network group **grp1** ; vnet1 and vnet2 can communicate with **Direct connectivity**
+- vnet3 and vnet4  belong to the same network group **grp2** ; vnet3 and vnet4 can communicate with **Direct connectivity**
 - the communications betwen different network groups are denied: vnet1 and vnet2 can't communicate with vnet3 and vnet4 
 - hub vnet can communicate with all the spoke vnets (vnet1, vnet2, vne3, vnet4) and branch vnet 
 - the VPN Gateway in the hub enables the communication with remote branch vnet
