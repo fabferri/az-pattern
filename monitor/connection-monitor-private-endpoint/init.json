@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "test-log5",
+    "workspaceName": "workspacetest1",
+    "location1" : "eastus2",
+    "location2" : "centralus",
+    "location3" : "northcentralus",
+    "vm1Name" : "vm1",
+    "vm2Name" : "vm2",
+    "vm3Name" : "vm3",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}

@@ -1,0 +1,889 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the first VNet"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the second VNet"
+            }
+        },
+        "location3": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the second VNet"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "management IP- keep empty if you do not want to filter the connection to "
+            }
+        },
+        "vm1Name": {
+            "type": "string",
+            "defaultValue": "vm1",
+            "metadata": {
+                "description": "name VM1"
+            }
+        },
+        "vm2Name": {
+            "type": "string",
+            "defaultValue": "vm2",
+            "metadata": {
+                "description": "name VM2"
+            }
+        },
+        "vm3Name": {
+            "type": "string",
+            "defaultValue": "vm3",
+            "metadata": {
+                "description": "name VM3"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password for the VMs"
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "The name of the Storage Account"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "metadata": {
+                "description": "Storage Account type"
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "workspacetest1",
+            "metadata": {
+                "description": "Name of the workspace."
+            }
+        },
+        "sku": {
+            "type": "string",
+            "allowedValues": [
+                "pergb2018",
+                "Free",
+                "Standalone",
+                "PerNode",
+                "Standard",
+                "Premium"
+            ],
+            "defaultValue": "pergb2018",
+            "metadata": {
+                "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+            }
+        },
+        "retentionInDays": {
+            "type": "int",
+            "defaultValue": 30,
+            "metadata": {
+                "description": "Number of days to retain data."
+            }
+        },
+        "resourcePermissions": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "true to use resource or workspace permissions. false to require workspace permissions."
+            }
+        },
+        "privatelinkscopes_pe_loganalytics_name": {
+            "defaultValue": "pe-loganalytics",
+            "type": "string"
+        },
+        "privateEndpoints_logAnalyticsName": {
+            "defaultValue": "pe-logs",
+            "type": "String"
+        },
+        "allowBlobPublicAccess": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Allow or disallow public access to all blobs or containers in the storage accounts. The default interpretation is true for this property."
+            }
+        },
+        "networkAclsDefaultAction": {
+            "type": "string",
+            "defaultValue": "Deny",
+            "allowedValues": [
+                "Allow",
+                "Deny"
+            ],
+            "metadata": {
+                "description": "Allow or disallow public access to all blobs or containers in the storage accounts. The default interpretation is true for this property."
+            }
+        }
+    },
+    "variables": {
+        "vNet1": {
+            "location": "[parameters('location1')]",
+            "name": "vnet1",
+            "addressSpacePrefix": "10.0.0.0/24",
+            "subnet1Name": "Tenant1",
+            "subnet1Prefix": "10.0.0.0/26",
+            "subnet2Name": "Tenant2",
+            "subnet2Prefix": "10.0.0.64/26",
+            "subnet3Name": "GatewaySubnet",
+            "subnet3Prefix": "10.0.0.128/26",
+            "peeringNameTovnet2": "to-vnet2",
+            "peeringNameTovnet3": "to-vnet3",
+            "tag": "hub-vnet"
+        },
+        "vNet2": {
+            "location": "[parameters('location2')]",
+            "name": "vnet2",
+            "addressSpacePrefix": "10.0.2.0/24",
+            "subnet1Name": "Tenant1",
+            "subnet1Prefix": "10.0.2.0/27",
+            "subnet2Name": "Tenant2",
+            "subnet2Prefix": "10.0.2.32/27",
+            "subnet3Name": "Tenant3",
+            "subnet3Prefix": "10.0.2.64/27",
+            "subnet4Name": "Tenant4",
+            "subnet4Prefix": "10.0.2.96/27",
+            "peeringNameTovnet1": "to-vnet1",
+            "tag": "spoke-vnet2"
+        },
+        "vNet3": {
+            "location": "[parameters('location3')]",
+            "name": "vnet3",
+            "addressSpacePrefix": "10.0.3.0/24",
+            "subnet1Name": "Tenant1",
+            "subnet1Prefix": "10.0.3.0/27",
+            "subnet2Name": "Tenant2",
+            "subnet2Prefix": "10.0.3.32/27",
+            "subnet3Name": "Tenant3",
+            "subnet3Prefix": "10.0.3.64/27",
+            "subnet4Name": "Tenant4",
+            "subnet4Prefix": "10.0.3.96/27",
+            "peeringNameTovnet1": "to-vnet1",
+            "tag": "spoke-vnet3"
+        },
+        "storageAccountName": "[parameters('storageAccountName')]",
+        "workspaceName": "[parameters('workspaceName')]",
+        "privateStorageBlobDnsZoneName": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
+        "privateEndpointStorageBlobName": "[format('{0}-blob-private-endpoint', parameters('storageAccountName'))]",
+        "privateEndpointSubnetName": "[variables('vNet1').subnet1Name]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "vmsize": "Standard_B2s",
+        "vm1Name": "[parameters('vm1Name')]",
+        "vm2Name": "[parameters('vm2Name')]",
+        "vm3Name": "[parameters('vm3Name')]",
+        "vmArray": [
+            {
+                "deployment": true,
+                "location": "[variables('vnet1').location]",
+                "vmName": "[variables('vm1Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "MicrosoftWindowsServer",
+                "imageOffer": "WindowsServer",
+                "OSVersion": "2019-Datacenter",
+                "vNetName": "[variables('vNet1').name]",
+                "subnetName": "[variables('vnet1').subnet2Name]",
+                "pipObject": {
+                    "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vm1Name'),'-pubIP' )  )]"
+                },
+                "nsgName": "[concat(variables('vm1Name'),'-nsg')]",
+                "enableIPForwarding": true,
+                "acceleratedNetworking": false
+            },
+            {
+                "deployment": true,
+                "location": "[variables('vnet2').location]",
+                "vmName": "[variables('vm2Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "MicrosoftWindowsServer",
+                "imageOffer": "WindowsServer",
+                "OSVersion": "2019-Datacenter",
+                "vNetName": "[variables('vNet2').name]",
+                "subnetName": "[variables('vnet2').subnet1Name]",
+                "pipObject": {
+                    "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vm2Name'),'-pubIP' )  )]"
+                },
+                "nsgName": "[concat(variables('vm2Name'),'-nsg')]",
+                "enableIPForwarding": true,
+                "acceleratedNetworking": false
+            },
+            {
+                "deployment": true,
+                "location": "[variables('vnet3').location]",
+                "vmName": "[variables('vm3Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "imagePublisher": "MicrosoftWindowsServer",
+                "imageOffer": "WindowsServer",
+                "OSVersion": "2019-Datacenter",
+                "vNetName": "[variables('vNet3').name]",
+                "subnetName": "[variables('vnet3').subnet1Name]",
+                "pipObject": {
+                    "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vm3Name'),'-pubIP' )  )]"
+                },
+                "nsgName": "[concat(variables('vm3Name'),'-nsg')]",
+                "enableIPForwarding": true,
+                "acceleratedNetworking": false
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "windowsCommand": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername) && powershell.exe New-NetFirewallRule -Name 'allow_ICMPv4_in' -DisplayName 'Allow ICMPv4' -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-06-01",
+            "name": "[variables('storageAccountName')]",
+            "location": "[parameters('location1')]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_0",
+                "allowBlobPublicAccess": "[parameters('allowBlobPublicAccess')]",
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "[parameters('networkAclsDefaultAction')]"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[variables('privateStorageBlobDnsZoneName')]",
+            "location": "global"
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[format('{0}/{1}', variables('privateStorageBlobDnsZoneName'), format('{0}-link', variables('privateStorageBlobDnsZoneName')))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateStorageBlobDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2021-02-01",
+            "name": "[variables('privateEndpointStorageBlobName')]",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "subnet": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name, variables('privateEndpointSubnetName'))]"
+                },
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "MyStorageBlobPrivateLinkConnection",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                            "groupIds": [
+                                "blob"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2021-02-01",
+            "name": "[format('{0}/{1}', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateStorageBlobDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointStorageBlobName'))]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+                    {
+                        "name": "config",
+                        "properties": {
+                            "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateStorageBlobDnsZoneName'))]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[variables('workspaceName')]",
+            "apiVersion": "2020-10-01",
+            "location": "[variables('vNet1').location]",
+            "comments": "workspace log analytics",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('sku')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]",
+                "features": {
+                    "enableLogAccessUsingOnlyResourcePermissions": "[parameters('resourcePermissions')]"
+                },
+                "publicNetworkAccessForIngestion": "Disabled",
+                "publicNetworkAccessForQuery": "Enabled"
+            }
+        },
+        {
+            "type": "microsoft.insights/privatelinkscopes",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[parameters('privatelinkscopes_pe_loganalytics_name')]",
+            "location": "global",
+            "properties": {
+                "accessModeSettings": {
+                    "exclusions": [],
+                    "queryAccessMode": "PrivateOnly",
+                    "ingestionAccessMode": "PrivateOnly"
+                }
+            }
+        },
+        {
+            "type": "microsoft.insights/privatelinkscopes/scopedResources",
+            "apiVersion": "2021-07-01-preview",
+            "name": "[concat(parameters('privatelinkscopes_pe_loganalytics_name'), '/', concat(variables('workspaceName'), '-connection'))]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/privatelinkscopes', parameters('privatelinkscopes_pe_loganalytics_name'))]",
+                "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "linkedResourceId": "[resourceId('microsoft.operationalinsights/workspaces', variables('workspaceName'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-11-01",
+            "name": "[parameters('privateEndpoints_logAnalyticsName')]",
+            "location": "eastus2",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/privatelinkscopes', parameters('privatelinkscopes_pe_loganalytics_name'))]",
+                "[resourceId('microsoft.insights/privatelinkscopes/scopedResources', parameters('privatelinkscopes_pe_loganalytics_name'),concat(variables('workspaceName'), '-connection'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpoints_logAnalyticsName')]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('microsoft.insights/privatelinkscopes', parameters('privatelinkscopes_pe_loganalytics_name'))]",
+                            "groupIds": [
+                                "azuremonitor"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved",
+                                "description": "Auto-Approved",
+                                "actionsRequired": "None"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "subnet": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet1').name, variables('vNet1').subnet1Name)]"
+                },
+                "customDnsConfigs": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet1').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "This is the first vNet",
+            "tags": {
+                "Environment": "[variables('vnet1').tag]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet1').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet1Prefix]",
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet2Prefix]",
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet3Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet2').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet2').location]",
+            "comments": "This is the second vNet",
+            "tags": {
+                "Environment": "[variables('vnet2').tag]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet2').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet2').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet2').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet2').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet2').subnet2Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet2').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet2').subnet3Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet2').subnet4Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet2').subnet4Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet3').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet3').location]",
+            "comments": "This is the second vNet",
+            "tags": {
+                "Environment": "[variables('vnet3').tag]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet3').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet3').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet3').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet3').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet3').subnet2Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet3').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet3').subnet3Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet3').subnet4Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet3').subnet4Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet1').name,'/',variables('vNet1').peeringNameTovnet2)]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "VNet peering from vnet1 to vnet2 ",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnet2').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet2').name,'/',variables('vnet2').peeringNameTovnet1)]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet2').location]",
+            "comments": "VNet peering vNetHub2 to vNetHub1 ",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vNet1').name,'/',variables('vNet1').peeringNameTovnet3)]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "VNet peering from vnet1 to vnet2 ",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet3').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnet3').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet3').name,'/',variables('vnet3').peeringNameTovnet1)]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vnet3').location]",
+            "comments": "VNet peering vnet3 to vnet1 ",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet3').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('vmArray')[copyIndex()].nsgName)]",
+            "apiVersion": "2020-05-01",
+            "location": "[concat(variables('vmArray')[copyIndex()].location)]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "custom-range1",
+                        "properties": {
+                            "description": "allow custom range ports",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "5201-5220",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 600,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "custom-range2",
+                        "properties": {
+                            "description": "allow custom range ports",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "5221-5250",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 700,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "HTTPS-outbound",
+                        "properties": {
+                            "description": "HTTPS traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 800,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "HTTP-outbound",
+                        "properties": {
+                            "description": "HTTP traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 801,
+                            "direction": "Outbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[and(variables('vmArray')[copyIndex()].deployment, greater(length(variables('vmArray')[copyIndex()].pipObject), 0))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2021-05-01",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-nic' )]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vNetName )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": "[if( greater(length(variables('vmArray')[copyIndex()].pipObject), 0), variables('vmArray')[copyIndex()].pipObject, json('null') )]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-07-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-nic')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OsDisk')]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-nic' )  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/NetworkWatcher')]",
+            "comments": "install NetworkWatcher agent",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.NetworkWatcher",
+                "type": "NetworkWatcherAgentWindows",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'InstallWebServer')]",
+            "comments": "custom script extension to install IIS on the Windows server",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName  )]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmArray')[copyIndex()].vmName,'NetworkWatcher' )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('windowsCommand')]"
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ],
+    "outputs": {
+        "storageAccountName": {
+            "type": "string",
+            "value": "[variables('storageAccountName')]"
+        },
+        "storageAccountId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+        },
+        "blobStorageAccountPrivateEndpoint": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointStorageBlobName'))]"
+        },
+        "workspaceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
+        }
+
+    }
+}
