@@ -87,7 +87,6 @@ To make the deployment, run the scripts in sequence:
 - step 3: run the powershell script **02-anm.ps1** 
 - step 4: through Azure management portal, deploy the network connectivity configurations in the target azure region
 
-[![2]][2]
 
 [![3]][3]
 
