@@ -1,0 +1,23 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "anm-test4",
+    "location" : "westus2",
+    "locationhubvnet" : "westus2",
+    "locationvnet1" : "westus2",
+    "locationvnet2" : "westus2",
+    "locationvnet3" : "westus2",
+    "locationvnet4" : "westus2",
+    "locationvnet5" : "westus2",
+    "locationvnet6" : "westus2",
+    "locationvnet7" : "westus2",
+    "locationvnet8" : "westus2",
+    "locationvnet9" : "westus2",
+    "locationvnet10" : "westus2",
+    "mngIP": "",
+    "RGTagExpireDate": "02/15/2022",
+    "RGTagContact": "user1@contoso.com",
+    "RGTagNinja": "user1",
+    "RGTagUsage": "test azure network manager"
+}
