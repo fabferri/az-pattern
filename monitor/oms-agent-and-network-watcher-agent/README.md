@@ -300,7 +300,7 @@ The diagram shows a graphical view of connection monitor tests: a single group i
 
 [![6]][6]
 
-## <a name="CPU utilization in linux VM"></a>3. CPU utilization in linux VM
+## <a name="CPU utilization in linux VM"></a>4. CPU utilization in linux VM
 The linux VMs in vnets have the **Standard_B2s** SKU. The logs below provide evidence that OMS agent and Network Watcher agent do not have significative impact on CPU utilization. 
 
 [![7]][7]
@@ -364,7 +364,7 @@ Linux 3.10.0-957.27.2.el7.x86_64 (SEA-Cust41-VM03)      04/03/2022      _x86_64_
 
 ```
 
-## <a name="Log analytics workspace"></a>4. NOTE about Log analytics workspace**
+## <a name="Log analytics workspace"></a>5. NOTE about Log analytics workspace**
 Log analytics workspace name uniqueness is per resource group. <br>
 It allows you to use the same workspace name in deployments across multiple environments for consistency. Workspace uniqueness is maintained as follow:
 * Workspace ID – global uniqueness remained unchanged.
