@@ -1,0 +1,289 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefixName": {
+            "type": "string",
+            "defaultValue": "[resourcegroup().name]",
+            "metadata": {
+                "description": "prefix name of the deployment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "networkWatcherName": {
+            "type": "string",
+            "defaultValue": "[format('NetworkWatcher_{0}', parameters('location'))]",
+            "metadata": {
+                "description": "Network Watcher name"
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Name of the workspace."
+            }
+        },
+        "connMonitorName": {
+            "type": "string",
+            "defaultValue": "[concat('conn-',resourceGroup().name)]"
+        },
+        "vm1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VM01')]",
+            "metadata": {
+                "description": "name azure VM1"
+            }
+        },
+        "vm2Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VM02')]",
+            "metadata": {
+                "description": "name azure VM2"
+            }
+        },
+        "vm3Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VM03')]",
+            "metadata": {
+                "description": "name azure VM3"
+            }
+        },
+        "vm4Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VM04')]",
+            "metadata": {
+                "description": "name azure VM4"
+            }
+        },
+        "vm1OnPremName": {
+            "type": "string",
+            "defaultValue": "SEA-ER-41-VM01",
+            "metadata": {
+                "description": "name on-prem VM1"
+            }
+        },
+        "vm2OnPremName": {
+            "type": "string",
+            "defaultValue": "SEA-ER-41-VM02",
+            "metadata": {
+                "description": "name on-prem VM2"
+            }
+        },
+        "vm1OnPremIPAddress": {
+            "type": "string",
+            "defaultValue": "10.1.41.10",
+            "metadata": {
+                "description": "IP address on-prem VM1"
+            }
+        },
+        "vm2OnPremIPAddress": {
+            "type": "string",
+            "defaultValue": "10.1.41.11",
+            "metadata": {
+                "description": "IP address on-prem VM2"
+            }
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": {
+                "environment": "DEV"
+            }
+        }
+    },
+    "variables": {
+        "networkWatcherName": "[parameters('networkWatcherName')]",
+        "workspaceName": "[parameters('workspaceName')]",
+        "connMonitor1Name": "[parameters('connMonitorName')]",
+        "vm1location": "[parameters('location')]",
+
+        "vm1Name": "[parameters('vm1Name')]",
+        "vm1Id": "[resourceId(subscription().subscriptionId,resourceGroup().name,'Microsoft.Compute/virtualMachines', variables('vm1Name'))]",
+        "vm1NICName": "[concat(parameters('vm1Name'),'-nic')]",
+        "vm1endpointName": "[concat(variables('vm1Name'),'(',resourceGroup().name,')')]",
+
+        "vm2Name": "[parameters('vm2Name')]",
+        "vm2Id": "[resourceId(subscription().subscriptionId,resourceGroup().name,'Microsoft.Compute/virtualMachines', variables('vm2Name'))]",
+        "vm2NICName": "[concat(parameters('vm2Name'),'-nic')]",
+        "vm2endpointName": "[concat(variables('vm2Name'),'(',resourceGroup().name,')')]",
+
+        "vm3Name": "[parameters('vm3Name')]",
+        "vm3Id": "[resourceId(subscription().subscriptionId,resourceGroup().name,'Microsoft.Compute/virtualMachines', variables('vm3Name'))]",
+        "vm3NICName": "[concat(parameters('vm3Name'),'-nic')]",
+        "vm3endpointName": "[concat(variables('vm3Name'),'(',resourceGroup().name,')')]",
+
+        "vm4Name": "[parameters('vm4Name')]",
+        "vm4Id": "[resourceId(subscription().subscriptionId,resourceGroup().name,'Microsoft.Compute/virtualMachines', variables('vm4Name'))]",
+        "vm4NICName": "[concat(parameters('vm4Name'),'-nic')]",
+        "vm4endpointName": "[concat(variables('vm4Name'),'(',resourceGroup().name,')')]",
+
+        "vm1OnPremName": "[parameters('vm1OnPremName')]",
+        "vm2OnPremName": "[parameters('vm2OnPremName')]",
+        "vm1OnPremIPAddress": "[parameters('vm1OnPremIPAddress')]",
+        "vm2OnPremIPAddress": "[parameters('vm2OnPremIPAddress')]",
+        "vm1OnPremendpointName": "[concat(variables('vm1OnPremName'),'(',resourceGroup().name,')')]",
+        "vm2OnPremendpointName": "[concat(variables('vm2OnPremName'),'(',resourceGroup().name,')')]",
+        "workspaceId": "[resourceId(subscription().subscriptionId,resourceGroup().name,'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "deployConnMonitorLogs",
+            "resourceGroup": "NetworkWatcherRG",
+            "dependsOn": [
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/networkWatchers/connectionMonitors",
+                            "name": "[concat(variables('networkWatcherName'),'/',variables('connMonitor1Name'))]",
+                            "apiVersion": "2021-05-01",
+                            "location": "[parameters('location')]",
+                            "tags": "[parameters('tags')]",
+                            "properties": {
+                                "endpoints": [
+                                    {
+                                        "name": "[variables('vm1endpointName')]",
+                                        "type": "AzureVM",
+                                        "resourceId": "[variables('vm1Id')]",
+                                        "address": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('vm1NICName')),'2021-05-01').ipConfigurations[0].properties.privateIPAddress]"
+                                    },
+                                    {
+                                        "name": "[variables('vm2endpointName')]",
+                                        "type": "AzureVM",
+                                        "resourceId": "[variables('vm2Id')]",
+                                        "address": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('vm2NICName')),'2021-05-01').ipConfigurations[0].properties.privateIPAddress]"
+                                    },
+                                    {
+                                        "name": "[variables('vm3endpointName')]",
+                                        "type": "AzureVM",
+                                        "resourceId": "[variables('vm3Id')]",
+                                        "address": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('vm3NICName')),'2021-05-01').ipConfigurations[0].properties.privateIPAddress]"
+                                    },
+                                    {
+                                        "name": "[variables('vm4endpointName')]",
+                                        "type": "AzureVM",
+                                        "resourceId": "[variables('vm4Id')]",
+                                        "address": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('vm4NICName')),'2021-05-01').ipConfigurations[0].properties.privateIPAddress]"
+                                    },
+                                    {
+                                        "name": "[variables('vm1OnPremendpointName')]",
+                                        "type": "MMAWorkspaceMachine",
+                                        "resourceId": "[variables('workspaceId')]",
+                                        "address": "[variables('vm1OnPremName')]",
+                                        "scope": {
+                                            "include": [
+                                                {
+                                                    "address": "[variables('vm1OnPremIPAddress')]"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "[variables('vm2OnPremendpointName')]",
+                                        "type": "MMAWorkspaceMachine",
+                                        "resourceId": "[variables('workspaceId')]",
+                                        "address": "[variables('vm2OnPremName')]",
+                                        "scope": {
+                                            "include": [
+                                                {
+                                                    "address": "[variables('vm2OnPremIPAddress')]"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "testConfigurations": [
+                                    {
+                                        "name": "ICMP",
+                                        "testFrequencySec": 30,
+                                        "protocol": "ICMP",
+                                        "successThreshold": {
+                                            "checksFailedPercent": 5,
+                                            "roundTripTimeMs": 10
+                                        },
+                                        "icmpConfiguration": {
+                                            "disableTraceRoute": false
+                                        }
+                                    },
+                                    {
+                                        "name": "HTTP",
+                                        "testFrequencySec": 30,
+                                        "protocol": "HTTP",
+                                        "successThreshold": {
+                                            "checksFailedPercent": 5,
+                                            "roundTripTimeMs": 20
+                                        },
+                                        "httpConfiguration": {
+                                            "port": 80,
+                                            "method": "Get",
+                                            "path": "/",
+                                            "requestHeaders": [],
+                                            "validStatusCodeRanges": [
+                                                "200-299"
+                                            ],
+                                            "preferHTTPS": false
+                                        }
+                                    },
+                                    {
+                                        "name": "TCP",
+                                        "testFrequencySec": 30,
+                                        "protocol": "TCP",
+                                        "successThreshold": {
+                                            "checksFailedPercent": 5,
+                                            "roundTripTimeMs": 10
+                                        },
+                                        "tcpConfiguration": {
+                                            "port": 80,
+                                            "disableTraceRoute": false,
+                                            "destinationPortBehavior": "ListenIfAvailable"
+                                        }
+                                    }
+                                ],
+                                "testGroups": [
+                                    {
+                                        "name": "grp1-azVM03",
+                                        "sources": [
+                                            "[variables('vm3endpointName')]"
+                                        ],
+                                        "destinations": [
+                                            "[variables('vm1endpointName')]",
+                                            "[variables('vm2endpointName')]",
+                                            "[variables('vm4endpointName')]",
+                                            "[variables('vm1OnPremendpointName')]",
+                                            "[variables('vm2OnPremendpointName')]"
+                                        ],
+                                        "testConfigurations": [
+                                            "ICMP",
+                                            "HTTP",
+                                            "TCP"
+                                        ],
+                                        "disable": false
+                                    }
+                                ],
+                                "outputs": [
+                                    {
+                                        "type": "Workspace",
+                                        "workspaceSettings": {
+                                            "workspaceResourceId": "[variables('workspaceId')]"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

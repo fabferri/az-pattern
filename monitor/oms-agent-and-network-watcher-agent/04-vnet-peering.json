@@ -1,0 +1,71 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefixName": {
+            "type": "string",
+            "defaultValue": "[resourcegroup().name]",
+            "metadata": {
+                "description": "prefix name of the deployment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourcegroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        },
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VNet01')]",
+            "metadata": {
+                "description": "name vnet1"
+            }
+        },
+        "vnet2Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VNet02')]",
+            "metadata": {
+                "description": "name vnet2"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('vnet1Name'),'/',parameters('vnet1Name'),'-to-',parameters('vnet2Name'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('location')]",
+            "comments": " create vnet peering",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',parameters('vnet2Name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('vnet2Name'),'/',parameters('vnet2Name'),'-to-',parameters('vnet1Name'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('location')]",
+            "comments": " create vnet peering",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks',parameters('vnet1Name'))]"
+                }
+            }
+        }
+    ]
+}

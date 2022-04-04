@@ -1,0 +1,486 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefixName": {
+            "type": "string",
+            "defaultValue": "[resourcegroup().name]",
+            "metadata": {
+                "description": "prefix name of the deployment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourcegroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "[resourcegroup().name]",
+            "metadata": {
+                "description": "name of the log Analytics workspace"
+            }
+        },
+        "ercircuitName": {
+            "type": "string",
+            "defaultValue": "[concat(resourcegroup().name,'-ER')]",
+            "metadata": {
+                "description": "ExpressRoute circuit name provisioned in the resouce group"
+            }
+        },
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VNet01')]",
+            "metadata": {
+                "description": "name vnet1"
+            }
+        },
+        "vnet1AddressSpace": {
+            "type": "string",
+            "defaultValue": "10.17.41.0/24",
+            "metadata": {
+                "description": "vnet1 Address Space"
+            }
+        },
+        "subnet1Name": {
+            "type": "string",
+            "defaultValue": "Tenant",
+            "metadata": {
+                "description": "name subnet in vnet1"
+            }
+        },
+        "subnet1Address": {
+            "type": "string",
+            "defaultValue": "10.17.41.0/25",
+            "metadata": {
+                "description": "subnet adress in vnet1"
+            }
+        },
+        "subnet2Name": {
+            "type": "string",
+            "defaultValue": "GatewaySubnet",
+            "metadata": {
+                "description": "gateway subnet to deploy the ExpressRoute gateway. do not change the name of the subnet: it is a predefined fixed name"
+            }
+        },
+        "subnet2Address": {
+            "type": "string",
+            "defaultValue": "10.17.41.128/25",
+            "metadata": {
+                "description": "network assigned to the subnet2"
+            }
+        },
+        "ergwpubIPName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-gw-er-pubIP')]",
+            "metadata": {
+                "description": "name of public IP of the ExpressRoute gateway"
+            }
+        },
+        "ergwName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-gw-er')]",
+            "metadata": {
+                "description": "name of the ExpressRoute gateway"
+            }
+        },
+        "erConnectionName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('vnet1Name'),'-gw-er-conn')]",
+            "metadata": {
+                "description": "name of the ExpressRoute gateway"
+            }
+        },
+        "vm1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VM01')]",
+            "metadata": {
+                "description": "name of the VM1"
+            }
+        },
+        "vm2Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefixName'),'-VM02')]",
+            "metadata": {
+                "description": "name of the VM2"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B2s",
+            "metadata": {
+                "description": "SKU of the VMs"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "VM administrator username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "VM administrator password"
+            }
+        }
+    },
+    "variables": {
+        "erCircuitId": "[resourceid( subscription().subscriptionId, resourceGroup().name ,'Microsoft.Network/expressRouteCircuits',parameters('ercircuitName'))]",
+        "windowsCommand": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername) && powershell.exe New-NetFirewallRule -Name 'allow_ICMPv4_in' -DisplayName 'Allow ICMPv4' -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4",
+        "vmArray": [
+            {
+                "deployment": true,
+                "location": "[parameters('location')]",
+                "vmName": "[parameters('vm1Name')]",
+                "vmSize": "[parameters('vmSize')]",
+                "publisher": "MicrosoftWindowsServer",
+                "offer": "WindowsServer",
+                "sku": "2019-Datacenter",
+                "vNetName": "[parameters('vnet1Name')]",
+                "subnetName": "[parameters('subnet1Name')]",
+                "nicName": "[concat(parameters('vm1Name'),'-nic')]",
+                "pubIPName": "[concat(parameters('vm1Name'),'-nic-pubIP')]",
+                "nsgName": "[concat(parameters('vm1Name'),'-nic-nsg')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('location')]",
+                "vmName": "[parameters('vm2Name')]",
+                "vmSize": "[parameters('vmSize')]",
+                "publisher": "MicrosoftWindowsServer",
+                "offer": "WindowsServer",
+                "sku": "2019-Datacenter",
+                "vNetName": "[parameters('vnet1Name')]",
+                "subnetName": "[parameters('subnet1Name')]",
+                "nicName": "[concat(parameters('vm2Name'),'-nic')]",
+                "pubIPName": "[concat(parameters('vm2Name'),'-nic-pubIP')]",
+                "nsgName": "[concat(parameters('vm2Name'),'-nic-nsg')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('vnet1Name')]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [],
+            "comments": "This is the first vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnet1AddressSpace')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet1Address')]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('subnet2Name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet2Address')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2021-05-01",
+            "name": "[parameters('ergwpubIPName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2021-05-01",
+            "name": "[parameters('ergwName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceid('Microsoft.Network/virtualNetworks',parameters('vnet1Name'))]",
+                "[resourceid('Microsoft.Network/publicIPAddresses',parameters('ergwpubIPName'))]"
+            ],
+            "properties": {
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "Standard",
+                    "tier": "Standard"
+                },
+                "ipConfigurations": [
+                    {
+                        "name": "gwipconf",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceid('Microsoft.Network/virtualNetworks/subnets',parameters('vnet1Name'),parameters('subnet2Name'))]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceid('Microsoft.Network/publicIPAddresses',parameters('ergwpubIPName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2020-11-01",
+            "name": "[parameters('erConnectionName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceid('Microsoft.Network/virtualNetworkGateways',parameters('ergwName'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceid('Microsoft.Network/virtualNetworkGateways',parameters('ergwName'))]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "peer": {
+                    "id": "[variables('erCircuitId')]"
+                }
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('vmArray')[copyIndex()].nsgName)]",
+            "apiVersion": "2021-05-01",
+            "location": "[concat(variables('vmArray')[copyIndex()].location)]",
+            "dependsOn": [],
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDPRule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('vmArray')[copyIndex()].pubIPName]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vNetName )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].pubIPName )]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].pubIPName )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OsDisk')]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/NetworkWatcher')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.NetworkWatcher",
+                "type": "NetworkWatcherAgentWindows",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/OMSExtension')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmArray')[copyIndex()].vmName,'NetworkWatcher')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+                "type": "MicrosoftMonitoringAgent",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "workspaceId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2021-06-01').customerId]"
+                },
+                "protectedSettings": {
+                    "workspaceKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '2021-06-01').primarySharedKey]"
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/iis_and_AllowICMPv4')]",
+            "comments": "custom script extension to install IIS on windows VM",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmArray')[copyIndex()].vmName,'OMSExtension')]"
+            ],
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "settings": {
+                    "commandToExecute": "[variables('windowsCommand')]"
+                },
+                "protectedSettings": {}
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/BGInfo')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmArray')[copyIndex()].vmName,'iis_and_AllowICMPv4')]"
+            ],
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Compute",
+                "type": "BGInfo",
+                "typeHandlerVersion": "2.1"
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}

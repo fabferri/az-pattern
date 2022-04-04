@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Specifies the location for the workspace."
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Name of the workspace."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "defaultvalue": "pergb2018",
+      "allowedValues": [
+        "pergb2018",
+        "Free",
+        "Standalone",
+        "PerNode",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+      }
+    },
+    "retentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "Number of days to retain data."
+      }
+    },
+    "resourcePermissions": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "true to use resource or workspace permissions. false to require workspace permissions."
+      }
+    },
+    "solutionsNetworkMonitoringName": {
+      "type": "string",
+      "defaultValue": "[concat('NetworkMonitoring(',parameters('workspaceName'),')')]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[parameters('workspaceName')]",
+      "apiVersion": "2020-10-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('sku')]"
+        },
+        "retentionInDays": "[parameters('retentionInDays')]",
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": "[parameters('resourcePermissions')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.OperationsManagement/solutions",
+      "apiVersion": "2015-11-01-preview",
+      "name": "[parameters('solutionsNetworkMonitoringName')]",
+      "location": "[parameters('location')]",
+      "plan": {
+        "name": "[parameters('solutionsNetworkMonitoringName')]",
+        "promotionCode": "",
+        "product": "OMSGallery/NetworkMonitoring",
+        "publisher": "Microsoft"
+      },
+      "properties": {
+        "workspaceResourceId": "[resourceid( subscription().subscriptionId, resourceGroup().name ,'Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+        "containedResources": [
+          "[resourceid( subscription().subscriptionId, resourceGroup().name ,'Microsoft.OperationalInsights/workspaces/views',parameters('workspaceName') , parameters('solutionsNetworkMonitoringName') )]"
+        ]
+      }
+    }
+  ]
+}
