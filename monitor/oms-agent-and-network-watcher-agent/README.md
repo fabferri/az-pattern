@@ -289,7 +289,6 @@ sudo sh ./omsagent-*.universal.x64.sh --install -w <WorkspaceID> -s <WorkspaceKe
 
 ## <a name="Connection Monitor"></a>3. Azure Connection Monitor
 The connection monitor is configured with purpose to check out the CPU consumption of agent running in CentOS 7 Azure VM.
-In the test the CentOS 7 run on Azure VM with SKU: **Standard_B2s**
 
 <br>
 
