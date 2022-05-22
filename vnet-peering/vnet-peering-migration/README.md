@@ -94,7 +94,7 @@ Set-AzVirtualNetworkPeering -VirtualNetworkPeering $hubvnetPeering
 
 [1]: ./media/network-diagram1.png "initial network diagram"
 [2]: ./media/network-diagram2.png "apply a change in the network configuration"
-[3]: ./media/network-diagram2.png "final network diagram"
+[3]: ./media/network-diagram3.png "final network diagram"
 
 <!--Link References-->
 
