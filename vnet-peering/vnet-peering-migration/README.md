@@ -46,7 +46,7 @@ The scripts **migration.ps1** and **migration-rollback.ps1** are identical, with
 - **$destination_rgNamehubName** 
 - **$destination_hubvnetName** 
 
-Anytime the script starts, a log file is generated in the script folder; the script writes information about the different execution steps.
+Anytime the script starts, a log file is generated in the script folder; the script writes information about the different execution steps in the log file.
 
 <br>
 
