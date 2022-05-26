@@ -241,7 +241,7 @@ Effective routes **vm3-nic**:
 The **vpn2-caseA.json** and **vpn2-caseB.json** reference the existing public IPs of VPN gateways. As reported in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
 
 In the AM template **vpn2-caseA.json** to get the existing public IP of the VPN Gateway: 
-```json
+```console
 reference(variables('gateway1PublicIP1Id'),'2017-10-01').ipAddress**
 ```
 
