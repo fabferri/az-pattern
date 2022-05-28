@@ -4,7 +4,7 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue": "eastus",
+            "defaultValue": "[resourceGroup().location]",
             "metadata": {
                 "description": "azure region where is deployed the vnet1"
             }
@@ -50,7 +50,7 @@
     },
     "variables": {
         "location": "[parameters('location')]",
-        "customData": "[ parameters('cloudInitContent') ]",
+        "customData": "[parameters('cloudInitContent') ]",
         "vnetName": "[parameters('vnetName')]",
         "addressSpace1Prefix": "10.10.0.0/16",
         "subnet1Name": "RouteServerSubnet",
@@ -69,6 +69,7 @@
         "subnet_rs1_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'),'RouteServerSubnet' )]",
         "vHubIPconfigName": "ipconfig1",
         "bgpConnectionName": "[concat(variables('rsName'), '/', variables('rsBGPconnectionName'))]",
+        "rsPubIPName": "[concat(variables('rsName'),'-pubIP')]",
         "vmName": "[parameters('vmName')]",
         "nicName": "[concat(variables('vmName'),'-nic')]",
         "pubIPName": "[concat(variables('vmName'),'-pubIP')]",
@@ -84,7 +85,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsgName')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('location')]",
             "properties": {
                 "securityRules": [
@@ -95,7 +96,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[variables('mngIP')]",
+                            "sourceAddressPrefix": "[if(equals(variables('mngIP'), ''), '*', variables('mngIP'))]",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 100,
@@ -108,7 +109,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vnetName')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
@@ -165,7 +166,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs",
-            "apiVersion": "2020-08-01",
+            "apiVersion": "2021-05-01",
             "name": "[variables('rsName')]",
             "location": "[variables('location')]",
             "comments": "create a virtual hub object",
@@ -179,23 +180,40 @@
             "resources": []
         },
         {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rsPubIPName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
             "type": "Microsoft.Network/virtualHubs/ipConfigurations",
-            "apiVersion": "2020-08-01",
+            "apiVersion": "2021-05-01",
             "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
             "comments": "create the route server and attach it to the RouteServerSubnet subnet",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]"
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
             ],
             "properties": {
                 "privateIPAllocationMethod": "Dynamic",
                 "subnet": {
                     "id": "[variables('subnet_rs1_Id')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
                 }
             }
         },
         {
             "type": "Microsoft.Network/virtualHubs/bgpConnections",
-            "apiVersion": "2020-08-01",
+            "apiVersion": "2021-05-01",
             "name": "[variables('bgpConnectionName')]",
             "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
             "dependsOn": [
@@ -209,7 +227,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('pubIPName')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('location')]",
             "comments": "public IP of the VM",
             "properties": {
@@ -222,7 +240,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-05-01",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
@@ -251,7 +269,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmName') ]",
-            "apiVersion": "2020-06-01",
+            "apiVersion": "2021-11-01",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
@@ -264,7 +282,7 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                     "customData": "[base64(variables('customData'))]"
+                    "customData": "[base64(variables('customData'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -290,6 +308,6 @@
                     ]
                 }
             }
-        },
+        }
     ]
 }
