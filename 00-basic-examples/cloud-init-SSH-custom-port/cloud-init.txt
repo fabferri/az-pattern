@@ -1,0 +1,9 @@
+#cloud-config
+package_upgrade: true
+packages:
+  - nginx
+runcmd:
+  - sed -i "s/#Port 22/Port 2223/" /etc/ssh/sshd_config
+  - sed -i '/^#/! s/80/8081/g' /etc/nginx/sites-enabled/default
+  - service ssh restart
+  - service nginx restart
