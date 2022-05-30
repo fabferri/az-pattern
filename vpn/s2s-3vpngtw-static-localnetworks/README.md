@@ -59,6 +59,8 @@ CASE-A requires the deployment in sequence of the following files:
 - **vpn2-caseA.json**: deployment of local networks and Connections
 
 Communication between vnets is shown in the diagram:
+<br>
+
 [![2]][2]
 
 [![3]][3]
@@ -148,6 +150,8 @@ CASE-B requires the deployment in sequence of the following files:
 - **vpn2-caseA.json**: deployment of local networks and Connections
 
 Communication between vnets is shown in the diagram:
+<br>
+
 [![5]][5]
 
 [![6]][6]
