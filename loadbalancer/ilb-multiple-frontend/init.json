@@ -1,0 +1,9 @@
+{
+    "subscriptionName": "AzDev1",
+    "ResourceGroupName": "test-lb1",
+    "location1": "westus2",
+    "location2": "westus2",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}
