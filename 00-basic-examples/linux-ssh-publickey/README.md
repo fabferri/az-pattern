@@ -37,13 +37,17 @@ To prevent SSH sessions from becoming idle and hung or to get disconnected due t
 
 The SSH configuration file has a declarion for MAC (**M**essage **A**uthetication **C**ode) specifies algorithms in order of preference used for data integrity protection. Multiple algorithms must be comma-separated.
 
-User keys are managed on the ssh client: you have to create a key pair consisting of your public key **id_rsa.pub** and your private key **id_rsa**. Those keys are stored in the client, under $HOME\.ssh\
+User keys are managed on the ssh client: you have to create a key pair consisting of your public key **id_rsa.pub** and your private key **id_rsa**. Those keys are stored in the client, under $HOME\\.ssh\
 
-The powershell **generate-keys.ps1** checks if the file $HOME\.ssh\id_rsa exists; if it doesn't, the following ssh command generates the keys:
+
+[![3]][3]
+
+The powershell **generate-keys.ps1** checks if the file $HOME\\.ssh\id_rsa exists; if it doesn't, the following ssh command generates the keys:
 
 ```console
 ssh-keygen.exe -t rsa -b 2048 -f "$HOME\.ssh\$FileName"
 ```
+
 
 
 #### <a name="ssh"></a>2. Connect to the azure VM by SSH
@@ -75,6 +79,6 @@ where:
 
 [1]: ./media/windows-optional-features.png "windows 10 optional features"
 [2]: ./media/open-ssh-client.png "OpenSSH client"
-
+[3]: ./media/ssh-folder.png "ssh folder"
 <!--Link References-->
 
