@@ -1,0 +1,1983 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for sample VM"
+      }
+    },
+    "authenticationType": {
+      "type": "string",
+      "defaultValue": "password",
+      "allowedValues": [
+        "sshPublicKey",
+        "password"
+      ],
+      "metadata": {
+        "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "adminPasswordOrKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D96ds_v5",
+      "allowedValues": [
+        "Standard_D2s_v4",
+        "Standard_D4s_v4",
+        "Standard_D8s_v4",
+        "Standard_D16s_v4",
+        "Standard_D32s_v4",
+        "Standard_D48s_v4",
+        "Standard_D64s_v4",
+        "Standard_D8ds_v5",
+        "Standard_D48ds_v5",
+        "Standard_D64ds_v5",
+        "Standard_D96ds_v5",
+        "Standard_F8s_v2",
+        "Standard_F48s_v2"
+      ],
+      "metadata": {
+        "description": "VM SKU"
+      }
+    },
+    "acceleratedNetworking": {
+      "type": "bool",
+      "defaultValue": true,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "accelerated networking"
+      }
+    },
+    "location1": {
+      "type": "string",
+      "defaultValue": "swedencentral",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "defaultValue": "swedencentral",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+
+    "vNet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet2Name": {
+      "type": "string",
+      "defaultValue": "vnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet1AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "CIDR block representing the address space of the Azure VNet"
+      }
+    },
+    "vNet2AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "CIDR block representing the address space of the Azure VNet"
+      }
+    },
+    "vnet1subnet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1subnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "vnet1subnet2Name": {
+      "type": "string",
+      "defaultValue": "vnet1subnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "vnet1subnet3Name": {
+      "type": "string",
+      "defaultValue": "vnet1subnet3",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "vnet2subnet1Name": {
+      "type": "string",
+      "defaultValue": "vnet2subnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "vnet2subnet2Name": {
+      "type": "string",
+      "defaultValue": "vnet2subnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "vnet2subnet3Name": {
+      "type": "string",
+      "defaultValue": "vnet2subnet3",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "vnet1subnet1Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "vnet1subnet2Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.32/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "vnet1subnet3Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.64/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "vnet2subnet1Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "vnet2subnet2Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.32/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "vnet2subnet3Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.64/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "linux": {
+      "type": "object",
+      "defaultValue": {
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-jammy",
+        "sku": "22_04-lts-gen2"
+      }
+    },
+    
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "The storage account type for the disks of the VM"
+      }
+    },
+    "mngIP": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering"
+      }
+    },
+  },
+  "variables": {
+    "location1": "[parameters('location1')]",
+    "location2": "[parameters('location2')]",
+
+    "vnet1Name": "[parameters('vNet1Name')]",
+    "vnet2Name": "[parameters('vNet2Name')]",
+
+    "vnet1subnet1Name": "[parameters('vnet1subnet1Name')]",
+    "vnet1subnet2Name": "[parameters('vnet1subnet2Name')]",
+    "vnet1subnet3Name": "[parameters('vnet1subnet3Name')]",
+    "vnet2subnet1Name": "[parameters('vnet2subnet1Name')]",
+    "vnet2subnet2Name": "[parameters('vnet2subnet2Name')]",
+    "vnet2subnet3Name": "[parameters('vnet2subnet3Name')]",
+
+    "vnet1AddressPrefix": "[parameters('vnet1AddressPrefix')]",
+    "vnet2AddressPrefix": "[parameters('vnet2AddressPrefix')]",
+    "vnet1subnet1Prefix": "[parameters('vnet1subnet1Prefix')]",
+    "vnet1subnet2Prefix": "[parameters('vnet1subnet2Prefix')]",
+    "vnet1subnet3Prefix": "[parameters('vnet1subnet3Prefix')]",
+    "vnet2subnet1Prefix": "[parameters('vnet2subnet1Prefix')]",
+    "vnet2subnet2Prefix": "[parameters('vnet2subnet2Prefix')]",
+    "vnet2subnet3Prefix": "[parameters('vnet2subnet3Prefix')]",
+    "peeringNamevnet1vnet2": "[concat(variables('vnet1Name'),'To',variables('vnet2Name'))]",
+    "peeringNamevnet2vnet1": "[concat(variables('vnet2Name'),'To',variables('vnet1Name'))]",
+    "routeTableName1": "udr-ilb",
+
+    "ilbName": "ilb",
+    "ilbSkuName": "Standard",
+    "ilbFrontEndIP1": "10.0.2.11",
+    "ilbFrontEndIP2": "10.0.2.12",
+    "ilbFrontEndIP3": "10.0.2.13",
+    "ilbFrontEndIP4": "10.0.2.14",
+    "ilbFrontEndIP5": "10.0.2.15",
+    "ilbFrontEndIP6": "10.0.2.16",
+    "ilbFrontEndIP7": "10.0.2.17",
+    "ilbFrontEndIP8": "10.0.2.18",
+    "ilbFrontEndIP9": "10.0.2.19",
+    "ilbFrontEndIP10": "10.0.2.20",
+    "ilbFrontEndIP11": "10.0.2.21",
+    "ilbFrontEndIP12": "10.0.2.22",
+    "ilbFrontEndIP13": "10.0.2.23",
+    "ilbFrontEnd1Name": "ilbFrontEndConf1",
+    "ilbFrontEnd2Name": "ilbFrontEndConf2",
+    "ilbFrontEnd3Name": "ilbFrontEndConf3",
+    "ilbFrontEnd4Name": "ilbFrontEndConf4",
+    "ilbFrontEnd5Name": "ilbFrontEndConf5",
+    "ilbFrontEnd6Name": "ilbFrontEndConf6",
+    "ilbFrontEnd7Name": "ilbFrontEndConf7",
+    "ilbFrontEnd8Name": "ilbFrontEndConf8",
+    "ilbFrontEnd9Name": "ilbFrontEndConf9",
+    "ilbFrontEnd10Name": "ilbFrontEndConf10",
+    "ilbFrontEnd11Name": "ilbFrontEndConf11",
+    "ilbFrontEnd12Name": "ilbFrontEndConf12",
+    "ilbFrontEnd13Name": "ilbFrontEndConf13",
+    "ilbBackEndAddressPool1Name": "ilbBackEndPool1",
+    "ilbBackEndAddressPool2Name": "ilbBackEndPool2",
+    "ilbBackEndAddressPool3Name": "ilbBackEndPool3",
+    "ilbBackEndAddressPool4Name": "ilbBackEndPool4",
+    "ilbBackEndAddressPool5Name": "ilbBackEndPool5",
+    "ilbBackEndAddressPool6Name": "ilbBackEndPool6",
+    "ilbBackEndAddressPool7Name": "ilbBackEndPool7",
+    "ilbBackEndAddressPool8Name": "ilbBackEndPool8",
+    "ilbBackEndAddressPool9Name": "ilbBackEndPool9",
+    "ilbBackEndAddressPool10Name": "ilbBackEndPool10",
+    "ilbBackEndAddressPool11Name": "ilbBackEndPool11",
+    "ilbBackEndAddressPool12Name": "ilbBackEndPool12",
+    "ilbBackEndAddressPool13Name": "ilbBackEndPool13",
+    "ilbprobeName": "ilbprobe",
+    "ilbprobePort": 80,
+
+
+    "linuxUpdate": "sudo apt update",
+    "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
+    "linuxIperfCommand": "sudo apt-get -y install iperf3",
+    "linuxCommand": "[concat( 'sleep 1m', ' &&', variables('linuxUpdate'), ' && ', variables('linuxNgixCommand'), ' && ', variables('linuxIperfCommand'))]",
+    "vm101Name": "vm101",
+    "vm102Name": "vm102",
+    "vm103Name": "vm103",
+    "vm104Name": "vm104",
+    "vm105Name": "vm105",
+    "vm106Name": "vm106",
+    "vm107Name": "vm107",
+    "vm108Name": "vm108",
+    "vm109Name": "vm109",
+    "vm110Name": "vm110",
+    "vm111Name": "vm111",
+    "vm112Name": "vm112",
+    "vm113Name": "vm113",
+
+    "vm101IpAddresses": "10.0.1.41",
+    "vm102IpAddresses": "10.0.1.42",
+    "vm103IpAddresses": "10.0.1.43",
+    "vm104IpAddresses": "10.0.1.44",
+    "vm105IpAddresses": "10.0.1.45",
+    "vm106IpAddresses": "10.0.1.46",
+    "vm107IpAddresses": "10.0.1.47",
+    "vm108IpAddresses": "10.0.1.48",
+    "vm109IpAddresses": "10.0.1.49",
+    "vm110IpAddresses": "10.0.1.50",
+    "vm111IpAddresses": "10.0.1.51",
+    "vm112IpAddresses": "10.0.1.52",
+    "vm113IpAddresses": "10.0.1.53",
+
+    "vm201Name": "vm201",
+    "vm202Name": "vm202",
+    "vm203Name": "vm203",
+    "vm204Name": "vm204",
+    "vm205Name": "vm205",
+    "vm206Name": "vm206",
+    "vm207Name": "vm207",
+    "vm208Name": "vm208",
+    "vm209Name": "vm209",
+    "vm210Name": "vm210",
+    "vm211Name": "vm211",
+    "vm212Name": "vm212",
+    "vm213Name": "vm213",
+
+    "vm201IpAddresses": "10.0.2.41",
+    "vm202IpAddresses": "10.0.2.42",
+    "vm203IpAddresses": "10.0.2.43",
+    "vm204IpAddresses": "10.0.2.44",
+    "vm205IpAddresses": "10.0.2.45",
+    "vm206IpAddresses": "10.0.2.46",
+    "vm207IpAddresses": "10.0.2.47",
+    "vm208IpAddresses": "10.0.2.48",
+    "vm209IpAddresses": "10.0.2.49",
+    "vm210IpAddresses": "10.0.2.50",
+    "vm211IpAddresses": "10.0.2.51",
+    "vm212IpAddresses": "10.0.2.52",
+    "vm213IpAddresses": "10.0.2.53",
+
+
+    "vmArray": [
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm101Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm101Name'),'-nic')]",
+        "privateIP": "[variables('vm101IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm101Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm101Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm102Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm102Name'),'-nic')]",
+        "privateIP": "[variables('vm102IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm102Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm102Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm103Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm103Name'),'-nic')]",
+        "privateIP": "[variables('vm103IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm103Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm103Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm104Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm104Name'),'-nic')]",
+        "privateIP": "[variables('vm104IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm104Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm104Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm105Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm105Name'),'-nic')]",
+        "privateIP": "[variables('vm105IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm105Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm105Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm106Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm106Name'),'-nic')]",
+        "privateIP": "[variables('vm106IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm106Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm106Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm107Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm107Name'),'-nic')]",
+        "privateIP": "[variables('vm107IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm107Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm107Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm108Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm108Name'),'-nic')]",
+        "privateIP": "[variables('vm108IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm108Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm108Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm109Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm109Name'),'-nic')]",
+        "privateIP": "[variables('vm109IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm109Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm109Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm110Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm110Name'),'-nic')]",
+        "privateIP": "[variables('vm110IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm110Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm110Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm111Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm111Name'),'-nic')]",
+        "privateIP": "[variables('vm111IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm111Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm111Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm112Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm112Name'),'-nic')]",
+        "privateIP": "[variables('vm112IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm112Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm112Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location1')]",
+        "vmName": "[variables('vm113Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet1Name')]",
+        "subnetName": "[variables('vnet1subnet2Name')]",
+        "nicName": "[concat(variables('vm113Name'),'-nic')]",
+        "privateIP": "[variables('vm113IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm113Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm113Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm201Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm201Name'),'-nic')]",
+        "privateIP": "[variables('vm201IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm201Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm201Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm202Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm202Name'),'-nic')]",
+        "privateIP": "[variables('vm202IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm202Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm202Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm203Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm203Name'),'-nic')]",
+        "privateIP": "[variables('vm203IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm203Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm203Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm204Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm204Name'),'-nic')]",
+        "privateIP": "[variables('vm204IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm204Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm204Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm205Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm205Name'),'-nic')]",
+        "privateIP": "[variables('vm205IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm205Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm205Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm206Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm206Name'),'-nic')]",
+        "privateIP": "[variables('vm206IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm206Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm206Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm207Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm207Name'),'-nic')]",
+        "privateIP": "[variables('vm207IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm207Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm207Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm208Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm208Name'),'-nic')]",
+        "privateIP": "[variables('vm208IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm208Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm208Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm209Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm209Name'),'-nic')]",
+        "privateIP": "[variables('vm209IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm209Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm209Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm210Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm210Name'),'-nic')]",
+        "privateIP": "[variables('vm210IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm210Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm210Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm211Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm211Name'),'-nic')]",
+        "privateIP": "[variables('vm211IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm211Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm211Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm212Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm212Name'),'-nic')]",
+        "privateIP": "[variables('vm212IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm212Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm212Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      },
+      {
+        "deployment": true,
+        "location": "[parameters('location2')]",
+        "vmName": "[variables('vm213Name')]",
+        "vmSize": "[parameters('vmsize')]",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "vnetName": "[variables('vnet2Name')]",
+        "subnetName": "[variables('vnet2subnet2Name')]",
+        "nicName": "[concat(variables('vm213Name'),'-nic')]",
+        "privateIP": "[variables('vm213IpAddresses')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+        "nsgName": "[concat(variables('vm213Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm213Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]",
+    "vmStorageAccountType": "[parameters('storageAccountType')]",
+    "linuxConfiguration": {
+      "disablePasswordAuthentication": true,
+      "ssh": {
+        "publicKeys": [
+          {
+            "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+            "keyData": "[parameters('adminPasswordOrKey')]"
+          }
+        ]
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2021-05-01",
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('routeTableName1')]",
+      "location": "[parameters('location1')]",
+      "comments": "udr to the front end of the internal load balancer",
+      "properties": {
+        "routes": [
+          {
+            "name": "RT-ilb-FE1",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm201IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP1')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE2",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm202IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP2')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE3",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm203IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP3')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE4",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm204IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP4')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE5",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm205IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP5')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE6",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm206IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP6')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE7",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm207IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP7')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE8",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm208IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP8')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE9",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm209IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP9')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE10",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm210IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP10')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE11",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm211IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP11')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE12",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm212IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP12')]"
+            }
+          },
+          {
+            "name": "RT-ilb-FE13",
+            "properties": {
+              "addressPrefix": "[concat(variables('vm213IpAddresses'),'/32')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('ilbFrontEndIP13')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet1Name')]",
+      "apiVersion": "2020-06-01",
+      "location": "[variables('location1')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables', variables('routeTableName1'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet1AddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnet1subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1subnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('vnet1subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1subnet2Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableName1'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('vnet1subnet3Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1subnet3Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet2Name')]",
+      "apiVersion": "2020-06-01",
+      "location": "[variables('location2')]",
+      "dependsOn": [],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet2AddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnet2subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2subnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('vnet2subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2subnet2Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('vnet2subnet3Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnet2subnet3Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "[concat(variables('vnet1Name'),'/',variables('peeringNamevnet1vnet2'))]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('location1')]",
+      "comments": "This is the peering from vnet1 to vnet2",
+      "dependsOn": [
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1Name'))]",
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+      ],
+      "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false,
+        "remoteVirtualNetwork": {
+          "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "name": "[concat(variables('vnet2Name'),'/',variables('peeringNamevnet2vnet1'))]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('location2')]",
+      "comments": "This is the peering from vnet2 to vnet1",
+      "dependsOn": [
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1Name'))]",
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+      ],
+      "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": false,
+        "remoteVirtualNetwork": {
+          "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers",
+      "apiVersion": "2021-05-01",
+      "name": "[variables('ilbName')]",
+      "location": "[parameters('location2')]",
+      "comments": "internal Load Balancer",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+      ],
+      "sku": {
+        "name": "[variables('ilbSkuName')]"
+      },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('ilbFrontEnd1Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP1')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd2Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP2')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd3Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP3')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd4Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP4')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd5Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP5')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd6Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP6')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd7Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP7')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd8Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP8')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+           {
+            "name": "[variables('ilbFrontEnd9Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP9')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+           {
+            "name": "[variables('ilbFrontEnd10Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP10')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+           {
+            "name": "[variables('ilbFrontEnd11Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP11')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+           {
+            "name": "[variables('ilbFrontEnd12Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP12')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          },
+          {
+            "name": "[variables('ilbFrontEnd13Name')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('vnet2subnet1Name'))]"
+              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('ilbFrontEndIP13')]",
+              "privateIPAddressVersion": "IPv4"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('ilbBackEndAddressPool1Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool2Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool3Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool4Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool5Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool6Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool7Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool8Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool9Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool10Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool11Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool12Name')]"
+          },
+          {
+            "name": "[variables('ilbBackEndAddressPool13Name')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "ilbAnyPortRule1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd1Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool1Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule2",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd2Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool2Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule3",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd3Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool3Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule4",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd4Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool4Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule5",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd5Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool5Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule6",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd6Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool6Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule7",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd7Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool7Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule8",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd8Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool8Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule9",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd9Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool9Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule10",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd10Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool10Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule11",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd11Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool11Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule12",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd12Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool12Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          },
+          {
+            "name": "ilbAnyPortRule13",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('ilbName'),variables('ilbFrontEnd13Name'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ilbName'),variables('ilbBackEndAddressPool13Name'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ilbName'),variables('ilbprobeName'))]"
+              },
+              "protocol": "All",
+              "frontendPort": 0,
+              "backendPort": 0,
+              "loadDistribution": "Default",
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 4
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('ilbprobeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": "[variables('ilbprobePort')]",
+              "intervalInSeconds": 15,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool1Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm21address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm201IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool2Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm22address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm202IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool3Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm23address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm203IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool4Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm24address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm204IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool5Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm25address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm205IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool6Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm26address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm206IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool7Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm27address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm207IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool8Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm28address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm208IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool9Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm29address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm209IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool10Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm210address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm210IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool11Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm211address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm211IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool12Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm212address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm212IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+      "apiVersion": "2021-05-01",
+      "name": "[concat(variables('ilbName'), '/', variables('ilbBackEndAddressPool13Name'))]",
+      "location": "[parameters('location2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/loadBalancers', variables('ilbName'))]"
+      ],
+      "properties": {
+        "loadBalancerBackendAddresses": [
+          {
+            "name": "vm213address",
+            "properties": {
+              "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+              },
+              "ipAddress": "[variables('vm213IpAddresses')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[variables('vmArray')[copyIndex()].deployment]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2021-05-01",
+      "name": "[variables('vmArray')[copyIndex()].nsgName]",
+      "location": "[variables('location1')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH-rule",
+            "properties": {
+              "description": "allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 500,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      },
+      "copy": {
+        "name": "nsgCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "condition": "[variables('vmArray')[copyIndex()].deployment]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat( variables('vmArray')[copyIndex()].pubIP )]",
+      "apiVersion": "2020-05-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('vmArray')[copyIndex()].vmName, '-sdp')]",
+          "fqdn": "[concat(variables('vmArray')[copyIndex()].vmName , '-sdp' , variables('vmArray')[copyIndex()].location, '.cloudapp.azure.com')]"
+        }
+      },
+      "sku": {
+        "name": "Standard"
+      },
+      "copy": {
+        "name": "pubIPCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "condition": "[variables('vmArray')[copyIndex()].deployment]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('vmArray')[copyIndex()].nicName]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vnetName) ]",
+        "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIP) ]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName )]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+              "subnet": {
+                "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIP) ]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName )]"
+        },
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]"
+      },
+      "copy": {
+        "name": "nicCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "condition": "[variables('vmArray')[copyIndex()].deployment]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "apiVersion": "2021-11-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPasswordOrKey')]",
+          "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]",
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+            "offer": "[variables('vmArray')[copyIndex()].offer]",
+            "sku": "[variables('vmArray')[copyIndex()].sku]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[variables('vmStorageAccountType')]"
+            },
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-OSdisk')]"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName)]"
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "condition": "[variables('vmArray')[copyIndex()].deployment]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'installcustomscript')]",
+      "apiVersion": "2021-11-01",
+      "comments": "custom script extension for ubuntu",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "copy": {
+        "name": "nodeCopy",
+        "count": "[variables('vmCount')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.1",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

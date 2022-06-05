@@ -1,9 +1,10 @@
 {
     "subscriptionName": "AzDev1",
     "ResourceGroupName": "test-lb1",
-    "location1": "westus2",
-    "location2": "westus2",
+    "location1": "swedencentral",
+    "location2": "swedencentral",
     "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
     "adminPassword": "ADMINISTRATOR_PASSWORD",
     "mngIP": ""
 }

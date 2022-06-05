@@ -34,29 +34,31 @@ else { Write-Warning "$inputParams file not found, please change to the director
 
 # checking the values of variables
 Write-Host "$(Get-Date) - values from file: $inputParams" -ForegroundColor Yellow
-if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit }   else { Write-Host '   subscription name.....: '$subscriptionName -ForegroundColor Yellow}
-if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit }         else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green}
-if (!$adminPassword) { Write-Host 'variable $adminPassword is null' ; Exit }         else { Write-Host '   administrator password: '$adminPassword -ForegroundColor Green}
-if (!$location1) { Write-Host 'variable $location1 is null' ; Exit }                 else { Write-Host '   location1.............: '$location1 -ForegroundColor Yellow}
-if (!$location2) { Write-Host 'variable $location2 is null' ; Exit }                 else { Write-Host '   location2.............: '$location2 -ForegroundColor Yellow}
-if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host '   resource group name...: '$ResourceGroupName -ForegroundColor Yellow}
+if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit }     else { Write-Host '  subscription name.....: '$subscriptionName -ForegroundColor Yellow}
+if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit }           else { Write-Host '  admin username........: '$adminUsername -ForegroundColor Green}
+if (!$authenticationType) { Write-Host 'variable $authenticationType is null' ; Exit } else { Write-Host '  authentication type...: '$authenticationType -ForegroundColor Green}
+if (!$adminPasswordOrKey) { Write-Host 'variable $adminPasswordOrKey is null' ; Exit } else { Write-Host '  admin password/key....: '$adminPasswordOrKey -ForegroundColor Green}
+if (!$location1) { Write-Host 'variable $location1 is null' ; Exit }                   else { Write-Host '  location1.............: '$location1 -ForegroundColor Yellow}
+if (!$location2) { Write-Host 'variable $location2 is null' ; Exit }                   else { Write-Host '  location2.............: '$location2 -ForegroundColor Yellow}
+if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit }   else { Write-Host '  resource group name...: '$ResourceGroupName -ForegroundColor Yellow}
 if (!$mngIP) { Write-Host 'variable $mngIP is null'  }                  
 $rgName=$ResourceGroupName
-
+$location = $location1
 
 $subscr=Get-AzSubscription -SubscriptionName $subscriptionName
 Select-AzSubscription -SubscriptionId $subscr.Id
 
 $parameters = @{
     "adminUsername" = $adminUsername;
-    "adminPassword" = $adminPassword;
+    "authenticationType" = $authenticationType;
+    "adminPasswordOrKey" = $adminPasswordOrKey;
     "location1"     = $location1;
     "location2"     = $location2;
     "mngIP"         = $mngIP
 }
 
-$location = $location1
-# Create Resource Group step3
+
+# Create Resource Group 
 Write-Host "$(Get-Date) - Creating Resource Group $rgName " -ForegroundColor Cyan
 Try {
     $rg = Get-AzResourceGroup -Name $rgName  -ErrorAction Stop
