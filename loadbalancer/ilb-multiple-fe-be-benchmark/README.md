@@ -22,15 +22,15 @@ The network configuration is shown in the diagram:
 
 [![1]][1]
 
-* The ARM template use custom script extension to install in Azure VMs: 
-   * nginx with small homepage activated on TCP port 80 iperf3
-   * iperf3 to trasfer data at high speed
+* The ARM template uses custom script extension to install in Azure Ubuntu VMs: 
+   * nginx with small homepage running on TCP port 80
+   * iperf3 to transfer data at high speed
 * The standard load balancer is configured in HA ports with health probe define don TCP port 80.
 * the internal load balancer is created with:
    * 13 frontend IPs in subnet1 of the vnet2 
    * 13 backend IPs in subnet2 of the vnet2
    * 13 different load balancer rules, to map each single frontend IP with one single backed IP 
-
+* a UDR is applied to the subnet1 of the vnet1 to force the traffic to transit always across the load balancer. The UDR is not mandatory if the VMs in vnet1 reference as destination the frontend IPs of the load balancer. 
 
 The template can be used to run a throughput benchmark. The total throughput can be achieved depends on the VMs SKU.
 To achieve a good throughput is recommended to use the largest VM SKU in the VM family. 
