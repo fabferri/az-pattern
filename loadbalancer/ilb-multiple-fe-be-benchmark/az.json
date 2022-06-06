@@ -27,8 +27,9 @@
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_D96ds_v5",
+      "defaultValue": "Standard_B1s",
       "allowedValues": [
+        "Standard_B1s",
         "Standard_D2s_v4",
         "Standard_D4s_v4",
         "Standard_D8s_v4",
@@ -49,13 +50,13 @@
     },
     "acceleratedNetworking": {
       "type": "bool",
-      "defaultValue": true,
+      "defaultValue": false,
       "allowedValues": [
         true,
         false
       ],
       "metadata": {
-        "description": "accelerated networking"
+        "description": "acceletated networking"
       }
     },
     "location1": {
@@ -193,7 +194,6 @@
         "sku": "22_04-lts-gen2"
       }
     },
-    
     "storageAccountType": {
       "type": "string",
       "defaultValue": "Standard_LRS",
@@ -212,6 +212,13 @@
         "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering"
       }
     },
+    "appendIPName": {
+      "type": "string",
+      "defaultValue": "[concat('-',substring(uniqueString(resourceGroup().id), 0, 5) )]",
+      "metadata": {
+        "description": "add random string to the public IP name of the VMs"
+      }
+    }
   },
   "variables": {
     "location1": "[parameters('location1')]",
@@ -1856,8 +1863,8 @@
       "properties": {
         "publicIPAllocationMethod": "Static",
         "dnsSettings": {
-          "domainNameLabel": "[concat(variables('vmArray')[copyIndex()].vmName, '-sdp')]",
-          "fqdn": "[concat(variables('vmArray')[copyIndex()].vmName , '-sdp' , variables('vmArray')[copyIndex()].location, '.cloudapp.azure.com')]"
+          "domainNameLabel": "[concat(variables('vmArray')[copyIndex()].vmName, parameters('appendIPName'))]",
+          "fqdn": "[concat(variables('vmArray')[copyIndex()].vmName , parameters('appendIPName') , variables('vmArray')[copyIndex()].location, '.cloudapp.azure.com')]"
         }
       },
       "sku": {

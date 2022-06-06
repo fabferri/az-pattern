@@ -22,6 +22,16 @@ The network configuration is shown in the diagram:
 
 [![1]][1]
 
+* The ARM template use custom script extension to install in Azure VMs: 
+   * nginx with small homepage activated on TCP port 80 iperf3
+   * iperf3 to trasfer data at high speed
+* The standard load balancer is configured in HA ports with health probe define don TCP port 80.
+* the internal load balancer is created with:
+   * 13 frontend IPs in subnet1 of the vnet2 
+   * 13 backend IPs in subnet2 of the vnet2
+   * 13 different load balancer rules, to map each single frontend IP with one single backed IP 
+
+
 The template can be used to run a throughput benchmark. The total throughput can be achieved depends on the VMs SKU.
 To achieve a good throughput is recommended to use the largest VM SKU in the VM family. 
 
@@ -40,7 +50,7 @@ The VM SKU is defined in the ARM template by the parameter **"vmSize"**
 
 To run with larger SKU check the quota assigned to the Azure subscription. If the default total number of cores (assigned to the VM family in specific Azure region you want to run) should not be enough, you can increase it through the Azure management portal. If the procedure of quota augment should fail, you need to open an Azure ticket and ask for the target capacity.
 
-The ARM template specifies the flag to enable/disable the accelerated networking:
+The ARM template specifies the flag to enable/disable the accelerated networking in the Azure VMs:
 ```json
 "acceleratedNetworking": {
    "type": "bool",
@@ -93,6 +103,7 @@ see more detail in the [azure documentation](https://docs.microsoft.com/en-us/az
 | **init.json**        | Define a list of input variables required as input to **az.json**  |
 | **az.json**          | ARM template to create vnets, VMs, vpn Gateways in each vnet       |
 | **az.ps1**           | powershell script to deploy the ARM template **az.json**           |
+| **getIP.ps1**        | powershell script to fatch the public IPs of the Azure VMs         |
 
 
 **NOTE in init.json**
@@ -105,6 +116,8 @@ In the **init.json** file the variable **"authenticationType"** can takes to fix
 The standard load balancer is configured in HA. Configuration of frontend IPs, backend IPs and load balancer rules are shown below:
 
 [![2]][2]
+
+
 
 
 <!--Image References-->

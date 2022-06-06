@@ -1,0 +1,56 @@
+$rgName='lb-test1'
+$vm101=(Get-AzPublicIpAddress -Name vm101-pubIP -ResourceGroupName $rgName).IpAddress
+$vm102=(Get-AzPublicIpAddress -Name vm102-pubIP -ResourceGroupName $rgName).IpAddress
+$vm103=(Get-AzPublicIpAddress -Name vm103-pubIP -ResourceGroupName $rgName).IpAddress
+$vm104=(Get-AzPublicIpAddress -Name vm104-pubIP -ResourceGroupName $rgName).IpAddress
+$vm105=(Get-AzPublicIpAddress -Name vm105-pubIP -ResourceGroupName $rgName).IpAddress
+$vm106=(Get-AzPublicIpAddress -Name vm106-pubIP -ResourceGroupName $rgName).IpAddress
+$vm107=(Get-AzPublicIpAddress -Name vm107-pubIP -ResourceGroupName $rgName).IpAddress
+$vm108=(Get-AzPublicIpAddress -Name vm108-pubIP -ResourceGroupName $rgName).IpAddress
+$vm109=(Get-AzPublicIpAddress -Name vm109-pubIP -ResourceGroupName $rgName).IpAddress
+$vm110=(Get-AzPublicIpAddress -Name vm110-pubIP -ResourceGroupName $rgName).IpAddress
+$vm111=(Get-AzPublicIpAddress -Name vm111-pubIP -ResourceGroupName $rgName).IpAddress
+$vm112=(Get-AzPublicIpAddress -Name vm112-pubIP -ResourceGroupName $rgName).IpAddress
+$vm113=(Get-AzPublicIpAddress -Name vm113-pubIP -ResourceGroupName $rgName).IpAddress
+
+$vm201=(Get-AzPublicIpAddress -Name vm201-pubIP -ResourceGroupName $rgName).IpAddress
+$vm202=(Get-AzPublicIpAddress -Name vm202-pubIP -ResourceGroupName $rgName).IpAddress
+$vm203=(Get-AzPublicIpAddress -Name vm203-pubIP -ResourceGroupName $rgName).IpAddress
+$vm204=(Get-AzPublicIpAddress -Name vm204-pubIP -ResourceGroupName $rgName).IpAddress
+$vm205=(Get-AzPublicIpAddress -Name vm205-pubIP -ResourceGroupName $rgName).IpAddress
+$vm206=(Get-AzPublicIpAddress -Name vm206-pubIP -ResourceGroupName $rgName).IpAddress
+$vm207=(Get-AzPublicIpAddress -Name vm207-pubIP -ResourceGroupName $rgName).IpAddress
+$vm208=(Get-AzPublicIpAddress -Name vm208-pubIP -ResourceGroupName $rgName).IpAddress
+$vm209=(Get-AzPublicIpAddress -Name vm209-pubIP -ResourceGroupName $rgName).IpAddress
+$vm210=(Get-AzPublicIpAddress -Name vm210-pubIP -ResourceGroupName $rgName).IpAddress
+$vm211=(Get-AzPublicIpAddress -Name vm211-pubIP -ResourceGroupName $rgName).IpAddress
+$vm212=(Get-AzPublicIpAddress -Name vm212-pubIP -ResourceGroupName $rgName).IpAddress
+$vm213=(Get-AzPublicIpAddress -Name vm213-pubIP -ResourceGroupName $rgName).IpAddress
+
+write-host "vm101: "$vm101 -ForegroundColor Green
+write-host "vm102: "$vm102 -ForegroundColor Green
+write-host "vm103: "$vm103 -ForegroundColor Green
+write-host "vm104: "$vm104 -ForegroundColor Green
+write-host "vm105: "$vm105 -ForegroundColor Green
+write-host "vm106: "$vm106 -ForegroundColor Green
+write-host "vm107: "$vm107 -ForegroundColor Green
+write-host "vm108: "$vm108 -ForegroundColor Green
+write-host "vm109: "$vm109 -ForegroundColor Green
+write-host "vm110: "$vm110 -ForegroundColor Green
+write-host "vm111: "$vm111 -ForegroundColor Green
+write-host "vm112: "$vm112 -ForegroundColor Green
+write-host "vm113: "$vm113 -ForegroundColor Green
+write-host "--------------------------------------------" -ForegroundColor White
+write-host "vm201: "$vm201 -ForegroundColor Green
+write-host "vm202: "$vm202 -ForegroundColor Green
+write-host "vm203: "$vm203 -ForegroundColor Green
+write-host "vm204: "$vm204 -ForegroundColor Green
+write-host "vm205: "$vm205 -ForegroundColor Green
+write-host "vm206: "$vm206 -ForegroundColor Green
+write-host "vm207: "$vm207 -ForegroundColor Green
+write-host "vm208: "$vm208 -ForegroundColor Green
+write-host "vm209: "$vm209 -ForegroundColor Green
+write-host "vm210: "$vm210 -ForegroundColor Green
+write-host "vm211: "$vm211 -ForegroundColor Green
+write-host "vm212: "$vm212 -ForegroundColor Green
+write-host "vm213: "$vm213 -ForegroundColor Green
