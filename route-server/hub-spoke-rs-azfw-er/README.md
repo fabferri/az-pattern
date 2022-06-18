@@ -31,7 +31,7 @@ To keep the deployment simple, the firewall policies have two network security r
 * a rule connection with allow traffic from source address 10.0.0.0/8 to the destination network 10.0.0.0/8
 * a rule connection to allow traffic from spoke vnets and hub vnet to internet
 
-Below a network diagram with communication paths
+Below a network diagram with communication paths:
 
 [![2]][2]
 
@@ -176,7 +176,7 @@ Some useful commands:
 * show ip bgp
 * from your OS shell: ip route
 
-### Debug message
+### Debug messages
 
 A debug command does not cause any terminal output in vtysh because vtysh doesn't currently support log monitoring. That's also why **terminal monitor** is missing from vtysh - the command does exist on telnet, and does work there.
 Let's follow the process to activate bgp debug.
@@ -435,7 +435,7 @@ traceroute to 10.2.30.10 (10.2.30.10), 30 hops max, 60 byte packets
  1  10.1.0.7 (10.1.0.7)  2.953 ms 10.1.0.6 (10.1.0.6)  2.816 ms  2.802 ms
  2  10.101.0.228 (10.101.0.228)  70.488 ms * *
 ```
-### <a name="caveats"></a>7. Caveats/limitations
+### <a name="caveats"></a>8. Caveats/limitations
 The network configuration described in the article has some limitations.
 1. the route server can receive in BGP max 1000 network prefixes and advertised max 500 network prefixes to the Expressroute Gateway. The limitation imposes a restriction on total number of spoke vnets. In case of a single address space of each spoke vnet, it will possible to create a maximum total number of 500 spoke vnets in peering with hub1 and hub2.
 2. the Azure firewall has a max throughput of 30Gbps; the traffic in transit across the firewall for the communication inter-spoke is cap at 30Gbps.
