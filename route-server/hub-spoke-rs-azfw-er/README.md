@@ -106,6 +106,8 @@ The meaning of input variables in **init.json** are explained below:
     "er_authorizationKey": "ANUTHORIZATION_KEY_TO_JOIN_TO_THE_EXPRESSROUTE_CIRCUIT"
 }
 ```
+The ARM template **azfw.json** create Ubuntu VMs in hub1, hub2 and in the spoke vnets and use a customer script extension to install nginx with custom home page. 
+
 ## <a name="NVA"></a>3. FRR in NVA
 Quagga was removed from Ubuntu 22.04 and replaced by FRRouting  (https://frrouting.org/).<br>
 The installation of **FRR** (Free Range Routing) in the NVA is automatically executed by ARM template, through cloud-init (file: **cloud-init.txt**)
@@ -439,7 +441,7 @@ traceroute to 10.2.30.10 (10.2.30.10), 30 hops max, 60 byte packets
 The network configuration described in the article has some limitations.
 1. the route server can receive in BGP max 1000 network prefixes and advertised max 500 network prefixes to the Expressroute Gateway. The limitation imposes a restriction on total number of spoke vnets. In case of a single address space of each spoke vnet, it will possible to create a maximum total number of 500 spoke vnets in peering with hub1 and hub2.
 2. the Azure firewall has a max throughput of 30Gbps; the traffic in transit across the firewall for the communication inter-spoke is cap at 30Gbps.
-
+3. A single nva do not provide enough resilience; a potetial failure in the nva or in the BGP peering with Route Server will casue a communication failure with on-premises networks.    
 
 `Tags: route server, hub-spoke vnets`
 `date: 18-06-22`
