@@ -23,13 +23,13 @@ The article describes a scenario with hub-spoke vnets in peering. The network di
 
 [![1]][1]
 
-The configuration aims to make intercommunication any-to-any with traffic in transit through the Azure firewalls. The routing has an easy configuration because most of work is done by the NVAs and Route Servers and it doesn't require complex UDRs. 
+The configuration aims to make intercommunication any-to-any with traffic in transit through the Azure firewalls. The routing has an easy configuration because most of work is done by the NVA and Route Server and it doesn't require complex UDRs. 
 * all the UDRs applied to the subnets in the spoke vnets have only the default route 0.0.0.0/0, pointing to the nearest Azure firewall
 * the Azure firewall subnets do not have any UDR
 
 To keep the deployment simple, the firewall policies have two network security rules: 
-* a rule connection with allow traffic from source address 10.0.0.0/8 to the destination network 10.0.0.0/8
-* a rule connection to allow traffic from spoke vnets and hub vnet to internet
+* a network rule to allow traffic from source address 10.0.0.0/8 to the destination network 10.0.0.0/8
+* a network rule to allow traffic from 10.0.0.0/8 to internet
 
 Below a network diagram with communication paths:
 
