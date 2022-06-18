@@ -1,0 +1,19 @@
+{
+    "subscriptionName": "AzDev1",
+    "ResourceGroupName": "test-fw",
+    "locationhub1": "northeurope",
+    "locationspoke1": "northeurope",
+    "locationspoke2": "northeurope",
+    "locationhub2": "northeurope",
+    "locationspoke3": "northeurope",
+    "locationspoke4": "northeurope",
+    "locationvnet1": "northeurope",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "mngIP": "",
+    "er_subscriptionId": "AZURE_SUBSCRIPTION_ID_WHERE_IS_DEPLOYED_THE_EXPRESSROUTE_CIRCUIT",
+    "er_resourceGroup": "RESOUCE_GROUP_NAME_WHERE_IS_DEPLOYED_THE_EXPRESSROUTE_CIRCUIT",
+    "er_circuitName": "NAME_OF_EXPRESSROUTE_CIRCUIT",
+    "er_authorizationKey": "ANUTHORIZATION_KEY_TO_JOIN_TO_THE_EXPRESSROUTE_CIRCUIT"
+}

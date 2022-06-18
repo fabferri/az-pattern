@@ -1,0 +1,149 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationvnet1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationhub1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationhub2": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "vnet1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationvnet1')]",
+                "name": "vnet1",
+                "addressPrefix": "10.101.0.0/24",
+                "RouteServerSubnetName": "RouteServerSubnet",
+                "RouteServerSubnetPrefix": "10.101.0.0/27",
+                "nvaSubnetName": "nvasubnet",
+                "nvaSubnetPrefix": "10.101.0.32/27",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.101.0.224/27"
+            }
+        },
+        "hub1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub1')]",
+                "name": "hub1",
+                "addressPrefix": "10.1.0.0/24",
+                "AzureFirewallSubnetName": "AzureFirewallSubnet",
+                "AzureFirewallSubnetPrefix": "10.1.0.0/26",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.1.0.64/27",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.1.0.128/26",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.1.0.224/27"
+            }
+        },
+        "hub2": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub2')]",
+                "name": "hub2",
+                "addressPrefix": "10.2.0.0/24",
+                "AzureFirewallSubnetName": "AzureFirewallSubnet",
+                "AzureFirewallSubnetPrefix": "10.2.0.0/26",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.2.0.64/27",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.2.0.128/26",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.2.0.224/27"
+            }
+        }
+    },
+    "variables": {
+        "peeringNamehub1vnet1": "[concat(parameters('hub1').name,'To',parameters('vnet1').name)]",
+        "peeringNamevnet1hub1": "[concat(parameters('vnet1').name,'To',parameters('hub1').name)]",
+        "peeringNamehub2vnet1": "[concat(parameters('hub2').name,'To',parameters('vnet1').name)]",
+        "peeringNamevnet1hub2": "[concat(parameters('vnet1').name,'To',parameters('hub2').name)]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1vnet1'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "This is the peering from hub1 to vnet1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('vnet1').name,'/',variables('peeringNamevnet1hub1'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[parameters('vnet1').location]",
+            "comments": "This is the peering from vnet1 to hub1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2vnet1'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "This is the peering from hub2 to vnet1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('vnet1').name,'/',variables('peeringNamevnet1hub2'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[parameters('vnet1').location]",
+            "comments": "This is the peering from vnet1 to hub2",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]"
+                }
+            }
+        }
+    ]
+}

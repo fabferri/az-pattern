@@ -1,0 +1,434 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "er_subscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "ExpresssRoute subscription Id"
+            }
+        },
+        "er_resourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "resource group of the ER circuit"
+            }
+        },
+        "er_circuitName": {
+            "type": "string",
+            "metadata": {
+                "description": "ER circuit name"
+            }
+        },
+        "er_authorizationKey": {
+            "type": "string",
+            "metadata": {
+                "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
+            }
+        },
+        "ExpressRouteGatewayName": {
+            "type": "string",
+            "defaultValue": "gw1",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway"
+            }
+        },
+        "er_connectionName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('ExpressRouteGatewayName'),'-conn')]",
+            "metadata": {
+                "description": "name of Expressroute Connection"
+            }
+        },
+        "locationvnet1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "cloudInitContent": {
+            "type": "string",
+            "metadata": {
+                "description": "content of cloud-init config file"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for sample VM"
+            }
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "password",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "vnet1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationvnet1')]",
+                "name": "vnet1",
+                "addressPrefix": "10.101.0.0/24",
+                "RouteServerSubnetName": "RouteServerSubnet",
+                "RouteServerSubnetPrefix": "10.101.0.0/27",
+                "nvaSubnetName": "nvasubnet",
+                "nvaSubnetPrefix": "10.101.0.32/27",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.101.0.224/27",
+                "gatewayName": "[parameters('ExpressRouteGatewayName')]",
+                "gatewayPublicIPName": "[concat(parameters('ExpressRouteGatewayName'),'-pubIP')]",
+                "gatewaySku": "[parameters('gatewaySku')]"
+            }
+        },
+        "nvaName": {
+            "type": "string",
+            "defaultValue": "nva",
+            "metadata": {
+                "description": "virtual machine name"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "HighPerformance",
+                "UltraPerformance",
+                "ErGw1Az",
+                "ErGw2Az",
+                "ErGw3Az"
+            ],
+            "metadata": {
+                "description": "The SKU for the ExpressRoute Gateway"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "metadata": {
+                "description": "management IP to connect to the VM"
+            }
+        }
+    },
+    "variables": {
+        "customData": "[parameters('cloudInitContent') ]",
+
+        "rsName": "rs1",
+        "peering1IP": "10.101.0.50",
+        "peering1ASN": 65001,
+        "rsBGPconnectionName": "bgp-conn1",
+        "subnet_rs_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', parameters('vnet1').name,parameters('vnet1').RouteServerSubnetName )]",
+        "vHubIPconfigName": "ipconfig1",
+        "rsPubIPName": "[concat(variables('rsName'),'-pubIP')]",
+        "nvaName": "[parameters('nvaName')]",
+        "nvanicName": "[concat(variables('nvaName'),'-nic')]",
+        "nvapubIPName": "[concat(variables('nvaName'),'-pubIP')]",
+        "nvaPrivIP": "10.101.0.50",
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-jammy",
+        "sku": "22_04-lts-gen2",
+        "vmSize": "Standard_B1s",
+        "nsgName": "nsg1",
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('adminPasswordOrKey')]"
+                    }
+                ]
+            }
+        },
+        "erCircuitId": "[concat('/subscriptions/', parameters('er_subscriptionId'),'/resourceGroups/',parameters('er_resourceGroup'),'/providers/Microsoft.Network/expressRouteCircuits/',parameters('er_circuitName'))]",
+        "mngIP": "[parameters('mngIP')]"
+    },
+    "resources": [
+
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('vnet1').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('vnet1').location]",
+            "dependsOn": [],
+            "comments": "Create vnet1",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnet1').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('vnet1').RouteServerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').RouteServerSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnet1').nvaSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').nvaSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnet1').GatewaySubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').GatewaySubnetPrefix]",
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('rsName')]",
+            "location": "[parameters('vnet1').location]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('vnet1').name )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rsPubIPName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('vnet1').location]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('subnet_rs_Id')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rsName'), '/', variables('rsBGPconnectionName'))]",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering1IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('vnet1').gatewayPublicIPName]",
+            "apiVersion": "2020-05-01",
+            "location": "[parameters('vnet1').location]",
+            "comments": "This is the public IP for ExpressRoute Gateway",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[parameters('vnet1').gatewayName]",
+            "apiVersion": "2020-05-01",
+            "location": "[parameters('vnet1').location]",
+            "comments": "This is the ExpressRoute Gateway for vNet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vnet1').gatewayPublicIPName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet1').name, parameters('vnet1').GatewaySubnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('vnet1').gatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "gwipconf-1"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[parameters('vnet1').gatewaySku]",
+                    "tier": "[parameters('vNet1').gatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsgName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('vnet1').location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[if(equals(variables('mngIP'), ''), '*', variables('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('nvapubIPName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('vnet1').location]",
+            "comments": "public IP of the VM",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "sku": {
+                "name": "Basic"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nvanicName')]",
+            "apiVersion": "2020-05-01",
+            "location": "[parameters('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('nvapubIPName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic0",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('nvaPrivIP')]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('nvapubIPName')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',  parameters('vnet1').name, parameters('vnet1').nvaSubnetName )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('nvaName') ]",
+            "apiVersion": "2021-11-01",
+            "location": "[parameters('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nvanicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('nvaName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "customData": "[base64(variables('customData'))]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('publisher')]",
+                        "offer": "[variables('offer')]",
+                        "sku": "[variables('sku')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('nvaName'),'-OSdisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nvanicName') )]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "condition": "[and( not(empty(parameters('er_resourceGroup'))), not(empty(parameters('er_circuitName'))) )]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('er_connectionName')]",
+            "location": "[parameters('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('vnet1').gatewayName )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('vnet1').gatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[if(empty(parameters('er_authorizationKey')), json('null'), parameters('er_authorizationKey'))]",
+                "peer": {
+                    "id": "[variables('erCircuitId')]"
+                }
+            }
+        }
+    ]
+}
