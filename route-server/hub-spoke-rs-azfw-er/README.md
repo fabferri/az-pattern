@@ -214,7 +214,7 @@ By default, Azure Firewall doesn't support forced tunnelling to an on-premises n
 
 The Network Rule Collection in firewall policy doesn't use IP Groups, but the major private network 10.0.0.0/8 as source and destination. The easy approach is doable in test environment, but the security policy should be reviewed in production environment with better customization. 
 
-### <a name="routes"></a>5. Routes
+## <a name="routes"></a>5. Routes
 
 ### vmspoke1 effective routes
 | Source  | State   | Address Prefixes | Next Hop Type     | Next Hop IP Address | User Defined Route Name |
@@ -363,7 +363,7 @@ Neighbor        V         AS   MsgRcvd   MsgSent   TblVer  InQ OutQ  Up/Down Sta
 
 Total number of neighbors 2
 ```
-### <a name="routes"></a>6. Packet capture (pcap) in NVA
+## <a name="routes"></a>6. Packet capture (pcap) in NVA
 1. Login in the nva and run the tcpdump to capture the BGP packet between the NVA and the route server instance with IP 10.101.0.4:
 
 ```bash
@@ -410,7 +410,7 @@ The second message is displayed below:
   - 10.0.3.0/24  (address space of the spoke1)
   - 10.0.4.0/24  (address space of the spoke2)
 
-### <a name="routes"></a>7. Checking the transit by tcptraceroute
+## <a name="routes"></a>7. Checking the transit by tcptraceroute
 
 ```console
 root@vmspoke1:~# traceroute -p 80 10.0.2.10
@@ -435,7 +435,7 @@ traceroute to 10.2.30.10 (10.2.30.10), 30 hops max, 60 byte packets
  1  10.1.0.7 (10.1.0.7)  2.953 ms 10.1.0.6 (10.1.0.6)  2.816 ms  2.802 ms
  2  10.101.0.228 (10.101.0.228)  70.488 ms * *
 ```
-### <a name="caveats"></a>8. Caveats/limitations
+## <a name="caveats"></a>8. Caveats/limitations
 The network configuration described in the article has some limitations.
 1. the route server can receive in BGP max 1000 network prefixes and advertised max 500 network prefixes to the Expressroute Gateway. The limitation imposes a restriction on total number of spoke vnets. In case of a single address space of each spoke vnet, it will possible to create a maximum total number of 500 spoke vnets in peering with hub1 and hub2.
 2. the Azure firewall has a max throughput of 30Gbps; the traffic in transit across the firewall for the communication inter-spoke is cap at 30Gbps.
