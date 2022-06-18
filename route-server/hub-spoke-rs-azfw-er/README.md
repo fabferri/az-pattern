@@ -107,7 +107,7 @@ The meaning of input variables in **init.json** are explained below:
 }
 ```
 The ARM template **azfw.json** creates Ubuntu VMs in hub1, hub2 and in the spoke vnets and use a customer script extension to install nginx with custom home page.
-The presence of web server allows an easy and consistent check of communications between VMs. 
+The presence of web server allows an easy and consistent check of the communications between VMs. 
 
 ## <a name="NVA"></a>3. FRR in NVA
 Quagga was removed from Ubuntu 22.04 and replaced by FRRouting  (https://frrouting.org/).<br>
