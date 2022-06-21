@@ -1,0 +1,274 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationhub1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspoke1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspoke2": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationhub2": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspoke3": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspoke4": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "hub1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub1')]",
+                "name": "hub1",
+                "addressPrefix": "10.1.0.0/24",
+                "nvaSubnetName": "nvasubnet",
+                "nvaSubnetPrefix": "10.1.0.0/27",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.1.0.32/27",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.1.0.128/26",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.1.0.224/27"
+            }
+        },
+        "spoke1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationspoke1')]",
+                "name": "spoke1",
+                "addressPrefix": "10.0.1.0/24",
+                "subnet1Name": "subnet1",
+                "subnet1Prefix": "10.0.1.0/25"
+            }
+        },
+        "spoke2": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationspoke2')]",
+                "name": "spoke2",
+                "addressPrefix": "10.0.2.0/24",
+                "subnet1Name": "subnet1",
+                "subnet1Prefix": "10.0.2.0/25"
+            }
+        },
+        "hub2": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub2')]",
+                "name": "hub2",
+                "addressPrefix": "10.2.0.0/24",
+                "nvaSubnetName": "nvasubnet",
+                "nvaSubnetPrefix": "10.2.0.0/27",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.2.0.32/27",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.2.0.224/27"
+            }
+        },
+        "spoke3": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationspoke3')]",
+                "name": "spoke3",
+                "addressPrefix": "10.0.3.0/24",
+                "subnet1Name": "subnet1",
+                "subnet1Prefix": "10.0.3.0/25"
+            }
+        },
+        "spoke4": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationspoke4')]",
+                "name": "spoke4",
+                "addressPrefix": "10.0.4.0/24",
+                "subnet1Name": "subnet1",
+                "subnet1Prefix": "10.0.4.0/25"
+            }
+        }
+    },
+    "variables": {
+        "peeringNamehub1spoke1": "[concat(parameters('hub1').name,'To',parameters('spoke1').name)]",
+        "peeringNamespoke1hub1": "[concat(parameters('spoke1').name,'To',parameters('hub1').name)]",
+        "peeringNamehub1spoke2": "[concat(parameters('hub1').name,'To',parameters('spoke2').name)]",
+        "peeringNamespoke2hub1": "[concat(parameters('spoke2').name,'To',parameters('hub1').name)]",
+        "peeringNamehub2spoke3": "[concat(parameters('hub2').name,'To',parameters('spoke3').name)]",
+        "peeringNamespoke3hub2": "[concat(parameters('spoke3').name,'To',parameters('hub2').name)]",
+        "peeringNamehub2spoke4": "[concat(parameters('hub2').name,'To',parameters('spoke4').name)]",
+        "peeringNamespoke4hub2": "[concat(parameters('spoke4').name,'To',parameters('hub2').name)]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1spoke1'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "This is the peering from vnet1 to vnet2",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('spoke1').name,'/',variables('peeringNamespoke1hub1'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('spoke1').location]",
+            "comments": "This is the peering from vnet2 to vnet1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',parameters('hub1').name, variables('peeringNamehub1spoke1'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1spoke2'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "This is the peering from vnet1 to vnet3",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke2').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('spoke2').name,'/',variables('peeringNamespoke2hub1'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('spoke2').location]",
+            "comments": "This is the peering from vnet2 to vnet1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',parameters('hub1').name, variables('peeringNamehub1spoke2'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2spoke3'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "This is the peering from vnet1 to vnet2",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke3').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('spoke3').name,'/',variables('peeringNamespoke3hub2'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('spoke1').location]",
+            "comments": "This is the peering from vnet2 to vnet1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',parameters('hub2').name, variables('peeringNamehub2spoke3'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2spoke4'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "This is the peering from vnet1 to vnet3",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke4').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('spoke4').name,'/',variables('peeringNamespoke4hub2'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('spoke4').location]",
+            "comments": "This is the peering from vnet2 to vnet1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',parameters('hub2').name, variables('peeringNamehub2spoke4'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]"
+                }
+            }
+        }
+    ]
+}
