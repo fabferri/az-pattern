@@ -1,0 +1,60 @@
+#cloud-config
+package_update: true
+packages:
+   - frr
+write_files:
+  - path: /etc/frr/frr.conf
+    owner: frr:frr
+    content: |
+      !
+      frr defaults traditional
+      hostname nva2
+      log syslog informational
+      no ipv6 forwarding
+      service integrated-vtysh-config
+      !
+      ip route 10.0.3.0/24 10.2.0.1
+      ip route 10.0.4.0/24 10.2.0.1
+      !
+      router bgp 65001
+       bgp router-id 10.2.0.10
+       neighbor 10.1.0.4 remote-as 65515
+       neighbor 10.1.0.4 timers 60 180
+       neighbor 10.1.0.5 remote-as 65515
+       neighbor 10.1.0.5 timers 60 180
+       !
+       address-family ipv4 unicast
+        network 10.0.3.0/24
+        network 10.0.4.0/24
+        neighbor 10.1.0.4 soft-reconfiguration inbound
+        neighbor 10.1.0.4 route-map BGP_IN in
+        neighbor 10.1.0.4 route-map BGP_OUT out
+        neighbor 10.1.0.5 soft-reconfiguration inbound
+        neighbor 10.1.0.5 route-map BGP_IN in
+        neighbor 10.1.0.5 route-map BGP_OUT out
+       exit-address-family
+      exit
+      !
+      ip prefix-list BGP_OUT2 seq 10 permit 10.0.3.0/24
+      ip prefix-list BGP_OUT2 seq 20 permit 10.0.4.0/24
+      ip prefix-list BGP_IN seq 10 permit 0.0.0.0/0 le 32
+      !
+      route-map BGP_OUT permit 10
+       match ip address prefix-list BGP_OUT2
+       set ip next-hop 10.2.0.10
+      exit
+      !
+      route-map BGP_IN permit 10
+       match ip address prefix-list BGP_IN
+      exit
+      !
+runcmd:
+  # Enable IP forward
+  - [ sed, -i, -e, '$a\net.ipv4.ip_forward = 1', /etc/sysctl.conf]
+  # Apply kernel parameters
+  - [ sysctl, --system ]
+  - [ apt, install, frr, -y ]
+  - [ systemctl, stop, frr.service ]
+  - [ sed, -i, -e, 's/^bgpd=no/bgpd=yes/', /etc/frr/daemons]
+  - [ systemctl, enable, frr.service ]
+  - [ systemctl, start, frr.service ]
