@@ -321,8 +321,8 @@ exit
    **route-map BGP_OUT out** <br>
    are required becasue in FRR by default the BGP policy is to discard ingress and egress BGP advertisements. <br>
    In absence of route-map, the command **"show ip bgp neighbor"** shows the output:<br> 
-   _Inbound updates discarded due to missing policy_
-   _Outbound updates discarded due to missing policy_
+   _Inbound updates discarded due to missing policy_  <br>
+   _Outbound updates discarded due to missing policy_ <br>
 
 * Loop prevention in eBGP is done by verifying the AS number in the AS Path. If the receiving router sees its own AS number in the AS Path of the received BGP packet, the packet is dropped. The receiving router assumes that the packet was originated from its own AS and has reached the same place from where it originated initially. The default behaviour can be override by the statement **"neighbor <IP_Addr_Peer> as-override"**. In our case we have the following routing:
 
