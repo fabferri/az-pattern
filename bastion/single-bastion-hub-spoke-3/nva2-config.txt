@@ -1,0 +1,159 @@
+nva2# show run
+Building configuration...
+
+Current configuration:
+!
+frr version 8.1
+frr defaults traditional
+hostname nva2
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+ip route 10.1.0.0/26 10.2.0.1
+ip route 10.2.0.128/26 10.2.0.1
+!
+router bgp 65001
+ bgp router-id 10.2.0.10
+ neighbor 10.1.0.4 remote-as 65515
+ neighbor 10.1.0.4 timers 60 180
+ neighbor 10.1.0.5 remote-as 65515
+ neighbor 10.1.0.5 timers 60 180
+ neighbor 10.2.0.132 remote-as 65515
+ neighbor 10.2.0.132 ebgp-multihop 3
+ neighbor 10.2.0.132 timers 60 180
+ neighbor 10.2.0.133 remote-as 65515
+ neighbor 10.2.0.133 ebgp-multihop 3
+ neighbor 10.2.0.133 timers 60 180
+ !
+ address-family ipv4 unicast
+  neighbor 10.1.0.4 next-hop-self
+  neighbor 10.1.0.4 as-override
+  neighbor 10.1.0.4 soft-reconfiguration inbound
+  neighbor 10.1.0.4 route-map BGP_IN in
+  neighbor 10.1.0.4 route-map BGP_OUT out
+  neighbor 10.1.0.5 next-hop-self
+  neighbor 10.1.0.5 as-override
+  neighbor 10.1.0.5 soft-reconfiguration inbound
+  neighbor 10.1.0.5 route-map BGP_IN in
+  neighbor 10.1.0.5 route-map BGP_OUT out
+  neighbor 10.2.0.132 next-hop-self
+  neighbor 10.2.0.132 as-override
+  neighbor 10.2.0.132 soft-reconfiguration inbound
+  neighbor 10.2.0.132 route-map BGP_IN in
+  neighbor 10.2.0.132 route-map BGP_OUT out
+  neighbor 10.2.0.133 next-hop-self
+  neighbor 10.2.0.133 as-override
+  neighbor 10.2.0.133 soft-reconfiguration inbound
+  neighbor 10.2.0.133 route-map BGP_IN in
+  neighbor 10.2.0.133 route-map BGP_OUT out
+ exit-address-family
+exit
+!
+ip prefix-list BGP_IN seq 10 permit 0.0.0.0/0 le 32
+ip prefix-list BGP_OUT seq 10 permit 0.0.0.0/0 le 32
+!
+route-map BGP_IN permit 10
+ match ip address prefix-list BGP_IN
+exit
+!
+route-map BGP_OUT permit 10
+ match ip address prefix-list BGP_OUT
+exit
+!
+end
+nva2# 
+nva2# show ip bgp
+BGP table version is 12, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*= 10.0.1.0/24      10.1.0.5                               0 65515 i
+*>                  10.1.0.4                               0 65515 i
+*= 10.0.2.0/24      10.1.0.5                               0 65515 i
+*>                  10.1.0.4                               0 65515 i
+*= 10.0.3.0/24      10.2.0.132                             0 65515 i
+*>                  10.2.0.133                             0 65515 i
+*= 10.0.4.0/24      10.2.0.132                             0 65515 i
+*>                  10.2.0.133                             0 65515 i
+*= 10.1.0.0/24      10.1.0.5                               0 65515 i
+*>                  10.1.0.4                               0 65515 i
+*= 10.2.0.0/24      10.2.0.132                             0 65515 i
+*>                  10.2.0.133                             0 65515 i
+
+Displayed  6 routes and 12 total paths
+nva2#
+nva2# show ip bgp neighbors 10.1.0.4 advertised-routes 
+BGP table version is 12, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      0.0.0.0                                0 65001 i
+*> 10.0.2.0/24      0.0.0.0                                0 65001 i
+*> 10.0.3.0/24      0.0.0.0                                0 65001 i
+*> 10.0.4.0/24      0.0.0.0                                0 65001 i
+*> 10.1.0.0/24      0.0.0.0                                0 65001 i
+*> 10.2.0.0/24      0.0.0.0                                0 65001 i
+
+Total number of prefixes 6
+nva2#
+nva2# show ip bgp neighbors 10.1.0.4 received-routes 
+BGP table version is 12, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      10.1.0.4                               0 65515 i
+*> 10.0.2.0/24      10.1.0.4                               0 65515 i
+*> 10.1.0.0/24      10.1.0.4                               0 65515 i
+
+Total number of prefixes 3
+nva2#
+nva2# show ip bgp neighbors 10.2.0.132 advertised-routes 
+BGP table version is 12, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      0.0.0.0                                0 65001 i
+*> 10.0.2.0/24      0.0.0.0                                0 65001 i
+*> 10.0.3.0/24      0.0.0.0                                0 65001 i
+*> 10.0.4.0/24      0.0.0.0                                0 65001 i
+*> 10.1.0.0/24      0.0.0.0                                0 65001 i
+*> 10.2.0.0/24      0.0.0.0                                0 65001 i
+
+Total number of prefixes 6
+nva2#
+nva2# show ip bgp neighbors 10.2.0.132 received-routes 
+BGP table version is 12, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.3.0/24      10.2.0.132                             0 65515 i
+*> 10.0.4.0/24      10.2.0.132                             0 65515 i
+*> 10.2.0.0/24      10.2.0.132                             0 65515 i
+
+Total number of prefixes 3
+
