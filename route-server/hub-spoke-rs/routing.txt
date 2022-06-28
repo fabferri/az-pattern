@@ -1,0 +1,263 @@
+---------------------------------------------------------------------------------------------------------
+----------------------------------- nva1 ----------------------------------------------------------------
+nva1# show ip bgp
+BGP table version is 13, local router ID is 10.1.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*  10.0.1.0/24      10.1.0.132                             0 65515 i
+*                   10.1.0.133                             0 65515 i
+*>                  0.0.0.0                  0         32768 i
+*  10.0.2.0/24      10.1.0.132                             0 65515 i
+*                   10.1.0.133                             0 65515 i
+*>                  0.0.0.0                  0         32768 i
+*>i10.0.3.0/24      10.2.0.10                0    100      0 i
+*>i10.0.4.0/24      10.2.0.10                0    100      0 i
+*= 10.1.0.0/24      10.1.0.132                             0 65515 i
+*>                  10.1.0.133                             0 65515 i
+*>i10.2.0.0/24      10.2.0.10                     100      0 65515 i
+*= 10.255.0.0/24    10.1.0.132                             0 65515 i
+*>                  10.1.0.133                             0 65515 i
+
+Displayed  7 routes and 13 total paths
+
+nva1# show ip bgp neighbors 10.1.0.132 received-routes 
+BGP table version is 13, local router ID is 10.1.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      10.1.0.132                             0 65515 i
+*> 10.0.2.0/24      10.1.0.132                             0 65515 i
+*> 10.1.0.0/24      10.1.0.132                             0 65515 i
+*> 10.255.0.0/24    10.1.0.132                             0 65515 i
+
+Total number of prefixes 4
+
+nva1# show ip bgp neighbors 10.1.0.132 advertised-routes 
+BGP table version is 13, local router ID is 10.1.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      0.0.0.0                  0         32768 i
+*> 10.0.2.0/24      0.0.0.0                  0         32768 i
+*> 10.0.3.0/24      0.0.0.0                       100      0 i
+*> 10.0.4.0/24      0.0.0.0                       100      0 i
+*> 10.1.0.0/24      0.0.0.0                                0 65001 i
+*> 10.2.0.0/24      0.0.0.0                       100      0 65001 i
+*> 10.255.0.0/24    0.0.0.0                                0 65001 i
+
+Total number of prefixes 7
+
+nva1# show ip bgp neighbors 10.2.0.10 received-routes 
+BGP table version is 13, local router ID is 10.1.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.3.0/24      10.2.0.10                0    100      0 i
+*> 10.0.4.0/24      10.2.0.10                0    100      0 i
+*> 10.2.0.0/24      10.2.0.10                     100      0 65515 i
+
+Total number of prefixes 3
+
+nva1# show ip bgp neighbors 10.2.0.10 advertised-routes 
+BGP table version is 13, local router ID is 10.1.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      0.0.0.0                  0    100  32768 i
+*> 10.0.2.0/24      0.0.0.0                  0    100  32768 i
+*> 10.1.0.0/24      0.0.0.0                       100      0 65515 i
+*> 10.255.0.0/24    0.0.0.0                       100      0 65515 i
+
+Total number of prefixes 4
+
+
+---------------------------------------------------------------------------------------------------------
+----------------------------------- nva2 ----------------------------------------------------------------
+nva2# show ip bgp
+BGP table version is 8, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*>i10.0.1.0/24      10.1.0.10                0    100      0 i
+*>i10.0.2.0/24      10.1.0.10                0    100      0 i
+*  10.0.3.0/24      10.2.0.132                             0 65515 i
+*                   10.2.0.133                             0 65515 i
+*>                  0.0.0.0                  0         32768 i
+*  10.0.4.0/24      10.2.0.132                             0 65515 i
+*                   10.2.0.133                             0 65515 i
+*>                  0.0.0.0                  0         32768 i
+*>i10.1.0.0/24      10.1.0.10                     100      0 65515 i
+*= 10.2.0.0/24      10.2.0.132                             0 65515 i
+*>                  10.2.0.133                             0 65515 i
+*>i10.255.0.0/24    10.1.0.10                     100      0 65515 i
+
+Displayed  7 routes and 12 total paths
+
+nva2# show ip bgp neighbors 10.2.0.132 received-routes 
+BGP table version is 8, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.3.0/24      10.2.0.132                             0 65515 i
+*> 10.0.4.0/24      10.2.0.132                             0 65515 i
+*> 10.2.0.0/24      10.2.0.132                             0 65515 i
+
+Total number of prefixes 3
+
+nva2# show ip bgp neighbors 10.2.0.132 advertised-routes 
+BGP table version is 8, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      0.0.0.0                       100      0 i
+*> 10.0.2.0/24      0.0.0.0                       100      0 i
+*> 10.0.3.0/24      0.0.0.0                  0         32768 i
+*> 10.0.4.0/24      0.0.0.0                  0         32768 i
+*> 10.1.0.0/24      0.0.0.0                       100      0 65001 i
+*> 10.2.0.0/24      0.0.0.0                                0 65001 i
+*> 10.255.0.0/24    0.0.0.0                       100      0 65001 i
+
+Total number of prefixes 7
+
+
+nva2# show ip bgp neighbors 10.1.0.10 received-routes 
+BGP table version is 8, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      10.1.0.10                0    100      0 i
+*> 10.0.2.0/24      10.1.0.10                0    100      0 i
+*> 10.1.0.0/24      10.1.0.10                     100      0 65515 i
+*> 10.255.0.0/24    10.1.0.10                     100      0 65515 i
+
+Total number of prefixes 4
+
+nva2# show ip bgp neighbors 10.1.0.10 advertised-routes 
+BGP table version is 8, local router ID is 10.2.0.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.3.0/24      0.0.0.0                  0    100  32768 i
+*> 10.0.4.0/24      0.0.0.0                  0    100  32768 i
+*> 10.2.0.0/24      0.0.0.0                       100      0 65515 i
+
+Total number of prefixes 3
+
+---------------------------------------------------------------------------------------------------------
+----------------------------------- rs1 -----------------------------------------------------------------
+Get-AzRouteServerPeerlearnedRoute -RouteServerName rs1 -ResourceGroupName $rgName -peername $peerName |ft
+
+LocalAddress Network       NextHop   SourcePeer Origin AsPath      Weight
+------------ -------       -------   ---------- ------ ------      ------
+10.1.0.133   10.0.1.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.133   10.0.2.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.133   10.1.0.0/24   10.1.0.10 10.1.0.10  EBgp   65001-65001  32768
+10.1.0.133   10.255.0.0/24 10.1.0.10 10.1.0.10  EBgp   65001-65001  32768
+10.1.0.133   10.0.3.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.133   10.0.4.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.133   10.2.0.0/24   10.1.0.10 10.1.0.10  EBgp   65001-65001  32768
+10.1.0.132   10.0.1.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.132   10.0.2.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.132   10.1.0.0/24   10.1.0.10 10.1.0.10  EBgp   65001-65001  32768
+10.1.0.132   10.255.0.0/24 10.1.0.10 10.1.0.10  EBgp   65001-65001  32768
+10.1.0.132   10.0.3.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.132   10.0.4.0/24   10.1.0.10 10.1.0.10  EBgp   65001        32768
+10.1.0.132   10.2.0.0/24   10.1.0.10 10.1.0.10  EBgp   65001-65001  32768
+
+Get-AzRouteServerPeerAdvertisedRoute -RouteServerName rs1 -ResourceGroupName $rgName -peername $peerName |ft
+
+LocalAddress Network       NextHop    SourcePeer Origin AsPath Weight
+------------ -------       -------    ---------- ------ ------ ------
+10.1.0.133   10.1.0.0/24   10.1.0.133            Igp    65515       0
+10.1.0.133   10.255.0.0/24 10.1.0.133            Igp    65515       0
+10.1.0.133   10.0.2.0/24   10.1.0.133            Igp    65515       0
+10.1.0.133   10.0.1.0/24   10.1.0.133            Igp    65515       0
+10.1.0.132   10.1.0.0/24   10.1.0.132            Igp    65515       0
+10.1.0.132   10.255.0.0/24 10.1.0.132            Igp    65515       0
+10.1.0.132   10.0.2.0/24   10.1.0.132            Igp    65515       0
+10.1.0.132   10.0.1.0/24   10.1.0.132            Igp    65515       0
+
+---------------------------------------------------------------------------------------------------------
+----------------------------------- rs2 -----------------------------------------------------------------
+
+Get-AzRouteServerPeerlearnedRoute -RouteServerName rs2 -ResourceGroupName $rgName -peername $peerName |ft
+
+LocalAddress Network       NextHop   SourcePeer Origin AsPath      Weight
+------------ -------       -------   ---------- ------ ------      ------
+10.2.0.133   10.0.3.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.133   10.0.4.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.133   10.2.0.0/24   10.2.0.10 10.2.0.10  EBgp   65001-65001  32768
+10.2.0.133   10.0.1.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.133   10.0.2.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.133   10.1.0.0/24   10.2.0.10 10.2.0.10  EBgp   65001-65001  32768
+10.2.0.133   10.255.0.0/24 10.2.0.10 10.2.0.10  EBgp   65001-65001  32768
+10.2.0.132   10.0.3.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.132   10.0.4.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.132   10.2.0.0/24   10.2.0.10 10.2.0.10  EBgp   65001-65001  32768
+10.2.0.132   10.0.1.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.132   10.0.2.0/24   10.2.0.10 10.2.0.10  EBgp   65001        32768
+10.2.0.132   10.1.0.0/24   10.2.0.10 10.2.0.10  EBgp   65001-65001  32768
+10.2.0.132   10.255.0.0/24 10.2.0.10 10.2.0.10  EBgp   65001-65001  32768
+
+
+Get-AzRouteServerPeerAdvertisedRoute -RouteServerName rs2 -ResourceGroupName $rgName -peername $peerName |ft
+
+LocalAddress Network     NextHop    SourcePeer Origin AsPath Weight
+------------ -------     -------    ---------- ------ ------ ------
+10.2.0.133   10.2.0.0/24 10.2.0.133            Igp    65515       0
+10.2.0.133   10.0.3.0/24 10.2.0.133            Igp    65515       0
+10.2.0.133   10.0.4.0/24 10.2.0.133            Igp    65515       0
+10.2.0.132   10.2.0.0/24 10.2.0.132            Igp    65515       0
+10.2.0.132   10.0.3.0/24 10.2.0.132            Igp    65515       0
+10.2.0.132   10.0.4.0/24 10.2.0.132            Igp    65515       0

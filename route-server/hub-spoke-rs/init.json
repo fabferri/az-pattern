@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "hub-spoke-02",
+    "locationhub1": "westeurope",
+    "locationspoke1": "westeurope",
+    "locationspoke2": "westeurope",
+    "locationhub2": "westeurope",
+    "locationspoke3": "westeurope",
+    "locationspoke4": "westeurope",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}

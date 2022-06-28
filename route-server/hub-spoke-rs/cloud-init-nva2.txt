@@ -1,0 +1,65 @@
+#cloud-config
+package_update: true
+packages:
+   - frr
+write_files:
+  - path: /etc/frr/frr.conf
+    owner: frr:frr
+    content: |
+      !
+      ip route 10.2.0.128/26 10.2.0.1
+      ip route 10.1.0.0/27 10.2.0.1
+      ip route 10.0.3.0/24 10.2.0.1
+      ip route 10.0.4.0/24 10.2.0.1
+      !
+      router bgp 65001
+       bgp router-id 10.2.0.10
+       neighbor 10.1.0.10 remote-as 65001
+       neighbor 10.2.0.132 remote-as 65515
+       neighbor 10.2.0.132 ebgp-multihop 3
+       neighbor 10.2.0.132 timers 60 180
+       neighbor 10.2.0.133 remote-as 65515
+       neighbor 10.2.0.133 ebgp-multihop 3
+       neighbor 10.2.0.133 timers 60 180
+       !
+       address-family ipv4 unicast
+        network 10.0.3.0/24
+        network 10.0.4.0/24
+        neighbor 10.1.0.10 next-hop-self
+        neighbor 10.1.0.10 soft-reconfiguration inbound
+        neighbor 10.1.0.10 route-map BGP_IN in
+        neighbor 10.1.0.10 route-map BGP_OUT out
+        neighbor 10.2.0.132 next-hop-self
+        neighbor 10.2.0.132 as-override
+        neighbor 10.2.0.132 soft-reconfiguration inbound
+        neighbor 10.2.0.132 route-map BGP_IN in
+        neighbor 10.2.0.132 route-map BGP_OUT out
+        neighbor 10.2.0.133 next-hop-self
+        neighbor 10.2.0.133 as-override
+        neighbor 10.2.0.133 soft-reconfiguration inbound
+        neighbor 10.2.0.133 route-map BGP_IN in
+        neighbor 10.2.0.133 route-map BGP_OUT out
+       exit-address-family
+      exit
+      !
+      ip prefix-list BGP_IN seq 10 permit 0.0.0.0/0 le 32
+      ip prefix-list BGP_OUT seq 10 permit 0.0.0.0/0 le 32
+      !
+      route-map BGP_IN permit 10
+       match ip address prefix-list BGP_IN
+      exit
+      !
+      route-map BGP_OUT permit 10
+       match ip address prefix-list BGP_OUT
+      exit
+      !
+runcmd:
+  # Enable IP forward
+  - [ sed, -i, -e, '$a\net.ipv4.ip_forward = 1', /etc/sysctl.conf]
+  # Apply kernel parameters
+  - [ sysctl, --system ]
+  - [ apt, install, frr, -y ]
+  - [ systemctl, stop, frr.service ]
+  - [ sed, -i, -e, 's/^bgpd=no/bgpd=yes/', /etc/frr/daemons]
+  - [ systemctl, enable, frr.service ]
+  - [ systemctl, start, frr.service ]
