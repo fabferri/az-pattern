@@ -219,11 +219,12 @@ The address space of the network spoke1 (10.0.1.0/24) is not present in the effe
 
 [![4]][4]
 
+## <a name="Effective routing tables"></a>4. Communication between spoke vnets in peering with hub
 Communication between spoke vnets connected with the same hub can be achieved with UDRs applied to the spoke vnets, as in the diagram:
 
 [![5]][5]
 
-In this case the presence of UDRs in spoke vnets create a static route in system routing table force the traffic to transit at local nva; the traffic will transit across the nva becasue the IP forwarding has been enabled in the nva.
+In this case, the presence of UDRs in spoke vnets create a static route in system routing table forcing the traffic towards the local nva. 
 
 
 `Tags: hub-spoke vnets, route server`
