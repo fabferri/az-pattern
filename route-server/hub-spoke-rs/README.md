@@ -219,6 +219,13 @@ The address space of the network spoke1 (10.0.1.0/24) is not present in the effe
 
 [![4]][4]
 
+Communication between spoke vnets connected with the same hub can be achieved with UDRs applied to the spoke vnets, as in the diagram:
+
+[![5]][5]
+
+In this case the presence of UDRs in spoke vnets create a static route in system routing table force the traffic to transit at local nva; the traffic will transit across the nva becasue the IP forwarding has been enabled in the nva.
+
+
 `Tags: hub-spoke vnets, route server`
 `date: 28-06-22`
 
@@ -228,6 +235,7 @@ The address space of the network spoke1 (10.0.1.0/24) is not present in the effe
 [2]: ./media/network-diagram2.png "few communications between spoke vnets"
 [3]: ./media/bgp-peering.png "BGP peering between rs1-nva1-nva2-rs2"
 [4]: ./media/network-diagram3.png "not allow datapath between spoke vnet connected to the same hub"
+[5]: ./media/network-diagram4.png "adding UDR to the spoke vnets allow the communication spoke-to-spoke connected to the same hub"
 
 <!--Link References-->
 
