@@ -111,7 +111,8 @@ upstream backend {
 }
 ```
 In the above example, if NGINX fails to send a request to a server or does not receive a response from it 3 times in 6 seconds, it marks the server as unavailable for 6 seconds.
-Let's discuss 
+Let's discuss **weight**, **backup**, **health check**
+
 ### Weight
 By default, NGINX distributes requests among the servers in the group according to their weights using the Round Robin method. The weight parameter to the server directive sets the weight of a server; the default is 1.
 
