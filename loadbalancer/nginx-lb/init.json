@@ -1,0 +1,10 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "nginx-1",
+    "locationhub1": "westeurope",
+    "locationhub2": "westeurope",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}

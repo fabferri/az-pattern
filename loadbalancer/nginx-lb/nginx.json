@@ -1,0 +1,587 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationhub1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationhub2": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "hub1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub1')]",
+                "name": "hub1",
+                "addressPrefix": "10.1.0.0/24",
+                "balancerSubnetName": "balancerSubnet",
+                "balancerSubnetPrefix": "10.1.0.0/27",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.1.0.32/27",
+                "clientSubnetName": "clientSubnet",
+                "clientSubnetPrefix": "10.1.0.64/27",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.1.0.128/26"
+            }
+        },
+        "hub2": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub2')]",
+                "name": "hub2",
+                "addressPrefix": "10.2.0.0/24",
+                "balancerSubnetName": "balancerSubnet",
+                "balancerSubnetPrefix": "10.2.0.0/27",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.2.0.32/27",
+                "clientSubnetName": "clientSubnet",
+                "clientSubnetPrefix": "10.2.0.64/27"
+            }
+        },
+        "linux": {
+            "type": "object",
+            "defaultValue": {
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of VM"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for the Virtual Machine."
+            }
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "sshPublicKey",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VM"
+            }
+        },
+        "acceleratedNetworking": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "acceletated networking"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering"
+            }
+        }
+    },
+    "variables": {
+        "peeringNamehub1hub2": "[concat(parameters('hub1').name,'To',parameters('hub2').name)]",
+        "peeringNamehub2hub1": "[concat(parameters('hub2').name,'To',parameters('hub1').name)]",
+
+        "bastion1Name": "bastion1",
+        "bastion1PublicIPAddressName": "[concat(variables('bastion1Name'),'-pubIP')]",
+
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('adminPasswordOrKey')]"
+                    }
+                ]
+            }
+        },
+        "linuxUpdate": "sudo apt update",
+        "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
+        "linuxCommand": "[concat( 'sleep 1m', ' &&', variables('linuxUpdate'), ' && ', variables('linuxNgixCommand') )]",
+        
+        "vmNginx1Name": "nginx1",
+        "vmNginx1PrivIP": "10.1.0.10",
+        "vmWeb11Name": "web11",
+        "vmWeb11PrivIP": "10.1.0.50",
+        "vmWeb12Name": "web12",
+        "vmWeb12PrivIP": "10.1.0.51",
+        "vmClient1Name": "client1",
+        "vmClient1PrivIP": "10.1.0.80",
+        "vmWeb21Name": "web21",
+        "vmWeb21PrivIP": "10.2.0.50",
+        "vmWeb22Name": "web22",
+        "vmWeb22PrivIP": "10.2.0.51",
+
+        "vmArray": [
+            {
+                "deployment": true,
+                "location": "[parameters('hub1').location]",
+                "vmName": "[variables('vmNginx1Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub1').name]",
+                "subnetName": "[parameters('hub1').balancerSubnetName]",
+                "nicName": "[concat(variables('vmNginx1Name'),'-nic')]",
+                "privateIP": "[variables('vmNginx1PrivIP')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "nsgName": "[concat(variables('vmNginx1Name'),'-nsg')]",
+                "pubIP": "[concat(variables('vmNginx1Name'),'-pubIP')]",
+                "commandToExecute": "[variables('linuxCommand')]"
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('hub1').location]",
+                "vmName": "[variables('vmWeb11Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub1').name]",
+                "subnetName": "[parameters('hub1').appSubnetName]",
+                "nicName": "[concat(variables('vmWeb11Name'),'-nic')]",
+                "privateIP": "[variables('vmWeb11PrivIP')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "nsgName": "[concat(variables('vmWeb11Name'),'-nsg')]",
+                "pubIP": "[concat(variables('vmWeb11Name'),'-pubIP')]",
+                "commandToExecute": "[variables('linuxCommand')]"
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('hub1').location]",
+                "vmName": "[variables('vmWeb12Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub1').name]",
+                "subnetName": "[parameters('hub1').appSubnetName]",
+                "nicName": "[concat(variables('vmWeb12Name'),'-nic')]",
+                "privateIP": "[variables('vmWeb12PrivIP')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "nsgName": "[concat(variables('vmWeb12Name'),'-nsg')]",
+                "pubIP": "[concat(variables('vmWeb12Name'),'-pubIP')]",
+                "commandToExecute": "[variables('linuxCommand')]"
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('hub1').location]",
+                "vmName": "[variables('vmClient1Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub1').name]",
+                "subnetName": "[parameters('hub1').clientSubnetName]",
+                "nicName": "[concat(variables('vmClient1Name'),'-nic')]",
+                "privateIP": "[variables('vmClient1PrivIP')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "nsgName": "[concat(variables('vmClient1Name'),'-nsg')]",
+                "pubIP": "[concat(variables('vmClient1Name'),'-pubIP')]",
+                "commandToExecute": "[variables('linuxCommand')]"
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('hub2').location]",
+                "vmName": "[variables('vmWeb21Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub2').name]",
+                "subnetName": "[parameters('hub2').appSubnetName]",
+                "nicName": "[concat(variables('vmWeb21Name'),'-nic')]",
+                "privateIP": "[variables('vmWeb21PrivIP')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "nsgName": "[concat(variables('vmWeb21Name'),'-nsg')]",
+                "pubIP": "[concat(variables('vmWeb21Name'),'-pubIP')]",
+                "commandToExecute": "[variables('linuxCommand')]"
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('hub2').location]",
+                "vmName": "[variables('vmWeb22Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub2').name]",
+                "subnetName": "[parameters('hub2').appSubnetName]",
+                "nicName": "[concat(variables('vmWeb22Name'),'-nic')]",
+                "privateIP": "[variables('vmWeb22PrivIP')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "nsgName": "[concat(variables('vmWeb22Name'),'-nsg')]",
+                "pubIP": "[concat(variables('vmWeb22Name'),'-pubIP')]",
+                "commandToExecute": "[variables('linuxCommand')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "vmStorageAccountType": "[parameters('storageAccountType')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('hub1').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub1').location]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('hub1').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('hub1').balancerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub1').balancerSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('hub1').appSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub1').appSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('hub1').clientSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub1').clientSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('hub1').AzureBastionSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub1').AzureBastionSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('hub2').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub2').location]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('hub2').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('hub2').balancerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub2').balancerSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('hub2').appSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub2').appSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('hub2').clientSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('hub2').clientSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1hub2'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "This is the peering from hub1 to hub2",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]",
+                "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2hub1'))]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "This is the peering from hub2 to hub1",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]",
+                "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('bastion1PublicIPAddressName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "public IP of the Azure bastion in hub1 vnet",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('bastion1Name')]",
+            "location": "[parameters('hub1').location]",
+            "comments": "Azure bastion in hub1 vnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastion1PublicIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('hub1').name)]"
+            ],
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "disableCopyPaste": false,
+                "enableFileCopy": true,
+                "enableIpConnect": true,
+                "enableShareableLink": false,
+                "enableTunneling": true,
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastion1PublicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hub1').name, parameters('hub1').AzureBastionSubnetName)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat( variables('vmArray')[copyIndex()].pubIP )]",
+            "apiVersion": "2020-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "sku": {
+                "name": "Standard"
+            },
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vnetName) ]",
+                "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIP) ]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "subnet": {
+                                "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIP) ]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName )]"
+                },
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        },
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-OSdisk')]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName)]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'installcustomscript')]",
+            "apiVersion": "2021-11-01",
+            "comments": "custom script extension for ubuntu",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
+                }
+            }
+        }
+    ]
+}
