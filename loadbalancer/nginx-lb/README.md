@@ -55,8 +55,8 @@ The meaning of input variables in **init.json** are shown below:
 
 The ARM template uses the customer script extension to install ngix and setup a simple homepage.
 
-## <a name="nva"></a>2. NGINX load balancer setup
-by custom script extension the ARM template installs NGINX on all the VMs. <br>
+## <a name="nva"></a>2. NGINX load balancer with manual setup 
+By custom script extension the ARM template installs NGINX on all the VMs. <br>
 Below the steps to configure the NGINX as load balancer HTTP traffic across application server groups.
 <br>
 
@@ -76,7 +76,7 @@ LISTEN      0           128                       [::]:22                     [:
 
 [![2]][2]
 
-To setup NGINX as a load balancer, follow these steps:
+To setup manually the NGINX as a load balancer, follow these steps:
 1. Open the NGINX configuration file with elevated rights
 2. Define an upstream element and list each node in your backend cluster
 3. Map a URI to the upstream cluster with a **proxy_pass** location setting
