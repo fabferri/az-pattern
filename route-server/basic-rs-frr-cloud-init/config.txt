@@ -1,0 +1,76 @@
+vm1# show running-config
+Building configuration...
+
+Current configuration:
+!
+frr version 8.1
+frr defaults traditional
+hostname vm1
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+ip route 10.0.1.0/24 10.10.4.1
+ip route 10.0.2.0/24 10.10.4.1
+ip route 10.0.3.0/24 10.10.4.1
+ip route 10.10.1.0/24 10.10.4.1
+!
+router bgp 65001
+ bgp router-id 10.10.4.10
+ neighbor 10.10.1.4 remote-as 65515
+ neighbor 10.10.1.5 remote-as 65515
+ !
+ address-family ipv4 unicast
+  network 10.0.1.0/24
+  network 10.0.2.0/24
+  network 10.0.3.0/24
+  neighbor 10.10.1.4 soft-reconfiguration inbound
+  neighbor 10.10.1.4 route-map BGP_IN in
+  neighbor 10.10.1.4 route-map BGP_OUT out
+  neighbor 10.10.1.5 soft-reconfiguration inbound
+  neighbor 10.10.1.5 route-map BGP_IN in
+  neighbor 10.10.1.5 route-map BGP_OUT out
+ exit-address-family
+exit
+!
+ip prefix-list BGP_OUT seq 10 permit 0.0.0.0/0 le 32
+ip prefix-list BGP_IN seq 10 permit 0.0.0.0/0 le 32
+!
+route-map BGP_OUT permit 10
+ match ip address prefix-list BGP_OUT
+exit
+!
+route-map BGP_IN permit 10
+ match ip address prefix-list BGP_IN
+exit
+!
+end
+vm1# show ip bgp neighbors 10.10.1.4 advertised-routes
+BGP table version is 9, local router ID is 10.10.4.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.0.1.0/24      0.0.0.0                  0         32768 i
+*> 10.0.2.0/24      0.0.0.0                  0         32768 i
+*> 10.0.3.0/24      0.0.0.0                  0         32768 i
+*> 10.10.0.0/16     0.0.0.0                                0 65515 i
+
+Total number of prefixes 4
+vm1# show ip bgp neighbors 10.10.1.4 received-routes
+BGP table version is 9, local router ID is 10.10.4.10, vrf id 0
+Default local pref 100, local AS 65001
+Status codes:  s suppressed, d damped, h history, * valid, > best, = multipath,
+               i internal, r RIB-failure, S Stale, R Removed
+Nexthop codes: @NNN nexthop's vrf id, < announce-nh-self
+Origin codes:  i - IGP, e - EGP, ? - incomplete
+RPKI validation codes: V valid, I invalid, N Not found
+
+   Network          Next Hop            Metric LocPrf Weight Path
+*> 10.10.0.0/16     10.10.1.4                              0 65515 i
+
+Total number of prefixes 1
+vm1#
