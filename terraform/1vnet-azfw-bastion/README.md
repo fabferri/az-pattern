@@ -23,7 +23,7 @@ The article walks you through a single VNet with ubuntu VMs deployed in differen
 
 [![1]][1]
 
-* UDRs are applied to the application subnets **app1Subnet** and **App2Subnet** to force the traffic between VMs and from VMs to internet to transit through the Azure Firewall  
+* UDRs are applied to the application subnets **app1Subnet** and **app2Subnet** to force the traffic, VM-to-VM and VM-to-internet, to transit through the Azure Firewall  
 * the Azure Firewall is deployed in the **AzureFirewallSubnet** subnet that has a minimum /26 network prefix 
 * The Azure Bastion host is deployed in the **AzureBastionSubnet** subnet that has a minimum /26 network prefix
 * The two linux VMs are created by Terraform meta-argument **count**. The count meta-argument accepts a integer number, and creates many instances of the resource or module.
