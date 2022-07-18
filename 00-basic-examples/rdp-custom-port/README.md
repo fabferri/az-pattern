@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'RDP with custom port in Windows VM'
-description= "RDP with custom port in Windows VM"
+pageTitle= 'RDP with custom port in Windows VMs'
+description= "RDP with custom port in Windows VMs"
 documentationcenter: na
 services=""
 documentationCenter="github"
@@ -18,13 +18,13 @@ editor=""/>
    ms.review=""
    ms.author="fabferri" />
 
-# RDP with custom port in Windows VM
+# RDP with custom port in Windows VMs
 The network diagram is shown below:
 
 [![1]][1]
 
-* The ARM template uses custom script extension to change the listening port for Remote Desktop (RDP) in Azure vm1 and vm2.<br>
-* the customer script extension create an inboud security rules to accept incoming connection on custom RDP port and ICMP echo
+* The ARM template uses custom script extension to change the listening port for Remote Desktop (RDP) in Azure vm1 and vm2
+* the custom script extension create an inbound security rules to accept incoming connection on custom RDP port and ICMP echo
  
 
 To change the listening port for RDP:
@@ -38,7 +38,7 @@ New-NetFirewallRule -DisplayName 'RDPPORTLatest-UDP-In' -Profile 'Any' -Directio
 ```
 The command **Set-ItemProperty** add a new RDP Port to the windows registry.
 In windows firewall the profile **Any** sets the security rules in all profiles: **Private** and **Public**. <br>
-The powershell command accepts also a list of profiles:
+The powershell command also accepts a list of profiles:
 
 ```powershell
 $portvalue = 3390
@@ -49,7 +49,7 @@ New-NetFirewallRule -DisplayName 'RDPPORTLatest-TCP-In' -Profile  @('Private', '
 New-NetFirewallRule -DisplayName 'RDPPORTLatest-UDP-In' -Profile @('Private', 'Public') -Direction Inbound -Action Allow -Protocol UDP -LocalPort $portvalue 
 ```
 
-The same script extension enable the ICMP echo reply:
+The same script extension enables the ICMP echo reply:
 ```powershell
 New-NetFirewallRule -DisplayName 'Allow ICMPv4' -Profile Any -Name Allow_ICMPv4_in -Direction Inbound -Action Allow -Protocol ICMPv4 -Enabled True 
 ``` 
@@ -59,7 +59,7 @@ New-NetFirewallRule -DisplayName 'Allow ICMPv4' -Profile Any -Name Allow_ICMPv4_
 | File name            | Description                                                                    |
 | -------------------- | ------------------------------------------------------------------------------ |
 | **az.json**          | ARM template to create vnet adn the two Windows server 2022 VMs with custom RDP port number |
-| **az.ps1**           | powershel script to deploy the ARM template **az.json**. The script read the values of input variables in **init.json**  |
+| **az.ps1**           | powershell script to deploy the ARM template **az.json**. The script read the values of input variables in **init.json**  |
 | **init.json**        | list of input variables |
 
 Before running, edit the values in the **init.json**
@@ -92,7 +92,7 @@ PSDrive      : HKLM
 PSProvider   : Microsoft.PowerShell.Core\Registry
 ```
 
-The custom RDP port is present in the listening ports:
+The custom RDP port is shown in the listening ports:
 ```console
 netstat -na | find "LISTENING"
 ```
