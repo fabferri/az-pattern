@@ -1,0 +1,290 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password"
+            }
+        },
+        "customRDPportvm1": {
+            "type": "int",
+            "metadata": {
+                "description": "custom RDP port vm1"
+            }
+        },
+        "customRDPportvm2": {
+            "type": "int",
+            "metadata": {
+                "description": "custom RDP port vm2"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering"
+            }
+        }
+    },
+    "variables": {
+        "vmSize": "Standard_B2ms",
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2022-datacenter-azure-edition",
+        "vNet": {
+            "location": "[parameters('location')]",
+            "name": "vNet",
+            "addressSpace1Prefix": "10.0.1.0/24",
+            "subnet1Name": "subnet1",
+            "subnet1Prefix": "10.0.1.0/24"
+        },
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+
+        "windowsAllowICMP": "powershell.exe New-NetFirewallRule -DisplayName 'Allow ICMPv4' -Profile Any -Name Allow_ICMPv4_in -Direction Inbound -Action Allow -Protocol ICMPv4 -Enabled True",
+        "windowsCmd1": "powershell.exe Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' -name \"PortNumber\" -Value",
+        "windowsRegistryvm1": "[concat(variables('windowsCmd1'), ' ', string(parameters('customRDPportvm1')))]",
+        "windowsRegistryvm2": "[concat(variables('windowsCmd1'), ' ', string(parameters('customRDPportvm2')))]",
+
+        "windowsCmd2": "powershell.exe New-NetFirewallRule -DisplayName 'RDPPORTLatest-TCP-In' -Profile Any -Direction Inbound -Action Allow -Protocol TCP -LocalPort",
+        "windowsfwTCPvm1": "[concat(variables('windowsCmd2'), ' ', string(parameters('customRDPportvm1')))]",
+        "windowsfwTCPvm2": "[concat(variables('windowsCmd2'), ' ', string(parameters('customRDPportvm2')))]",
+
+        "windowsCmd3": "powershell.exe New-NetFirewallRule -DisplayName 'RDPPORTLatest-UDP-In' -Profile Any -Direction Inbound -Action Allow -Protocol UDP -LocalPort",
+        "windowsfwUDPvm1": "[concat(variables('windowsCmd3'), ' ', string(parameters('customRDPportvm1')))]",
+        "windowsfwUDPvm2": "[concat(variables('windowsCmd3'), ' ', string(parameters('customRDPportvm2')))]",
+
+        "windowsRestartcmd": "powershell.exe Start-Sleep -Seconds 5 && powershell.exe Restart-Computer",
+        "windowsCommandvm1": "[concat(variables('windowsAllowICMP'), ' && ', variables('windowsRegistryvm1'), ' && ',variables('windowsfwTCPvm1'),' && ', variables('windowsfwUDPvm1'),' && ',variables('windowsRestartcmd'))]",
+        "windowsCommandvm2": "[concat(variables('windowsAllowICMP'), ' && ', variables('windowsRegistryvm2'), ' && ',variables('windowsfwTCPvm2'),' && ', variables('windowsfwUDPvm2'),' && ',variables('windowsRestartcmd'))]",
+        
+        "vm1Name": "vm1",
+        "vm2Name": "vm2",
+        "vmarray": [
+            {
+                "deploymentCustomScript": true,
+                "location": "[variables('vNet').location]",
+                "vmName": "[variables('vm1Name')]",
+                "vmSize": "[variables('vmsize')]",
+                "publisher": "[variables('publisher')]",
+                "offer": "[variables('offer')]",
+                "sku": "[variables('sku')]",
+                "VNetName": "[variables('vNet').name]",
+                "SubnetName": "[variables('vNet').subnet1Name]",
+                "privateIP": "10.0.1.10",
+                "ipforwarding": false,
+                "nsgName": "[concat(variables('vm1Name'),'-nsg')]",
+                "RDPport": "[parameters('customRDPportvm1')]",
+                "commandToExecute": "[variables('windowsCommandvm1')]"
+            },
+            {
+                "deploymentCustomScript": true,
+                "location": "[variables('vNet').location]",
+                "vmName": "[variables('vm2Name')]",
+                "vmSize": "[variables('vmsize')]",
+                "publisher": "[variables('publisher')]",
+                "offer": "[variables('offer')]",
+                "sku": "[variables('sku')]",
+                "VNetName": "[variables('vNet').name]",
+                "SubnetName": "[variables('vNet').subnet1Name]",
+                "privateIP": "10.0.1.20",
+                "ipforwarding": false,
+                "nsgName": "[concat(variables('vm2Name'),'-nsg')]",
+                "RDPport": "[parameters('customRDPportvm2')]",
+                "commandToExecute": "[variables('windowsCommandvm2')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vNet').location]",
+            "dependsOn": [],
+            "comments": "vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vNet').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vNet').subnet1Prefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "RDP-custom-port",
+                        "properties": {
+                            "description": "allow inbound custom RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "[variables('vmArray')[copyIndex()].RDPport]",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Public IP address VMs",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-nic' )]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Create NICs of Azure VMs by loop",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')  )]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].VNetName)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].VNetName, variables('vmArray')[copyIndex()].SubnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Create Azure VMs by loop",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-nic')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OSdisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[if(contains(toUpper( substring(variables('vmArray')[copyIndex()].vmSize,lastIndexOf(variables('vmArray')[copyIndex()].vmSize, '_'))  ), 'S'),'Premium_LRS','Standard_LRS')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deploymentCustomScript]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'customRDPport')]",
+            "comments": "custom script extension to customize the RDP port",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.10",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
+                }
+            }
+        }
+    ]
+}

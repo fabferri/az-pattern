@@ -1,0 +1,10 @@
+{
+    "subscriptionName": "AzDev1",
+    "ResourceGroupName": "customRDP",
+    "location": "northeurope",
+    "adminUsername": "edge",
+    "adminPassword": "ITh0rpobU,y6(",
+    "customRDPportvm1": 30XXX,
+    "customRDPportvm2": 30YYY,
+    "mngIP": ""
+}
