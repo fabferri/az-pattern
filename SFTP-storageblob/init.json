@@ -1,9 +1,0 @@
-{
-    "subscriptionName": "AzureDemo",
-    "ResourceGroupName": "test-sftp2",
-    "userName":"usr1",
-    "homeDirectory": "home",
-    "location": "northeurope",
-    "adminUsername": "ADMINISTRATOR_USERNAME",
-    "adminPassword": "ADMINISTRATOR_PASSWORD"
-}
