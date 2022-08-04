@@ -41,6 +41,7 @@ The article walks you through a single VNet with ubuntu VMs deployed in differen
 Before running, edit the file **terraform.tfvars.json** and replace the values of **ADMINISTRATOR_USERNAME**, **ADMINISTRATOR_PASSWORD** with your values.
 
 ## <a name="how to deploy"></a>3. How to deploy
+Terraform automatically authenticates using information from the default Azure subscription.<br>
 Before going to deploy resources in the Azure subscription, verifying you are in right context:
 
 ```az
