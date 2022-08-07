@@ -142,8 +142,9 @@ SNAT accepts a **--random** option. If option **−−random** is used then port
 
 [![3]][3]
 
-**NOTE: if you want to keep permanet across reboot the iptables configurations, you need to add at the end the command: iptables-save** <br>
-The iptables configuration is applied to the nva by ARM template with **Managed Run** command (in preview).
+**NOTE: <br>
+if you want to keep permanet across reboot the iptables configurations, you need to add at the end the command: iptables-save** <br>
+The iptables configuration is applied to the nva by ARM template with **Managed Run** command (in preview)
 [Run scripts in your Linux VM by using managed Run Commands](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/run-command-managed)
 
 ## <a name="NGINX server blocks"></a>2. Bash script to configure the NGINX server blocks in appVM
