@@ -42,11 +42,11 @@ sed -i '/set-name: eth1/a\
             - to: 10.0.0.48\/28\
               via: 10.0.0.33' /etc/netplan/50-cloud-init.yaml
 
-"sed -i '/set-name: eth1/a\\            routes:\\n            - to: 10.0.0.48\\/28\\n              via: 10.0.0.33' /etc/netplan/50-cloud-init.yaml",
+sed -i '/set-name: eth1/a\\            routes:\\n            - to: 10.0.0.48\\/28\\n              via: 10.0.0.33' /etc/netplan/50-cloud-init.yaml
 netplan try
 netplan apply
 ```
-NOTE: to split the long **sed** expression into multiple lines, you can use the backslash \.
+NOTE: to split the long **sed** expression into multiple lines, you can use the backslash \\.
 
 In nva, the iptables are used to filter the traffic between the **clientSubnet** and the **appSubnet**.
 <br>
@@ -252,7 +252,7 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## <a name="List of files"></a>2. List of files 
+## <a name="List of files"></a>3. List of files 
 | file                  | Description                                                  | 
 | --------------------- |------------------------------------------------------------- | 
 | **init.json**         | input parameter file defining: Azure subscription, Resource group name, Azure region, administrator credential|
@@ -284,7 +284,7 @@ Clarification of of meaning of variables in **init.json**:
 }
 ```
 
-## <a name="check"></a>3. Check of flows through nva
+## <a name="check"></a>4. Check of flows through nva
 Using tcpdump is easy to verify the NAT and symmetrical transit through the nva:
 
 ```bash
@@ -300,7 +300,7 @@ root@vmClient1:~# curl 10.0.0.20:8083
 root@vmClient1:~# curl 10.0.0.20:8084
 ```
 
-## <a name="iptables"></a>4. ANNEX1: iptables overview 
+## <a name="iptables"></a>5. ANNEX1: iptables overview 
 
 The packet filtering mechanism provided by iptables is organized into three different kinds of structures: tables, chains and targets. 
 There are four tables:
@@ -429,7 +429,7 @@ Change destination addresses of web traffic to 5.6.7.8, port 8080 <br>
 see more information in [official doc](https://www.netfilter.org/documentation/HOWTO/NAT-HOWTO-6.html)
 
 
-## <a name="file copy through Bastion"></a>5. ANNEX2: file copy  through Azure Bastion
+## <a name="file copy through Bastion"></a>6. ANNEX2: file copy  through Azure Bastion
 Copy a file from a host in internet to the Azure VMs in the VNet through Azure Bastion:
 
 ```
