@@ -1,0 +1,9 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "test-iptables",
+    "location": "westus2",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "nginxScriptURL": "https://raw.githubusercontent.com/fabferri/az-pattern/master/00-scripts/scripts/nginx-serverblocks.sh"
+}

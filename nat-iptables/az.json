@@ -1,0 +1,710 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "vnet1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('location')]",
+                "name": "vnet1",
+                "addressPrefix": "10.0.0.0/24",
+                "clientSubnetName": "clientSubnet",
+                "clientSubnetPrefix": "10.0.0.0/28",
+                "nvafeSubnetName": "nvafeSubnet",
+                "nvafeSubnetPrefix": "10.0.0.16/28",
+                "nvabeSubnetName": "nvabeSubnet",
+                "nvabeSubnetPrefix": "10.0.0.32/28",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.0.0.48/28",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.0.0.128/26"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "ADMINISTRATOR_NAME"
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "sshPublicKey",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "defaultValue": "ADMINISTRATOR_PASSWORD"
+        },
+        "linux": {
+            "type": "object",
+            "defaultValue": {
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of VM"
+            }
+        },
+        "acceleratedNetworking": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "acceletated networking"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VM"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering"
+            }
+        }
+    },
+    "variables": {
+        "linuxUpdate": "sudo apt update",
+        "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
+
+        "linuxNgixCustomPortIPv4": "sed -i  '/^#/! s/listen 80/listen 8080/g'  /etc/nginx/sites-enabled/default",
+        "linuxNgixCustomPortIPv6": "sed -i  '/^#/! s/listen \\[::]:80/listen \\[::]:8080/g' /etc/nginx/sites-enabled/default",
+        "linuxNgixCustomPort": "[concat( variables('linuxNgixCustomPortIPv4'), ' && ',variables('linuxNgixCustomPortIPv6'), ' && ', ' systemctl restart nginx ')]",
+        "linuxIPForwarding": "sed -i -e '$a\\net.ipv4.ip_forward = 1' /etc/sysctl.conf && sysctl -p ",
+        "linuxAddStaticRoutes": "sed -i '/set-name: eth1/a\\            routes:\\n            - to: 10.0.0.48\\/28\\n              via: 10.0.0.33' /etc/netplan/50-cloud-init.yaml",
+        "linuxNetplanApply": "netplan apply",
+        "linuxNVACommand": "[concat('sleep 1m', ' &&', variables('linuxUpdate'), ' && ', variables('linuxIPForwarding'), ' && ', variables('linuxNgixCommand'), ' && ', variables('linuxNgixCustomPort'),' && ', variables('linuxAddStaticRoutes'),' && ',variables('linuxNetplanApply'))]",
+
+        "linuxappCommand": "[concat( 'sleep 1m', ' &&', variables('linuxUpdate'), ' && ', variables('linuxNgixCommand') )]",
+
+        "bastion1Name": "bastion1",
+        "bastion1PublicIPAddressName": "[concat(variables('bastion1Name'),'-pubIP')]",
+
+        "vmclient1Name": "vmClient1",
+        "vmclient1IP": "10.0.0.10",
+        "nvaName": "nva",
+        "nvaIP1": "10.0.0.20",
+        "nvaIP2": "10.0.0.40",
+        "vmapp1Name": "vmApp1",
+        "vmapp1IP": "10.0.0.60",
+        "RT-clientSubnet": {
+            "name": "RT-client",
+            "location": "[parameters('vnet1').location]",
+            "nameRTEntry1": "route-to-appsubnet",
+            "destinationAddressPrefix1": "[parameters('vnet1').appSubnetPrefix]",
+            "nextHopType1": "VirtualAppliance",
+            "nextHopIpAddress1": "[variables('nvaIP1')]"
+        },
+        "RT-appSubnet": {
+            "name": "RT-app",
+            "location": "[parameters('vnet1').location]",
+            "nameRTEntry1": "route-to-clientsubnet",
+            "destinationAddressPrefix1": "[parameters('vnet1').clientSubnetPrefix]",
+            "nextHopType1": "VirtualAppliance",
+            "nextHopIpAddress1": "[variables('nvaIP2')]"
+        },
+
+        "arrayVM2NIC": [
+            {
+                "location": "[parameters('vnet1').location]",
+                "vmName": "[variables('nvaName')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vmSize": "[parameters('vmSize')]",
+                "subnet1Name": "[parameters('vnet1').nvafeSubnetName]",
+                "nic1Name": "[concat(variables('nvaName'), '-nic1')]",
+                "subnet1PrivateAddress": "[variables('nvaIP1')]",
+                "nic1Property": true,
+                "nic1IPForwarding": true,
+                "subnet2Name": "[parameters('vnet1').nvabeSubnetName]",
+                "nic2Name": "[concat(variables('nvaName'), '-nic2')]",
+                "subnet2PrivateAddress": "[variables('nvaIP2')]",
+                "nic2Property": false,
+                "nic2IPForwarding": true,
+                "publicIPAddressName": "[concat(variables('nvaName'), '-pubIP')]",
+                "publicIPAddressType": "Static",
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "commandToExecute": "[variables('linuxNVACommand')]",
+                "nsgName": "[concat(variables('nvaName'),'-nsg')]"
+            }
+        ],
+        "arrayVM1NIC": [
+            {
+                "location": "[parameters('vnet1').location]",
+                "vmName": "[variables('vmclient1Name')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vmSize": "[parameters('vmSize')]",
+                "subnet1Name": "[parameters('vnet1').clientSubnetName]",
+                "nic1Name": "[concat(variables('vmclient1Name'), '-nic1')]",
+                "subnet1PrivateAddress": "[variables('vmclient1IP')]",
+                "nic1Property": true,
+                "nic1IPForwarding": false,
+                "publicIPAddressName": "[concat(variables('vmclient1Name'), '-pubIP')]",
+                "publicIPAddressType": "Static",
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "commandToExecute": "",
+                "nsgName": "[concat(variables('vmclient1Name'),'-nsg')]"
+            },
+            {
+                "location": "[parameters('vnet1').location]",
+                "vmName": "[variables('vmapp1Name')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vmSize": "[parameters('vmSize')]",
+                "subnet1Name": "[parameters('vnet1').appSubnetName]",
+                "nic1Name": "[concat(variables('vmapp1Name'), '-nic1')]",
+                "subnet1PrivateAddress": "[variables('vmapp1IP')]",
+                "nic1Property": true,
+                "nic1IPForwarding": false,
+                "publicIPAddressName": "[concat(variables('vmapp1Name'), '-pubIP')]",
+                "publicIPAddressType": "Static",
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "commandToExecute": "[variables('linuxappCommand')]",
+                "nsgName": "[concat(variables('vmapp1Name'),'-nsg')]"
+            }
+        ],
+        "countArrayVM2NIC": "[length(variables('arrayVM2NIC'))]",
+        "countArrayVM1NIC": "[length(variables('arrayVM1NIC'))]",
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('adminPasswordOrKey')]"
+                    }
+                ]
+            }
+        },
+        "vmStorageAccountType": "[parameters('storageAccountType')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-clientSubnet').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('RT-clientSubnet').location]",
+            "comments": "routing Table applied to clientSubnet",
+            "dependsOn": [],
+            "properties": {
+                "routes": [
+                    {
+                        "name": "[variables('RT-clientSubnet').nameRTEntry1]",
+                        "properties": {
+                            "addressPrefix": "[variables('RT-clientSubnet').destinationAddressPrefix1]",
+                            "nextHopType": "[variables('RT-clientSubnet').nextHopType1]",
+                            "nextHopIpAddress": "[variables('RT-clientSubnet').nextHopIpAddress1]"
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-appSubnet').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('RT-appSubnet').location]",
+            "comments": "routing Table applied to appSubnet",
+            "dependsOn": [],
+            "properties": {
+                "routes": [
+                    {
+                        "name": "[variables('RT-appSubnet').nameRTEntry1]",
+                        "properties": {
+                            "addressPrefix": "[variables('RT-appSubnet').destinationAddressPrefix1]",
+                            "nextHopType": "[variables('RT-appSubnet').nextHopType1]",
+                            "nextHopIpAddress": "[variables('RT-appSubnet').nextHopIpAddress1]"
+                        }
+                    }
+                ]
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('vnet1').name]",
+            "apiVersion": "2021-05-01",
+            "location": "[parameters('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', variables('RT-clientSubnet').name )]",
+                "[resourceId('Microsoft.Network/routeTables', variables('RT-appSubnet').name )]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnet1').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('vnet1').clientSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').clientSubnetPrefix]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-clientSubnet').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnet1').nvafeSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').nvafeSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnet1').nvabeSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').nvabeSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnet1').appSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').appSubnetPrefix]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-appSubnet').name)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnet1').AzureBastionSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnet1').AzureBastionSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('arrayVM2NIC')[copyIndex()].nsgName]",
+            "location": "[variables('arrayVM2NIC')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('countArrayVM2NIC')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('arrayVM2NIC')[copyIndex()].location]",
+            "name": "[variables('arrayVM2NIC')[copyIndex()].publicIPAddressName]",
+            "properties": {
+                "idleTimeoutInMinutes": 30,
+                "publicIPAllocationMethod": "[variables('arrayVM2NIC')[copyIndex()].publicIPAddressType]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM2NIC')]"
+            },
+            "sku": {
+                "tier": "Regional",
+                "name": "Standard"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2021-05-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('arrayVM2NIC')[copyIndex()].publicIPAddressName)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('arrayVM2NIC')[copyIndex()].nsgName)]"
+            ],
+            "location": "[variables('arrayVM2NIC')[copyIndex()].location]",
+            "comments": "first NIC for the VMs with two NICs",
+            "name": "[variables('arrayVM2NIC')[copyIndex()].nic1Name]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[concat(variables('arrayVM2NIC')[copyIndex()].vmName, '-ipconf1')]",
+                        "properties": {
+                            "privateIPAddress": "[variables('arrayVM2NIC')[copyIndex()].subnet1PrivateAddress]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet1').name,variables('arrayVM2NIC')[copyIndex()].subnet1Name)]"
+                            },
+                            "PublicIpAddress": {
+                                "Id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('arrayVM2NIC')[copyIndex()].publicIPAddressName)]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": "[variables('arrayVM2NIC')[copyIndex()].nic1IPForwarding]",
+                "enableAcceleratedNetworking": "[variables('arrayVM2NIC')[copyIndex()].acceleratedNetworking]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('arrayVM2NIC')[copyIndex()].nsgName)]"
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM2NIC')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2021-05-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]"
+            ],
+            "location": "[variables('arrayVM2NIC')[copyIndex()].location]",
+            "comments": "second NIC for the VMs with two NICs",
+            "name": "[variables('arrayVM2NIC')[copyIndex()].nic2Name]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[concat(variables('arrayVM2NIC')[copyIndex()].vmName, '-ipconf2')]",
+                        "properties": {
+                            "privateIPAddress": "[variables('arrayVM2NIC')[copyIndex()].subnet2PrivateAddress]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet1').name, variables('arrayVM2NIC')[copyIndex()].subnet2Name)]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": "[variables('arrayVM2NIC')[copyIndex()].nic2IPForwarding]",
+                "enableAcceleratedNetworking": "[variables('arrayVM2NIC')[copyIndex()].acceleratedNetworking]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM2NIC')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('arrayVM1NIC')[copyIndex()].nsgName]",
+            "location": "[variables('arrayVM1NIC')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('countarrayVM1NIC')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('arrayVM1NIC')[copyIndex()].location]",
+            "name": "[variables('arrayVM1NIC')[copyIndex()].publicIPAddressName]",
+            "properties": {
+                "idleTimeoutInMinutes": 30,
+                "publicIPAllocationMethod": "[variables('arrayVM1NIC')[copyIndex()].publicIPAddressType]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM1NIC')]"
+            },
+            "sku": {
+                "tier": "Regional",
+                "name": "Standard"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2021-05-01",
+            "dependsOn": [
+                "[variables('arrayVM1NIC')[copyIndex()].publicIPAddressName]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]"
+            ],
+            "location": "[variables('arrayVM1NIC')[copyIndex()].location]",
+            "comments": "NIC interface for VMs with single NIC",
+            "name": "[variables('arrayVM1NIC')[copyIndex()].nic1Name]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "[concat(variables('arrayVM1NIC')[copyIndex()].vmName, '-ipconf1')]",
+                        "properties": {
+                            "privateIPAddress": "[variables('arrayVM1NIC')[copyIndex()].subnet1PrivateAddress]",
+                            "privateIPAllocationMethod": "Static",
+                            "PublicIpAddress": {
+                                "Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('arrayVM1NIC')[copyIndex()].publicIPAddressName)]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet1').name,variables('arrayVM1NIC')[copyIndex()].subnet1Name)]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": "[variables('arrayVM1NIC')[copyIndex()].nic1IPForwarding]",
+                "enableAcceleratedNetworking": "[variables('arrayVM1NIC')[copyIndex()].acceleratedNetworking]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM1NIC')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2021-11-01",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/',variables('arrayVM2NIC')[copyIndex()].nic1Name)]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('arrayVM2NIC')[copyIndex()].nic2Name)]"
+            ],
+            "location": "[variables('arrayVM2NIC')[copyIndex()].location]",
+            "comments": "VM with two NICs",
+            "name": "[variables('arrayVM2NIC')[copyIndex()].vmName]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('arrayVM2NIC')[copyIndex()].vmSize]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('arrayVM2NIC')[copyIndex()].nic1Name)]",
+                            "properties": {
+                                "primary": "[bool(variables('arrayVM2NIC')[copyIndex()].nic1Property)]"
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('arrayVM2NIC')[copyIndex()].nic2Name)]",
+                            "properties": {
+                                "primary": "[bool(variables('arrayVM2NIC')[copyIndex()].nic2Property)]"
+                            }
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[variables('arrayVM2NIC')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[ variables('arrayVM2NIC')[copyIndex()].publisher]",
+                        "offer": "[ variables('arrayVM2NIC')[copyIndex()].offer]",
+                        "sku": "[ variables('arrayVM2NIC')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "name": "[concat(variables('arrayVM2NIC')[copyIndex()].vmName, '-OSdisk')]",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        }
+                    }
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM2NIC')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('arrayVM2NIC')[copyIndex()].vmName, '/', 'installcustomscript')]",
+            "apiVersion": "2021-11-01",
+            "comments": "custom script extension for ubuntu",
+            "location": "[variables('arrayVM2NIC')[copyIndex()].location]",
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('countArrayVM2NIC')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('arrayVM2NIC')[copyIndex()].vmName )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('arrayVM2NIC')[copyIndex()].commandToExecute]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2021-11-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces',variables('arrayVM1NIC')[copyIndex()].nic1Name)]"
+            ],
+            "location": "[variables('arrayVM1NIC')[copyIndex()].location]",
+            "comments": "VMs with 1 NIC",
+            "name": "[variables('arrayVM1NIC')[copyIndex()].vmName]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('arrayVM1NIC')[copyIndex()].vmSize]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('arrayVM1NIC')[copyIndex()].nic1Name)]",
+                            "properties": {
+                                "primary": "[variables('arrayVM1NIC')[copyIndex()].nic1Property]"
+                            }
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[variables('arrayVM1NIC')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[ variables('arrayVM1NIC')[copyIndex()].publisher]",
+                        "offer": "[ variables('arrayVM1NIC')[copyIndex()].offer]",
+                        "sku": "[ variables('arrayVM1NIC')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "name": "[concat(variables('arrayVM1NIC')[copyIndex()].vmName, '-OSdisk')]",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        }
+                    }
+                }
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('countArrayVM1NIC')]"
+            }
+        },
+        {
+            "condition": "[not( empty(variables('arrayVM1NIC')[copyIndex()].commandToExecute) )]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('arrayVM1NIC')[copyIndex()].vmName, '/', 'installcustomscript')]",
+            "apiVersion": "2021-11-01",
+            "comments": "custom script extension for ubuntu",
+            "location": "[variables('arrayVM1NIC')[copyIndex()].location]",
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('countArrayVM1NIC')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('arrayVM1NIC')[copyIndex()].vmName )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('arrayVM1NIC')[copyIndex()].commandToExecute]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('bastion1PublicIPAddressName')]",
+            "apiVersion": "2020-11-01",
+            "location": "[parameters('vnet1').location]",
+            "comments": "public IP of the Azure bastion in hub1 vnet",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2021-08-01",
+            "name": "[variables('bastion1Name')]",
+            "location": "[parameters('vnet1').location]",
+            "comments": "Azure bastion in hub1 vnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastion1PublicIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]"
+            ],
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "disableCopyPaste": false,
+                "enableFileCopy": true,
+                "enableIpConnect": true,
+                "enableShareableLink": true,
+                "enableTunneling": true,
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastion1PublicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet1').name, parameters('vnet1').AzureBastionSubnetName)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,87 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Specifies the location for all of the resources created by this template."
+            }
+        },
+        "nvaName": {
+            "type": "string",
+            "defaultValue": "nva",
+            "metadata": {
+                "description": "name of the nva.it needs ot match with the name of nva created with previous ARM template."
+            }
+        },
+        "vmapp1Name": {
+            "type": "string",
+            "defaultValue": "vmApp1",
+            "metadata": {
+                "description": "name of the nva.it needs ot match with the name of nva created with previous ARM template."
+            }
+        },
+        "vmapp1ScriptURL": {
+            "type": "string",
+            "defaultValue": "[uri(deployment().properties.templateLink.uri, concat('scripts', '/', 'nginx-serverblocks.sh'))]",
+            "metadata": {
+                "description": "URL point out to the bah script to setup nginx"
+            }
+        }
+        
+    },
+    "variables": {
+        "nvaName": "[parameters('nvaName')]",
+        "nva_cmds": "
+iptables -I INPUT 1 -i lo -j ACCEPT;
+iptables -A INPUT -p tcp --dport ssh -j ACCEPT;
+iptables -A INPUT -p tcp -s 168.63.129.16 --dport 8080 -j ACCEPT;
+iptables -A INPUT -p tcp --match multiport --dport 8081,8082,8083,8084 -j ACCEPT;
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT;
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
+iptables -A INPUT -j DROP;
+iptables -P FORWARD ACCEPT;
+iptables -P OUTPUT ACCEPT;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.0.20/32 -p tcp --dport 80 -j DNAT --to-destination 10.0.0.60:80;
+iptables -t nat -A POSTROUTING -o eth1 -d 10.0.0.60/32 -p tcp --dport 80 -j SNAT --to-source 10.0.0.40 --random;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.0.20/32 -p tcp --dport 8081 -j DNAT --to-destination 10.0.0.60:8081;
+iptables -t nat -A POSTROUTING -o eth1 -d 10.0.0.60/32 -p tcp --dport 8081 -j SNAT --to-source 10.0.0.40 --random;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.0.20/32 -p tcp --dport 8082 -j DNAT --to-destination 10.0.0.60:8082;
+iptables -t nat -A POSTROUTING -o eth1 -d 10.0.0.60/32 -p tcp --dport 8082 -j SNAT --to-source 10.0.0.40 --random;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.0.20/32 -p tcp --dport 8083 -j DNAT --to-destination 10.0.0.60:8083;
+iptables -t nat -A POSTROUTING -o eth1 -d 10.0.0.60/32 -p tcp --dport 8083 -j SNAT --to-source 10.0.0.40 --random;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.0.20/32 -p tcp --dport 8084 -j DNAT --to-destination 10.0.0.60:8084;
+iptables -t nat -A POSTROUTING -o eth1 -d 10.0.0.60/32 -p tcp --dport 8084 -j SNAT --to-source 10.0.0.40 --random;
+/sbin/iptables-save;",
+
+        "vmapp1Name": "[parameters('vmapp1Name')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines/runCommands",
+            "name": "[concat(variables('nvaName'), '/','nva_cmds')]",
+            "apiVersion": "2021-07-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "source": {
+                    "script": "[variables('nva_cmds')]"
+                },
+                "timeoutInSeconds": 300
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/runCommands",
+            "name": "[concat(variables('vmapp1Name'), '/','vmapp1_cmd')]",
+            "apiVersion": "2021-07-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "source": {
+                   "scriptUri":"[parameters('vmapp1ScriptURL')]"
+                },
+                "timeoutInSeconds": 300
+            }
+        }
+    ]
+}
