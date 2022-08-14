@@ -1,0 +1,15 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "anvm1",
+    "networkManagerName": "ntw-mgr1",
+    "connectivityConfigName": "netcfg1",
+    "location" : "westus2",
+    "locationhub" : "westus2",
+    "location1" : "westus2",
+    "location2" : "westus2",
+    "location3" : "westus2",
+    "location4" : "westus2",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}
