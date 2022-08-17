@@ -1,0 +1,9 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "test-cloudinit1",
+    "location": "westeurope",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}
