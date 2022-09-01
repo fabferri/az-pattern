@@ -125,7 +125,7 @@ The sequence of steps to run the deployment:
 
 ```
 
-- Network Watcher is deployed in different resource group from the resource group of VMSS; the benefit to use **Microsoft.Resources/deployments** is in the possibility to deploy child objects of Network Watcher, specificy the parent resource group (Network Watcher resource group).
+- Network Watcher is deployed in different resource group from the resource group of VMSS; the benefit to use **Microsoft.Resources/deployments** is in the possibility to deploy child objects of Network Watcher, specifying the parent resource group (Network Watcher resource group).
 - in the section **scope** is possibile define the packet captures in specific VMSS instances. In the template above the packet capture runs in three VMSS instances: instance0, instance1, instance2
 - the capture uses a filter based on network source, network destination, source port, destination port. The template above allows an iperf3 traffic capture between VMSS instances 
 
