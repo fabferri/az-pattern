@@ -1,0 +1,5 @@
+{
+    "subscriptionName": "AzDev1",
+    "ResourceGroupName": "vmss-2",
+    "location": "uksouth"
+}
