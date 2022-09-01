@@ -57,16 +57,16 @@ Filters are provided for the capture session to ensure you capture only the traf
 | **capture.json**        | ARM template to define and start the packet capture                    |
 | **capture.ps1**         | powershell script to deploy the ARM template **capture.json**          |
 
-**NOTE:**
-- The sequence of steps to run the deployment:
-   1. customize the values of input variables in **init.json** and **vmss-parameters.json**
-   2. change the administrator username and administrator password of the VM and VMSS in the **vmss-parameters.json**
-   3. run the powershell **vmss.ps1**: the ARM template **vmss.json** is deployed
-   4. run the powershell **capture.ps1** to start the packet captures. **capture.ps1** deploys the ARM template **vmss.json**.
-   5. connect to the VMSS instance_0 and start the iperf3 receiver by the command: **iperf3 -s**
-   6. connect to the VMSS instance_1 and start the iperf3 sender by the command: **iperf3 -c 10.0.0.4**
-   7. from a client in internet, you can connect to the storage account to download the packet captures (files: *.cap) locally in the client
-   8. in the client, by wireshark open a packet capture and set a display filter, like **tcp.port == 5201**, to see only the iperf3 traffic between VMSS instance_1 and instance_0 
+**NOTE:** <br>
+The sequence of steps to run the deployment:
+1. customize the values of input variables in **init.json** and **vmss-parameters.json**
+2. change the administrator username and administrator password of the VM and VMSS in the **vmss-parameters.json**
+3. run the powershell **vmss.ps1**: the ARM template **vmss.json** is deployed
+4. run the powershell **capture.ps1** to start the packet captures. **capture.ps1** deploys the ARM template **vmss.json**.
+5. connect to the VMSS instance_0 and start the iperf3 receiver by the command: **iperf3 -s**
+6. connect to the VMSS instance_1 and start the iperf3 sender by the command: **iperf3 -c 10.0.0.4**
+7. from a client in internet, you can connect to the storage account to download the packet captures (files: *.cap) locally in the client
+8. in the client, by wireshark open a packet capture and set a display filter, like **tcp.port == 5201**, to see only the iperf3 traffic between VMSS instance_1 and instance_0 
 
 
 ## <a name="ARM template to trigger the packet captures"></a>2. ARM template to trigger the packet captures
