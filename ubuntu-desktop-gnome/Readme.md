@@ -55,7 +55,7 @@ After the file is created, login back to the xRDP session and see if the desktop
 
 
 ## <a name="custom script extension"></a>2. Check the correct installation
-when the deployment is completed, it is good practice verifying the correct installation. <br>
+When the deployment is completed, it is good practice verifying the correct installation. <br>
 Custom script extension logs are stored in:
 ```
 root@vm1:~# ll /var/lib/waagent/custom-script/download/0/
