@@ -130,7 +130,7 @@ export DEBIAN_FRONTEND=noninteractive
 **DEBIAN_FRONTEND** is an apt-get variable can be taken different settings.  **noninteractive** is a mode when you need zero interaction while installing or upgrading the system via apt. It accepts the default answer for all questions. The option installs the package totally silent and it is a good frontend for automatic installation by shell scripts, cloud-init.
 
 
-Using the folder **/etc/apt/sources.list.d/** you can easily add new repositories without the need to edit the central **/etc/apt/sources.list** repository list. The source list of repository for visual studio code, Microsoft edge and chrome are stored in the folder **/etc/apt/sources.list.d/**:
+Using the folder **/etc/apt/sources.list.d/** you can easily add new repositories without the need to edit the central **/etc/apt/sources.list** repository list. The source list of repositories for visual studio code, Microsoft edge and chrome are stored in the folder **/etc/apt/sources.list.d/**:
 ```bash
 root@vm1:~# cat /etc/apt/sources.list.d/vscode.list 
 deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
