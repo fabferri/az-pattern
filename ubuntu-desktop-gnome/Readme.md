@@ -28,7 +28,7 @@ The custom script extension installs the following components:
 Runtime to execute the custom script extension is about 10 minutes. The full deployment of VM takes longer.
 
 **Note:**<br>
-When you connect to the VM via RDP, the desktop looks different from local login. The GNOME dock isn't present on the home screen and in GNOME desktop setting is not presente the **Appearance** option<br>
+When you connect to the VM via RDP, the desktop looks different from local login. The GNOME dock isn't present on the home screen and in GNOME desktop setting is not presente the **Appearance** option. <br>
 A way to solve the issue is to login in the VM and paste the following code in the file called **.xsessionrc** <br>
 ```bash
 cat <<EOF > ~/.xsessionrc
