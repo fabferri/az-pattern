@@ -19,33 +19,13 @@ editor=""/>
    ms.author="fabferri" />
 
 # Resize the address space of Azure vnets that are peered
-You can resize the address space of Azure virtual networks that are peered without incurring any downtime on the currently peered address space.<br>
-After resizing the address space, all that is required is for peers to be synced with the new address space changes.
+You can resize the address space of Azure virtual networks that are peered without incurring any downtime on the currently peered address space. After resizing the address space, all that is required is for peers to be synced with the new address space changes.
 
 [![1]][1]
 
 The vnet1 and vnet2 are deployed in two different azure regions and are in vnet peering. <br>
 The ARM template has a custom script extension to install iperf3 in the VMs. iperf3 is useful tool to verify the TCP flows between vm1 and vm2 do not have downtime interruption along the processes of resizing of address space of the vnet in peering.<br>
 
-After the deployment of the ARM template, in vnet2 check the remote virtual network address space:
-```powershell
-(Get-AzVirtualNetworkPeering -name vnet2Tovnet1 -ResourceGroupName rg-prod -VirtualNetworkName vnet2).PeeredRemoteAddressSpace.AddressPrefixes
-10.1.0.0/24
-
-(Get-AzVirtualNetworkPeering -name vnet2Tovnet1 -ResourceGroupName rg-prod -VirtualNetworkName vnet2).RemoteVirtualNetworkAddressSpace.AddressPrefixes
-10.1.0.0/24
-```
-
-Let run the  script **adding-new-NetworkPrefix.ps1** to add to the vnet1 the network prefix 10.101.0.0/24:
-```powershell
-(Get-AzVirtualNetworkPeering -name vnet2Tovnet1 -ResourceGroupName rg-prod -VirtualNetworkName vnet2).PeeredRemoteAddressSpace.AddressPrefixes
-10.1.0.0/24
-10.101.0.0/24
-
-(Get-AzVirtualNetworkPeering -name vnet2Tovnet1 -ResourceGroupName rg-prod -VirtualNetworkName vnet2).RemoteVirtualNetworkAddressSpace.AddressPrefixes
-10.1.0.0/24
-10.101.0.0/24
-```
 
 **NOTE:** 
 * adding network prefix to the address space to a vnet in peering works only if the new network prefix doesn't overlap other address spaces.
@@ -93,8 +73,6 @@ The meaning of input variables in **init.json** are shown below:
 The **autheticationType** can take the two allow values: "password" or "sshPublicKey".
 
 
-
-
 ## <a name="Add a new address prefix"></a>2. Add a new address prefix to the vnet1
 After the deployment of the ARM template, the address space in vnet2 is shown:
 ```powershell
@@ -119,7 +97,7 @@ Let run the script **adding-new-NetworkPrefix.ps1** to add the new network prefi
 10.101.0.0/24
 ```
 
-## <a name="Add a new address prefix"></a>3. Change-the network prefix in vnet1
+## <a name="Change the existing network prefix"></a>3. Change of the existing network prefix in vnet1
 Check the address space in vnet2:
 ```powershell
 (Get-AzVirtualNetworkPeering -name vnet2Tovnet1 -ResourceGroupName rg-prod -VirtualNetworkName vnet2).PeeredRemoteAddressSpace.AddressPrefixes
@@ -131,7 +109,7 @@ Check the address space in vnet2:
 10.101.0.0/24
 ```
 
-Let run the script  **change-NetworkPrefix.ps1**; the script extends the network prefix from 10.101.0.0/24 to 10.101.0.0/23 in the vnet1:
+Let run the script  **change-NetworkPrefix.ps1**; the script extends in the vnet1 the network prefix from 10.101.0.0/24 to 10.101.0.0/23:
 
 [![3]][3]
 
