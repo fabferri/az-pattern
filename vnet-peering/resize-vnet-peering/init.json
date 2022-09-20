@@ -1,0 +1,10 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "rg-prod",
+    "location1": "westeurope",
+    "location2": "northeurope",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}
