@@ -149,7 +149,8 @@ Let run the script **remove-existingNetworkPrefix.ps1** to remove the network pr
 ```
 
 
-`Tags: resize address space of vnets in peering, vnets`
+`Tags: resize address space of vnets in peering, vnets` 
+
 `date: 20-09-22`
 
 <!--Image References-->
