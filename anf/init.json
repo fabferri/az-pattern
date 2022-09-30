@@ -1,0 +1,8 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "anf1",
+    "location": "westeurope",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "mngIP": ""
+}

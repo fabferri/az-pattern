@@ -1,0 +1,15 @@
+#cloud-config
+package_update: false
+runcmd:
+  - [ sh, -c, sleep 60 ]
+  - [ sh, -c, sudo apt-get -y update ]
+  - [ sh, -c, sudo apt-get -y install nfs-common ]
+  - [ mkdir, /mnt/nfs1 ]
+  - [ mkdir, /mnt/nfs2 ]
+  - [ mkdir, /mnt/nfs3 ]
+  - [ sh, -c, 'echo "10.1.0.4:/netappVol1	/mnt/nfs1 nfs bg,rw,hard,noatime,nolock,rsize=65536,wsize=65536,vers=4.1,tcp,_netdev	0	0" >> /etc/fstab' ]
+  - [ sh, -c, 'echo "10.1.0.4:/netappVol2	/mnt/nfs2 nfs bg,rw,hard,noatime,nolock,rsize=65536,wsize=65536,vers=4.1,tcp,_netdev	0	0" >> /etc/fstab' ]
+  - [ sh, -c, 'echo "10.1.0.4:/netappVol3	/mnt/nfs3 nfs bg,rw,hard,noatime,nolock,rsize=65536,wsize=65536,vers=3,tcp,_netdev	0	0" >> /etc/fstab' ]
+  - [ mount, -a ]
+
+

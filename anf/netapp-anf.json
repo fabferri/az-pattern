@@ -1,0 +1,1577 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "artifactsLocation": {
+            "type": "string",
+            "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern/master/00-scripts/",
+            // "[deployment().properties.templateLink.uri]",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+            }
+        },
+        "artifactsLocationSasToken": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation. If your artifacts are stored on a public repo or public storage account you can leave this blank."
+            }
+        },
+        "scriptFolder": {
+            "type": "string",
+            "defaultValue": "scripts",
+            "metadata": {
+                "description": "script folder"
+            }
+        },
+        "location": {
+            "defaultValue": "[resourcegroup().location]",
+            "type": "string",
+            "metadata": {
+                "description": "select the same location of the resource group"
+            }
+        },
+        "netAppAccountName": {
+            "defaultValue": "[concat('anf-', uniqueString(resourceGroup().id))]",
+            "type": "string",
+            "metadata": {
+                "description": "Name for the Account. The account name must be unique within the subscription"
+            }
+        },
+        "capacityPoolName": {
+            "defaultValue": "pool1",
+            "type": "string",
+            "metadata": {
+                "description": "Name for the capacity pool. The capacity pool name must be unique for each NetApp account."
+            }
+        },
+        "poolSizeBytes": {
+            "type": "int",
+            "defaultValue": 4398046511104,
+            "minValue": 4398046511104,
+            "maxValue": 549755813888000,
+            "metadata": {
+                "description": "Size of the capacity pool. The minimum  size is 4 TiB."
+            }
+        },
+        "netAppVolume1Name": {
+            "defaultValue": "netappVol1",
+            "type": "string",
+            "metadata": {
+                "description": "Name for the NFS Volume. A volume name must be unique within each capacity pool. It must be at aleast three characters long and you can use any alphanumeric characters."
+            }
+        },
+        "netAppVolume2Name": {
+            "defaultValue": "netappVol2",
+            "type": "string",
+            "metadata": {
+                "description": "Name for the NFS Volume. A volume name must be unique within each capacity pool. It must be at aleast three characters long and you can use any alphanumeric characters."
+            }
+        },
+        "netAppVolume3Name": {
+            "defaultValue": "netappVol3",
+            "type": "string",
+            "metadata": {
+                "description": "Name for the NFS Volume. A volume name must be unique within each capacity pool. It must be at aleast three characters long and you can use any alphanumeric characters."
+            }
+        },
+        "volSizeBytes": {
+            "type": "int",
+            "defaultValue": 107374182400,
+            "minValue": 107374182400,
+            "maxValue": 109951162777600,
+            "metadata": {
+                "description": "Amount of logical storage that is allocated to the volume."
+            }
+        },
+        "serviceLevel": {
+            "type": "string",
+            "defaultValue": "Premium",
+            "allowedValues": [
+                "Premium",
+                "Ultra",
+                "Standard"
+            ],
+            "metadata": {
+                "description": "Target performance for the capacity pool. Service level: Ultra, Premium, or Standard."
+            }
+        },
+        "allowedClients": {
+            "type": "string",
+            "defaultValue": "0.0.0.0/0",
+            "metadata": {
+                "description": "Root Access to the volume."
+            }
+        },
+        "volume1Name": {
+            "defaultValue": "vol1",
+            "type": "string"
+        },
+        "volume2Name": {
+            "defaultValue": "vol2",
+            "type": "string"
+        },
+        "volume3Name": {
+            "defaultValue": "vol3",
+            "type": "string"
+        },
+        "protocolTypesVol1": {
+            "defaultValue": "NFSv4.1",
+            "type": "string",
+            "allowedValues": [
+                "NFSv3",
+                "NFSv4.1"
+            ],
+            "metadata": {
+                "description": "NFS version (NFSv3 or NFSv4.1) for the volume."
+            }
+        },
+        "protocolTypesVol2": {
+            "defaultValue": "NFSv4.1",
+            "type": "string",
+            "allowedValues": [
+                "NFSv3",
+                "NFSv4.1"
+            ],
+            "metadata": {
+                "description": "NFS version (NFSv3 or NFSv4.1) for the volume."
+            }
+        },
+        "protocolTypesVol3": {
+            "defaultValue": "NFSv3",
+            "type": "string",
+            "allowedValues": [
+                "NFSv3",
+                "NFSv4.1"
+            ],
+            "metadata": {
+                "description": "NFS version (NFSv3 or NFSv4.1) for the volume."
+            }
+        },
+        "unixReadOnly": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                false,
+                true
+            ],
+            "metadata": {
+                "description": "Read only flag."
+            }
+        },
+        "unixReadWrite": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+                false,
+                true
+            ],
+            "metadata": {
+                "description": "Read/write flag."
+            }
+        },
+        "snapshotDirectoryVisible": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                false,
+                true
+            ],
+            "metadata": {
+                "description": "Snapshot directory visible flag."
+            }
+        },
+        "vnet1Name": {
+            "defaultValue": "vnet1",
+            "type": "string"
+        },
+        "vnet2Name": {
+            "defaultValue": "vnet2",
+            "type": "string"
+        },
+
+        "vmSizeAppVm1": {
+            "defaultValue": "Standard_F8s_v2",
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Machine SKU"
+            }
+        },
+        "vmSizeAppVm2": {
+            "defaultValue": "Standard_B1s",
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Machine SKU"
+            }
+        },
+        "vmSizeAppVm3": {
+            "defaultValue": "Standard_B2ms",
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Machine SKU"
+            }
+        },
+        "vmSizeAppVm4": {
+            "defaultValue": "Standard_B2ms",
+            "type": "string",
+            "metadata": {
+                "description": "Virtual Machine SKU"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password"
+            }
+        },
+        "vmStorageAccountType": {
+            "type": "string",
+            "defaultValue": "Premium_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VM"
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "public IP address to connect to the Azure VM. the value is set in NSG"
+            }
+        },
+        "firewallPolicy1Name": {
+            "defaultValue": "azfw1Policy",
+            "type": "string"
+        },
+        "numberOfFirewallPublicIPAddresses": {
+            "type": "int",
+            "defaultValue": 1,
+            "minValue": 1,
+            "maxValue": 100,
+            "metadata": {
+                "description": "Number of public IP addresses for the Azure Firewall"
+            }
+        },
+        "availabilityZones": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Zone numbers e.g. 1,2,3."
+            }
+        },
+        "cloudInitContent": {
+            "type": "string",
+            "metadata": {
+                "description": "content of cloud-init config file"
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Name of the workspace."
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultvalue": "pergb2018",
+            "allowedValues": [
+                "pergb2018",
+                "Free",
+                "Standalone",
+                "PerNode",
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+            }
+        },
+        "retentionInDays": {
+            "type": "int",
+            "defaultValue": 30,
+            "maxValue": 730,
+            "minValue": 30,
+            "metadata": {
+                "description": "Number of days to retain data."
+            }
+        },
+        "resourcePermissions": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "true to use resource or workspace permissions. false to require workspace permissions."
+            }
+        },
+        "azfw1Name": {
+            "type": "string",
+            "defaultvalue": "azfw1"
+        },
+        "diagnosticSettingName": {
+            "type": "string",
+            "defaultValue": "azfwdiag",
+            "metadata": {
+                "description": "Name for diagnostic settings configuration."
+            }
+        },
+        "diagnosticSettingNameResourceSpecific": {
+            "type": "string",
+            "defaultValue": "azfwdiagResources",
+            "metadata": {
+                "description": "Name for diagnostic settings configuration, resource specific"
+            }
+        }
+    },
+    "variables": {
+        "vnet1": {
+            "location": "[parameters('location')]",
+            "name": "[parameters('vnet1Name')]",
+            "addressSpacePrefix1": "10.1.0.0/24",
+            "subnet1Name": "anfSubnet",
+            "subnet2Name": "appSubnet",
+            "subnet3Name": "AzureFirewallSubnet",
+            "subnet4Name": "AzureBastionSubnet",
+            "subnet1Prefix": "10.1.0.0/26",
+            "subnet2Prefix": "10.1.0.64/26",
+            "subnet3Prefix": "10.1.0.128/26",
+            "subnet4Prefix": "10.1.0.192/26",
+            "vnetpeeringName": "[concat(parameters('vnet1Name'),'To',parameters('vnet2Name'))]"
+        },
+        "vnet2": {
+            "location": "[parameters('location')]",
+            "name": "[parameters('vnet2Name')]",
+            "addressSpacePrefix1": "10.2.0.0/24",
+            "subnet1Name": "appSubnet",
+            "subnet1Prefix": "10.2.0.64/26",
+            "vnetpeeringName": "[concat(parameters('vnet2Name'),'To',parameters('vnet1Name'))]"
+        },
+        "vmapp1Name": "vmapp1",
+        "vmapp1IpAddress": "10.1.0.71",
+        "vmapp2Name": "vmapp2",
+        "vmapp2IpAddress": "10.1.0.72",
+        "vmapp3Name": "vmapp3",
+        "vmapp3IpAddress": "10.1.0.73",
+        "vmapp4Name": "vmapp4",
+        "vmapp4IpAddress": "10.2.0.74",
+        "customData": "[ parameters('cloudInitContent') ]",
+        "vmarray": [
+            {
+                "location": "[parameters('location')]",
+                "vmName": "[variables('vmapp1Name')]",
+                "vmSize": "[parameters('vmSizeAppVm1')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('vnet1').name]",
+                "subnetName": "[variables('vnet1').subnet2Name]",
+                "privateIP": "[variables('vmapp1IpAddress')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('vmapp1Name'),'-nsg')]",
+                "osProfile": {
+                    "computerName": "[variables('vmapp1Name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "customData": "[base64(variables('customData'))]"
+                }
+            },
+            {
+                "location": "[parameters('location')]",
+                "vmName": "[variables('vmapp2Name')]",
+                "vmSize": "[parameters('vmSizeAppVm2')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('vnet1').name]",
+                "subnetName": "[variables('vnet1').subnet2Name]",
+                "privateIP": "[variables('vmapp2IpAddress')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('vmapp2Name'),'-nsg')]",
+                "osProfile": {
+                    "computerName": "[variables('vmapp2Name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "customData": "[base64(variables('customData'))]"
+                }
+            },
+            {
+                "location": "[parameters('location')]",
+                "vmName": "[variables('vmapp3Name')]",
+                "vmSize": "[parameters('vmSizeAppVm3')]",
+                "publisher": "MicrosoftWindowsServer",
+                "offer": "WindowsServer",
+                "sku": "2022-datacenter-azure-edition",
+                "version": "latest",
+                "vnetName": "[variables('vnet1').name]",
+                "subnetName": "[variables('vnet1').subnet2Name]",
+                "privateIP": "[variables('vmapp3IpAddress')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('vmapp3Name'),'-nsg')]",
+                "osProfile": {
+                    "computerName": "[variables('vmapp3Name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                }
+            },
+            {
+                "location": "[parameters('location')]",
+                "vmName": "[variables('vmapp4Name')]",
+                "vmSize": "[parameters('vmSizeAppVm4')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('vnet2').name]",
+                "subnetName": "[variables('vnet2').subnet1Name]",
+                "privateIP": "[variables('vmapp4IpAddress')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('vmapp4Name'),'-nsg')]",
+                "osProfile": {
+                    "computerName": "[variables('vmapp4Name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "customData": "[base64(variables('customData'))]"
+                }
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "vmStorageAccountType": "[parameters('vmStorageAccountType')]",
+        "deploymentBastion": false,
+        "bastionName": "bastion",
+        "bastionSubnetName": "[variables('vnet1').subnet4Name]",
+        "bastionPublicIPAddressName": "[concat(variables('bastionName'),'-pubIP')]",
+        "bastionSkuName": "Standard",
+        "azfw1Name": "azfw1",
+        "azfw1IP": "10.1.0.132",
+        "azfw1PubIPNamePrefix": "[concat(variables('azfw1Name'),'-pubIP')]",
+        "azfw1SubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnet1').name, variables('vnet1').subnet3Name)]",
+        "azfw1SubnetJSON": "[json(format('{{\"id\": \"{0}\"}}', variables('azfw1SubnetId')))]",
+        "copy": [
+            {
+                "name": "azfw1IpConfigurations",
+                "count": "[parameters('numberOfFirewallPublicIPAddresses')]",
+                "input": {
+                    "name": "[concat('IpConf', copyIndex('azfw1IpConfigurations'))]",
+                    "properties": {
+                        "subnet": "[if(equals(copyIndex('azfw1IpConfigurations'), 0), variables('azfw1SubnetJSON'), json('null'))]",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('azfw1PubIPNamePrefix'), add(copyIndex('azfw1IpConfigurations'), 1)))]"
+                        }
+                    }
+                }
+            }
+        ],
+        "RT-appSubnetvnet1": {
+            "name": "rtAppSubnetvnet1",
+            "location": "[variables('vnet1').location]",
+            "nameRTEntry1": "route-to-anfsubnet",
+            "destinationAddressPrefix1": "[variables('vnet1').subnet1Prefix]",
+            "nextHopType1": "VirtualAppliance",
+            "nextHopIpAddress1": "[variables('azfw1IP')]"
+        },
+        "RT-appSubnetvnet2": {
+            "name": "rtAppSubnetvnet2",
+            "location": "[variables('vnet2').location]",
+            "nameRTEntry1": "route-to-anfsubnet",
+            "destinationAddressPrefix1": "[variables('vnet1').subnet1Prefix]",
+            "nextHopType1": "VirtualAppliance",
+            "nextHopIpAddress1": "[variables('azfw1IP')]"
+        },
+        "RT-anfSubnetvnet1": {
+            "name": "rtAnfSubnetvnet1",
+            "location": "[variables('vnet1').location]",
+            "nameRTEntry1": "route-to-appsubnet-vnet1",
+            "destinationAddressPrefix1": "[variables('vnet1').subnet2Prefix]",
+            "nextHopType1": "VirtualAppliance",
+            "nextHopIpAddress1": "[variables('azfw1IP')]",
+            "nameRTEntry2": "route-to-appsubnet-vnet2",
+            "destinationAddressPrefix2": "[variables('vnet2').subnet1Prefix]",
+            "nextHopType2": "VirtualAppliance",
+            "nextHopIpAddress2": "[variables('azfw1IP')]"
+        }
+    },
+    "resources": [
+        {
+            "comments": "Create a vnet. You can have only a single delegated subnet in a VNet. A NetApp account can deploy volumes into multiple VNets, each having its own delegated subnet.",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2022-01-01",
+            "name": "[variables('vnet1').name]",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet1').addressSpacePrefix1]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet1Prefix]",
+                            "delegations": [
+                                {
+                                    "name": "NetAppDelegation",
+                                    "properties": {
+                                        "serviceName": "Microsoft.NetApp/volumes"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet2Prefix]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet3Prefix]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet4Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet4Prefix]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Create a vnet. You can have only a single delegated subnet in a VNet. A NetApp account can deploy volumes into multiple VNets, each having its own delegated subnet.",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2022-01-01",
+            "name": "[variables('vnet2').name]",
+            "location": "[variables('vnet2').location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet2').addressSpacePrefix1]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet2').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet2').subnet1Prefix]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "This is the peering from vnet1 to vnet2",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet1').name,'/',variables('vnet1').vnetpeeringName)]",
+            "apiVersion": "2022-01-01",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2').name)]"
+                }
+            }
+        },
+        {
+            "comments": "This is the peering from vnet1 to vnet2",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet2').name,'/',variables('vnet2').vnetpeeringName)]",
+            "apiVersion": "2022-01-01",
+            "location": "[variables('vnet2').location]",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2').name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "comments": "Create a NetApp account",
+            "type": "Microsoft.NetApp/netAppAccounts",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('netAppAccountName')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+        {
+            "comments": "Create a capacity pool",
+            "type": "Microsoft.NetApp/netAppAccounts/capacityPools",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('netAppAccountName'), '/',parameters('capacityPoolName'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.NetApp/netAppAccounts', parameters('netAppAccountName'))]"
+            ],
+            "properties": {
+                "serviceLevel": "[parameters('serviceLevel')]",
+                "size": "[parameters('poolSizeBytes')]"
+            }
+        },
+        {
+            "comments": "Create an NFS volume for Azure NetApp Files",
+            "type": "Microsoft.NetApp/netAppAccounts/capacityPools/volumes",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('netAppAccountName'), '/',parameters('capacityPoolName'),'/',parameters('volume1Name'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools', parameters('netAppAccountName'), parameters('capacityPoolName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "serviceLevel": "[parameters('serviceLevel')]",
+                "creationToken": "[parameters('netAppVolume1Name')]",
+                "usageThreshold": "[parameters('volSizeBytes')]",
+                "exportPolicy": {
+                    "rules": [
+                        {
+                            "ruleIndex": 1,
+                            "unixReadOnly": "[parameters('unixReadOnly')]",
+                            "unixReadWrite": "[parameters('unixReadWrite')]",
+                            "cifs": false,
+                            "nfsv3": "[if(equals( parameters('protocolTypesVol1'), 'NFSv3'),bool('true'),bool('false'))]",
+                            "nfsv41": "[if(equals(parameters('protocolTypesVol1'), 'NFSv4.1'),bool('true'),bool('false'))]",
+                            "allowedClients": "[parameters('allowedClients')]",
+                            "kerberos5ReadOnly": false,
+                            "kerberos5ReadWrite": false,
+                            "kerberos5iReadOnly": false,
+                            "kerberos5iReadWrite": false,
+                            "kerberos5pReadOnly": false,
+                            "kerberos5pReadWrite": false,
+                            "hasRootAccess": true
+                        }
+                    ]
+                },
+                "protocolTypes": [
+                    "[parameters('protocolTypesVol1')]"
+                ],
+                "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name, variables('vnet1').subnet1Name)]",
+                "snapshotDirectoryVisible": "[parameters('snapshotDirectoryVisible')]",
+                "networkFeatures": "Standard",
+                "kerberosEnabled": false,
+                "enableSubvolumes": "Disabled"
+            }
+        },
+        {
+            "comments": "Create an NFS volume for Azure NetApp Files",
+            "type": "Microsoft.NetApp/netAppAccounts/capacityPools/volumes",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('netAppAccountName'), '/',parameters('capacityPoolName'),'/',parameters('volume2Name'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools', parameters('netAppAccountName'), parameters('capacityPoolName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools/volumes',parameters('netAppAccountName'),parameters('capacityPoolName'),parameters('volume1Name'))]"
+            ],
+            "properties": {
+                "serviceLevel": "[parameters('serviceLevel')]",
+                "creationToken": "[parameters('netAppVolume2Name')]",
+                "usageThreshold": "[mul(parameters('volSizeBytes'),5)]",
+                "exportPolicy": {
+                    "rules": [
+                        {
+                            "ruleIndex": 1,
+                            "unixReadOnly": "[parameters('unixReadOnly')]",
+                            "unixReadWrite": "[parameters('unixReadWrite')]",
+                            "cifs": false,
+                            "nfsv3": "[if(equals( parameters('protocolTypesVol2'), 'NFSv3'),bool('true'),bool('false'))]",
+                            "nfsv41": "[if(equals(parameters('protocolTypesVol2'), 'NFSv4.1'),bool('true'),bool('false'))]",
+                            "allowedClients": "[parameters('allowedClients')]",
+                            "kerberos5ReadOnly": false,
+                            "kerberos5ReadWrite": false,
+                            "kerberos5iReadOnly": false,
+                            "kerberos5iReadWrite": false,
+                            "kerberos5pReadOnly": false,
+                            "kerberos5pReadWrite": false,
+                            "hasRootAccess": true
+                        }
+                    ]
+                },
+                "protocolTypes": [
+                    "[parameters('protocolTypesVol2')]"
+                ],
+                "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name, variables('vnet1').subnet1Name)]",
+                "networkFeatures": "Standard",
+                "snapshotDirectoryVisible": "[parameters('snapshotDirectoryVisible')]",
+                "kerberosEnabled": false,
+                "enableSubvolumes": "Disabled"
+            }
+        },
+        {
+            "comments": "Create an NFS volume for Azure NetApp Files",
+            "type": "Microsoft.NetApp/netAppAccounts/capacityPools/volumes",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('netAppAccountName'), '/',parameters('capacityPoolName'),'/',parameters('volume3Name'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools', parameters('netAppAccountName'), parameters('capacityPoolName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools/volumes',parameters('netAppAccountName'),parameters('capacityPoolName'),parameters('volume2Name'))]"
+            ],
+            "properties": {
+                "serviceLevel": "[parameters('serviceLevel')]",
+                "creationToken": "[parameters('netAppVolume3Name')]",
+                "usageThreshold": "[mul(parameters('volSizeBytes'),2)]",
+                "exportPolicy": {
+                    "rules": [
+                        {
+                            "ruleIndex": 1,
+                            "unixReadOnly": "[parameters('unixReadOnly')]",
+                            "unixReadWrite": "[parameters('unixReadWrite')]",
+                            "cifs": false,
+                            "nfsv3": "[if(equals( parameters('protocolTypesVol3'), 'NFSv3'),bool('true'),bool('false'))]",
+                            "nfsv41": "[if(equals(parameters('protocolTypesVol3'), 'NFSv4.1'),bool('true'),bool('false'))]",
+                            "allowedClients": "[parameters('allowedClients')]",
+                            "kerberos5ReadOnly": false,
+                            "kerberos5ReadWrite": false,
+                            "kerberos5iReadOnly": false,
+                            "kerberos5iReadWrite": false,
+                            "kerberos5pReadOnly": false,
+                            "kerberos5pReadWrite": false,
+                            "hasRootAccess": true
+                        }
+                    ]
+                },
+                "protocolTypes": [
+                    "[parameters('protocolTypesVol3')]"
+                ],
+                "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name, variables('vnet1').subnet1Name)]",
+                "networkFeatures": "Standard",
+                "snapshotDirectoryVisible": "[parameters('snapshotDirectoryVisible')]",
+                "kerberosEnabled": false,
+                "enableSubvolumes": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "apiVersion": "2020-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "comments": "Create public IPs for the VMs",
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP' ) )]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName) ]"
+            ],
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "publicIPAddress": {
+                                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName) ]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-03-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]",
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools/volumes',parameters('netAppAccountName'),parameters('capacityPoolName'),parameters('volume1Name'))]",
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools/volumes',parameters('netAppAccountName'),parameters('capacityPoolName'),parameters('volume2Name'))]",
+                "[resourceId('Microsoft.NetApp/netAppAccounts/capacityPools/volumes',parameters('netAppAccountName'),parameters('capacityPoolName'),parameters('volume3Name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',variables('vnet1').name, variables('vnet1').vnetpeeringName)]",
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings',variables('vnet2').name, variables('vnet2').vnetpeeringName)]"
+            ],
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": "[variables('vmArray')[copyIndex()].osProfile]",
+                //                "osProfile": {
+                //                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                //                    "adminUsername": "[parameters('adminUsername')]",
+                //                    "adminPassword": "[parameters('adminPassword')]"
+                //                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OS')]",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        },
+                        "caching": "ReadWrite"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+                        }
+                    ]
+                }
+            }
+        },
+        //        {
+        //            "comments": "custom script extension to configure the application VMs through a bash script",
+        //            "condition": "[not( empty(variables('vmArray')[copyIndex()].scriptCommand) )]",
+        //            "type": "Microsoft.Compute/virtualMachines/extensions",
+        //            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'vmCustomScript')]",
+        //            "apiVersion": "2021-11-01",
+        //            "location": "[variables('vmArray')[copyIndex()].location]",
+        //            "copy": {
+        //                "name": "nodeCopy",
+        //                "count": "[variables('vmCount')]"
+        //            },
+        //            "dependsOn": [
+        //                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+        //            ],
+        //            "properties": {
+        //                "publisher": "Microsoft.Azure.Extensions",
+        //                "type": "CustomScript",
+        //                "typeHandlerVersion": "2.0",
+        //                "autoUpgradeMinorVersion": true,
+        //                "settings": {
+        //                    "fileUris": [
+        //                        "[variables('vmArray')[copyIndex()].scriptURL]"
+        //                    ],
+        //                    "commandToExecute": "[variables('vmArray')[copyIndex()].scriptCommand]"
+        //                }
+        //            }
+        //        },
+        {
+            "condition": "[variables('deploymentBastion')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('bastionPublicIPAddressName')]",
+            "location": "[variables('vnet1').location]",
+            "sku": {
+                "name": "[variables('bastionSkuName')]"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "condition": "[variables('deploymentBastion')]",
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('bastionName')]",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "disableCopyPaste": false,
+                "enableFileCopy": true,
+                "enableIpConnect": true,
+                "enableShareableLink": false,
+                "enableTunneling": true,
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnet1').name, variables('bastionSubnetName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[concat(variables('azfw1PubIPNamePrefix'), add(copyIndex(), 1))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "public IPs of the Azure firewall in hub1",
+            "sku": {
+                "name": "Standard"
+            },
+            "copy": {
+                "name": "publicIpCopy1",
+                "count": "[parameters('numberOfFirewallPublicIPAddresses')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/firewallPolicies",
+            "name": "[parameters('firewallPolicy1Name')]",
+            "location": "[variables('vnet1').location]",
+            "comments": "azure firewall policy associated with firewall in hub1",
+            "properties": {
+                "threatIntelMode": "Alert"
+            },
+            "resources": [
+                {
+                    "apiVersion": "2020-11-01",
+                    "type": "ruleCollectionGroups",
+                    "name": "RuleCollectionGroup1",
+                    "location": "[variables('vnet1').location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Network/firewallPolicies',parameters('firewallPolicy1Name'))]"
+                    ],
+                    "properties": {
+                        "priority": 200,
+                        "ruleCollections": [
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "name": "rules-nfs",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "priority": 1001,
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "nfs-Portmapper-RPCBIND",
+                                        "ipProtocols": [
+                                            "TCP",
+                                            "UDP"
+                                        ],
+                                        "destinationPorts": [
+                                            "111"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "10.0.0.0/8"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "nfs-mountd",
+                                        "ipProtocols": [
+                                            "TCP",
+                                            "UDP"
+                                        ],
+                                        "destinationPorts": [
+                                            "635"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "10.0.0.0/8"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "nfs",
+                                        "ipProtocols": [
+                                            "TCP",
+                                            "UDP"
+                                        ],
+                                        "destinationPorts": [
+                                            "2049"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "10.0.0.0/8"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "nfsv3-nlockmgr",
+                                        "ipProtocols": [
+                                            "TCP",
+                                            "UDP"
+                                        ],
+                                        "destinationPorts": [
+                                            "4045"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "10.0.0.0/8"
+                                        ]
+                                    },
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "nfsv3-status",
+                                        "ipProtocols": [
+                                            "TCP",
+                                            "UDP"
+                                        ],
+                                        "destinationPorts": [
+                                            "4046"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "10.0.0.0/8"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "name": "rules-local",
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "priority": 1010,
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "enable-Major10",
+                                        "ipProtocols": [
+                                            "Any"
+                                        ],
+                                        "destinationPorts": [
+                                            "*"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "10.0.0.0/8"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+                                "name": "Rules-to-internet",
+                                "action": {
+                                    "type": "allow"
+                                },
+                                "priority": 1020,
+                                "rules": [
+                                    {
+                                        "ruleType": "NetworkRule",
+                                        "name": "localnetw-to-internet",
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "destinationPorts": [
+                                            "*"
+                                        ],
+                                        "sourceAddresses": [
+                                            "10.0.0.0/8"
+                                        ],
+                                        "destinationAddresses": [
+                                            "0.0.0.0/0"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/azureFirewalls",
+            "name": "[variables('azfw1Name')]",
+            "location": "[variables('vnet1').location]",
+            "comments": "azure firewall in hub1",
+            "zones": "[if(equals(length(parameters('availabilityZones')), 0), json('null'), parameters('availabilityZones'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+                "[resourceId('Microsoft.Network/firewallPolicies', parameters('firewallPolicy1Name'))]",
+                "publicIpCopy1"
+            ],
+            "properties": {
+                "ipConfigurations": "[variables('azfw1IpConfigurations')]",
+                "firewallPolicy": {
+                    "id": "[resourceId('Microsoft.Network/firewallPolicies', parameters('firewallPolicy1Name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-appSubnetvnet1').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "UDR applied to the app Subnet in vnet1 ",
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                    {
+                        "name": "[variables('RT-appSubnetvnet1').nameRTEntry1]",
+                        "properties": {
+                            "addressPrefix": "[variables('RT-appSubnetvnet1').destinationAddressPrefix1]",
+                            "nextHopType": "[variables('RT-appSubnetvnet1').nextHopType1]",
+                            "nextHopIpAddress": "[variables('RT-appSubnetvnet1').nextHopIpAddress1]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-appSubnetvnet2').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('RT-appSubnetvnet2').location]",
+            "comments": "UDR applied to the app Subnet in vnet1 ",
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                    {
+                        "name": "[variables('RT-appSubnetvnet2').nameRTEntry1]",
+                        "properties": {
+                            "addressPrefix": "[variables('RT-appSubnetvnet2').destinationAddressPrefix1]",
+                            "nextHopType": "[variables('RT-appSubnetvnet2').nextHopType1]",
+                            "nextHopIpAddress": "[variables('RT-appSubnetvnet2').nextHopIpAddress1]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-anfSubnetvnet1').name]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('RT-anfSubnetvnet1').location]",
+            "comments": "UDR applied to the app Subnet in vnet1 ",
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                    {
+                        "name": "[variables('RT-anfSubnetvnet1').nameRTEntry1]",
+                        "properties": {
+                            "addressPrefix": "[variables('RT-anfSubnetvnet1').destinationAddressPrefix1]",
+                            "nextHopType": "[variables('RT-anfSubnetvnet1').nextHopType1]",
+                            "nextHopIpAddress": "[variables('RT-anfSubnetvnet1').nextHopIpAddress1]"
+                        }
+                    },
+                    {
+                        "name": "[variables('RT-anfSubnetvnet1').nameRTEntry2]",
+                        "properties": {
+                            "addressPrefix": "[variables('RT-anfSubnetvnet1').destinationAddressPrefix2]",
+                            "nextHopType": "[variables('RT-anfSubnetvnet1').nextHopType2]",
+                            "nextHopIpAddress": "[variables('RT-anfSubnetvnet1').nextHopIpAddress2]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-09-01",
+            "name": "setUDRs",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', variables('RT-anfSubnetvnet1').name)]",
+                "[resourceId('Microsoft.Network/routeTables', variables('RT-appSubnetvnet1').name)]",
+                "[resourceId('Microsoft.Network/routeTables', variables('RT-appSubnetvnet2').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2').name)]",
+                "nodeCopy",
+                "[resourceId('Microsoft.Network/azureFirewalls', variables('azfw1Name'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "Outer"
+                },
+                "parameters": {},
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {},
+                    "parameters": {},
+                    "resources": [
+                        {
+                            "comments": "UDR applied to the ANF subnet in vnet1",
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2022-01-01",
+                            "name": "[concat(variables('vnet1').name,'/',variables('vnet1').subnet1Name)]",
+                            "properties": {
+                                "addressPrefix": "[variables('vnet1').subnet1Prefix]",
+                                "delegations": [
+                                    {
+                                        "name": "NetAppDelegation",
+                                        "properties": {
+                                            "serviceName": "Microsoft.NetApp/volumes"
+                                        }
+                                    }
+                                ],
+                                "routeTable": {
+                                    "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-anfSubnetvnet1').name)]"
+                                },
+                                "privateEndpointNetworkPolicies": "Disabled",
+                                "privateLinkServiceNetworkPolicies": "Enabled"
+                            }
+                        },
+                        {
+                            "comments": "UDR applied to the appsubnet in vnet1",
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2022-01-01",
+                            "name": "[concat(variables('vnet1').name,'/',variables('vnet1').subnet2Name)]",
+                            "properties": {
+                                "addressPrefix": "[variables('vnet1').subnet2Prefix]",
+                                "delegations": [],
+                                "routeTable": {
+                                    "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-appSubnetvnet1').name)]"
+                                },
+                                "privateEndpointNetworkPolicies": "Disabled",
+                                "privateLinkServiceNetworkPolicies": "Enabled"
+                            }
+                        },
+                        {
+                            "comments": "UDR applied to the appsubnet in vnet2",
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2022-01-01",
+                            "name": "[concat(variables('vnet2').name,'/',variables('vnet2').subnet1Name)]",
+                            "properties": {
+                                "addressPrefix": "[variables('vnet2').subnet1Prefix]",
+                                "delegations": [],
+                                "routeTable": {
+                                    "id": "[resourceId('Microsoft.Network/routeTables', variables('RT-appSubnetvnet2').name)]"
+                                },
+                                "privateEndpointNetworkPolicies": "Disabled",
+                                "privateLinkServiceNetworkPolicies": "Enabled"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "apiVersion": "2020-10-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('sku')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]",
+                "features": {
+                    "enableLogAccessUsingOnlyResourcePermissions": "[parameters('resourcePermissions')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Insights/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "name": "[parameters('diagnosticSettingName')]",
+            "scope": "[format('Microsoft.Network/azureFirewalls/{0}', parameters('azfw1Name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+                "[resourceId('Microsoft.Network/azureFirewalls', variables('azfw1Name'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+                "logAnalyticsDestinationType": "AzureDiagnostics",
+                "logs": [
+                    {
+                        "category": null,
+                        "categoryGroup": "allLogs",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    }
+                ],
+                "metrics": [
+                    {
+                        "timeGrain": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        },
+                        "category": "AllMetrics"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "name": "[parameters('diagnosticSettingNameResourceSpecific')]",
+            "scope": "[format('Microsoft.Network/azureFirewalls/{0}', parameters('azfw1Name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+                "[resourceId('Microsoft.Network/azureFirewalls', variables('azfw1Name'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+                "logAnalyticsDestinationType": "AzureDiagnostics",
+                "logs": [
+                    {
+                        "category": "AzureFirewallApplicationRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AzureFirewallNetworkRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AzureFirewallDnsProxy",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWNetworkRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWApplicationRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWNatRule",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWThreatIntel",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWIdpsSignature",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWDnsQuery",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWFqdnResolveFailure",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWFatFlow",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWApplicationRuleAggregation",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWNetworkRuleAggregation",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    },
+                    {
+                        "category": "AZFWNatRuleAggregation",
+                        "categoryGroup": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        }
+                    }
+                ],
+                "metrics": [
+                    {
+                        "timeGrain": null,
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "days": 0,
+                            "enabled": false
+                        },
+                        "category": "AllMetrics"
+                    }
+                ]
+            }
+        }
+    ]
+}
