@@ -211,13 +211,15 @@ Some options in **fstab**:
 * **bg**: if bg is specified, a timeout or failure causes the mount command to fork a child which continues to attempt to mount the export. This is known as a "background" mount.
 
 If you want the volume mounted automatically when an Azure VM is started or rebooted, add an entry to the **/etc/fstab** file on the host. <br>
+
 For example: 
 ```
 $ANFIP:/$FILEPATH /$MOUNTPOINT nfs bg,rw,hard,noatime,nolock,rsize=65536,wsize=65536,vers=3,tcp,_netdev 0 0
-$ANFIP is the IP address of the Azure NetApp Files volume found in the volume properties menu
-$FILEPATH is the export path of the Azure NetApp Files volume
-$MOUNTPOINT is the directory created on the Linux host used to mount the NFS export
 ```
+- $ANFIP is the IP address of the Azure NetApp Files volume found in the volume properties menu <br>
+- $FILEPATH is the export path of the Azure NetApp Files volume <br>
+- $MOUNTPOINT is the directory created on the Linux host used to mount the NFS export <br>
+
 
 In our specific example:
 ```console
@@ -232,7 +234,7 @@ sudo mount -a
 ```
 **-a**: mount all filesystems (of the given types) mentioned in fstab. This command will mount all (not-yet-mounted) filesystems mentioned in fstab and is used in system script startup during booting. If a mount has the **noauto** option set, the sudo mount -a command will not mount it.
 
-The same -a option can be used with umount to unmount all the filesystems in **/etc/mtab**:
+The same **-a** option can be used with umount to unmount all the filesystems in **/etc/mtab**:
 ```
 sudo unmount -a
 ```
@@ -286,7 +288,7 @@ mount -o rsize=1024 -o wsize=1024 -o mtype=hard \\10.1.0.4\netappVol3 X
 - replace X: with the desired drive letter.
 
 To unmount:
-```
+```bash
 umount [–f] {–a | Drive}
 ```
 
