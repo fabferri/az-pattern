@@ -78,7 +78,7 @@ To run the project, follow the steps in sequence:
 1. as first action, change/modify the value of input variables in the file **init.json**
 2. run the powershell script **create-vpn-gtw1.ps1** and **create-vpn-gtw2.ps1** in parallel to speed up the creation of Azure VPN Gateways in vnet1 and vnet2
 3. run the powershell script **connection.ps1**; at the end the IPsec tunnels between VPN gtw1 adn VPN gtw2 will be created.
-4. run the powershell script **create-vms.ps1** to create a vm1 in vnet1 and vm2 in vnet2. **create-vms.ps1** can run in parallel with **connection.ps1**
+4. run the powershell script **create-vms.ps1** to create a vm1 in vnet1 and vm2 in vnet2. **create-vms.ps1** and **connection.ps1** can run in parallel
 5. run the powershell script **apply-policy.ps1** only if you want to configure IKE/IPsec policy for S2S VPN. if you do not run **apply-policy.ps1** the default  encryption policy for IKE and IPsec will be used.
 
 Dependencies:
