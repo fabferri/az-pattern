@@ -24,7 +24,7 @@ The article describes a scenario with two vnets, vnet1 and vnet2, connected thro
 
 Each Azure VPN Gateway is configured as Route-Based deployed with two public IPs, in active-active configuration with BGP. <br>
 Two IPSec tunnels are established between the two VPN Gateways: **vpnGw1**, **vpnGtw2**. <br>
-the two VPN Gateways can be deployed in the same or different Azure regions. <br>
+The two VPN Gateways, vpnGw1 and vpnGw2, can be deployed in the same or different Azure regions. <br>
 The network diagram below shows the site-to-site VPN configuration details: VPN local networks, BGP peering IPs and the public IPs associated with each VPN Gateway.
 
 [![2]][2]
@@ -38,7 +38,7 @@ The network diagram below shows the site-to-site VPN configuration details: VPN 
 | **create-vpn-gtw1.ps1**  | powershell script to create vnet1 and VPN Gateway 1                            |
 | **create-vpn-gtw2.ps1**  | powershell script to create vnet2 and VPN Gateway 2                            |
 | **connection.ps1**       | powershell script to create VPN Gateways local network and Connections         |
-| **create-vms.ps1**       | powershell script to create vm1 in vnet1 and vm2 in vnet2. the script use RunAs to install iperf3 in the VMs |
+| **create-vms.ps1**       | powershell script to create vm1 in vnet1 and vm2 in vnet2. The script use RunAs to install iperf3 in the VMs |
 | **apply-policy.ps1**     | powershell script to configure IKE/IPsec policy for S2S VPN                    |
 
 The meaning of input variables in **init.json** are shown below:
@@ -137,7 +137,7 @@ IKE/IPsec _policy2_ in the above table:
 
 
 
-`Tags: Azure VPN, site-to-site VPN`
+`Tags: Azure VPN, site-to-site VPN` <br>
 `date: 16-10-22`
 
 <!--Image References-->
