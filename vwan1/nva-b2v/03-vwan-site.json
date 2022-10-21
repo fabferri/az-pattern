@@ -1,0 +1,223 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vwanName": {
+            "type": "string",
+            "defaultValue": "vwan1",
+            "metadata": {
+                "description": "Name of the Virtual Wan."
+            }
+        },
+        "branch1vpnPublicIP1": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "branch1vpnPublicIP2": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "branch1vpnBGPpeer1": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "branch1vpnBGPpeer2": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1location": {
+            "type": "string",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "metadata": {
+                "description": "name of the hub1 in vWAN"
+            }
+        },
+        "branch1vpnASN": {
+            "type": "int",
+            "defaultValue": 65011,
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "h1vpnsiteAddressspaceList": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "A list of static routes corresponding to the vpn site. These are configured on the vpn gateway."
+            }
+        },
+        "vpnsite1Name": {
+            "type": "string",
+            "defaultValue": "h1-branch1",
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "sharedKey": {
+            "type": "string",
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        },
+        "hub1ToBranchConnectionName": {
+            "type": "string",
+            "defaultValue": "hub1Tobranch1",
+            "metadata": {
+                "description": "remote autonomous system number"
+            }
+        }
+    },
+    "variables": {
+        "hub1location": "[parameters('hub1location')]",
+        "hub1Name": "[parameters('hub1Name')]",
+        "vwanName": "[parameters('vwanName')]",
+        "h1vpnGatewayName": "[concat(variables('hub1Name'),'_S2SvpnGW')]",
+        "h1vpnsiteAddressspaceList": "[parameters('h1vpnsiteAddressspaceList')]",
+        "vpnsite1Name": "[parameters('vpnsite1Name')]",
+        "branch1vpnASN": "[parameters('branch1vpnASN')]",
+        "branch1vpnPublicIP1": "[parameters('branch1vpnPublicIP1')]",
+        "branch1vpnPublicIP2": "[parameters('branch1vpnPublicIP2')]",
+        "branch1vpnBGPpeer1": "[parameters('branch1vpnBGPpeer1')]",
+        "branch1vpnBGPpeer2": "[parameters('branch1vpnBGPpeer2')]",
+        "hub1ToBranchConnectionName": "[parameters('hub1ToBranchConnectionName')]",
+
+        "vpnSiteArray": [
+            {
+                "hubName": "[variables('hub1Name')]",
+                "hub_location": "[variables('hub1location')]",
+                "hubvpnGatewayName": "[variables('h1vpnGatewayName')]",
+                "branchvpnASN": "[variables('branch1vpnASN')]",
+                "vpnsiteAddressspaceList": "[variables('h1vpnsiteAddressspaceList')]",
+                "vpnsiteName": "[variables('vpnsite1Name')]",
+                "branchvpnPublicIP1": "[variables('branch1vpnPublicIP1')]",
+                "branchvpnPublicIP2": "[variables('branch1vpnPublicIP2')]",
+                "branchvpnBGPpeer1": "[variables('branch1vpnBGPpeer1')]",
+                "branchvpnBGPpeer2": "[variables('branch1vpnBGPpeer2')]",
+                "hubToBranchConnectionName": "[variables('hub1ToBranchConnectionName')]",
+                "vpnSiteLink1": "vpnSiteLink1",
+                "vpnSiteLink2": "vpnSiteLink2"
+            }
+        ],
+        "vpnSiteCount": "[length(variables('vpnsiteArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/vpnSites",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('vpnsiteArray')[copyIndex()].vpnsiteName]",
+            "location": "[variables('vpnsiteArray')[copyIndex()].hub_location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[variables('vpnsiteArray')[copyIndex()].vpnsiteAddressspaceList]"
+                },
+                "deviceProperties": {
+                    "deviceVendor": "Microsoft",
+                    "deviceModel": "AzureVPNGateway",
+                    "linkSpeedInMbps": 0
+                },
+                "virtualWan": {
+                    "id": "[resourceId('Microsoft.Network/virtualWans', variables('vwanName'))]"
+                },
+                "vpnSiteLinks": [
+                    {
+                        "name": "[variables('vpnsiteArray')[copyIndex()].vpnSiteLink1]",
+                        "properties": {
+                            "ipAddress": "[variables('vpnsiteArray')[copyIndex()].branchvpnPublicIP1]",
+                            "bgpProperties": {
+                                "asn": "[variables('vpnsiteArray')[copyIndex()].branchvpnASN]",
+                                "bgpPeeringAddress": "[variables('vpnsiteArray')[copyIndex()].branchvpnBGPpeer1]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('vpnsiteArray')[copyIndex()].vpnSiteLink2]",
+                        "properties": {
+                            "ipAddress": "[variables('vpnsiteArray')[copyIndex()].branchvpnPublicIP2]",
+                            "bgpProperties": {
+                                "asn": "[variables('vpnsiteArray')[copyIndex()].branchvpnASN]",
+                                "bgpPeeringAddress": "[variables('vpnsiteArray')[copyIndex()].branchvpnBGPpeer2]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "vpnSiteCopy",
+                "count": "[variables('vpnSiteCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/vpnGateways/vpnConnections",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(variables('vpnsiteArray')[copyIndex()].hubvpnGatewayName,'/',variables('vpnsiteArray')[copyIndex()].hubToBranchConnectionName)]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/vpnSites', variables('vpnsiteArray')[copyIndex()].vpnsiteName)]"
+            ],
+            "properties": {
+                "routingConfiguration": {
+                    "associatedRouteTable": {
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('vpnsiteArray')[copyIndex()].hubName, 'defaultRouteTable')]"
+                    },
+                    "propagatedRouteTables": {
+                        "ids": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('vpnsiteArray')[copyIndex()].hubName, 'defaultRouteTable')]"
+                            },
+
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('vpnsiteArray')[copyIndex()].hubName, 'RT_SHARED')]"
+                            }
+                        ],
+                        "labels": []
+                    }
+                },
+                "remoteVpnSite": {
+                    "id": "[resourceId('Microsoft.Network/vpnSites', variables('vpnsiteArray')[copyIndex()].vpnsiteName)]"
+                },
+                "vpnLinkConnections": [
+                    {
+                        "name": "vpnlinkConn1",
+                        "properties": {
+                            "connectionBandwidth": 10,
+                            "vpnConnectionProtocolType": "IKEv2",
+                            "enableBgp": true,
+                            "sharedKey": "[parameters('sharedKey')]",
+                            "vpnSiteLink": {
+                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteArray')[copyIndex()].vpnsiteName,variables('vpnsiteArray')[copyIndex()].vpnSiteLink1)]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "vpnlinkConn2",
+                        "properties": {
+                            "connectionBandwidth": 10,
+                            "vpnConnectionProtocolType": "IKEv2",
+                            "enableBgp": true,
+                            "sharedKey": "[parameters('sharedKey')]",
+                            "vpnSiteLink": {
+                                "id": "[resourceId('Microsoft.Network/vpnSites/vpnSiteLinks', variables('vpnsiteArray')[copyIndex()].vpnsiteName,variables('vpnsiteArray')[copyIndex()].vpnSiteLink2)]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "vpnConnectionCopy",
+                "count": "[variables('vpnSiteCount')]"
+            }
+        }
+    ]
+}
