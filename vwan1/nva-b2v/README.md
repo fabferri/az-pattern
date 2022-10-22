@@ -162,7 +162,7 @@ The ARM template **01-vwan.json** deploy the VPN Gateway in the hub only the fir
 ```console
 "condition": "[ empty(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')) )) ]",
 ```
-This condition avoids the deletion of the VPN configuration, when the ARM template **01-vwan.json** runs multiple times.
+This condition avoids the reset of the VPN configuration, when the ARM template **01-vwan.json** runs multiple times.
 
 <!--Image References-->
 
