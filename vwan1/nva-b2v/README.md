@@ -24,7 +24,7 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet,spoke
 [![1]][1]
 
 **Design**
-* Virtual networks (spokes) to branch (site1) traffic is routed through the firewalls **fw0**, **fw1** in **fwvnet**
+* Virtual networks (spokes) to branch (site1) traffic is routed through the VMs **fw0**, **fw1** in **fwvnet**. The **fw0** and **fw1** have the IP forwarding enabled to route the IP packets. an internal Load balancers configured in HA ports guaratees the resilence of IP routing. The health probe message of load balancer is configured on HTTP port 80. The traffic incoming the LB frontend IP is forward to the **fw0** and **fw1** only when those VMs answer to the health probe messages.
 * spoke to spoke traffic doesn't transit through **fw0**, **fw1**
 
 
@@ -143,9 +143,15 @@ By tcpdump is recommended check the traffic branch-vnet passes through the fw0, 
 
 [![3]][3]
 
+If you wish to send the traffic incoming in the LB to a single backend VM, e.g. **fw0**, it is enough stop the nginx on the VM you don't want receive traffic:
+```bash
+root@fw1:~#  systemctl stop nginx
+```
+
 ### <a name="List of files"></a>2. NOTE
 
-The ARM templates **01-vwan.json**,**02-vpn.json** use the customer script extension to install nginx in each VM. In the fw0 and fw1 the IP forwarding is enabled. <br>
+The ARM templates **01-vwan.json**,**02-vpn.json** use the customer script extension to install nginx in each VM and set a simple custom web page with the name of the VM. <br>
+In the **fw0** and **fw1** is further to the nginx installation, the IP forwarding is enabled on the NIC and in the Linux OS. <br>
 The custom script extension runs on each vm when in the variables('vmArray') the cmd is not empty:
 ```console
 "condition": "[greater(length(variables('vmArray')[copyIndex()].cmd), 0)]",
