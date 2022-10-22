@@ -40,7 +40,7 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet,spoke
 |Routing Configuration of **fwvnet**                ||   
 | -------------------- |:-------------------------- | 
 | associatedRouteTable | **RT_SHARED**              | 
-| propagatedRouteTable | **default**, **RT_SHARED** | 
+| propagatedRouteTable | **RT_SHARED**              | 
 
 <br>
 
@@ -62,10 +62,10 @@ To establish a communication are required static routes in each routing table:
 
 * Static routes configured on fwvnet Connection **fwvnetconn**:
 
-| Route name  | Destination type | Destination Prefix | Next-hop  |
-| ----------- |:---------------- | ------------------ | --------- |
-| to-spokes   | CIDR             | 10.0.1.0/24,10.0.2.0/24,10.0.20.0/24  |10.0.10.50   |
-| to-site1    | CIDR             | 10.11.0.0/24       |10.0.10.50   |
+| Route name  | Destination type | Destination Prefix                    | Next-hop  |
+| ----------- |:---------------- | ------------------------------------- | --------- |
+| to-spokes   | CIDR             | 10.0.1.0/24,10.0.2.0/24,10.0.20.0/24  |10.0.10.50 |
+| to-site1    | CIDR             | 10.11.0.0/24                          |10.0.10.50 |
 
 
 <br>
