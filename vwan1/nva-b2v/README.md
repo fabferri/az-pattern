@@ -37,24 +37,24 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet,spoke
 * the connection to **vnet4** is associated with routing table **RT_VNET** and propagated to the hub routing table **RT_VNET**,**RT_NVA**
 <br>
 
-|Routing Configuration of **fwvnet**        ||   
-| -------------------- |:------------------ | 
-| associatedRouteTable | RT_SHARED          | 
-| propagatedRouteTable | default, RT_SHARED | 
+|Routing Configuration of **fwvnet**                ||   
+| -------------------- |:-------------------------- | 
+| associatedRouteTable | **RT_SHARED**              | 
+| propagatedRouteTable | **default**, **RT_SHARED** | 
 
 <br>
 
 |Routing Configuration of **spoke1, spoke2, nvavnet** ||
 | -------------------- |:---------------------------- | 
-| associatedRouteTable | RT_SPOKE                     | 
-| propagatedRouteTable | RT_SPOKE, RT_SHARED          | 
+| associatedRouteTable | **RT_SPOKE**                 | 
+| propagatedRouteTable | **RT_SPOKE**, **RT_SHARED**  | 
 
 <br>
 
-|Routing Configuration of VPN connections ||
-| -------------------- |:---------------- | 
-| associatedRouteTable | defaultRouteTable| 
-| propagatedRouteTable | defaultRouteTable, RT_SHARED | 
+|Routing Configuration of VPN connections                     ||
+| -------------------- |:------------------------------------ | 
+| associatedRouteTable | **defaultRouteTable**                | 
+| propagatedRouteTable | **defaultRouteTable**, **RT_SHARED** | 
 
 <br>
 
