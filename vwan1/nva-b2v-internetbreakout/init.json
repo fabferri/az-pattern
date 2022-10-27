@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan-5",
+    "vwanName": "vwan1",
+    "hub1location": "westus2",
+    "branch1location": "westus2",
+    "hub1Name": "hub1",
+    "sharedKey": "SHARED_KEY_Site-to-site_VPN-branch-hub1",
+    "mngIP": "",
+    "adminUsername": "VM_ADMINISTRATOR_USERNAME",
+    "adminPassword": "VM_ADMINISTRATOR_PASSWORD"
+}

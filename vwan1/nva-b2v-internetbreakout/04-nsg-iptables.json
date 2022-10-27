@@ -1,0 +1,176 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hub1location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "mngIP": {
+            "type": "string",
+            "metadata": {
+                "description": "management IP"
+            }
+        }
+    },
+    "variables": {
+        "hub1location": "[parameters('hub1location')]",
+        "fwvnetName": "fwvnet",
+        "fwvnet": {
+            "location": "[variables('hub1location')]",
+            "name": "[variables('fwvnetName')]",
+            "addressPrefix1": "10.0.10.0/24",
+            "backendName": "backend",
+            "backendPrefix": "10.0.10.0/27",
+            "frontendName": "frontend",
+            "frontendPrefix": "10.0.10.32/27"
+        },
+        "fw0privIP": "10.0.10.10",
+        "fw1privIP": "10.0.10.11",
+        "vmSize": "Standard_B1s",
+
+        "iptables_fw0cmd": "
+iptables -I INPUT 1 -i lo -j ACCEPT;
+iptables -A INPUT -p tcp --dport ssh -j ACCEPT;
+iptables -A INPUT -p tcp -s 168.63.129.16 --dport 80 -j ACCEPT;
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT;
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
+iptables -A INPUT -j DROP;
+iptables -P FORWARD ACCEPT;
+iptables -P OUTPUT ACCEPT;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8081 -j DNAT --to-destination 10.0.1.10:80;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8082 -j DNAT --to-destination 10.0.2.10:80;
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
+/sbin/iptables-save;",
+
+        "iptables_fw1cmd": "
+iptables -I INPUT 1 -i lo -j ACCEPT;
+iptables -A INPUT -p tcp --dport ssh -j ACCEPT;
+iptables -A INPUT -p tcp -s 168.63.129.16 --dport 80 -j ACCEPT;
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT;
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
+iptables -A INPUT -j DROP;
+iptables -P FORWARD ACCEPT;
+iptables -P OUTPUT ACCEPT;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.11/32 -p tcp --dport 8081 -j DNAT --to-destination 10.0.1.10:80;
+iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.11/32 -p tcp --dport 8082 -j DNAT --to-destination 10.0.2.10:80;
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
+/sbin/iptables-save;",
+
+
+        "vmArray": [
+            {
+                "vmName": "fw0",
+                "location": "[variables('fwvnet').location]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('fwvnet').name]",
+                "subnetName": "[variables('fwvnet').backendName]",
+                "privIP": "[variables('fw0privIP')]",
+                "pubIPName": "fw0-pubIP",
+                "ipforwarding": true,
+                "nsgName": "fw0-nsg",
+                "cmd": "[variables('iptables_fw0cmd')]"
+            },
+            {
+                "vmName": "fw1",
+                "location": "[variables('fwvnet').location]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-focal",
+                "sku": "20_04-lts",
+                "version": "latest",
+                "vnetName": "[variables('fwvnet').name]",
+                "subnetName": "[variables('fwvnet').backendName]",
+                "privIP": "[variables('fw1privIP')]",
+                "pubIPName": "fw1-pubIP",
+                "ipforwarding": true,
+                "nsgName": "fw1-nsg",
+                "cmd": "[variables('iptables_fw1cmd')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-allow-in",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "private-net",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefixes": [ "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" ],
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 600,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "HTTP-incoming",
+                        "properties": {
+                            "description": "HTTP-in",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRanges": [ "8081", "8082" ],
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 700,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "comments": "apply iptables rules to the fw0 and fw1",
+            "type": "Microsoft.Compute/virtualMachines/runCommands",
+            "apiVersion": "2021-07-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'runCmds')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "vmRunCmds",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [],
+            "properties": {
+                "source": {
+                    "script": "[variables('vmArray')[copyIndex()].cmd]"
+                },
+                "timeoutInSeconds": 300
+            }
+        }
+    ]
+}
