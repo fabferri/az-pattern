@@ -61,11 +61,8 @@ if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit }      
 if (!$hub2location) { Write-Host 'variable $hub2location is null' ; Exit }           else { Write-Host '   hub2 location...........: '$hub2location -ForegroundColor Yellow}
 if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit }                   else { Write-Host '   hub1 name...............: '$hub1Name -ForegroundColor Yellow}
 if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit }                   else { Write-Host '   hub2 name...............: '$hub2Name -ForegroundColor Yellow}
-if (!$mngIP) { Write-Host 'variable $mngIP is null' ; Exit }                         else { Write-Host '   mngIP..............: '$mngIP -ForegroundColor Yellow}
-if (!$RGTagExpireDate) { Write-Host 'variable $RGTagExpireDate is null' ; Exit }    else { Write-Host '   RGTagExpireDate....: '$RGTagExpireDate -ForegroundColor Yellow}
-if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit }          else { Write-Host '   RGTagContact.......: '$RGTagContact -ForegroundColor Yellow}
-if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit }              else { Write-Host '   RGTagNinja.........: '$RGTagNinja -ForegroundColor Yellow}
-if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit }              else { Write-Host '   RGTagUsage.........: '$RGTagUsage -ForegroundColor Yellow}
+if (!$mngIP) { Write-Host 'variable $mngIP is null' ;  }                             else { Write-Host '   mngIP..............: '$mngIP -ForegroundColor Yellow}
+
 $rgName=$ResourceGroupName
 
 
@@ -92,29 +89,25 @@ $parameters=@{
               }
 
 # Create Resource Group
-Write-Host (Get-Date)' - ' -NoNewline
-Write-Host 'Creating Resource Group' -ForegroundColor Cyan
+Write-Host "$(Get-Date) - Creating Resource Group: "$rgName -ForegroundColor Cyan
 Try { Get-AzResourceGroup -Name $rgName -ErrorAction Stop
      Write-Host 'Resource exists, skipping'}
 Catch { New-AzResourceGroup -Name $rgName -Location $hub1location}
 
-# set a tag on the resource group if it doesn't exist.
-if ((Get-AzResourceGroup -Name $rgName).Tags -eq $null)
-{
-  # Add Tag Values to the Resource Group
-  Set-AzResourceGroup -Name $rgName -Tag @{Expires=$RGTagExpireDate; Contacts=$RGTagContact; Pathfinder=$RGTagNinja; Usage=$RGTagUsage} | Out-Null
-}
 
-$startTime = "$(Get-Date)"
-$runTime=Measure-Command {
-   write-host "running ARM template:"$templateFile
-   New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
-}
- 
-write-host "runtime...: "$runTime.ToString() -ForegroundColor Yellow
-write-host "start time: "$startTime -ForegroundColor Yellow
-write-host "endt time.: "$(Get-Date) -ForegroundColor Yellow
+$startTime = Get-Date
+write-host "$startTime - running ARM template: "$templateFile -ForegroundColor Cyan
+New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
 
+$endTime = Get-Date 
+Write-Host "$$endTime - setup completed" -ForegroundColor Green
+
+$timeDiff = New-TimeSpan $startTime $endTime
+$mins = $timeDiff.Minutes
+$secs = $timeDiff.Seconds
+$runTime = '{0:00}:{1:00} (M:S)' -f $mins, $secs
+Write-Host "$(Get-Date) - Script completed" -ForegroundColor Green
+Write-Host "Time to complete: "$runTime
 
 
 
