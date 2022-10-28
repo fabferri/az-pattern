@@ -17,20 +17,20 @@ editor=""/>
    ms.date = "21/10/2022"
    ms.author="fabferri" />
 
-## Virtual WAN: traffic branches to VNets with transit through a firewall in spoke vnet
+## Virtual WAN: traffic branches to VNets with transit through a firewall in spoke vnet and internet breakout
 
 The article describes a virtual WAN configuration with spoke VNets (fwvnet, spoke1, spoke2, nvavnet) and one branch (site1) connected in site-to-site VPN to the virtual hub1. Below the network diagram:
 
 [![1]][1]
 
-**Design**
+### Design
 * traffic spokes vnets to branch (site1) is routed through the two VMs **fw0**, **fw1** in **fwvnet**. The **fw0** and **fw1** have the IP forwarding enabled. In the **fwvnet** is configured an internal Load Balancer in HA ports guarantees the resilience of the firewall. The health probe message of load balancer is configured on HTTP port 80. The traffic incoming in the frontend IP of the load balancer is forward to the **fw0** and **fw1** only when those VMs answer to the health probe messages.
 * traffic spoke vnet to spoke vnet doesn't transit through **fw0** and **fw1**
 * the configuration allows to the **spoke1** and **spoke2** to break out in internet through the **fw0** and **fw1**. The vm1 and vm2 can initialize a connection to internet through the firewalls in fwvnet.
 * the security rules in **fw0** and **fw1** are implemented through linux iptables
 * the firewalls **fw0** **fw1** accept inbound TCP connections from internet with destination TCP port 8081 and 8082:
-   * the inbound traffic from internet with destination port 8081 is NATTED and forwarded to the vm1 in spoke2 to the spoke1 
-   * the inbound traffic from internet with destination port 8081 is NATTED and forwarded to the vm1 in spoke2 to the spoke2 
+   * the inbound traffic from internet with destination port 8081 is NATTED and forwarded to the **vm1** in the **spoke1** 
+   * the inbound traffic from internet with destination port 8081 is NATTED and forwarded to the **vm2** in th **spoke2**  
 
 
 ### Setup
@@ -39,7 +39,7 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet, spok
 * **spoke2** is associated with routing table **RT_SPOKE** and propagated to the hub routing tables **RT_SPOKE**,**RT_SHARE**
 * **nvavnet** is associated with routing table **RT_SPOKE** and propagated to the hub routing tables **RT_SPOKE**,**RT_SHARE**
 * the connection **fwvnetconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**
-* the connection **nvaconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**. The VMs in **nvavnet** break out in internet without transit through the firewall.
+* the connection **nvaconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**. The VMs in **nvavnet** break out in internet without transit through the firewalls **fw0** and **fw1**.
 * the connection **spoke1conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke1** vnet to breakout in internet through the firewalls **fw0** and **fw1**.
 * the connection **spoke2conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke2** vnet to breakout in internet through the firewalls **fw0** and **fw1**.
 
@@ -122,7 +122,7 @@ The diagram shows the routing tables and connections:
 Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values of input variables in use across all the ARM templates.
 
 The ARM templates use custom script extension to install nginx on port 80 on all VMs: **fw0, fw1, vm1, vm2, nva,vm-branch**.
-the firewalls **fw0** and **fw1** use the nginx on port 80, to answer to the health probe of the internal load balancer in HA ports.
+In the firewalls **fw0** and **fw1** run the nginx on port 80, to answer to the health probe of the internal Load Balancer configured in HA ports.
 <br>
 
 Meaning of the variables:
