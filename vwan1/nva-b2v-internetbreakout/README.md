@@ -46,9 +46,9 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet, spok
 <br>
 
 |Routing Configuration for the connection **fwvnetconn** ||   
-| -------------------- |:------------------------------ | 
-| associateRouteTable  | **RT_SHARED**                  | 
-| propagateRouteTable  | **RT_SHARED**, **RT_SPOKE**    | 
+| -------------------- |:------------------------------- | 
+| associateRouteTable  | **RT_SHARED**                   | 
+| propagateRouteTable  | **RT_SHARED**, **RT_SPOKE**     | 
 
 Static routes configured in the connection **fwvnetconn**: 
 | Route name  | Destination type | Destination Prefix                    | Next-hop  |
@@ -154,11 +154,18 @@ iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8081 -j D
 iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8082 -j DNAT --to-destination 10.0.2.10:80;
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 ```
-The PREROUTING chain in NAT table allows to appy to the traffic inbound from internet the following the NAT rule: <br>
+The PREROUTING chain in NAT table appy to the traffic inbound from internet the following the NAT rules: <br>
 * IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, destPort:**8081**, prot:tcp] <br>
 is translated into: <br>
 * IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.1.10**, destPort: **80**, prot:tcp]
 
+and
+
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, destPort:**8082**, prot:tcp] <br>
+is translated into: <br>
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.2.10**, destPort: **80**, prot:tcp]
+
+<b>
 
 [![3]][3]
 
@@ -217,9 +224,9 @@ root@vm1:~# curl http://www.microsoft.com
 
 ### <a name="List of files"></a>2. NOTE
 
-The ARM templates **01-vwan.json**,**02-vpn.json** use the customer script extension to install nginx in each VM and set a simple custom web page with the name of the VM. <br>
+The ARM templates **01-vwan.json**,**02-vpn.json** use the customer script extension to install nginx in each VM and set a simple custom web home page with the name of the VM. <br>
 In the **fw0** and **fw1** is further to the nginx installation, the IP forwarding is enabled on the NIC and in the Linux OS. <br>
-The custom script extension runs on each vm when in the variables('vmArray') the cmd is not empty:
+In the ARM template **01-vwan.json** the custom script extension runs on each vm, when the **variables('vmArray').cmd** are not empty:
 ```console
 "condition": "[greater(length(variables('vmArray')[copyIndex()].cmd), 0)]",
 ```
