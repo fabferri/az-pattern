@@ -59,7 +59,7 @@ Static routes configured in the connection **fwvnetconn**:
 
 <br>
 
-|Routing Configuration for the connection **spoke1conn**, **spoke2conn** and **nvavnetconn**||
+|Routing Configuration for the connections: <br> **spoke1conn**, **spoke2conn** and **nvavnetconn**||
 | -------------------- |:---------------------------- | 
 | associateRouteTable  | **RT_SPOKE**                 | 
 | propagateRouteTable  | **RT_SPOKE**, **RT_SHARED**  | 
@@ -93,7 +93,7 @@ To establish a communication are required static routes in the following routing
 | to-site1    | CIDR             | 10.11.0.0/24       | **fwvnetconn** |
 | to-internet | CIDR             | 0.0.0.0/0          | **fwvnetconn** |
 
-no static routes are added to the routing table **RT_SHARED**
+No static routes are required in the routing table **RT_SHARED**
 
 
 The diagram shows the routing tables and connections:
