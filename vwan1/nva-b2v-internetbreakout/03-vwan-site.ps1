@@ -1,21 +1,14 @@
 #
 #  variables in init.json file:
-#   $adminUsername: administrator username
-#   $adminPassword: administrator password
 #   $subscriptionName: Azure subscription name
 #   $ResourceGroupName: resource group name
 #   $hub1location: Azure region to deploy the virtual hub1
-#   $hub2location: Azure region to deploy the virtual hub2
 #   $branch1location: Azure region to deploy the branch1
-#   $branch2location: Azure region to deploy the branch2
 #   $hub1Name: name of the virtual hub1
-#   $hub2Name: name of the virtual hub2 
-#   $sharedKey: Share secret of the site-to-site VPN
-#   $mngIP: management public IP to connect in SSH to the Azure VMs
-#   $RGTagExpireDate: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
-#   $RGTagContact: tag assigned to the resource group. It is used to email to the owner of th deployment
-#   $RGTagNinja: tag assigned to the resource group. Alias of the user
-#   $RGTagUsage: tag assigned to the resource group. Short description of the deployment purpose
+#   $sharedKey: share secret of the site-to-site VPN between the branch and the hub1
+#   $mngIP: public IP to filter inbound SSH connection to the VMs. it can be empty if you do not want to set a restriction.
+#   $adminUsername: administrator username
+#   $adminPassword: administrator password
 #
 ################# Input parameters #################
 $deploymentName = 'vwan-site'

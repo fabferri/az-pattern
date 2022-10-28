@@ -7,11 +7,10 @@
 #   $hub1location: Azure region to deploy the virtual hub1
 #   $hub1Name: name of the virtual hub1
 #   $branch1location: Azure region to deploy the branch1
-#   $branch2location: Azure region to deploy the branch2
-#   $sharedKey: Share secret of the site-to-site VPN
-#   $mngIP:management public IP to connect in SSH to the Azure VMs
+#   $sharedKey: share secret of the site-to-site VPN between the branch and the hub1
 #   $adminUsername: administrator username
 #   $adminPassword: administrator password
+#   $mngIP: public IP to filter inbound SSH connection to the VMs. it can be empty if you do not want to set a restriction.
 #
 ################# Input parameters #################
 $deploymentName = 'vpn-branches'

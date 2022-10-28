@@ -41,6 +41,13 @@
                 "description": "Scale Units for Site-to-Site (S2S) VPN Gateway in the hub1"
             }
         },
+        "deployVPNGtwS2S": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "boolean flag to deploy the Site-to-Site (S2S) VPN Gateway in the hub1"
+            }
+        },
         "mngIP": {
             "type": "string",
             "metadata": {
@@ -626,7 +633,7 @@
         },
         {
             "comments": "deploy of the VPN Gatew only if it does not exist",
-            "condition": "[ empty(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')) )) ]",
+            "condition": "[parameters('deployVPNGtwS2S') ]",
             "type": "Microsoft.Network/vpnGateways",
             "name": "[format('{0}_S2SvpnGW', variables('hub1Name'))]",
             "apiVersion": "2022-05-01",

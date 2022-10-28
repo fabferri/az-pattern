@@ -35,13 +35,13 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet, spok
 
 ### Setup
 * **fwvnet** is associated with routing table **RT_SHARE** and propagated to the hub routing tables **RT_SHARE**, **RT_SPOKE**
-* **spoke1** is associated with routing table **RT_SPOKE** and propagated to the hub routing table **RT_SPOKE**,**RT_SHARE**
-* **spoke2** is associated with routing table **RT_SPOKE** and propagated to the hub routing table **RT_SPOKE**,**RT_SHARE**
-* **nvavnet** is associated with routing table **RT_SPOKE** and propagated to the hub routing table **RT_SPOKE**,**RT_SHARE**
+* **spoke1** is associated with routing table **RT_SPOKE** and propagated to the hub routing tables **RT_SPOKE**,**RT_SHARE**
+* **spoke2** is associated with routing table **RT_SPOKE** and propagated to the hub routing tables **RT_SPOKE**,**RT_SHARE**
+* **nvavnet** is associated with routing table **RT_SPOKE** and propagated to the hub routing tables **RT_SPOKE**,**RT_SHARE**
 * the connection **fwvnetconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**
-* the connection **nvaconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**. The VMs in**nvavnet** break out in internet without transit through the firewall.
-* the connection **spoke1conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to breakout in internet through the firewalls **fw0** and **fw1**.
-* the connection **spoke2conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to breakout in internet through the firewalls **fw0** and **fw1**.
+* the connection **nvaconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**. The VMs in **nvavnet** break out in internet without transit through the firewall.
+* the connection **spoke1conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke1** vnet to breakout in internet through the firewalls **fw0** and **fw1**.
+* the connection **spoke2conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke2** vnet to breakout in internet through the firewalls **fw0** and **fw1**.
 
 <br>
 
@@ -64,7 +64,7 @@ Static routes configured in the connection **fwvnetconn**:
 | associateRouteTable  | **RT_SPOKE**                 | 
 | propagateRouteTable  | **RT_SPOKE**, **RT_SHARED**  | 
 
-No static routes are configured in the connection **spoke1conn**, **spoke2conn** and **nvavnetconn**.
+No static routes are configured in the connections **spoke1conn**, **spoke2conn** and **nvavnetconn**.
 <br>
 
 |Routing Configuration of VPN connection                      ||
@@ -121,7 +121,7 @@ The diagram shows the routing tables and connections:
  
 Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values of input variables in use across all the ARM templates.
 
-The ARM templates use custom script extension to install nginx on port 80 on all VMs: fw0,fw1,vm1, vm2, nva,vm-branch.
+The ARM templates use custom script extension to install nginx on port 80 on all VMs: **fw0, fw1, vm1, vm2, nva,vm-branch**.
 the firewalls **fw0** and **fw1** use the nginx on port 80, to answer to the health probe of the internal load balancer in HA ports.
 <br>
 
@@ -213,7 +213,7 @@ root@client:~# for i in `seq 1 2000`; do curl http://10.0.10.10:8082; done
 
 To generate outbound HTTP traffic from vm1 in spoke1 to internet:
 ```bash
-root@client:~# curl www.microsoft.com
+root@vm1:~# curl http://www.microsoft.com
 ```
 
 ### <a name="List of files"></a>2. NOTE
@@ -225,8 +225,10 @@ The custom script extension runs on each vm when in the variables('vmArray') the
 "condition": "[greater(length(variables('vmArray')[copyIndex()].cmd), 0)]",
 ```
 
-The ARM template **01-vwan.json** deploy the VPN Gateway in the hub only the first time. If the VPN Gateway already exist in the hub vnet, the creation of VPN Gateway is skipped. 
-Check the existence of S2S VPN Gateway in hub1 is done through powershell **01-vwan.ps1**; the powershell set the value of variable **$deployVPNGtwS2S = $false** if the VPN Gateway already exists and to **$true** when the VPN Gateway is not deployed in hub1.
+The ARM template **01-vwan.json** deploy the VPN Gateway in the hub only the first time. If the VPN Gateway already exist in the hub1 vnet, the creation of VPN Gateway is skipped. <br>
+A check on presence of S2S VPN Gateway in hub1 is done through powershell **01-vwan.ps1**; the powershell set the value of variable **$deployVPNGtwS2S** to the following value:
+* **$deployVPNGtwS2S = $false** if the VPN Gateway is already deployed in hub1 
+* **$deployVPNGtwS2S = $true** in the case the VPN Gateway is not deployed in hub1.
 The condition avoids the reset of the VPN configuration, when the ARM template **01-vwan.json** runs multiple times.
 
 <!--Image References-->

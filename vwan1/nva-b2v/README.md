@@ -136,8 +136,8 @@ root@vm-branch1:~# for i in `seq 1 2000`; do curl http://10.0.1.10; done
 
 To monitor the transit through the firewall fw0, fw1 run the command:
 ```bash
-root@fw0:~# tcpdump -n host 10.11.0.4
-root@fw1:~# tcpdump -n host 10.11.0.4
+root@fw0:~#  tcpdump -n host 10.0.20.10 or host 10.0.1.10 or host 10.0.2.10
+root@fw1:~#  tcpdump -n host 10.0.20.10 or host 10.0.1.10 or host 10.0.2.10
 ```
 By tcpdump is recommended check the traffic branch-vnet passes through the fw0, fw1 with symmetric transit.
 
@@ -159,10 +159,6 @@ The custom script extension runs on each vm when in the variables('vmArray') the
 
 The ARM template **01-vwan.json** deploy the VPN Gateway in the hub only the first time. If the VPN Gateway already exist in the hub vnet, the creation of VPN Gateway is skipped. 
 
-```console
-"condition": "[ empty(resourceId('Microsoft.Network/vpnGateways', format('{0}_S2SvpnGW', variables('hub1Name')) )) ]",
-```
-This condition avoids the reset of the VPN configuration, when the ARM template **01-vwan.json** runs multiple times.
 
 <!--Image References-->
 

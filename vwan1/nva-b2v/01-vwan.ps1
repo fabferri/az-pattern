@@ -1,21 +1,14 @@
 #
 #  variables in init.json file:
-#   $adminUsername: administrator username
-#   $adminPassword: administrator password
 #   $subscriptionName: Azure subscription name
 #   $ResourceGroupName: resource group name
 #   $hub1location: Azure region to deploy the virtual hub1
-#   $hub2location: Azure region to deploy the virtual hub2
 #   $branch1location: Azure region to deploy the branch1
-#   $branch2location: Azure region to deploy the branch2
 #   $hub1Name: name of the virtual hub1
-#   $hub2Name: name of the virtual hub2 
 #   $sharedKey: Share secret of the site-to-site VPN
 #   $mngIP: management public IP to connect in SSH to the Azure VMs
-#   $RGTagExpireDate: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
-#   $RGTagContact: tag assigned to the resource group. It is used to email to the owner of th deployment
-#   $RGTagNinja: tag assigned to the resource group. Alias of the user
-#   $RGTagUsage: tag assigned to the resource group. Short description of the deployment purpose
+#   $adminUsername: administrator username
+#   $adminPassword: administrator password
 #
 ################# Input parameters #################
 $deploymentName = 'vwan1'
@@ -81,11 +74,24 @@ Catch {
      Return
 }
 
+try {
+     # check if exists the VPN GTW for site-to-site in vWAN
+     # if it exists, the flag $deployVPNGtwS2S is set to false avoiding the reset of S2S VPN Gateway configuration
+     $hub1vpnGtwName = $hub1Name + '_S2SvpnGW'
+     write-host "$(Get-Date) - check if exists the S2S VPN GTW in vWAN: "$hub1vpnGtwName -ForegroundColor Cyan
+     $hub1vpnGateway = Get-AzVpnGateway -ResourceGroupName $rgName -Name $hub1vpnGtwName -ErrorAction Stop
+     $deployVPNGtwS2S = $false
+}
+catch {
+     write-host "$(Get-Date) - S2S VPN GTW in vWAN: $hub1vpnGtwName does not exist" -ForegroundColor Cyan
+     $deployVPNGtwS2S = $true
+}
 
 $parameters = @{
      "vwanName"      = $vwanName;
      "hub1location"  = $hub1location;
      "hub1Name"      = $hub1Name;
+     "deployVPNGtwS2S" = $deployVPNGtwS2S;
      "mngIP"         = $mngIP;
      "adminUsername" = $adminUsername;
      "adminPassword" = $adminPassword

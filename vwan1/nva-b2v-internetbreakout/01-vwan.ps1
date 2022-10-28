@@ -5,10 +5,11 @@
 #   $hub1location: Azure region to deploy the virtual hub1
 #   $branch1location: Azure region to deploy the branch1
 #   $hub1Name: name of the virtual hub1
-#   $sharedKey: Share secret of the site-to-site VPN
+#   $sharedKey: share secret of the site-to-site VPN between the branch and the hub1
 #   $mngIP: management public IP to connect in SSH to the Azure VMs
 #   $adminUsername: administrator username
 #   $adminPassword: administrator password
+#   $mngIP: public IP to filter inbound SSH connection to the VM. it can be empty if you do not want to set a restriction.
 #
 ################# Input parameters #################
 $deploymentName = 'vwan1'
