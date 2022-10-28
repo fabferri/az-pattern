@@ -100,7 +100,7 @@ write-host "$startTime - running ARM template: "$templateFile -ForegroundColor C
 New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
 
 $endTime = Get-Date 
-Write-Host "$$endTime - setup completed" -ForegroundColor Green
+Write-Host "$endTime - setup completed" -ForegroundColor Green
 
 $timeDiff = New-TimeSpan $startTime $endTime
 $mins = $timeDiff.Minutes

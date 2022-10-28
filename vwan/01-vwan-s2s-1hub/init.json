@@ -1,6 +1,4 @@
 {
-    "adminUsername": "ADMINISTRATOR_USERNAME",
-    "adminPassword": "ADMINISTRATOR_PASSWORD",
     "subscriptionName": "AzDev",
     "ResourceGroupName": "vwan1-s2s",
     "vwanName" : "vwan1",
@@ -9,8 +7,6 @@
     "branch1location": "westus2",
     "sharedKey": "SHARED_SECRET_S2S_VPN",
     "mngIP": "MANAGEMENT_PUBLIC_IP_TO_CONNECT_IN_SSH_TO_VMs",
-    "RGTagExpireDate": "02/15/2022",
-    "RGTagContact": "user1@contoso.com",
-    "RGTagNinja": "user1",
-    "RGTagUsage": "vWAN-configuration with site-to-site VPN"
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD"
 }

@@ -67,10 +67,7 @@ if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit }              
 if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit }                   else { Write-Host '   hub2 name.............: '$hub2Name -ForegroundColor Yellow}
 if (!$hub3Name) { Write-Host 'variable $hub3Name is null' ; Exit }                   else { Write-Host '   hub3 name.............: '$hub3Name -ForegroundColor Yellow}
 if (!$mngIP) { Write-Host 'variable $mngIP is null' ; Exit }                         else { Write-Host '   mngIP.................: '$mngIP -ForegroundColor Yellow}
-if (!$RGTagExpireDate) { Write-Host 'variable $RGTagExpireDate is null' ; Exit }     else { Write-Host '   RGTagExpireDate.......: '$RGTagExpireDate -ForegroundColor Yellow}
-if (!$RGTagContact) { Write-Host 'variable $RGTagContact is null' ; Exit }           else { Write-Host '   RGTagContact..........: '$RGTagContact -ForegroundColor Yellow}
-if (!$RGTagNinja) { Write-Host 'variable $RGTagNinja is null' ; Exit }               else { Write-Host '   RGTagNinja............: '$RGTagNinja -ForegroundColor Yellow}
-if (!$RGTagUsage) { Write-Host 'variable $RGTagUsage is null' ; Exit }               else { Write-Host '   RGTagUsage............: '$RGTagUsage -ForegroundColor Yellow}
+
 $rgName=$ResourceGroupName
 
 
@@ -105,28 +102,20 @@ Try { Get-AzResourceGroup -Name $rgName -ErrorAction Stop
      Write-Host 'Resource exists, skipping'}
 Catch { New-AzResourceGroup -Name $rgName -Location $hub1location}
 
-# set a tag on the resource group if it doesn't exist.
-if ((Get-AzResourceGroup -Name $rgName).Tags -eq $null)
-{
-  # Add Tag Values to the Resource Group
-  Set-AzResourceGroup -Name $rgName -Tag @{Expires=$RGTagExpireDate; Contacts=$RGTagContact; Pathfinder=$RGTagNinja; Usage=$RGTagUsage} | Out-Null
-}
 
 $startTime = Get-Date
-$runTime=Measure-Command {
-   write-host "$startTime - running ARM template:"$templateFile
-   New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
-}
- 
-# End and printout the runtime
-$endTime = Get-Date
-$TimeDiff = New-TimeSpan $startTime $endTime
-$Mins = $TimeDiff.Minutes
-$Secs = $TimeDiff.Seconds
-$RunTime = '{0:00}:{1:00} (M:S)' -f $Mins,$Secs
-Write-Host (Get-Date)' - ' -NoNewline
-Write-Host "Script completed" -ForegroundColor Green
-Write-Host "  Time to complete: $RunTime" -ForegroundColor Yellow
+write-host "$startTime - running ARM template: "$templateFile -ForegroundColor Cyan
+New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
+
+$endTime = Get-Date 
+Write-Host "$endTime - setup completed" -ForegroundColor Green
+
+$timeDiff = New-TimeSpan $startTime $endTime
+$mins = $timeDiff.Minutes
+$secs = $timeDiff.Seconds
+$runTime = '{0:00}:{1:00} (M:S)' -f $mins, $secs
+Write-Host "$(Get-Date) - Script completed" -ForegroundColor Green
+Write-Host "Time to complete: "$runTime
 
 
 
