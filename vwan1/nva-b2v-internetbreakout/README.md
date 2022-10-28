@@ -93,7 +93,7 @@ To establish a communication are required static routes in the following routing
 | to-site1    | CIDR             | 10.11.0.0/24       | **fwvnetconn** |
 | to-internet | CIDR             | 0.0.0.0/0          | **fwvnetconn** |
 
-No static routes are required in the routing table **RT_SHARED**
+No static routes are required in the routing table **RT_SHARED**.
 
 
 The diagram shows the routing tables and connections:
@@ -118,7 +118,7 @@ The diagram shows the routing tables and connections:
  
 Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values of input variables in use across all the ARM templates.
 
-The ARM templates use custom script extension to install nginx on port 80 on all VMs: **fw0, fw1, vm1, vm2, nva,vm-branch**.
+The ARM templates use custom script extension to install nginx on port 80 on all VMs: **fw0, fw1, vm1, vm2, nva, vm-branch**.
 In the firewalls **fw0** and **fw1** run the nginx on port 80, to answer to the health probe of the internal Load Balancer configured in HA ports.
 <br>
 
@@ -155,7 +155,9 @@ iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8082 -j D
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 ```
 The PREROUTING chain in NAT table allows to appy to the traffic inbound from internet the following the NAT rule: <br>
-[sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, destPort:**8081**] is translated into [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.1.10**, destPort: **80**]
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, destPort:**8081**, prot:tcp] <br>
+is translated into: <br>
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.1.10**, destPort: **80**, prot:tcp]
 
 
 [![3]][3]
