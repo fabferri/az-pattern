@@ -40,8 +40,8 @@ The article describes a virtual WAN configuration with spoke VNets (fwvnet, spok
 * **nvavnet** is associated with routing table **RT_SPOKE** and propagated to the hub routing tables **RT_SPOKE**,**RT_SHARE**
 * the connection **fwvnetconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**
 * the connection **nvaconn** have the default route (0.0.0.0/0) disabled: **"enableInternetSecurity": false**. The VMs in **nvavnet** break out in internet without transit through the firewalls **fw0** and **fw1**.
-* the connection **spoke1conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke1** vnet to breakout in internet through the firewalls **fw0** and **fw1**.
-* the connection **spoke2conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke2** vnet to breakout in internet through the firewalls **fw0** and **fw1**.
+* the connection **spoke1conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke1** vnet to access in internet through the firewalls **fw0** and **fw1**.
+* the connection **spoke2conn** have the default route (0.0.0.0/0) enabled: **"enableInternetSecurity": true**. This is required to **spoke2** vnet to access in internet through the firewalls **fw0** and **fw1**.
 
 <br>
 
@@ -96,9 +96,6 @@ To establish a communication are required static routes in the following routing
 no static routes are added to the routing table **RT_SHARED**
 
 
-
-
-
 The diagram shows the routing tables and connections:
 
 [![2]][2]
@@ -131,11 +128,11 @@ Meaning of the variables:
     "subscriptionName": "AZURE_SUBSCRITION_NAME",
     "ResourceGroupName": "NAME_OF_RESOURCE_GROUP",
     "vwanName": "NAME_OF_THE_VIRTUAL_WAN",
-    "hub1location": "LOCATION_HUB!",
+    "hub1location": "LOCATION_HUB1",
     "branch1location": "LOCATION_BRANCH1",
     "hub1Name": "NAME_HUB1",
-    "sharedKey": "SHARED_KEY_S2S_VPN",
-    "mngIP": "PUBLIC_IP used to connect to the Azure VMs in SSH",
+    "sharedKey": "SHARED_KEY_Site-to-site_VPN_between_hub1_and_branch",
+    "mngIP": "PUBLIC_IP used to filter the SSH inbound to the Azure VMs. It can be set empty if you do not want to limit access from a specific IP",
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "adminPassword": "ADMINISTRATOR_PASSWORD"
 }
