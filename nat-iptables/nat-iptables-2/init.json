@@ -1,0 +1,8 @@
+{
+    "subscriptionName": "AzDev",
+    "ResourceGroupName": "test-iptables5",
+    "location": "westus2",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD"
+}
