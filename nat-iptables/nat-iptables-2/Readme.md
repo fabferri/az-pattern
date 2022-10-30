@@ -200,7 +200,7 @@ Using tcpdump is easy to verify the NAT and symmetrical transit through the NVAs
 root@nva1:~# tcpdump -n host 10.2.0.10 or host 10.3.0.10
 root@nva2:~# tcpdump -n host 10.2.0.10 or host 10.3.0.10
 ```
-By curl the vmClient1 can query the nginx server blocks in vmApp1:
+By curl the vmApp1 can query an interfnet web site or the **vmApp3**:
 ```bash
 root@vmApp1:~# curl http://www.microsoft.com
 root@vmApp1:~# curl 10.3.0.10
