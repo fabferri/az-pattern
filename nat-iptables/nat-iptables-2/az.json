@@ -101,7 +101,6 @@
 
         "linuxUpdate": "sudo apt update",
         "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
-        // "linuxIPForwarding": "sed -i -e '$a\\net.ipv4.ip_forward=1' /etc/sysctl.conf ; sysctl -p ",
         "linuxIPForwarding": "sed -i -e '/^\\(net.ipv4.ip_forward=\\).*/{s//\\11/;:a;n;ba;q}' -e '$anet.ipv4.ip_forward=1' /etc/sysctl.conf; sysctl -p",
         "nva1_iptables": "
 iptables -I INPUT 1 -i lo -j ACCEPT;
@@ -112,16 +111,18 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
 iptables -A INPUT -j DROP;
 iptables -P FORWARD ACCEPT;
 iptables -P OUTPUT ACCEPT;
-iptables -t nat -A PREROUTING  -i eth0  -j DNAT -p tcp -d 10.1.0.10/32 --dport 8081  --to-destination 10.2.0.10:80;
+iptables -t nat -A PREROUTING -i eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING  -i eth0  -j DNAT -p tcp -d 10.1.0.10/32 --dport 8081 --to-destination 10.2.0.10:80;
 iptables -t nat -A POSTROUTING -o eth0  -j SNAT -p tcp -d 10.2.0.10/32 --dport 80  --to-source 10.1.0.10;
-iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.10/32 --dport 8082  --to-destination 10.3.0.10:80;
+iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.10/32 --dport 8082 --to-destination 10.3.0.10:80;
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT -p tcp -d 10.3.0.10/32 --dport 80  --to-source 10.1.0.10;
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections;
 echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections;
 sudo apt-get -y install iptables-persistent;",
-//   apt-get -y install iptables-persistent;
-//  /sbin/iptables-save > /etc/iptables/rules.v4;",
         "nva2_iptables": "
 iptables -I INPUT 1 -i lo -j ACCEPT;
 iptables -A INPUT -p tcp --dport ssh -j ACCEPT;
@@ -131,16 +132,18 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
 iptables -A INPUT -j DROP;
 iptables -P FORWARD ACCEPT;
 iptables -P OUTPUT ACCEPT;
-iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.11/32 --dport 8081  --to-destination 10.2.0.10:80;
+iptables -t nat -A PREROUTING -i eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.11/32 --dport 8081 --to-destination 10.2.0.10:80;
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT -p tcp -d 10.2.0.10/32 --dport 80  --to-source 10.1.0.11;
-iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.11/32 --dport 8082  --to-destination 10.3.0.10:80;
+iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.11/32 --dport 8082 --to-destination 10.3.0.10:80;
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT -p tcp -d 10.3.0.10/32 --dport 80  --to-source 10.1.0.11;
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections;
 echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections;
 sudo apt-get -y install iptables-persistent;",
-// apt-get -y install iptables-persistent;
-// /sbin/iptables-save > /etc/iptables/rules.v4;",
 
         "linuxNVA1cmd": "[concat('sleep 1m', ' ; ', variables('linuxUpdate'), ' ; ', variables('linuxIPForwarding'), ' ; ', variables('linuxNgixCommand'), ' ; ', variables('nva1_iptables'))]",
         "linuxNVA2cmd": "[concat('sleep 1m', ' ; ', variables('linuxUpdate'), ' ; ', variables('linuxIPForwarding'), ' ; ', variables('linuxNgixCommand'), ' ; ', variables('nva2_iptables'))]",

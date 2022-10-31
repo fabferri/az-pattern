@@ -42,11 +42,11 @@ The diagram below shows the inbound traffic to **nva1** on destination port 8082
 
 The Azure load balancer supports the following distribution modes for routing connections to instances in the backed pool:
 * session persistence: None,                    REST API: **"loadDistribution":"Default"**
-* session persistence: Client IP,               REST API: **"loadDistribution":SourceIP**
-* session persistence: Client IP and protocol,  REST API: **"loadDistribution":SourceIPProtocol**
+* session persistence: Client IP,               REST API: **"loadDistribution":"SourceIP"**
+* session persistence: Client IP and protocol,  REST API: **"loadDistribution":"SourceIPProtocol"**
 <br>
 
-In our setup, the ARM template the load balancer distribution mode is set to: **"loadDistribution":SourceIP**
+In our setup, the ARM template the load balancer distribution mode is set to: **"loadDistribution":"SourceIP"**
 
 ## <a name="IP forwarding"></a>1. IP forwarding in NVAs
 The IP forwarding in **nva1** and **nva2** is configured by adding the line **net.ipv4.ip_forward=1** in the file **/etc/sysctl.conf**:
@@ -67,7 +67,13 @@ The iptables diagram shows how the tables and chains are traversed:
 
 [![4]][4]
 
-Below the Iptables rules in use in **nva1**:
+The built-in chains for the nat table are as follows:
+* PREROUTING — Alters network packets when they arrive.
+* OUTPUT — Alters locally-generated network packets before they are sent out.
+* POSTROUTING — Alters network packets before they are sent out.
+Every network packet received by or sent out of a Linux system is subject to at least one table. However, a packet may be subjected to multiple rules within each table before emerging at the end of the chain.
+
+Below the iptables rules in use in **nva1**:
 ```console
 iptables -I INPUT 1 -i lo -j ACCEPT;
 iptables -A INPUT -p tcp --dport ssh -j ACCEPT;
@@ -77,9 +83,13 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
 iptables -A INPUT -j DROP;
 iptables -P FORWARD ACCEPT;
 iptables -P OUTPUT ACCEPT;
-iptables -t nat -A PREROUTING  -i eth0  -j DNAT -p tcp -d 10.1.0.10/32 --dport 8081  --to-destination 10.2.0.10:80;
+iptables -t nat -A PREROUTING -i eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING  -i eth0  -j DNAT -p tcp -d 10.1.0.10/32 --dport 8081 --to-destination 10.2.0.10:80;
 iptables -t nat -A POSTROUTING -o eth0  -j SNAT -p tcp -d 10.2.0.10/32 --dport 80  --to-source 10.1.0.10;
-iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.10/32 --dport 8082  --to-destination 10.3.0.10:80;
+iptables -t nat -A PREROUTING  -i eth0 -j DNAT -p tcp -d 10.1.0.10/32 --dport 8082 --to-destination 10.3.0.10:80;
 iptables -t nat -A POSTROUTING -o eth0 -j SNAT -p tcp -d 10.3.0.10/32 --dport 80  --to-source 10.1.0.10;
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 ```
@@ -110,7 +120,19 @@ The DROP target on INPUT chain should be added after defining –dport rules. Th
 iptables -A INPUT -j DROP
 ```
 
+Regardless of their destination, when packets match a particular rule in one of the tables, a _target_ or action is applied to them. If the rule specifies an **ACCEPT** _target_ for a matching packet, the packet skips the rest of the rule checks and is allowed to continue to its destination. If a rule specifies a **DROP** _target_, that packet is refused access to the system and nothing is sent back to the host that sent the packet. If a rule specifies the optional **REJECT** _target_, the packet is dropped, but an error packet is sent to the packet's originator.
+
 Let's discuss the NAT rules.<br>
+In the nat table the top rules of PREROUTING and POSTROUTING chains are:
+ ```
+iptables -t nat -A PREROUTING -i eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
+iptables -t nat -A POSTROUTING -o eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
+ ```
+ Those rules avoid address traslation between the vnet2 and vnet3. When the rule is matched with- **j ACCEPT** , the packet is accepted and the evaluation of the reamin rules in the chain are stopped.
+
+
 **Destination NAT** is done in the <ins>PREROUTING</ins> chain, just as the packet comes in.<br>
 **-i** option identify the incoming interface<br>
 Destination NAT is specified using `-j DNAT`, and the `--to-destination` option specifies an IP address, a range of IP addresses, and an optional port or range of ports (for UDP and TCP protocols only).
@@ -127,11 +149,19 @@ Below the network diagram with visualization of inbound traffic from internet to
 Below the network diagram with visualization of inbound traffic from internet to **vmApp3**:
 [![6]][6]
 
+The diagram show the traffic between **vmApp2** and **vmApp3** with transit through the NVAs:
+
+[![7]][7]
+
+IP Masquerade, called "IPMASQ" or "MASQ" for short, is a form of Network Address Translation (NAT) which allows internally connected hosts that do not have one or more registered Internet IP addresses to communicate to the Internet.
+In the case of IPMASQ, a gateway machine acts as the mediator between the machines on your network and the Internet. Connection Tracking (contract) feature of Linux is used to keep track of connections and their source. This helps in rerouting the packets accordingly. Henceforth, packets leaving the private network are masqueraded as if they originated from the mediator machine (NVA). Masquerading takes care to re-map IP addresses and ports as required.
 The traffic from the **vmApp2** and **vmApp3** can access to internet by:
 ```
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 ```
 The rule uses the NAT packet matching table (-t nat) and specifies the built-in POSTROUTING chain for NAT (-A POSTROUTING) on the nva external networking device (-o eth0). POSTROUTING allows packets to be altered as they are leaving the firewall's external device. The -j MASQUERADE target is specified to mask the private IP address of a node with the external IP address of the nva.
+
+
 
 ### iptables configuration persistent to the VM reboot
 In order to make your iptables rules persistent after reboot, install the **iptables-persistent** package using the apt package manager:
@@ -197,8 +227,8 @@ Meaning of variables in **init.json**:
 Using tcpdump is easy to verify the NAT and symmetrical transit through the NVAs:
 
 ```bash
-root@nva1:~# tcpdump -n host 10.2.0.10 or host 10.3.0.10
-root@nva2:~# tcpdump -n host 10.2.0.10 or host 10.3.0.10
+root@nva1:~# tcpdump -nqt host 10.2.0.10 or host 10.3.0.10
+root@nva2:~# tcpdump -nqt host 10.2.0.10 or host 10.3.0.10
 ```
 By curl the vmApp1 can query an interfnet web site or the **vmApp3**:
 ```bash
@@ -263,6 +293,7 @@ iptables -P OUTPUT ACCEPT
 [4]: ./media/iptables.png "iptables: flow of packets through the chains"
 [5]: ./media/nat1.png "NAT applied to the traffic inbound from internet to vmApp2"
 [6]: ./media/nat2.png "NAT applied to the traffic inbound from internet to vmApp3"
+[7]: ./media/traffic-between-vnets.png "no NAT is applied for traffic between vnet2 and vnet3 in transit through the NVAs"
 
 <!--Link References-->
 
