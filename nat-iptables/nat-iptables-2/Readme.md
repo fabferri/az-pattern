@@ -120,7 +120,10 @@ The DROP target on INPUT chain should be added after defining –dport rules. Th
 iptables -A INPUT -j DROP
 ```
 
-Regardless of their destination, when packets match a particular rule in one of the tables, a _target_ or action is applied to them. If the rule specifies an **ACCEPT** _target_ for a matching packet, the packet skips the rest of the rule checks and is allowed to continue to its destination. If a rule specifies a **DROP** _target_, that packet is refused access to the system and nothing is sent back to the host that sent the packet. If a rule specifies the optional **REJECT** _target_, the packet is dropped, but an error packet is sent to the packet's originator.
+Regardless of their destination, when packets match a particular rule in one of the tables, a _target_ or action is applied to them. <br> 
+If the rule specifies an **ACCEPT** _target_ for a matching packet, the packet skips the rest of the rule checks and is allowed to continue to its destination. <br>
+If a rule specifies a **DROP** _target_, that packet is refused access to the system and nothing is sent back to the host that sent the packet. <br>
+If a rule specifies the optional **REJECT** _target_, the packet is dropped, but an error packet is sent to the packet's originator.
 
 Let's discuss the NAT rules.<br>
 In the nat table the top rules of PREROUTING and POSTROUTING chains are:
@@ -130,7 +133,7 @@ iptables -t nat -A PREROUTING -i eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
 iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
 iptables -t nat -A POSTROUTING -o eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
  ```
- Those rules avoid address traslation between the vnet2 and vnet3. When the rule is matched with- **j ACCEPT** , the packet is accepted and the evaluation of the reamin rules in the chain are stopped.
+ Those rules avoid address traslation between the vnet2 and vnet3. When the rule is matched with **-j ACCEPT** , the packet is accepted and the evaluation of the reamin rules in the chain are stopped.
 
 
 **Destination NAT** is done in the <ins>PREROUTING</ins> chain, just as the packet comes in.<br>
