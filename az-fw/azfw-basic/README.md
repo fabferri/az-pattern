@@ -32,8 +32,8 @@ The Azure deployment can be done by ARM template. The ARM template:
 * two UDRs are applied to **subnetApp1** and **subnetApp2** to force the traffic to passthrough the Azure firewall 
 * a default route (0.0.0.0/0) is present in the UDRs to breakout in internet through the Azure firewall
 * the firewall applies DNAT policy to accept inbound connections:
-   * the TCP traffic inbound on destination port 8091 is translated in port 80; the traffic reach out the **vmapp1**
-   * the TCP traffic inbound on destination port 8092 is translated in port 80; the traffic reach out the **vmapp2** 
+   * the TCP traffic inbound on destination port 8091 is translated in port 80; the traffic can reach out the **vmapp1**
+   * the TCP traffic inbound on destination port 8092 is translated in port 80; the traffic can reach out the **vmapp2** 
 
 
 
