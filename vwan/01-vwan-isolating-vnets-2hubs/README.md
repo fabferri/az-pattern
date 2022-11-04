@@ -191,11 +191,7 @@ The structure of **init.json** file is shown below:
     "locationBranch2": "northcentralus",
     "hub1Name": "NAME_hub1",
     "hub2Name": "NAME_hub2",
-    "mngIP": "MANAGEMENT_PUBLIC_IP_ADDRESS_TO_CONNECT_IN_SSH_TO_THE_VM",
-    "RGTagExpireDate": "09/30/2021",
-    "RGTagContact": "user1@contoso.com",
-    "RGTagNinja": "user1",
-    "RGTagUsage": "vWAN-basic configuration with isolating VNets"
+    "mngIP": "MANAGEMENT_PUBLIC_IP_ADDRESS_TO_CONNECT_IN_SSH_TO_THE_VM"
 }
 ```
 <br>
@@ -210,11 +206,6 @@ Meaning of the variables:
 - **hub1Name**: name of the virtual hub1
 - **hub2Name**: name of the virtual hub2
 - **mngIP**: public IP used to connect to the Azure VMs in SSH
-- **RGTagExpireDate**: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
-- **RGTagContact**: tag assigned to the resource group. It is used to email to the owner of the deployment
-- **RGTagNinja**: alias of the user
-- **RGTagUsage**: short description of the deployment purpose
-
 
 <br>
 
