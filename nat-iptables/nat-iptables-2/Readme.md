@@ -40,6 +40,10 @@ The diagram below shows the inbound traffic from internet to **nva1** on destina
 [![3]][3]
 
 
+The data paths between **vnet2** and **vnet3** is shown below:
+
+[![4]][4]
+
 The Azure load balancer supports the following distribution modes for routing connections to instances in the backed pool:
 
 | Distribution mode | Hash based | Session persistence: Client IP | Session persistence: Client IP and protocol |
@@ -70,7 +74,7 @@ check the presence of "option=value" in the file. If doesn't exist, it would add
 ## <a name="iptables configurations"></a>2. iptables configuration in NVAs
 The iptables diagram shows how the tables and chains are traversed:
 
-[![4]][4]
+[![5]][5]
 
 The built-in chains for the nat table are as follows:
 * PREROUTING — Alters network packets when they arrive.
@@ -132,7 +136,7 @@ If a rule specifies the optional **REJECT** _target_, the packet is dropped, but
 
 Let's discuss the NAT rules.<br>
 In the nat table the top rules of PREROUTING and POSTROUTING chains are:
- ```
+ ```console
 iptables -t nat -A PREROUTING -i eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
 iptables -t nat -A PREROUTING -i eth0 -s 10.3.0.0/24 -d 10.2.0.0/24  -j ACCEPT;
 iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/24 -d 10.3.0.0/24  -j ACCEPT;
@@ -152,14 +156,14 @@ Source NAT is specified using `-j SNAT`, and the `--to-source` option specifies 
 **iptables -t nat -A POSTROUTING -o eth0  -j SNAT -p tcp -d 10.2.0.10/32 --dport 80  --to-source 10.1.0.10**
 
 Below the network diagram with visualization of inbound traffic from internet to **vmApp2**:
-[![5]][5]
+[![6]][6]
 
 Below the network diagram with visualization of inbound traffic from internet to **vmApp3**:
-[![6]][6]
+[![7]][7]
 
 The diagram show the traffic between **vmApp2** and **vmApp3** with transit through the NVAs:
 
-[![7]][7]
+[![8]][8]
 
 IP Masquerade, called "IPMASQ" or "MASQ" for short, is a form of Network Address Translation (NAT) which allows internally connected hosts that do not have one or more registered Internet IP addresses to communicate to the Internet.
 In the case of IPMASQ, a gateway machine acts as the mediator between the machines on your network and the Internet. Connection Tracking (contract) feature of Linux is used to keep track of connections and their source. This helps in rerouting the packets accordingly. Henceforth, packets leaving the private network are masqueraded as if they originated from the mediator machine (NVA). Masquerading takes care to re-map IP addresses and ports as required.
@@ -192,7 +196,7 @@ sudo /sbin/ip6tables-save > /etc/iptables/rules.v6
 
 ### NOTE
 Installing **iptables-persistent** on ubuntu without manual input requires the setting of flags in **debconf-set-selections**
-```
+```bash
 echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
 echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
 sudo apt-get -y install iptables-persistent
@@ -298,10 +302,11 @@ iptables -P OUTPUT ACCEPT
 [1]: ./media/network-diagram1.png "network diagram"
 [2]: ./media/network-diagram2.png "network diagram with inbound traffic from internet to the vmApp2"
 [3]: ./media/network-diagram3.png "network diagram with inbound traffic from internet to the vmApp3"
-[4]: ./media/iptables.png "iptables: flow of packets through the chains"
-[5]: ./media/nat1.png "NAT applied to the traffic inbound from internet to vmApp2"
-[6]: ./media/nat2.png "NAT applied to the traffic inbound from internet to vmApp3"
-[7]: ./media/traffic-between-vnets.png "no NAT is applied for traffic between vnet2 and vnet3 in transit through the NVAs"
+[4]: ./media/network-diagram4.png "network diagram with internal traffic between vnets"
+[5]: ./media/iptables.png "iptables: flow of packets through the chains"
+[6]: ./media/nat1.png "NAT applied to the traffic inbound from internet to vmApp2"
+[7]: ./media/nat2.png "NAT applied to the traffic inbound from internet to vmApp3"
+[8]: ./media/traffic-between-vnets.png "no NAT is applied for traffic between vnet2 and vnet3 in transit through the NVAs"
 
 <!--Link References-->
 
