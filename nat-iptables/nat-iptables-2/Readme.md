@@ -32,18 +32,23 @@ The network diagram is shown below:
 
 <br>
 
-The diagram below shows the inbound traffic to **nva1** on destination port 8081:
+The diagram below shows the inbound traffic from internet to **nva1** on destination port 8081:
 
 [![2]][2]
 
-The diagram below shows the inbound traffic to **nva1** on destination port 8082:
+The diagram below shows the inbound traffic from internet to **nva1** on destination port 8082:
 [![3]][3]
 
 
 The Azure load balancer supports the following distribution modes for routing connections to instances in the backed pool:
-* session persistence: None,                    REST API: **"loadDistribution":"Default"**
-* session persistence: Client IP,               REST API: **"loadDistribution":"SourceIP"**
-* session persistence: Client IP and protocol,  REST API: **"loadDistribution":"SourceIPProtocol"**
+
+| Distribution mode | Hash based | Session persistence: Client IP | Session persistence: Client IP and protocol |
+| --- | --- | --- | --- |
+| Description | Traffic from the same client IP routed to any healthy instance in the backend pool | Traffic from the same client IP is routed to the same backend instance | Traffic from the same client IP and protocol is routed to the same backend instance |
+| Tuples | 5 tuple | 2 tuple | 3 tuple |
+| Azure portal configuration | Session persistence: **None** | Session persistence: **Client IP** | Session persistence: **Client IP and protocol** |
+| REST API |  ```"loadDistribution":"Default"```| ```"loadDistribution":"SourceIP"```    | ```"loadDistribution":"SourceIPProtocol"```    |
+
 <br>
 
 In our setup, the ARM template the load balancer distribution mode is set to: **"loadDistribution":"SourceIP"**
