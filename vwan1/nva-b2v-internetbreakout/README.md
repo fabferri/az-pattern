@@ -257,6 +257,9 @@ A check on presence of S2S VPN Gateway in hub1 is done through powershell **01-v
 * **$deployVPNGtwS2S = $true** in the case the VPN Gateway is not deployed in hub1.
 The condition avoids the reset of the VPN configuration, when the ARM template **01-vwan.json** runs multiple times.
 
+`Tags: virtual WAN, vWAN` <br>
+`testing date: 09-11-22`
+
 <!--Image References-->
 
 [1]: ./media/network-diagram1.png "network diagram"
