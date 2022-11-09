@@ -94,10 +94,12 @@ The meaning of input variables in **init.json** are shown below:
     "mngIP": "PUBLIC_IP_ADDRESS_TO_FILTER_SSH_ACCESS_TO_VMS - it can be empty string, if you do not want to filter access!"
 }
 ```
-**authenticationType**: it can take two options: **"password"** (to authenticate to the VMs through the password) OR **"sshPublicKey"** (to autheticate to the VMs through RSA key).
+**authenticationType**: it can take two options: 
+- **"password"** to authenticate to the VMs through the password
+- **"sshPublicKey"** to autheticate to the VMs through RSA key
 
 
-`Tags: hub-spoke vnets, azure Bastion`
+`Tags: hub-spoke vnets, azure Bastion` <br>
 `date: 21-06-22`
 
 <!--Image References-->
