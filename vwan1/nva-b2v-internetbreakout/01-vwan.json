@@ -267,7 +267,7 @@
                             "protocol": "All",
                             "frontendPort": 0,
                             "backendPort": 0,
-                            "loadDistribution": "Default",
+                            "loadDistribution": "SourceIP",
                             "enableFloatingIP": false,
                             "idleTimeoutInMinutes": 4
                         },

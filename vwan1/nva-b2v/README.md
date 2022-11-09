@@ -160,6 +160,9 @@ The custom script extension runs on each vm when in the variables('vmArray') the
 The ARM template **01-vwan.json** deploy the VPN Gateway in the hub only the first time. If the VPN Gateway already exist in the hub vnet, the creation of VPN Gateway is skipped. 
 
 
+`Tags: Virtual WAN, vWAN` <br>
+`Testing date: 28-10-22`
+
 <!--Image References-->
 
 [1]: ./media/network-diagram1.png "network diagram"

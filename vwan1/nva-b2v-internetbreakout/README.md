@@ -150,26 +150,32 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT;
 iptables -A INPUT -j DROP;
 iptables -P FORWARD ACCEPT;
 iptables -P OUTPUT ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.0.1.0/24 -d 10.11.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.1.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.0.2.0/24 -d 10.11.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.2.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.0.20.0/24 -d 10.11.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.20.0/24  -j ACCEPT;
 iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8081 -j DNAT --to-destination 10.0.1.10:80;
 iptables -t nat -A PREROUTING  -i eth0 -d 10.0.10.10/32 -p tcp --dport 8082 -j DNAT --to-destination 10.0.2.10:80;
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
 ```
 The PREROUTING chain in NAT table appy to the traffic inbound from internet the following the NAT rules: <br>
-* IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, destPort:**8081**, prot:tcp] <br>
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, prot:tcp, destPort:**8081**] <br>
 is translated into: <br>
-* IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.1.10**, destPort: **80**, prot:tcp]
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.1.10**, prot:tcp, destPort: **80**]
 
 and
 
-* IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, destPort:**8082**, prot:tcp] <br>
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N, destIP: **10.0.10.10**, prot:tcp, destPort:**8082**] <br>
 is translated into: <br>
-* IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.2.10**, destPort: **80**, prot:tcp]
+* IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.2.10**, , prot:tcp, destPort: **80**]
 
 <b>
 
 [![3]][3]
 
-The iptables configurations are deployed in **fw0** and **fw1** by using action Run Commands. <br>
+The iptables configurations are deployed in **fw0** and **fw1** by using action Run Commands in ARM template **04-nsg-iptables.json** <br>
 **Run Command** feature uses the virtual machine (VM) agent to run scripts within an Azure Linux VM (in ARM template: **Microsoft.Compute/virtualMachines/runCommands**).
 
 For troubleshooting action run command in Linux environments, refer to the handler log file typically located in the following directory: **/var/log/azure/run-command/handler.log** .
@@ -188,14 +194,28 @@ To monitor the transit through the firewall fw0, fw1 run the command:
 root@fw0:~# tcpdump -n host 10.11.0.4
 root@fw1:~# tcpdump -n host 10.11.0.4
 ```
-By tcpdump is recommended check the traffic branch-vnet passes through the fw0, fw1 with symmetric transit.
+By tcpdump you can verifying the traffic branch-to-vnet and vnet-to-branch passes through the **fw0** or **fw1** with symmetric transit.
 
 [![4]][4]
 
-If you wish to send the traffic incoming in the LB to a single backend VM, e.g. **fw0**, it is enough stop the nginx on the VM you don't want receive traffic:
-```bash
-root@fw1:~#  systemctl stop nginx
+
+The presence of following rules in PREROUTING nat built-in table: 
+```console
+iptables -t nat -A PREROUTING -i eth0 -s 10.0.1.0/24 -d 10.11.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.1.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.0.2.0/24 -d 10.11.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.2.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.0.20.0/24 -d 10.11.0.0/24  -j ACCEPT;
+iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.20.0/24  -j ACCEPT;
 ```
+avoid the NAT to the the traffic vnet-to-branch and branch-to-vnet.
+
+
+If you wish to send the traffic incoming in the LB to a single backend VM, e.g. **fw0**, it is enough stop the nginx in **fw0**:
+```bash
+root@fw0:~#  systemctl stop nginx
+```
+In this case all the traffic will be forwarded to **fw1**.
 
 ### <a name="traffic from/to internet"></a>3. Traffic spokes to internet and internet to spokes
 
