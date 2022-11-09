@@ -171,12 +171,13 @@ and
 is translated into: <br>
 * IP packet: [sourceIP: pubIPInternet, sourcePort: N1, destIP:**10.0.2.10**, , prot:tcp, destPort: **80**]
 
-<b>
+<br>
 
 [![3]][3]
 
-The iptables configurations are deployed in **fw0** and **fw1** by using action Run Commands in ARM template **04-nsg-iptables.json** <br>
-**Run Command** feature uses the virtual machine (VM) agent to run scripts within an Azure Linux VM (in ARM template: **Microsoft.Compute/virtualMachines/runCommands**).
+The iptables configurations are deployed in **fw0** and **fw1** by using action Run Commands in ARM template **04-nsg-iptables.json**   <br>
+
+**Run Command** feature uses the virtual machine (VM) agent to run scripts within an Azure Linux VM; in ARM template: **Microsoft.Compute/virtualMachines/runCommands**
 
 For troubleshooting action run command in Linux environments, refer to the handler log file typically located in the following directory: **/var/log/azure/run-command/handler.log** .
 
@@ -185,6 +186,7 @@ For troubleshooting action run command in Linux environments, refer to the handl
 ### <a name="traffic between branch and vnet"></a>3. Traffic branch-to-vnet 
 
 To generate HTTP traffic between VMs, in the branch VM run the command:
+
 ```bash
 root@vm-branch1:~# for i in `seq 1 2000`; do curl http://10.0.1.10; done
 ```
@@ -211,11 +213,11 @@ iptables -t nat -A PREROUTING -i eth0 -s 10.11.0.0/24 -d 10.0.20.0/24  -j ACCEPT
 avoid the NAT to the the traffic vnet-to-branch and branch-to-vnet.
 
 
-If you wish to send the traffic incoming in the LB to a single backend VM, e.g. **fw0**, it is enough stop the nginx in **fw0**:
+If you wish to send the traffic incoming in the LB to a single backend VM, e.g. **fw0**, it can stop the nginx in **fw0**:
 ```bash
 root@fw0:~#  systemctl stop nginx
 ```
-In this case all the traffic will be forwarded to **fw1**.
+In this case all the traffic will be forwarded only to **fw1**.
 
 ### <a name="traffic from/to internet"></a>3. Traffic spokes to internet and internet to spokes
 
@@ -256,6 +258,7 @@ A check on presence of S2S VPN Gateway in hub1 is done through powershell **01-v
 * **$deployVPNGtwS2S = $false** if the VPN Gateway is already deployed in hub1 
 * **$deployVPNGtwS2S = $true** in the case the VPN Gateway is not deployed in hub1.
 The condition avoids the reset of the VPN configuration, when the ARM template **01-vwan.json** runs multiple times.
+
 
 `Tags: virtual WAN, vWAN` <br>
 `testing date: 09-11-22`
