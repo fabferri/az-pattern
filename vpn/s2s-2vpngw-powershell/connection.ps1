@@ -1,3 +1,29 @@
+##
+## List of input variables required to run the script.
+##
+## $subscriptionName = 'NAME_AZURE_SUBSCRIPTION'
+## $rgName = 'NAME_OF_RESOURCE_GROUP'
+## $location1 = 'LOCATION_VNET1'
+## $location2 = 'LOCATION_VNET2'
+## $gw1Name= 'NAME_OF_VPN_GATEWAY_IN_VNET1'
+## $gw2Name= 'NAME_OF_VPN_GATEWAY_IN_VNET1'
+## $gw1IP1Name = 'NAME_PUBLIC_IP_ADDRESS1_VPN_GATEWAY1'
+## $gw1IP2Name = 'NAME_PUBLIC_IP_ADDRESS2_VPN_GATEWAY1'
+## $gw2IP1Name = 'NAME_PUBLIC_IP_ADDRESS1_VPN_GATEWAY2'
+## $gw2IP2Name = 'NAME_PUBLIC_IP_ADDRESS2_VPN_GATEWAY2'
+## $asn1 = AUTONOMOUS_SYSTEM_NUMBER_VPN_GTW1
+## $asn2 = AUTONOMOUS_SYSTEM_NUMBER_VPN_GTW2
+## $localNetwork11Name = 'NAME_LOCAL_NETWORK-VNET1-IP1'
+## $localNetwork12Name = 'NAME_LOCAL_NETWORK-VNET1-IP2'
+## $localNetwork21Name = 'NAME_LOCAL_NETWORK-VNET2-IP1'
+## $localNetwork22Name = 'NAME_LOCAL_NETWORK-VNET2-IP2'
+## $conn11Name = 'NAME_CONNECTION_VPNGTW1_publicIP1-to-VPNGTW2_PublicIP1'
+## $conn12Name = 'NAME_CONNECTION_VPNGTW1_publicIP2-to-VPNGTW2_PublicIP2'
+## $conn21Name = 'NAME_CONNECTION_VPNGTW2_publicIP1-to-VPNGTW1_PublicIP1'
+## $conn22Name = 'NAME_CONNECTION_VPNGTW2_publicIP2-to-VPNGTW1_PublicIP2''
+## $sharedKey = 'SHARED_SECRET_S2S_VPN'
+#
+
 # $inputParams: json file with list of input variables
 $inputParams = 'init.json'
 
