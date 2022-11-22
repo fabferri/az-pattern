@@ -2,15 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "mngIP": {
-      "type": "string",
-      "metadata": {
-        "description": "management IP with access to the VMs"
-      }
-    },
     "location1": {
       "type": "string",
-      "defaultValue": "eastus",
+      "defaultValue": "westus2",
       "metadata": {
         "description": "azure region where is deployed the vnet1"
       }
@@ -43,9 +37,9 @@
       "vmsize": "Standard_DS1_v2"
     },
     "linux": {
-      "imagePublisher": "Canonical",
-      "imageOffer": "UbuntuServer",
-      "sku": "18.04-LTS",
+      "imagePublisher": "canonical",
+      "imageOffer": "0001-com-ubuntu-server-jammy",
+      "sku": "22_04-lts-gen2",
       "version": "latest",
       "vmsize": "Standard_B1s"
     },
@@ -127,7 +121,7 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "22",
-              "sourceAddressPrefix": "[parameters('mngIP')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "VirtualNetwork",
               "access": "Allow",
               "priority": 500,
@@ -141,10 +135,24 @@
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "3389",
-              "sourceAddressPrefix": "[parameters('mngIP')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "VirtualNetwork",
               "access": "Allow",
               "priority": 510,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "HTTP-rule",
+            "properties": {
+              "description": "allow HTTP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 600,
               "direction": "Inbound"
             }
           }

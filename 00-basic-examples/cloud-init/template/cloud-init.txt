@@ -4,3 +4,6 @@ packages:
   - nginx
 runcmd:
   - service nginx restart
+  - [ sh, -c, 'echo "<style> h1 { color: blue; } </style> <h1>" > /var/www/html/index.nginx-debian.html' ]
+  - [ sh, -c, 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html' ]
+  - [ sh, -c, 'echo " </h1>" >> /var/www/html/index.nginx-debian.html' ]
