@@ -38,7 +38,7 @@ Comunications between VNets is shown in the table below:
 |vnet4     | deny    | allow   | deny    |	allow  |
 
 
-The diagram below shows the selective interconnections between VNets:
+The diagram below shows the selective communication between VNets:
 
 [![2]][2]
 
