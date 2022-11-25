@@ -28,17 +28,15 @@ The VNet1 and VNet3 are connected to the different virtual hubs and associated w
 
 The VNet2 and VNet4 are connected to the different hubs and associated with the same routing table named **RT_BLUE**
 <br>
-The allow communications:
-- VNet1 and VNet3 can communicate
-- VNet2 and VNet4 can communicate
-<br>
+Comunications between VNets is shown in the table below:
 
-The following communications are denied:
-- VNet1 can't communicate with VNet2 
-- VNet1 can't communicate with VNet4 
-- VNet2 can't communicate with VNet3
-- VNet3 can't communicate with VNet4
-<br>
+|          | vnet1   | vnet2   | vnet3   | vnet4   |
+| -------- | ------- | ------- | ------- | ------- |
+|vnet1     | allow   | deny    | allow   |	deny   |
+|vnet2     | deny    | allow   | deny    |	allow  |
+|vnet3     | allow   | deny    | allow   |	deny   |
+|vnet4     | deny    | allow   | deny    |	allow  |
+
 
 The diagram below shows the selective interconnections between VNets:
 
