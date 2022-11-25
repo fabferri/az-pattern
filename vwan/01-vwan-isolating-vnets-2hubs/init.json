@@ -8,5 +8,5 @@
     "hub2location": "westus2",
     "hub1Name": "hub1",
     "hub2Name": "hub2",
-    "mngIP": "PUBLIC_MANAGEMENT_IP_TO_CONNECT_IN_SSH_TO_THE_VMs"
+    "mngIP": ""
 }

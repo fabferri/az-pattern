@@ -4,8 +4,9 @@
     "parameters": {
         "mngIP": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
-                "description": "management IP"
+                "description": "public IP of the management client to restrict SSH access to the VMS by NSGs. Whne empty the connection in SSH is allowed from any public IP"
             }
         },
         "adminUsername": {
@@ -443,7 +444,7 @@
             "apiVersion": "2021-05-01",
             "name": "[format('{0}/{1}', variables('hub2Name'), variables('vnet3ConnectionName'))]",
             "dependsOn": [
-                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet3Name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet3Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'RT_RED')]",
@@ -477,7 +478,7 @@
             "apiVersion": "2021-05-01",
             "name": "[format('{0}/{1}', variables('hub2Name'), variables('vnet4ConnectionName'))]",
             "dependsOn": [
-                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet4Name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet4Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub2Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]",
                 "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'RT_BLUE')]",
@@ -539,7 +540,11 @@
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
             "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
-            "comments": "Public IP address VMs",
+            "comments": "VM Public IP address",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
             "properties": {
                 "publicIPAllocationMethod": "Dynamic"
             },

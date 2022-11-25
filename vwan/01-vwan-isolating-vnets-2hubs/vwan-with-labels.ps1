@@ -62,7 +62,7 @@ if (!$hub1location) { Write-Host 'variable $hub1location is null' ; Exit }      
 if (!$hub2location) { Write-Host 'variable $hub2location is null' ; Exit }           else { Write-Host '   hub2 location.........: '$hub2location -ForegroundColor Yellow}
 if (!$hub1Name) { Write-Host 'variable $hub1Name is null' ; Exit }                   else { Write-Host '   hub1 name.............: '$hub1Name -ForegroundColor Yellow}
 if (!$hub2Name) { Write-Host 'variable $hub2Name is null' ; Exit }                   else { Write-Host '   hub2 name.............: '$hub2Name -ForegroundColor Yellow}
-if (!$mngIP) { Write-Host 'variable $mngIP is null' ;  }                             else { Write-Host '   mngIP.................: '$mngIP -ForegroundColor Yellow}
+if (!$mngIP) { Write-Host 'variable $mngIP is empty' ;  }                            else { Write-Host '   mngIP.................: '$mngIP -ForegroundColor Yellow}
 
 $rgName=$ResourceGroupName
 

@@ -4,8 +4,9 @@
     "parameters": {
         "mngIP": {
             "type": "string",
+            "defaultValue": "",
             "metadata": {
-                "description": "management IP"
+                "description": "public IP of the management client to restrict SSH access to the VMS by NSGs. Whne empty the connection in SSH is allowed from any public IP"
             }
         },
         "vwanName": {
@@ -519,7 +520,11 @@
             "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
             "apiVersion": "2021-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
-            "comments": "Public IP address VMs",
+            "comments": "VM Public IP address",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
             "properties": {
                 "publicIPAllocationMethod": "Dynamic"
             },
