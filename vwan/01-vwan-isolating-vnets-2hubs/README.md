@@ -56,7 +56,7 @@ The target configuration can be achieved with two different approaches:
 
 [![3]][3]
 
-Connection to vnet1 and vnet2 to the **hub1** without propagating to labels:
+vnet1 and vnet2 connections to the **hub1** <b><ins>with</ins></b> propagating to labels:
 
 <pre>
 Microsoft.Network/virtualHubs/<b>hub1</b>/hubVirtualNetworkConnections/<b>vnet1conn</b> 
@@ -71,7 +71,7 @@ propagatedRouteTables:
 Propagating to labels: <b>blue-lb</b>
 </pre>
 
-Connection of vnet3 and vnet4 to the **hub2** without propagating to labels:
+vnet3 and vnet4 connection to the **hub2** <b><ins>with</ins></b> propagating to labels:
 <pre>
 Microsoft.Network/virtualHubs/<b>hub2</b>/hubVirtualNetworkConnections/<b>vnet3conn</b> 
 associatedRouteTable: <b>RT_RED</b> 
@@ -91,7 +91,7 @@ Propagating to labels:  <b>blue-lb</b>
 [![4]][4]
 
 
-Connection to vnet1 and vnet2 to the **hub1** without propagating to labels:
+vnet1 and vnet2 connections to the **hub1** <b><ins>without</ins></b> propagating to labels:
 <pre>
 Microsoft.Network/virtualHubs/<b>hub1</b>/hubVirtualNetworkConnections/<b>vnet1conn</b> 
 associatedRouteTable: <b>RT_RED</b> 
@@ -107,7 +107,7 @@ propagatedRouteTables: {hub1: <b>RT_BLUE</b>
 Propagating to labels:
 </pre>
 
-Connection to vnet3 and vnet4 to the **hub2** without propagating to labels:
+vnet3 and vnet4 connections to the **hub2** <b><ins>without</ins></b> propagating to labels:
 <pre>
 Microsoft.Network/virtualHubs/hub2/hubVirtualNetworkConnections/vnet4conn
 associatedRouteTable: <b>RT_RED</b> 
@@ -203,9 +203,12 @@ Meaning of the variables:
 - **hub2location**: Azure region of the virtual hub2
 - **hub1Name**: name of the virtual hub1
 - **hub2Name**: name of the virtual hub2
-- **mngIP**: public IP used to connect to the Azure VMs in SSH
+- **mngIP**: public IP used to connect to the Azure VMs in SSH. By default is set to empty string.
 
 <br>
+
+`Tags: vWAN, Azre Virtual WAN, ARM templates` <br>
+`testing date: 10-08-22`
 
 <!--Image References-->
 
