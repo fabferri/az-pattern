@@ -297,13 +297,13 @@ mongosh mongodb://moviesAdmin@10.0.1.10:27017/dbmovies
 mongosh -u moviesAdmin -p YOUR_PASSWORD mongodb://10.0.1.10:27017/dbmovies
 ```
 
-## <a name="install golang"></a>5. Install Golang in vm2
+## <a name="install golang"></a>7. Golang installation in vm2
 ```bash
 apt install -y golang-go
 ```
 At writing time the golang release installed in ubuntu 22.04 is 1.18.1 <br>
 
-## <a name="connect to mongoDB in Golang"></a>6. How to connect to a remote MongoDB server in Golang
+## <a name="connect to mongoDB in Golang"></a>8. How to connect to a remote MongoDB server in Golang
 In the vm2:
 
 ```bash
