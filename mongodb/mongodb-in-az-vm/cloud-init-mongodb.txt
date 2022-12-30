@@ -1,0 +1,14 @@
+#cloud-config
+packages_update: true
+packages:
+runcmd:
+  - DEBIAN_FRONTEND=noninteractive apt-get -yq install gnupg 
+# Note: Don't write files to /tmp from cloud-init use /run/somedir instead.
+  - mkdir /run/mymongodir
+  - [ wget, "https://www.mongodb.org/static/pgp/server-6.0.asc", -qO, /run/mymongodir/server-6.0.asc ]
+  - apt-key add /run/mymongodir/server-6.0.asc
+  - [ sh, -c, 'echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-6.0.list' ]
+  - apt-get update
+  - apt-get install -y mongodb-org
+  - systemctl start mongod
+  - systemctl enable mongod

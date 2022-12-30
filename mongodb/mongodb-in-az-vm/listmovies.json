@@ -1,0 +1,330 @@
+{
+ "Id": "P000456",
+ "Title": "2001: A Space Odyssey",
+ "Genre": "science-fiction",
+ "Director": "Stanley Kubrick",
+ "Author": "Arthur C. Clarke",
+ "Music": "",
+ "Posterfile": "2001-space-odyssey.jpg",
+ "Year": 1968,
+ "Team": [
+  {
+   "Actor1": "Keir Dullea",
+   "Actor2": "Gary Lockwood",
+   "Actor3": ""
+  },
+  {
+   "Actor1": "",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000457",
+ "Title": "Vertigo",
+ "Genre": "thriller",
+ "Director": "Alfred Hitchcock",
+ "Author": "Pierre Boileau, Thomas Narcejac",
+ "Music": "",
+ "Posterfile": "vertigo.jpg",
+ "Year": 1958,
+ "Team": [
+  {
+   "Actor1": "James Stewart",
+   "Actor2": "Kim Novak",
+   "Actor3": "Barbara Bel Geddes"
+  },
+  {
+   "Actor1": "Tom Helmore",
+   "Actor2": "Henry Jones",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000458",
+ "Title": "The Bird with the Crystal Plumage",
+ "Genre": "giallo",
+ "Director": "Dario Argento",
+ "Author": "",
+ "Music": "Ennio Morricone",
+ "Posterfile": "crystal-plumage.jpg",
+ "Year": 1970,
+ "Team": [
+  {
+   "Actor1": "Tony Musante",
+   "Actor2": "Suzy Kendall",
+   "Actor3": "Enrico Maria Salerno"
+  },
+  {
+   "Actor1": "Eva Renzi",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000459",
+ "Title": "Taxi Driver",
+ "Genre": "crime",
+ "Director": "Martin Scorsese",
+ "Author": "Paul Schrader",
+ "Music": "Bernard Herrmann",
+ "Posterfile": "taxidriver.jpg",
+ "Year": 1976,
+ "Team": [
+  {
+   "Actor1": "Robert De Niro",
+   "Actor2": "Jodie Foster",
+   "Actor3": "Albert Brooks"
+  },
+  {
+   "Actor1": "Harvey Keitel",
+   "Actor2": "Leonard Harris",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000460",
+ "Title": "Metropolis",
+ "Genre": "science-fiction",
+ "Director": "Fritz Lang",
+ "Author": "Thea von Harbou",
+ "Music": "Bernard Herrmann",
+ "Posterfile": "metropolis.jpg",
+ "Year": 1927,
+ "Team": [
+  {
+   "Actor1": "Alfred Abel",
+   "Actor2": "Brigitte Helm",
+   "Actor3": "Gustav Fröhlich"
+  },
+  {
+   "Actor1": "Rudolf Klein-Rogge",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000501",
+ "Title": "Modern Times",
+ "Genre": "silent",
+ "Director": "Charlie Chaplin",
+ "Author": "Charlie Chaplin",
+ "Music": "Charlie Chaplin",
+ "Posterfile": "modern-times.jpg",
+ "Year": 1936,
+ "Team": [
+  {
+   "Actor1": "Charlie Chaplin",
+   "Actor2": "Paulette Goddard",
+   "Actor3": "Henry Bergman"
+  },
+  {
+   "Actor1": "Tiny Sandford",
+   "Actor2": "Chester Conklin",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000510",
+ "Title": "One Week",
+ "Genre": "silent",
+ "Director": "Buster Keaton",
+ "Author": "Edward F. Cline, Buster Keaton",
+ "Music": "",
+ "Posterfile": "one-week.jpg",
+ "Year": 1920,
+ "Team": [
+  {
+   "Actor1": "Buster Keaton",
+   "Actor2": "Sybil Seely",
+   "Actor3": "Joe Roberts"
+  },
+  {
+   "Actor1": "",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000511",
+ "Title": "Solaris",
+ "Genre": "science-fiction",
+ "Director": "Andrei Tarkovsky",
+ "Author": "Stanislaw Lem",
+ "Music": "",
+ "Posterfile": "solaris.jpg",
+ "Year": 1972,
+ "Team": [
+  {
+   "Actor1": "Donatas Banionis",
+   "Actor2": "Natalya Bondarchuk",
+   "Actor3": "Jüri Järvet"
+  },
+  {
+   "Actor1": "Vladislav Dvorzhetsky",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000512",
+ "Title": "Forbidden Planet",
+ "Genre": "science-fiction",
+ "Director": "Fred M. Wilcox",
+ "Author": "Les Tremayne",
+ "Music": "",
+ "Posterfile": "forbidden-planet.jpg",
+ "Year": 1956,
+ "Team": [
+  {
+   "Actor1": "Walter Pidgeon",
+   "Actor2": "Anne Francis",
+   "Actor3": "Leslie Nielsen"
+  },
+  {
+   "Actor1": "Warren Stevens",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000516",
+ "Title": "The Day the Earth Stood Still",
+ "Genre": "science-fiction",
+ "Director": "Robert Wise",
+ "Author": "Harry Bates",
+ "Music": "Bernard Herrmann",
+ "Posterfile": "day-earth-stood-still.jpg",
+ "Year": 1951,
+ "Team": [
+  {
+   "Actor1": "Michael Rennie",
+   "Actor2": "Patricia Neal",
+   "Actor3": "Hugh Marlowe"
+  },
+  {
+   "Actor1": "Sam Jaffe",
+   "Actor2": "Billy Gray",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000520",
+ "Title": "Zardoz",
+ "Genre": "science-fiction",
+ "Director": "John Boorman",
+ "Author": "John Boorman",
+ "Music": "David Munrow",
+ "Posterfile": "zardoz.jpg",
+ "Year": 1951,
+ "Team": [
+  {
+   "Actor1": "Sean Connery",
+   "Actor2": "Charlotte Rampling",
+   "Actor3": "Sara Kestelman"
+  },
+  {
+   "Actor1": "John Alderton",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000522",
+ "Title": "Journey to the Center of the Earth",
+ "Genre": "science-fiction",
+ "Director": "Henry Levin",
+ "Author": "Jules Verne",
+ "Music": "Bernard Herrmann",
+ "Posterfile": "journey-center-of-the-earth.jpg",
+ "Year": 1959,
+ "Team": [
+  {
+   "Actor1": "James Mason",
+   "Actor2": "Pat Boone",
+   "Actor3": "Arlene Dahl"
+  },
+  {
+   "Actor1": "",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000524",
+ "Title": "The War of the Worlds",
+ "Genre": "science-fiction",
+ "Director": "Byron Haskin",
+ "Author": "H. G. Wells",
+ "Music": "Leith Stevens",
+ "Posterfile": "war-of-the-worlds.jpg",
+ "Year": 1953,
+ "Team": [
+  {
+   "Actor1": "Gene Barry",
+   "Actor2": "Ann Robinson",
+   "Actor3": ""
+  },
+  {
+   "Actor1": "",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
+{
+ "Id": "P000526",
+ "Title": "The Good, the Bad and the Ugly",
+ "Genre": "western",
+ "Director": "Sergio Leone",
+ "Author": "Luciano Vincenzoni, Sergio Leone",
+ "Music": "Ennio Morricone",
+ "Posterfile": "good-the-bad-and-the-ugly.jpg",
+ "Year": 1966,
+ "Team": [
+  {
+   "Actor1": "Clint Eastwood",
+   "Actor2": "Eli Wallach",
+   "Actor3": "Lee Van Cleef"
+  },
+  {
+   "Actor1": "Aldo Giuffrè",
+   "Actor2": "Antonio Casas",
+   "Actor3": "Rada Rassimov"
+  }
+ ]
+}
+{
+ "Id": "P000526",
+ "Title": "A Fistful of Dollars",
+ "Genre": "western",
+ "Director": "Sergio Leone",
+ "Author": "Sergio Leone, Adriano Bolzoni",
+ "Music": "Ennio Morricone",
+ "Posterfile": "fistful-of-dollars-movie.jpg",
+ "Year": 1964,
+ "Team": [
+  {
+   "Actor1": "Clint Eastwood",
+   "Actor2": "Marianne Koch",
+   "Actor3": "Gian Maria Volonté"
+  },
+  {
+   "Actor1": "Josef Egger",
+   "Actor2": "",
+   "Actor3": ""
+  }
+ ]
+}
