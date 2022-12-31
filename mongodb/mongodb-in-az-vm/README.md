@@ -17,16 +17,25 @@ editor= ""/>
    ms.author="fabferri" />
 
 # MongoDB in Azure VM
-Here you have an ARM template to install through cloud-init MongoDB in Azure VM.<br>
-The structure of MongoDB is shown below:
+This post has the following content:
+* An ARM template to install through cloud-init MongoDB in Azure VM
+* Creation of new database named **dbmovies** and import of new collection **listmovies** into MongoDB with **mongoimport** tool. 
+* List of MongoDB commands to run basic queries
+* Create a MongoDB administrative user and configuration for remote access to MongoDB
+* Add a new administratorion user for the **dbmovies** database and remote connection to **dbmovies** 
+* Installation of Goland in Azure Ubuntu 22.04 VM and connection by in Golang code to the remote MongoDB server 
+
+The MongoDB data modelling is shown below:
 
 [![1]][1]
 
 [![2]][2]
 
-This post walks you through the steps required to create a MongoDB configuration with a database and a collection. The configuration diagram is shown below:
+Our configuration is shown in the diagram below:
 
 [![3]][3]
+
+
 
 ## File list
 * **vms.json**: ARM template to create the Azure VM with MongoDB installed through cloud-init
