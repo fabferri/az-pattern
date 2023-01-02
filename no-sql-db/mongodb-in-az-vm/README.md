@@ -18,10 +18,10 @@ editor= ""/>
 
 # MongoDB in Azure VM
 This post has the following content:
-* An ARM template to install through cloud-init MongoDB in Azure VM
+* An ARM template to install MongoDB in Azure VM through cloud-init
 * Creation of new database named **dbmovies** and import of new collection **listmovies** into MongoDB with **mongoimport** tool. 
 * List of MongoDB commands to run basic queries
-* Create a MongoDB administrative user and configuration for remote access to MongoDB
+* Create a MongoDB administrative user and enable remote access to MongoDB
 * Add a new administratorion user for the **dbmovies** database and remote connection to **dbmovies** 
 * Installation of Goland in Azure Ubuntu 22.04 VM and connection by in Golang code to the remote MongoDB server 
 
