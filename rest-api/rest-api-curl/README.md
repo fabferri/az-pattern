@@ -21,7 +21,7 @@ editor=""/>
 To make a REST API call to Azure is required an Authorization header, specifying a token. The token can be acquired in different ways.
 
 ## <a name="Acquire token in azure management portal"></a>1. Method1: Acquire token from resources.azure.com
-When the user sign-in Azure management portal a token is issued. You can acquired the token in the web browser at the link:
+When the user sign-in Azure management portal a token is issued. You can acquire the token in the web browser at the link:
 ```
 https://resources.azure.com/api/token?plaintext=true  
 ```
@@ -65,7 +65,7 @@ parameters:
 -o, --output <file>: write output to <file> instead of stdout
 ```
 
-The token is quite long alphanumeric string. In windows, to get the syntax shorter and readable, you can assing the value of token in a powershell variable and use it in curl command:
+The token is quite long alphanumeric string. In windows, to get the syntax shorter and readable, you can assign the value of token to a powershell variable and then use it in curl command:
 ```console
 $mytoken= (Get-AzAccessToken).Token 
 curl -X GET "https://management.azure.com/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/{RESOURCE_GROUP_NAME}/providers/Microsoft.Storage/storageAccounts/{ACCOUNT_NAME}?api-version=2022-09-01" -H "Authorization:Bearer $mytoken" -H "Content-Type:application/json" -o output.json -D - 
