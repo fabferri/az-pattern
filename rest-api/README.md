@@ -18,7 +18,7 @@ editor=""/>
    ms.author="fabferri" />
 
 ## How to deploy Azure resources through REST APIs
-REST API can be invoke with different tools and shell:
+REST APIs can be invoke with different ways:
 * [rest-api-curl](./rest-api-curl): examples of REST APIs invoked by curl
 * [rest-api-powershell](./rest-api-powershell): examples of REST APIs invoked by powershell (**Invoke-RestMethod**, **Invoke-WebRequest**)
 
