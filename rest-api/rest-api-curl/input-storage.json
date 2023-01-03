@@ -1,0 +1,47 @@
+{
+    "location": "uksouth",
+    "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+    },
+    "kind": "StorageV2",
+    "properties": {
+        "dnsEndpointType": "Standard",
+        "defaultToOAuthAuthentication": false,
+        "publicNetworkAccess": "Enabled",
+        "allowCrossTenantReplication": true,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": true,
+        "allowSharedKeyAccess": true,
+        "networkAcls": {
+            "bypass": "AzureServices",
+            "virtualNetworkRules": [],
+            "ipRules": [],
+            "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+            "requireInfrastructureEncryption": false,
+            "services": {
+                "file": {
+                    "keyType": "Account",
+                    "enabled": true
+                },
+                "table": {
+                    "keyType": "Account",
+                    "enabled": true
+                },
+                "queue": {
+                    "keyType": "Account",
+                    "enabled": true
+                },
+                "blob": {
+                    "keyType": "Account",
+                    "enabled": true
+                }
+            },
+            "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot"
+    }
+}

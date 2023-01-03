@@ -1,0 +1,58 @@
+{
+  "properties": {
+    "addressSpace": {
+      "addressPrefixes": [
+        "10.0.0.0/16"
+      ]
+    },
+    "subnets": [
+      {
+        "name": "subnet1",
+        "properties": {
+          "addressPrefix": "10.0.1.0/24"
+        }
+      },
+      {
+        "name": "subnet2",
+        "properties": {
+          "addressPrefix": "10.0.2.0/24"
+        }
+      },
+      {
+        "name": "subnet3",
+        "properties": {
+          "addressPrefix": "10.0.3.0/24",
+          "delegations": [
+            {
+              "name": "myDelegation",
+              "properties": {
+                "serviceName": "Microsoft.Sql/managedInstances"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "subnet4",
+        "properties": {
+          "addressPrefix": "10.0.4.0/24",
+          "serviceEndpoints": [
+            {
+              "service": "Microsoft.Storage"
+            }
+          ]
+        }
+      },
+      {
+        "name": "subnet5",
+        "properties": {
+          "addressPrefix": "10.0.5.0/24"
+        }
+      }
+    ],
+    "bgpCommunities": {
+      "virtualNetworkCommunity": "12076:20000"
+    }
+  },
+  "location": "uksouth"
+}
