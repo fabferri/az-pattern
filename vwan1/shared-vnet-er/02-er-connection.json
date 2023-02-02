@@ -1,0 +1,90 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vwanName": {
+            "type": "string",
+            "defaultValue": "vwan1",
+            "metadata": {
+                "description": "Name of the Virtual Wan."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "metadata": {
+                "description": "name of the hub1 in vWAN"
+            }
+        },
+        "ercircuitSubcriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure subscription ID, where is deployed the ER circuit"
+            }
+        },
+        "ercircuitResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Group, where is deployed the ER circuit"
+            }
+        },
+        "erCircuitName": {
+            "type": "string",
+            "metadata": {
+                "description": "ER circuit name"
+            }
+        },
+        "erAuthorizationKey": {
+            "type": "string",
+            "metadata": {
+                "description": "authorization key of the ER circuit"
+            }
+        }
+    },
+    "variables": {
+        "hub1Name": "[parameters('hub1Name')]",
+        "vwanName": "[parameters('vwanName')]",
+        "erGatewayName": "[format('{0}_ERGW', variables('hub1Name'))]",
+        "erConnectionName": "ExRConnection1",
+        "erAuthorizationKey":"[parameters('erAuthorizationKey')]",
+        "ercircuitSubcriptionId":"[parameters('ercircuitSubcriptionId')]",
+        "ercircuitResourceGroup": "[parameters('ercircuitResourceGroup')]",
+        "erCircuitName": "[parameters('erCircuitName')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/expressRouteGateways/expressRouteConnections",
+            "name": "[format('{0}/{1}', variables('erGatewayName'), variables('erConnectionName'))]",
+            "apiVersion": "2022-05-01",
+            "properties": {
+                "routingConfiguration": {
+                    "associatedRouteTable": {
+                        "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                        
+                    },
+                    "propagatedRouteTables": {
+                        "labels": [
+                            "default"
+                        ],
+                        "ids": [
+                            {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+                            },
+                             {
+                                "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'RT_SHARED')]"
+                            }
+                        ]
+                    },
+                    "vnetRoutes": {
+                        "staticRoutes": []
+                    }
+                },
+                "expressRouteCircuitPeering": {
+                    "id": "[format('{0}/peerings/AzurePrivatePeering', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', variables('ercircuitSubcriptionId'), variables('ercircuitResourceGroup')), 'Microsoft.Network/expressRouteCircuits', variables('erCircuitName')))]"
+                },
+                "routingWeight": 0,
+                "authorizationKey": "[variables('erAuthorizationKey')]",
+                "enableInternetSecurity": false
+            }
+        }
+    ]
+}

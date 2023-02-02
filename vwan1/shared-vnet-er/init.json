@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan-1",
+    "vwanName": "vwan1",
+    "hub1location": "westus2",
+    "hub1Name": "hub1",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "ercircuitSubcriptionId": "abcdf111-a111-a111-a111-abcdef123456",
+    "ercircuitResourceGroup": "SEA-Cust33",
+    "erCircuitName": "SEA-Cust33-ER",
+    "erAuthorizationKey": "123a1234-abcde-abcd-abcd-abcdef123456"
+}
