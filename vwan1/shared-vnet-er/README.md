@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'Virtual WAN: scenario with communication between shared vnet-isolating vnets and shared vnet-branch'
-description= "Virtual WAN: scenario with communication between shared vnet-isolating vnets and shared vnet-branch"
+pageTitle= 'Virtual WAN: communication of a shared vnet with isolating vnets and branch'
+description= "Virtual WAN: communication of a shared vnet with isolating vnets and branch"
 documentationcenter: na
 services=""
 documentationCenter="github repository"
@@ -17,9 +17,9 @@ editor=""/>
    ms.date = "02/02/2023"
    ms.author="fabferri" />
 
-## VVirtual WAN: scenario with communication between shared vnet-isolating vnets and shared vnet-branch
+# Virtual WAN: communication of a shared vnet with isolating vnets and branch
 The article describes a simple virtual WAN configuration with:
-* two isolated spoke VNets (**spoke1**, **spoke2**) able to communicate with shared vnet (named  **nvavnet**) 
+* shared vnet, named  **nvavnet**, able to communicate with  two isolated spoke VNets **spoke1**, **spoke2** 
 * shared **nvavnet** able to communicate with the on-premises network through the ExpressRoute circuit
 
 The network diagram is shown below:
