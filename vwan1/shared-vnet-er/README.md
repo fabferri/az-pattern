@@ -17,7 +17,7 @@ editor=""/>
    ms.date = "02/02/2023"
    ms.author="fabferri" />
 
-# Virtual WAN: communication of a shared vnet with isolating vnets and branch
+## Virtual WAN: communication of a shared vnet with isolating vnets and branch
 The article describes a simple virtual WAN configuration with:
 * shared vnet, named  **nvavnet**, able to communicate with  two isolated spoke VNets **spoke1**, **spoke2** 
 * shared **nvavnet** able to communicate with the on-premises network through the ExpressRoute circuit
