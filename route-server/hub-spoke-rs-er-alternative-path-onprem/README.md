@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'hackathon: hub-spoke vnets configuration with ExpressRoute connection in failover through a transitive vnet'
-description= "hackathon: hub-spoke vnets configuration with ExpressRoute connection in failover through a transitive vnet"
+pageTitle= 'hackathon: hub-spoke vnets configuration with ExpressRoute connection in failover through a transit vnet'
+description= "hackathon: hub-spoke vnets configuration with ExpressRoute connection in failover through a transit vnet"
 documentationcenter: na
 services=""
 documentationCenter="github"
@@ -18,7 +18,7 @@ editor=""/>
    ms.review=""
    ms.author="fabferri" />
 
-## hackathon: hub-spoke vnets configuration with ExpressRoute connection in failover through a transitive vnet
+## hackathon: hub-spoke vnets configuration with ExpressRoute connection in failover through a transit vnet
 
 ### Caveat: the configuration is for <ins>testing ONLY</ins>
 
@@ -32,7 +32,7 @@ The migration process of ExpressRoute Gateway from non-zoning SKU to zoning SKU 
 - deletion of the ExpressRoute Gateway, 
 - creation of new ExpressRoute Gateway in zoning SKU,
 - creation of new ExpressRoute Connection, between the new ExpressRoute Gateway and the ExpressRoute circuit.
-Along the process of ExpressRoute Gateway migration, the configuration with transitive vnet aims to route the traffic though an alternative path between the hub-spoke vnets and the on-premises networks.
+Along the process of ExpressRoute Gateway migration, the configuration with transit vnet aims to route the traffic though an alternative path between the hub-spoke vnets and the on-premises networks.
 
 [![2]][2]
 
@@ -49,8 +49,8 @@ Let's discuss briefly the configuration:
 - the configuration has UDR in the spoke vnet to force the traffic to transit through the firewall in the hub vnet. The UDR has the BGP propagation disabled; the subnet in spoke vnet does not receive the networks on-premises but the address space of spoke vnet is sent anyway to on-premises through the ExpressRoute Gateway
 - in the hub vnet runs a **nva2** with BGP routing features, able to support AS-override and route filtering (route-map) in BGP advertisements inbound and outbound  
 - each Route Server has a fix ASN 655515 that it can't be changed. 
-- two eBGP session are established between the route server **rs1** in the hub and the **nva2** deployed in the transitive vnet
-- two eBGP session are created between the route server **rs2** in the transitive vnet and the **nva2** 
+- two eBGP session are established between the route server **rs1** in the hub and the **nva2** deployed in the transit vnet
+- two eBGP session are created between the route server **rs2** in the transit vnet and the **nva2** 
 - the configuration requires in **nva2** the following BGP capabilities:
    - capability to create eBGP peering with **rs1** and **rs2**.
    - capability in BGP session to apply <ins>AS-overwrite</ins>. This is required to avoid discard of IP network prefixes in the Route Servers. _[In eBGP the AS loop detection is done by scanning the full AS path (as specified in the AS_PATH attribute), and checking that the autonomous system number of the local system does not appear in the AS path]_
@@ -59,7 +59,7 @@ Let's discuss briefly the configuration:
 - the current setup uses a single **nva2**. The configuration has a single point of failure in the NVA. It is possibile anyway make a deployment with two NVAs to achieve a better resilience
 - the data path between VMs in hub-spoke and on-premises does not transit through the **nva2**. When the traffic transit through the transit vnet, the **nva2** SKU does not impact with throughput to/from on-premises,   
 
-A full diagram in condition of failover through the Connection liked to the transitive vnet is show below:
+A full diagram in condition of failover through the Connection liked to the transit vnet is show below:
 
 [![4]][4]
 
@@ -81,7 +81,7 @@ When the primary connection between the hub vnet and the ExpressRoute circuit is
 | **04-rs2.ps1**            | powershell script to run **04-rs2.json**                                          |
 | **05-spoke-vnet.json**    | ARM template to deploy spoke1 vnet and spok1 vm                                   |
 | **05-spoke-vnet.ps1**     | powershell script to run **05-spoke-vnet.json**                                   |
-| **06-vnet-peering.json**  | ARM template to create vnet peering between spoke1 and hub and between hub and transitive vnet |
+| **06-vnet-peering.json**  | ARM template to create vnet peering between spoke1 and hub and between hub and transit vnet |
 | **06-vnet-peering.ps1**   | powershell script to run **06-vnet-peering.json**                                 |
 | **07-er-conn-vnet1.json** | ARM template to create the ExpressRoute connection between the hub and the ExpressRoute circuit| 
 | **07-er-conn-vnet1.ps1**  | powershell script to run **07-er-conn-vnet1.json**                                |
@@ -234,7 +234,7 @@ By default in eBGP the router advertised the IP network prefixes to a BGP peer w
 
 In **nva1** to access to the command line interface of the FRR, as root privilege, run the shell command: **vtysh**
 
-## <a name="routing tables"></a>3. Routing tables in case of failover through the transitive vnet
+## <a name="routing tables"></a>3. Routing tables in case of failover through the transit vnet
 
 ### <a name="routing tables"></a>3.1 BGP routing table in nva2 
 List of bgp networks in **nva2**:
@@ -301,7 +301,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 Total number of prefixes 3
 ```
 
-List of IP network prefixes sent to **SEA-Cust34-rs2** in transitive vnet:
+List of IP network prefixes sent to **SEA-Cust34-rs2** in transit vnet:
 ```console
 SEA-Cust34-nva2# show ip bgp neighbors 10.0.2.132 advertised-routes
 BGP table version is 7, local router ID is 10.0.2.10, vrf id 0
@@ -320,7 +320,7 @@ RPKI validation codes: V valid, I invalid, N Not found
 Total number of prefixes 3
 ```
 
-List of IP network prefixes received from **SEA-Cust34-rs2** in transitive vnet:
+List of IP network prefixes received from **SEA-Cust34-rs2** in transit vnet:
 ```console
 SEA-Cust34-nva2# show ip bgp neighbors 10.0.2.132 received-routes
 BGP table version is 7, local router ID is 10.0.2.10, vrf id 0
@@ -368,7 +368,7 @@ LocalAddress Network       NextHop    SourcePeer Origin AsPath Weight
 ```
 
 ### <a name="routing tables in Route Servers"></a>3.3 BGP routing table in rs2
-The SEA-Cust34-rs2 in transitive vnet learns the following networks from the **nva2**:
+The SEA-Cust34-rs2 in transit vnet learns the following networks from the **nva2**:
 ```console
 Get-AzRouteServerPeerlearnedRoute -RouteServerName SEA-Cust34-rs2 -ResourceGroupName $rgName -peername $peerName |ft
 
@@ -421,7 +421,7 @@ LocalAddress Network       NextHop    SourcePeer Origin AsPath            Weight
 
 [![10]][10]
 
-### <a name="Routing table in ExpressRoute Gateway"></a>3.9 Routing table in ExpressRoute Gateway in transitive vnet
+### <a name="Routing table in ExpressRoute Gateway"></a>3.9 Routing table in ExpressRoute Gateway in transit vnet
 
 [![11]][11]
 
@@ -436,14 +436,14 @@ LocalAddress Network       NextHop    SourcePeer Origin AsPath            Weight
 [1]: ./media/network-diagram1.png "network diagram"
 [2]: ./media/network-diagram2.png "routing in alternative path along the migration of ExpressRoute Gateway"
 [3]: ./media/network-diagram3.png "full network diagram"
-[4]: ./media/network-diagram4.png "failover diagram through the transitive vnet"
-[5]: ./media/network-diagram5.png "failover diagram through the transitive vnet"
+[4]: ./media/network-diagram4.png "failover diagram through the transit vnet"
+[5]: ./media/network-diagram5.png "failover diagram through the transit vnet"
 [6]: ./media/effectiveroutes-spokevm.png "effective routing table in the spoke vm"
 [7]: ./media/effectiveroutes-hubvm.png "effective routing table in the hub vm"
-[8]: ./media/effectiveroutes-nva2.png "effective routing table in nva2 in the transitive vnet"
+[8]: ./media/effectiveroutes-nva2.png "effective routing table in nva2 in the transit vnet"
 [9]: ./media/rs1.png "routing table in Route Server rs1"
 [10]: ./media/rs2.png "routing table in Route Server rs2"
-[11]: ./media/er-gw.png "routing table in Expressroute Gateway in transitive vnet"
+[11]: ./media/er-gw.png "routing table in Expressroute Gateway in transit vnet"
 [12]: ./media/er-circuit.png "routing table in Expressroute circuit"
 
 <!--Link References-->
