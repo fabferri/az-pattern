@@ -1,0 +1,92 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "SEA-Cust34-VNet02",
+            "metadata": {
+                "description": "name of existing vnet with RouteServerSubnet"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnetName": "[parameters('vnetName')]",
+        "rsName": "SEA-Cust34-rs2",
+        "rsPubIPName": "[concat(variables('rsName'),'-pubIP')]",
+        "peering1IP": "10.0.2.10",
+        "peering1ASN": 65001,
+        "rsBGPconnectionName": "bgp-conn1",
+        "rsSubnetId": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets',variables('vnetName'),'RouteServerSubnet' )]",
+        "vHubIPconfigName": "vHubipconfig1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('rsName')]",
+            "location": "[variables('location')]",
+            "comments": "create a virtual hub object - Note: the ARM template run successful only if the main vnet with already exists",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rsPubIPName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rsSubnetId')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2021-05-01",
+            "name": "[format('{0}/{1}', variables('rsName'), variables('rsBGPconnectionName'))]",
+             
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('peering1IP')]",
+                "peerAsn": "[variables('peering1ASN')]"
+            }
+        }
+    ]
+}

@@ -1,0 +1,135 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationvnet1": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationvnet2": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspokevnet": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region"
+            }
+        }
+    },
+    "variables": {
+        "vnet1": {
+            "location": "[parameters('locationvnet1')]",
+            "name": "SEA-Cust34-VNet01",
+            "addressSpace1Prefix": "10.17.34.0/24",
+            "addressSpace2Prefix": "10.0.1.0/24",
+            "fwSubnetName": "fwSubnet",
+            "fwSubnetPrefix": "10.17.34.0/27",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.17.34.32/27",
+            "gatewaySubnetName": "GatewaySubnet",
+            "gatewaySubnetPrefix": "10.17.34.128/25",
+            "nvaSubnetName": "nvaSubnet",
+            "nvaSubnetPrefix": "10.0.1.0/25",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.0.1.128/25"
+        },
+        "vnet2": {
+            "location": "[parameters('locationvnet2')]",
+            "name": "SEA-Cust34-VNet02",
+            "addressSpace1Prefix": "10.18.34.0/24",
+            "addressSpace2Prefix": "10.0.2.0/24",
+            "gatewaySubnetName": "GatewaySubnet",
+            "gatewaySubnetPrefix": "10.18.34.128/25",
+            "nvaSubnetName": "nvaSubnet",
+            "nvaSubnetPrefix": "10.0.2.0/25",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.0.2.128/25"
+        },
+        "spoke1vnet": {
+            "location": "[parameters('locationspokevnet')]",
+            "name": "SEA-Cust34-spoke1",
+            "addressSpace1Prefix": "10.0.50.0/24",
+            "spokeSubnetName": "spoke1Subnet1",
+            "spokeSubnetPrefix": "10.0.50.0/25"
+        },
+        "peeringNameVnet1ToVnet2": "[concat(variables('vnet1').name,'To',variables('vnet2').name)]",
+        "peeringNameVnet2ToVnet1": "[concat(variables('vnet2').name,'To',variables('vnet1').name)]",
+        "peeringNameVnet1ToSpoke1": "[concat(variables('vnet1').name,'To',variables('spoke1vnet').name)]",
+        "peeringNameSpoke1ToVnet1": "[concat(variables('spoke1vnet').name,'To',variables('vnet1').name)]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet1').name,'/',variables('peeringNameVnet1ToVnet2'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "This is the peering from hub1 to vnet1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet2').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet2').name,'/',variables('peeringNameVnet2ToVnet1'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnet2').location]",
+            "comments": "This is the peering from vnet1 to hub1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnet1').name,'/',variables('peeringNameVnet1ToSpoke1'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnet1').location]",
+            "comments": "This is the peering from vnet1 to spoke1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke1vnet').name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('spoke1vnet').name,'/',variables('peeringNameSpoke1ToVnet1'))]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('spoke1vnet').location]",
+            "comments": "This is the peering from spoke1 to vnet1",
+            "dependsOn": [],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+                }
+            }
+        }
+    ]
+}
