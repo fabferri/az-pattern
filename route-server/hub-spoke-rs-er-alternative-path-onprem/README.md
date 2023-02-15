@@ -52,9 +52,9 @@ Let's discuss briefly the configuration:
 - two eBGP session are established between the route server **rs1** in the hub and the **nva2** deployed in the transit vnet
 - two eBGP session are created between the route server **rs2** in the transit vnet and the **nva2** 
 - the configuration requires in **nva2** the following BGP capabilities:
-   - capability to create eBGP peering with **rs1** and **rs2**.
-   - capability in BGP session to apply <ins>AS-overwrite</ins>. This is required to avoid discard of IP network prefixes in the Route Servers. _[In eBGP the AS loop detection is done by scanning the full AS path (as specified in the AS_PATH attribute), and checking that the autonomous system number of the local system does not appear in the AS path]_
-   - capability in BGP to leave the <ins>next-hop unchanged</ins> in eBGP session
+   - capability to create eBGP peering simultaneosly with **rs1** and **rs2**.
+   - capability in eBGP to apply <ins>**AS-overwrite**</ins>. This is required to avoid discard of IP network prefixes in the Route Servers. _[In eBGP the AS loop detection is done by scanning the full AS path (as specified in the AS_PATH attribute), and checking that the autonomous system number of the local system does not appear in the AS path]_
+   - capability in eBGP to leave the <ins>**next-hop unchanged**</ins> 
 - in the setup **nva2** runs in Ubuntu (22.04) VM and BGP implemented by FRRouting (open-source SW) 
 - the current setup uses a single **nva2**. The configuration has a single point of failure in the NVA. It is possibile anyway make a deployment with two NVAs to achieve a better resilience
 - the data path between VMs in hub-spoke and on-premises does not transit through the **nva2**. When the traffic transit through the transit vnet, the **nva2** SKU does not impact with throughput to/from on-premises,   
