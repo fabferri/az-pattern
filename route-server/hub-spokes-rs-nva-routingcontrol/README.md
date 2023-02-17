@@ -732,7 +732,7 @@ The data path between spoke vnet and on-premises is shown below:
 
 [![11]][11]
 
-`Tags: Route Server, hub-spoke vnets, ExpressRoute Gateway `
+`Tags: Route Server, hub-spoke vnets, ExpressRoute Gateway ` <br>
 `date: 16-02-23`
 
 <!--Image References-->
