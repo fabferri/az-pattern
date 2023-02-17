@@ -1,0 +1,213 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefix": {
+            "type": "string",
+            "defaultValue": "SEA-Cust33-",
+            "metadata": {
+                "description": "naming prefix"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password for the VMs"
+            }
+        }
+    },
+    "variables": {
+        "hub": {
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('prefix'),'hub')]",
+            "addressSpace1Prefix": "10.17.33.0/24",
+            "nvaSubnetName": "nvaSubnet",
+            "nvaSubnetPrefix": "10.17.33.0/28",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.17.33.16/28",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.17.33.64/26",
+            "gatewaySubnetName": "GatewaySubnet",
+            "gatewaySubnetPrefix": "10.17.33.192/26"
+        },
+        "csr1Name": "csr1",
+        "csr1Nic1PrivIP": "10.17.33.21",
+        "csr1Nic2PrivIP": "10.17.33.11",
+        "crs1VMSize": "Standard_D4_v4",
+        "csrArray": [
+            {
+                "location": "[variables('hub').location]",
+                "csrName": "[concat(parameters('prefix'), variables('csr1Name'))]",
+                "imagePublisher": "cisco",
+                "imageOffer": "cisco-csr-1000v",
+                "imageSKU": "17_3_4a-byol",
+                "vmSize": "Standard_B2ms",
+                "vnetName": "[variables('hub').name]",
+                "pubIPAddressName": "[concat(parameters('prefix'),variables('csr1Name'),'-pubIP' )]",
+                "subnet1Name": "[variables('hub').tenantSubnetName]",
+                "subnet2Name": "[variables('hub').nvaSubnetName]",
+                "nic0": "[concat(parameters('prefix'), variables('csr1Name'), '-nic0')]",
+                "nic1": "[concat(parameters('prefix'), variables('csr1Name'), '-nic1')]",
+                "subnet1csrAddress": "[variables('csr1Nic1PrivIP')]",
+                "subnet2csrAddress": "[variables('csr1Nic2PrivIP')]"
+            }
+        ],
+        "csrCount": "[length(variables('csrArray'))]",
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('csrArray')[copyIndex()].pubIPAddressName]",
+            "apiVersion": "2021-02-01",
+            "comments": "public IP assigned to the CSR",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 20
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('csrArray')[copyIndex()].nic0]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('csrArray')[copyIndex()].pubIPAddressName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic0",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('csrArray')[copyIndex()].subnet1csrAddress]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('csrArray')[copyIndex()].pubIPAddressName  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('csrArray')[copyIndex()].vnetName, variables('csrArray')[copyIndex()].subnet1Name )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true
+            },
+            "copy": {
+                "name": "nic1Copy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('csrArray')[copyIndex()].nic1]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('csrArray')[copyIndex()].pubIPAddressName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('csrArray')[copyIndex()].subnet2csrAddress]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('csrArray')[copyIndex()].vnetName, variables('csrArray')[copyIndex()].subnet2Name )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true
+            },
+            "copy": {
+                "name": "nic2Copy",
+                "count": "[variables('csrCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('csrArray')[copyIndex()].csrName ]",
+            "apiVersion": "2021-11-01",
+            "location": "[variables('csrArray')[copyIndex()].location]",
+            "plan": {
+                "name": "[variables('csrArray')[copyIndex()].imageSKU]",
+                "publisher": "[variables('csrArray')[copyIndex()].imagePublisher]",
+                "product": "[variables('csrArray')[copyIndex()].imageOffer]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic0)]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic1)]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('csrArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('csrArray')[copyIndex()].csrName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('csrArray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('csrArray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('csrArray')[copyIndex()].imageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('csrArray')[copyIndex()].csrName,'-OSDisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic0 )]"
+                        },
+                        {
+                            "properties": {
+                                "primary": false
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('csrArray')[copyIndex()].nic1 )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "vmCopy",
+                "count": "[variables('csrCount')]"
+            }
+        }
+
+    ]
+}

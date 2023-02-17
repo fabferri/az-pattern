@@ -1,0 +1,679 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefix": {
+            "type": "string",
+            "defaultValue": "SEA-Cust33-",
+            "metadata": {
+                "description": "naming prefix"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password for the VMs"
+            }
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('prefix'),'hub-gw-er')]",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "ErGw1AZ",
+            "allowedValues": [
+                "Standard",
+                "HighPerformance",
+                "UltraPerformance",
+                "ErGw1AZ",
+                "ErGw2AZ",
+                "ErGw3AZ"
+            ],
+            "metadata": {
+                "description": "ExpressRoute Gateway SKU"
+            }
+        }
+    },
+    "variables": {
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "vmSize": "Standard_B2s",
+        "hub": {
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('prefix'),'hub')]",
+            "addressSpace1Prefix": "10.17.33.0/24",
+            "nvaSubnetName": "nvaSubnet",
+            "nvaSubnetPrefix": "10.17.33.0/28",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.17.33.16/28",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.17.33.64/26",
+            "gatewaySubnetName": "GatewaySubnet",
+            "gatewaySubnetPrefix": "10.17.33.192/26"
+        },
+        "spoke4": {
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('prefix'),'spoke4')]",
+            "addressSpace1Prefix": "10.0.4.0/24",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.0.4.128/25",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.0.4.0/26"
+        },
+        "spoke5": {
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('prefix'),'spoke5')]",
+            "addressSpace1Prefix": "10.0.5.0/24",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.0.5.128/25",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.0.5.0/26"
+        },
+        "spoke6": {
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('prefix'),'spoke6')]",
+            "addressSpace1Prefix": "10.0.6.0/24",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.0.6.128/25",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.0.6.0/26"
+        },
+        "fwvnet": {
+            "location": "[parameters('location')]",
+            "name": "[concat(parameters('prefix'),'fw')]",
+            "addressSpace1Prefix": "10.100.0.0/24",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.100.0.0/25",
+            "azurefirewallSubnetName": "AzureFirewallSubnet",
+            "azurefirewallSubnetPrefix": "10.100.0.192/26"
+        },
+        "gatewaySku": "[parameters('gatewaySku')]",
+        "gatewayName": "[parameters('gatewayName')]",
+        "gatewayPublicIPName": "[concat(parameters('gatewayName'),'-pubIP')]",
+        "erConnectionName": "[concat(parameters('prefix'),variables('hub').name,'-gw-er-conn')]",
+        "erCircuitName": "[concat(parameters('prefix'),'ER')]",
+        "erCircuitId": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, resourceGroup().name), 'Microsoft.Network/expressRouteCircuits', variables('erCircuitName')))]",
+
+        "vnetPeeringArray": [
+            {
+                "vnet1Name": "[variables('hub').name]",
+                "vnet1Location": "[variables('hub').location]",
+                "vnet2Name": "[variables('spoke4').name]",
+                "vnet2Location": "[variables('spoke4').location]",
+                "peeringName1": "[concat(variables('hub').name,'To',variables('spoke4').name)]",
+                "peeringName2": "[concat(variables('spoke4').name,'To',variables('hub').name)]"
+            },
+            {
+                "vnet1Name": "[variables('hub').name]",
+                "vnet1Location": "[variables('hub').location]",
+                "vnet2Name": "[variables('spoke5').name]",
+                "vnet2Location": "[variables('spoke5').location]",
+                "peeringName1": "[concat(variables('hub').name,'To',variables('spoke5').name)]",
+                "peeringName2": "[concat(variables('spoke5').name,'To',variables('hub').name)]"
+            },
+            {
+                "vnet1Name": "[variables('hub').name]",
+                "vnet1Location": "[variables('hub').location]",
+                "vnet2Name": "[variables('spoke6').name]",
+                "vnet2Location": "[variables('spoke6').location]",
+                "peeringName1": "[concat(variables('hub').name,'To',variables('spoke6').name)]",
+                "peeringName2": "[concat(variables('spoke6').name,'To',variables('hub').name)]"
+            },
+            {
+                "vnet1Name": "[variables('fwvnet').name]",
+                "vnet1Location": "[variables('fwvnet').location]",
+                "vnet2Name": "[variables('spoke4').name]",
+                "vnet2Location": "[variables('spoke4').location]",
+                "peeringName1": "[concat(variables('fwvnet').name,'To',variables('spoke4').name)]",
+                "peeringName2": "[concat(variables('spoke4').name,'To',variables('fwvnet').name)]"
+            },
+            {
+                "vnet1Name": "[variables('fwvnet').name]",
+                "vnet1Location": "[variables('fwvnet').location]",
+                "vnet2Name": "[variables('spoke5').name]",
+                "vnet2Location": "[variables('spoke5').location]",
+                "peeringName1": "[concat(variables('fwvnet').name,'To',variables('spoke5').name)]",
+                "peeringName2": "[concat(variables('spoke5').name,'To',variables('fwvnet').name)]"
+            },
+            {
+                "vnet1Name": "[variables('fwvnet').name]",
+                "vnet1Location": "[variables('fwvnet').location]",
+                "vnet2Name": "[variables('spoke6').name]",
+                "vnet2Location": "[variables('spoke6').location]",
+                "peeringName1": "[concat(variables('fwvnet').name,'To',variables('spoke6').name)]",
+                "peeringName2": "[concat(variables('spoke6').name,'To',variables('fwvnet').name)]"
+            }
+        ],
+        "vnetPeeringCount": "[length(variables('vnetPeeringArray'))]",
+
+        "vm1hubName": "[concat(parameters('prefix'),'vm1')]",
+        "vm1hubprivIP": "10.17.33.20",
+        "nva1hubName": "[concat(parameters('prefix'),'nva1')]",
+        "nva1hubprivIP": "10.17.33.10",
+        "vm1Spoke4Name": "[concat(parameters('prefix'),'spoke4vm1')]",
+        "vm1Spoke4privIP": "10.0.4.150",
+        "vm1Spoke5Name": "[concat(parameters('prefix'),'spoke5vm1')]",
+        "vm1Spoke5privIP": "10.0.5.150",
+        "vm1Spoke6Name": "[concat(parameters('prefix'),'spoke6vm1')]",
+        "vm1Spoke6privIP": "10.0.6.150",
+        "vm1fwName": "[concat(parameters('prefix'),'fwvm1')]",
+        "vm1fwprivIP": "10.100.0.10",
+
+        "vmarray": [
+            {
+                "vmName": "[variables('vm1hubName')]",
+                "vmSize": "[variables('vmSize')]",
+                "location": "[variables('hub').location]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest",
+                "vnetName": "[variables('hub').name]",
+                "subnetName": "[variables('hub').tenantSubnetName]",
+                "pubIPName": "[concat(variables('vm1hubName'),'-nic-pip')]",
+                "nicName": "[concat(variables('vm1hubName'),'-nic')]",
+                "nsgName": "[concat(variables('vm1hubName'),'-nic-nsg')]",
+                "privateIP": "[variables('vm1hubprivIP')]",
+                "ipforwarding": false
+            },
+            {
+                "vmName": "[variables('nva1hubName')]",
+                "vmSize": "[variables('vmSize')]",
+                "location": "[variables('hub').location]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest",
+                "vnetName": "[variables('hub').name]",
+                "subnetName": "[variables('hub').nvaSubnetName]",
+                "pubIPName": "[concat(variables('nva1hubName'),'-nic-pip')]",
+                "nicName": "[concat(variables('nva1hubName'),'-nic')]",
+                "nsgName": "[concat(variables('nva1hubName'),'-nic-nsg')]",
+                "privateIP": "[variables('nva1hubprivIP')]",
+                "ipforwarding": true
+            },
+            {
+                "vmName": "[variables('vm1Spoke4Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "location": "[variables('spoke4').location]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest",
+                "vnetName": "[variables('spoke4').name]",
+                "subnetName": "[variables('spoke4').tenantSubnetName]",
+                "pubIPName": "[concat(variables('vm1Spoke4Name'),'-nic-pip')]",
+                "nicName": "[concat(variables('vm1Spoke4Name'),'-nic')]",
+                "nsgName": "[concat(variables('vm1Spoke4Name'),'-nic-nsg')]",
+                "privateIP": "[variables('vm1Spoke4privIP')]",
+                "ipforwarding": false
+            },
+            {
+                "vmName": "[variables('vm1Spoke5Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "location": "[variables('spoke5').location]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest",
+                "vnetName": "[variables('spoke5').name]",
+                "subnetName": "[variables('spoke5').tenantSubnetName]",
+                "pubIPName": "[concat(variables('vm1Spoke5Name'),'-nic-pip')]",
+                "nicName": "[concat(variables('vm1Spoke5Name'),'-nic')]",
+                "nsgName": "[concat(variables('vm1Spoke5Name'),'-nic-nsg')]",
+                "privateIP": "[variables('vm1Spoke5privIP')]",
+                "ipforwarding": false
+            },
+            {
+                "vmName": "[variables('vm1Spoke6Name')]",
+                "vmSize": "[variables('vmSize')]",
+                "location": "[variables('spoke6').location]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest",
+                "vnetName": "[variables('spoke6').name]",
+                "subnetName": "[variables('spoke6').tenantSubnetName]",
+                "pubIPName": "[concat(variables('vm1Spoke6Name'),'-nic-pip')]",
+                "nicName": "[concat(variables('vm1Spoke6Name'),'-nic')]",
+                "nsgName": "[concat(variables('vm1Spoke6Name'),'-nic-nsg')]",
+                "privateIP": "[variables('vm1Spoke6privIP')]",
+                "ipforwarding": false
+            },
+            {
+                "vmName": "[variables('vm1fwName')]",
+                "vmSize": "[variables('vmSize')]",
+                "location": "[variables('fwvnet').location]",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
+                "version": "latest",
+                "vnetName": "[variables('fwvnet').name]",
+                "subnetName": "[variables('fwvnet').tenantSubnetName]",
+                "pubIPName": "[concat(variables('vm1fwName'),'-nic-pip')]",
+                "nicName": "[concat(variables('vm1fwName'),'-nic')]",
+                "nsgName": "[concat(variables('vm1fwName'),'-nic-nsg')]",
+                "privateIP": "[variables('vm1fwprivIP')]",
+                "ipforwarding": true
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('hub').name]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('hub').location]",
+            "dependsOn": [],
+            "comments": "This is the hub vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('hub').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('hub').nvaSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').nvaSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('hub').tenantSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').tenantSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('hub').routeServerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').routeServerSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('hub').gatewaySubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').gatewaySubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('spoke4').name]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('spoke4').location]",
+            "dependsOn": [],
+            "comments": "This is the spoke4 vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('spoke4').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('spoke4').tenantSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke4').tenantSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('spoke4').routeServerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke4').routeServerSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('spoke5').name]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('spoke5').location]",
+            "dependsOn": [],
+            "comments": "This is the spoke5 vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('spoke5').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('spoke5').tenantSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke5').tenantSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('spoke5').routeServerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke5').routeServerSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('spoke6').name]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('spoke6').location]",
+            "dependsOn": [],
+            "comments": "This is the spoke6 vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('spoke6').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('spoke6').tenantSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke6').tenantSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('spoke6').routeServerSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke6').routeServerSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('fwvnet').name]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('fwvnet').location]",
+            "dependsOn": [],
+            "comments": "This is the firewall vnet",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('fwvnet').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('fwvnet').tenantSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('fwvnet').tenantSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('fwvnet').azurefirewallSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('fwvnet').azurefirewallSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetPeeringArray')[copyIndex()].vnet1Name,'/',variables('vnetPeeringArray')[copyIndex()].peeringName1)]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnetPeeringArray')[copyIndex()].vnet1Location]",
+            "comments": "This is the peering from hub to spoke4",
+            "copy": {
+                "name": "vnetPeeringCopy1",
+                "count": "[variables('vnetPeeringCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet1Name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet2Name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnetPeeringArray')[copyIndex()].vnet2Name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetPeeringArray')[copyIndex()].vnet2Name,'/',variables('vnetPeeringArray')[copyIndex()].peeringName2)]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vnetPeeringArray')[copyIndex()].vnet2Location]",
+            "comments": "This is the peering from vnet2 to vnet1",
+            "copy": {
+                "name": "vnetPeeringCopy2",
+                "count": "[variables('vnetPeeringCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet1Name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet2Name)]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnetPeeringArray')[copyIndex()].vnet1Name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('gatewayPublicIPName')]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('hub').location]",
+            "comments": "Public IP address VMs",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "ExpressRoute Gateway in the GatewaySubnet",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('gatewayName')]",
+            "location": "[variables('hub').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('gatewayPublicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]",
+                "vnetPeeringCopy1",
+                "vnetPeeringCopy2"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hub').name, variables('hub').gatewaySubnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('gatewayPublicIPName'))]"
+                            }
+                        },
+                        "name": "ergw2IPconf"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "vpnType": "RouteBased",
+                "vpnGatewayGeneration": "None",
+                "sku": {
+                    "name": "[variables('gatewaySku')]",
+                    "tier": "[variables('gatewaySku')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2019-07-01",
+            "name": "[variables('erConnectionName')]",
+            "location": "[variables('hub').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gatewayName')  )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gatewayName')  )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": null,
+                "peer": {
+                    "id": "[variables('erCircuitId')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-02-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "network security rule",
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vmArray')[copyIndex()].pubIPName]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "Public IP address VMs",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2021-02-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "NIC of the VMs",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIPName  )]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIPName  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2021-03-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OSdisk')]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        }
+    ]
+}

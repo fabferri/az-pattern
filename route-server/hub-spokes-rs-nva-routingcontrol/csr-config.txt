@@ -1,0 +1,283 @@
+SEA-Cust33-csr1#show run
+Building configuration...
+
+Current configuration : 11401 bytes
+!
+! Last configuration change at 12:33:35 UTC Sun Feb 12 2023 by PathLabUser
+!
+version 17.3
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service call-home
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname SEA-Cust33-csr1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition GS
+ rd 100:100
+ !
+ address-family ipv4
+ exit-address-family
+!
+logging persistent size 1000000 filesize 8192 immediate
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+aaa authorization exec default local none
+!
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+!
+!
+!
+!
+ip domain name SEA-Cust33-csr1.cloudapp.net
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+username <ADMINISTRATOR_USERNAME> privilege 15 secret 9 <ADMINISTRATOR_PASSWORD>
+!
+redundancy
+!
+!
+!
+!
+!
+!
+!
+interface VirtualPortGroup0
+ vrf forwarding GS
+ ip address 192.168.35.101 255.255.255.0
+ ip nat inside
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet1
+ ip address dhcp
+ ip nat outside
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ ip address dhcp
+ ip access-group DENYINTERSP in
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router bgp 65001
+ bgp log-neighbor-changes
+ neighbor 10.0.4.4 remote-as 65515
+ neighbor 10.0.4.4 ebgp-multihop 5
+ neighbor 10.0.4.4 timers 60 180
+ neighbor 10.0.4.5 remote-as 65515
+ neighbor 10.0.4.5 ebgp-multihop 5
+ neighbor 10.0.4.5 timers 60 180
+ neighbor 10.0.5.4 remote-as 65515
+ neighbor 10.0.5.4 ebgp-multihop 5
+ neighbor 10.0.5.4 timers 60 180
+ neighbor 10.0.5.5 remote-as 65515
+ neighbor 10.0.5.5 ebgp-multihop 5
+ neighbor 10.0.5.5 timers 60 180
+ neighbor 10.0.6.4 remote-as 65515
+ neighbor 10.0.6.4 ebgp-multihop 5
+ neighbor 10.0.6.4 timers 60 180
+ neighbor 10.0.6.5 remote-as 65515
+ neighbor 10.0.6.5 ebgp-multihop 5
+ neighbor 10.0.6.5 timers 60 180
+ neighbor 10.17.33.68 remote-as 65515
+ neighbor 10.17.33.68 ebgp-multihop 5
+ neighbor 10.17.33.68 timers 60 180
+ neighbor 10.17.33.69 remote-as 65515
+ neighbor 10.17.33.69 ebgp-multihop 5
+ neighbor 10.17.33.69 timers 60 180
+ !
+ address-family ipv4
+  network 0.0.0.0
+  aggregate-address 10.0.4.0 255.255.252.0
+  neighbor 10.0.4.4 activate
+  neighbor 10.0.4.4 as-override
+  neighbor 10.0.4.4 soft-reconfiguration inbound
+  neighbor 10.0.4.4 route-map SPIN in
+  neighbor 10.0.4.4 route-map SPOUT out
+  neighbor 10.0.4.5 activate
+  neighbor 10.0.4.5 as-override
+  neighbor 10.0.4.5 soft-reconfiguration inbound
+  neighbor 10.0.4.5 route-map SPIN in
+  neighbor 10.0.4.5 route-map SPOUT out
+  neighbor 10.0.5.4 activate
+  neighbor 10.0.5.4 as-override
+  neighbor 10.0.5.4 soft-reconfiguration inbound
+  neighbor 10.0.5.4 route-map SPIN in
+  neighbor 10.0.5.4 route-map SPOUT out
+  neighbor 10.0.5.5 activate
+  neighbor 10.0.5.5 as-override
+  neighbor 10.0.5.5 soft-reconfiguration inbound
+  neighbor 10.0.5.5 route-map SPIN in
+  neighbor 10.0.5.5 route-map SPOUT out
+  neighbor 10.0.6.4 activate
+  neighbor 10.0.6.4 as-override
+  neighbor 10.0.6.4 soft-reconfiguration inbound
+  neighbor 10.0.6.4 route-map SPIN in
+  neighbor 10.0.6.4 route-map SPOUT out
+  neighbor 10.0.6.5 activate
+  neighbor 10.0.6.5 as-override
+  neighbor 10.0.6.5 soft-reconfiguration inbound
+  neighbor 10.0.6.5 route-map SPIN in
+  neighbor 10.0.6.5 route-map SPOUT out
+  neighbor 10.17.33.68 activate
+  neighbor 10.17.33.68 as-override
+  neighbor 10.17.33.68 soft-reconfiguration inbound
+  neighbor 10.17.33.68 route-map RSIN in
+  neighbor 10.17.33.68 route-map RSOUT out
+  neighbor 10.17.33.69 activate
+  neighbor 10.17.33.69 as-override
+  neighbor 10.17.33.69 soft-reconfiguration inbound
+  neighbor 10.17.33.69 route-map RSIN in
+  neighbor 10.17.33.69 route-map RSOUT out
+ exit-address-family
+!
+iox
+ip forward-protocol nd
+ip tcp window-size 8192
+ip http server
+ip http secure-server
+!
+ip nat inside source list GS_NAT_ACL interface GigabitEthernet1 vrf GS overload
+ip route 0.0.0.0 0.0.0.0 10.17.33.17
+ip route 10.0.4.4 255.255.255.255 10.17.33.1
+ip route 10.0.4.5 255.255.255.255 10.17.33.1
+ip route 10.0.5.4 255.255.255.255 10.17.33.1
+ip route 10.0.5.5 255.255.255.255 10.17.33.1
+ip route 10.0.6.4 255.255.255.255 10.17.33.1
+ip route 10.0.6.5 255.255.255.255 10.17.33.1
+ip route 10.17.33.68 255.255.255.255 10.17.33.1
+ip route 10.17.33.69 255.255.255.255 10.17.33.1
+ip route vrf GS 0.0.0.0 0.0.0.0 GigabitEthernet1 10.17.33.17 global
+ip ssh rsa keypair-name sshkeys
+ip ssh server algorithm publickey ecdsa-sha2-nistp256 ecdsa-sha2-nistp384 ecdsa-sha2-nistp521 ssh-rsa x509v3-ecdsa-sha2-nistp256 x509v3-ecdsa-sha2-nistp384 x509v3-ecdsa-sha2-nistp521
+ip scp server enable
+!
+ip access-list standard GS_NAT_ACL
+ 10 permit 192.168.35.0 0.0.0.255
+!
+ip access-list extended BUF-FILTER
+ 10 permit ip 10.0.4.0 0.0.0.255 any
+ 20 permit ip 10.0.5.0 0.0.0.255 any
+ 30 permit ip 10.0.6.0 0.0.0.255 any
+ip access-list extended DENYINTERSP
+ 5 permit tcp any eq bgp any
+ 10 deny   ip 10.0.4.0 0.0.3.255 10.0.4.0 0.0.3.255
+ 50 permit ip any any
+ 60 permit icmp any any
+!
+!
+ip prefix-list DEFFW seq 10 permit 0.0.0.0/0
+!
+ip prefix-list HUB-VNET seq 10 deny 10.17.33.0/24
+!
+ip prefix-list ONPREM seq 10 permit 10.0.0.0/8
+!
+ip prefix-list SPMAJOR seq 10 permit 10.0.4.0/22
+!
+ip prefix-list SPOKE-VNET seq 10 deny 10.0.4.0/24
+ip prefix-list SPOKE-VNET seq 20 deny 10.0.5.0/24
+ip prefix-list SPOKE-VNET seq 30 deny 10.0.6.0/24
+ip prefix-list SPOKE-VNET seq 50 permit 10.0.0.0/8
+ip prefix-list SPOKE-VNET seq 60 permit 10.0.4.0/22
+!
+!
+route-map SPIN permit 20
+!
+route-map RSIN permit 20
+ match ip address prefix-list ONPREM
+!
+route-map FW permit 10
+ match ip address prefix-list DEFFW
+ set ip next-hop 10.100.0.10
+!
+route-map SPOUT permit 20
+ match ip address prefix-list SPOKE-VNET
+ set ip next-hop unchanged
+!
+route-map SPOUT permit 30
+ match ip address prefix-list DEFFW
+ set ip next-hop 10.100.0.10
+!
+route-map RSOUT deny 5
+ match ip address prefix-list DEFFW
+!
+route-map RSOUT deny 6
+ match ip address prefix-list SPMAJOR
+!
+route-map RSOUT permit 10
+ set ip next-hop unchanged
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+line con 0
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ exec-timeout 20 0
+ transport input ssh
+line vty 5 20
+ transport input ssh
+!

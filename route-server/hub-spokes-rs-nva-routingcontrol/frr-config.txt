@@ -1,0 +1,137 @@
+SEA-Cust33-nva1# show run
+Building configuration...
+
+Current configuration:
+!
+frr version 8.4.2
+frr defaults traditional
+hostname SEA-Cust33-nva1
+log syslog informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+ip route 0.0.0.0/0 10.17.33.1
+ip route 10.0.4.4/32 10.17.33.1
+ip route 10.0.4.5/32 10.17.33.1
+ip route 10.0.5.4/32 10.17.33.1
+ip route 10.0.5.5/32 10.17.33.1
+ip route 10.0.6.4/32 10.17.33.1
+ip route 10.0.6.5/32 10.17.33.1
+ip route 10.17.33.68/32 10.17.33.1
+ip route 10.17.33.69/32 10.17.33.1
+!
+router bgp 65001
+ bgp router-id 10.17.33.10
+ neighbor 10.0.4.4 remote-as 65515
+ neighbor 10.0.4.4 ebgp-multihop 3
+ neighbor 10.0.4.4 timers 60 180
+ neighbor 10.0.4.5 remote-as 65515
+ neighbor 10.0.4.5 ebgp-multihop 3
+ neighbor 10.0.4.5 timers 60 180
+ neighbor 10.0.5.4 remote-as 65515
+ neighbor 10.0.5.4 ebgp-multihop 3
+ neighbor 10.0.5.4 timers 60 180
+ neighbor 10.0.5.5 remote-as 65515
+ neighbor 10.0.5.5 ebgp-multihop 3
+ neighbor 10.0.5.5 timers 60 180
+ neighbor 10.0.6.4 remote-as 65515
+ neighbor 10.0.6.4 ebgp-multihop 3
+ neighbor 10.0.6.4 timers 60 180
+ neighbor 10.0.6.5 remote-as 65515
+ neighbor 10.0.6.5 ebgp-multihop 3
+ neighbor 10.0.6.5 timers 60 180
+ neighbor 10.17.33.68 remote-as 65515
+ neighbor 10.17.33.68 ebgp-multihop 3
+ neighbor 10.17.33.68 timers 60 180
+ neighbor 10.17.33.69 remote-as 65515
+ neighbor 10.17.33.69 ebgp-multihop 3
+ neighbor 10.17.33.69 timers 60 180
+ !
+ address-family ipv4 unicast
+  network 0.0.0.0/0
+  aggregate-address 10.0.4.0/22
+  neighbor 10.0.4.4 as-override
+  neighbor 10.0.4.4 soft-reconfiguration inbound
+  neighbor 10.0.4.4 route-map SPIN in
+  neighbor 10.0.4.4 route-map SPOUT out
+  neighbor 10.0.4.5 as-override
+  neighbor 10.0.4.5 soft-reconfiguration inbound
+  neighbor 10.0.4.5 route-map SPIN in
+  neighbor 10.0.4.5 route-map SPOUT out
+  neighbor 10.0.5.4 as-override
+  neighbor 10.0.5.4 soft-reconfiguration inbound
+  neighbor 10.0.5.4 route-map SPIN in
+  neighbor 10.0.5.4 route-map SPOUT out
+  neighbor 10.0.5.5 as-override
+  neighbor 10.0.5.5 soft-reconfiguration inbound
+  neighbor 10.0.5.5 route-map SPIN in
+  neighbor 10.0.5.5 route-map SPOUT out
+  neighbor 10.0.6.4 as-override
+  neighbor 10.0.6.4 soft-reconfiguration inbound
+  neighbor 10.0.6.4 route-map SPIN in
+  neighbor 10.0.6.4 route-map SPOUT out
+  neighbor 10.0.6.5 as-override
+  neighbor 10.0.6.5 soft-reconfiguration inbound
+  neighbor 10.0.6.5 route-map SPIN in
+  neighbor 10.0.6.5 route-map SPOUT out
+  neighbor 10.17.33.68 as-override
+  neighbor 10.17.33.68 soft-reconfiguration inbound
+  neighbor 10.17.33.68 route-map RSIN in
+  neighbor 10.17.33.68 route-map RSOUT out
+  neighbor 10.17.33.69 as-override
+  neighbor 10.17.33.69 soft-reconfiguration inbound
+  neighbor 10.17.33.69 route-map RSIN in
+  neighbor 10.17.33.69 route-map RSOUT out
+ exit-address-family
+exit
+!
+ip prefix-list DEFFW seq 10 permit 0.0.0.0/0
+ip prefix-list HUB-VNET seq 10 deny 10.17.33.0/24
+ip prefix-list ONPREM seq 10 permit 10.0.0.0/8
+ip prefix-list SPMAJOR seq 10 permit 10.0.4.0/22
+ip prefix-list SPOKE-VNET seq 10 deny 10.0.4.0/24
+ip prefix-list SPOKE-VNET seq 20 deny 10.0.5.0/24
+ip prefix-list SPOKE-VNET seq 30 deny 10.0.6.0/24
+ip prefix-list SPOKE-VNET seq 50 permit 10.0.0.0/8
+!
+route-map SPIN permit 20
+exit
+!
+route-map RSIN permit 20
+ match ip address prefix-list ONPREM
+exit
+!
+route-map FW permit 10
+ match ip address prefix-list DEFFW
+ set ip next-hop 10.100.0.10
+exit
+!
+route-map SPOUT permit 20
+ match ip address prefix-list SPOKE-VNET
+ set ip next-hop unchanged
+exit
+!
+route-map SPOUT permit 30
+ match ip address prefix-list DEFFW
+ set ip next-hop 10.100.0.10
+exit
+!
+route-map SPOUT permit 40
+ match ip address prefix-list SPMAJOR
+ set ip next-hop 10.17.33.254
+exit
+!
+route-map RSOUT deny 5
+ match ip address prefix-list DEFFW
+exit
+!
+route-map RSOUT deny 6
+ match ip address prefix-list SPMAJOR
+exit
+!
+route-map RSOUT permit 10
+ set ip next-hop unchanged
+exit
+!
+end
+SEA-Cust33-nva1#

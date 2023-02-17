@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "azure region where is deployed the vnet"
+            }
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "SEA-Cust34-VNet01-gw-er",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway"
+            }
+        }
+    },
+    "variables": {
+       "vnet": {
+            "location": "[parameters('location')]",
+            "name": "SEA-Cust34-VNet01",
+            "addressSpace1Prefix": "10.17.34.0/24",
+            "addressSpace2Prefix": "10.0.1.0/24",
+            "fwSubnetName": "fwSubnet",
+            "fwSubnetPrefix": "10.17.34.0/27",
+            "tenantSubnetName": "tenantSubnet",
+            "tenantSubnetPrefix": "10.17.34.32/27",
+            "gatewaySubnetName": "GatewaySubnet",
+            "gatewaySubnetPrefix": "10.17.34.128/25",
+            "nvaSubnetName": "nvaSubnet",
+            "nvaSubnetPrefix": "10.0.1.0/25",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.0.1.128/25"
+        },
+        "gatewayName": "[parameters('gatewayName')]",
+        "erConnectionName": "SEA-Cust34-VNet01-gw-er-conn",
+        "erCircuitName": "SEA-Cust34-ER",
+        "erCircuitId": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, resourceGroup().name), 'Microsoft.Network/expressRouteCircuits', variables('erCircuitName')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2019-07-01",
+            "name": "[variables('erConnectionName')]",
+            "location": "[variables('vnet').location]",
+            "dependsOn": [],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gatewayName')  )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": null,
+                "peer": {
+                    "id": "[variables('erCircuitId')]"
+                }
+            }
+        }
+    ]
+}
