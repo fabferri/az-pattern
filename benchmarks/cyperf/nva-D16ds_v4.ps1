@@ -1,19 +1,17 @@
-# To connect to the controller/agents:
-# ssh -i <file_SSH_privateKey> <ADMINISTRATOR_USERNAME>@<PUB_IP_CONTROLLER>
-#
-# 
 ################# Input parameters #################
+$adminUsername = 'ADMINISTRATOR_USERNAME'
+$adminPassword = 'ADMINISTRATOR_PASSWORD'
 $subscriptionName = 'Pathfinders'
-$deploymentName = 'cyperf101'
-$armTemplateFile = 'cyperf-controller-agents.json'
-$armParametersFile = 'parameters.json'
-$location = "westus2"
+$deploymentName = 'nvaD16_v4'
+$armTemplateFile = 'nva-D16ds_v4.json'
+
+$location = 'westus2'   
 $rgName = 'cyperf01'
 ####################################################
 
 $pathFiles = Split-Path -Parent $PSCommandPath
 $templateFile = "$pathFiles\$armTemplateFile"
-$parametersFile = "$pathFiles\$armParametersFile"
+
 
 $subscr = Get-AzSubscription -SubscriptionName $subscriptionName
 Select-AzSubscription -SubscriptionId $subscr.Id
@@ -26,10 +24,16 @@ Try {
 }
 Catch { $rg = New-AzResourceGroup -Name $rgName  -Location $location }
 
+$parameters = @{
+  "adminUsername"      = $adminUsername;
+  "adminPassword"      = $adminPassword;
+  "location"           = $location
+}
 
 $StartTime = Get-Date
 write-host "$StartTime - running ARM template: $templateFile"
-New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterFile $parametersFile -Verbose 
+New-AzResourceGroupDeployment  -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose 
+
 
 $EndTime = Get-Date
 $TimeDiff = New-TimeSpan $StartTime $EndTime

@@ -55,11 +55,93 @@ If you want to use Cyperf, you need to reach out a Keysight representative and a
 Registration of the can can be executed on the controller UI by following selections: <br>
 **Settings -> License Manager -> Activate License -> Load Data**
 
-## NOTE
-**The ARM template does not include the creation of subnets for the NVA and the NVA itself.** <br>
-**The ARM template will be improved**- *working in progress*
+By Cyperf Controller, each Cyper agent is configured with client role or server role; the topology is shown below:
+
+[![2]][2]
+
+
+Cyperf allows to run performance tests of different NVAs; the diagram below shows the network diagram:
+
+
+The UDRs applied to the subnet Cyperf agent force the cyperf traffic to transit through the NVA:
+
+[![3]][3]
+
+
+## <a name="list of files"></a>1. File list
+| File name                         | Description                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| **cyperf-controller-agents.json** | ARM template to create the Azure VNet, the Cyperf Controller and the Cyperf Agents. <br> The ARM template does not include the creation of subnets for the NVA and the NVA itself                                                                            |
+| **cyperf-controller-agents-parameters.json** | parameter file for **cyperf-controller-agents.json**                         |
+| **cyperf-controller-agents.ps1**  |  powershell script to deploy **cyperf-controller-agents.json**                          |
+| **nva-D8ds_v4.json**              | ARM template to deploy an Ubuntu **Standard_D8ds_v4** VM SKU                            |
+| **nva-D16ds_v4.json**             | ARM template to deploy an Ubuntu **Standard_D16ds_v4** VM SKU                           |
+| **nva-D32ds_v4.json**             | ARM template to deploy an Ubuntu **Standard_D32ds_v4** VM SKU                           |
+| **srx-D8ds_v4.json**              | ARM template to deploy a Juniper SRX in **Standard_D8ds_v4** VM SKU                     |
+| **srx-D16ds_v4.json**             | ARM template to deploy a Juniper SRX in **Standard_D16ds_v4** VM SKU                    |
+| **srx-D32ds_v4.json**             | ARM template to deploy a Juniper SRX in **Standard_D32ds_v4** VM SKU                    |
+
+
+## <a name="list of files"></a>2. Juniper SRX in Standard_D16ds_v4 VM SKU
+ARM template: <ins>**srx-D16ds_v4.json**</ins>
+
+[![4]][4]
+
+## <a name="list of files"></a>3. Ubuntu in Standard_D16ds_v4 VM SKU
+ARM template: <ins>**nva-D16ds_v4.json**</ins>
+
+[![5]][5]
+
+## <a name="list of files"></a>4. Juniper SRX in Standard_D32ds_v4 VM SKU
+ARM template: <ins>**srx-D32ds_v4.json**</ins>
+
+[![6]][6]
+
+## <a name="list of files"></a>5. Ubuntu in Standard_D32ds_v4 VM SKU
+ARM template: <ins>**nva-D16ds_v4.json**</ins>
+
+[![7]][7]
+
+## <a name="list of files"></a>6. Juniper SRX in Standard_D8ds_v4 VM SKU
+ARM template: <ins>**srx-D8ds_v4.json**</ins>
+
+[![8]][8]
+
+## <a name="list of files"></a>7. Ubuntu in Standard_D8ds_v4 VM SKU
+ARM template: <ins>**nva-D8ds_v4.json**</ins>
+
+[![9]][9]
+
+## <a name="Cyperf benchmarks"></a>8. Cyperf benchmarks setup
+
+### <a name="Cyperf benchmarks:CPS"></a>8.1 Max connection per second
+[![10]][10]
+
+### <a name="Cyperf benchmarks: unidirectional throughout"></a>8.2 Max unidirectional throughput
+
+[![11]][11]
+
+### <a name="Cyperf benchmarks: bidirectional throughout"></a>8.3 Max bidirectional throughput
+
+[![12]][12]
+
+
+`Tags: Cyperf benchmarks` <br>
+`date: 23-01-23`
+
 
 <!--Image References-->
-[1]: ./media/network-diagram.png "network diagram"
+[1]: ./media/network-diagram1.png "Cyperf deployment"
+[2]: ./media/network-diagram2.png "Cyperf topology configuration"
+[3]: ./media/network-diagram3.png "network diagram"
+[4]: ./media/network-diagram4.png "Juniper SRX in Standard_D16ds_v4"
+[5]: ./media/network-diagram5.png "Ubuntu in Standard_D16ds_v4"
+[6]: ./media/network-diagram6.png "Juniper SRX in Standard_D32ds_v4"
+[7]: ./media/network-diagram7.png "Ubuntu in Standard_D32ds_v4"
+[8]: ./media/network-diagram8.png "Juniper SRX in Standard_D8ds_v4"
+[9]: ./media/network-diagram9.png "Ubuntu in Standard_D8ds_v4"
+[10]: ./media/network-diagram10.png "Cyperf: Max connection per second"
+[11]: ./media/network-diagram11.png "Cyperf: Max unidirectional throughput"
+[12]: ./media/network-diagram12.png "Cyperf: Max bidirectional throughput"
 <!--Link References-->
 
