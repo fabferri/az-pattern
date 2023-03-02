@@ -87,6 +87,45 @@ ARM template: <ins>**srx-D16ds_v4.json**</ins>
 
 [![4]][4]
 
+SRX configuration:
+
+```console
+# define a static IP for the interfaces
+set interfaces ge-0/0/0 unit 0 family inet dhcp
+set interfaces ge-0/0/1 unit 0 family inet dhcp
+set interfaces ge-0/0/2 unit 0 family inet dhcp
+
+# static routes to reach out the subnets
+set routing-options static route 172.16.3.0/24 next-hop 172.16.10.1
+set routing-options static route 172.16.4.0/24 next-hop 172.16.11.1
+
+# define the security zone a association of interfaces to security zones
+set security zones security-zone untrust interfaces ge-0/0/0.0 host-inbound-traffic system-services all
+set security zones security-zone untrust interfaces ge-0/0/0.0 host-inbound-traffic protocols all
+set security zones security-zone trust-1 interfaces ge-0/0/1.0 host-inbound-traffic system-services all
+set security zones security-zone trust-1 interfaces ge-0/0/1.0 host-inbound-traffic protocols all
+set security zones security-zone trust-2 interfaces ge-0/0/2.0 host-inbound-traffic system-services all
+set security zones security-zone trust-2 interfaces ge-0/0/2.0 host-inbound-traffic protocols all
+
+# define the policy options
+set security policies from-zone trust to-zone untrust policy default-permit match source-address any
+set security policies from-zone trust to-zone untrust policy default-permit match destination-address any
+set security policies from-zone trust to-zone untrust policy default-permit match application any
+set security policies from-zone trust to-zone untrust policy default-permit then permit
+set security policies from-zone trust to-zone trust policy default-permit match source-address any
+set security policies from-zone trust to-zone trust policy default-permit match destination-address any
+set security policies from-zone trust to-zone trust policy default-permit match application any
+set security policies from-zone trust to-zone trust policy default-permit then permit
+set security policies from-zone trust-1 to-zone trust-2 policy trust-1-2 match source-address any
+set security policies from-zone trust-1 to-zone trust-2 policy trust-1-2 match destination-address any
+set security policies from-zone trust-1 to-zone trust-2 policy trust-1-2 match application any
+set security policies from-zone trust-1 to-zone trust-2 policy trust-1-2 then permit
+set security policies from-zone trust-2 to-zone trust-1 policy trust-2-1 match source-address any
+set security policies from-zone trust-2 to-zone trust-1 policy trust-2-1 match destination-address any
+set security policies from-zone trust-2 to-zone trust-1 policy trust-2-1 match application any
+set security policies from-zone trust-2 to-zone trust-1 policy trust-2-1 then permit
+```
+
 ## <a name="list of files"></a>3. Ubuntu in Standard_D16ds_v4 VM SKU
 ARM template: <ins>**nva-D16ds_v4.json**</ins>
 
