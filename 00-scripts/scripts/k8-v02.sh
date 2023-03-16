@@ -42,16 +42,19 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
 $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-###  install containerd runtime
-# sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
-### install containerd
-# sudo apt update
-# sudo apt install -y containerd.io
+#  install containerd runtime
+sudo apt-get install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+# install containerd
+sudo apt-get update
+sudo apt-get install -y containerd.io
 
 ### configure containerd so that it starts using systemd as cgroup.
 # containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
 #sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
 
+# the containerd version provided in Ubuntu repo is too old
+# replace with recent version
+sudo systemctl stop containerd
 
 # to install the last version of containerd
 # cleanup old files from previous attempt if existing
@@ -91,8 +94,8 @@ sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packag
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 # install Kubernetes components Kubectl, kubeadm & kubelet
-sudo apt update
-sudo apt install -y kubelet kubeadm kubectl
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
 
