@@ -27,9 +27,14 @@ EOF
 # reload the above changes
 sudo sysctl --system
 
+OSVER=$(cat /etc/lsb-release | grep  DISTRIB_RELEASE | cut -d "=" -f2 )
 
-# in ubutu 20.04
-mkdir /etc/apt/keyrings
+if [ $MYOS = "20.04" ]
+then
+   # in ubutu 20.04
+   mkdir /etc/apt/keyrings
+fi
+
 #
 # GPG key used to verify the docker repo package 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
