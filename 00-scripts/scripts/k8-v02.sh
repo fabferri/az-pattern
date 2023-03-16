@@ -2,8 +2,8 @@
 #
 # script to install kubernetes in ubuntu
 #
-apt update
-apt install -y bash-completion
+apt-get update
+apt-get install -y bash-completion
 
 # disable swap
 sudo swapoff -a
@@ -55,13 +55,19 @@ $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev
 
 # to install the last version of containerd
 # cleanup old files from previous attempt if existing
-	[ -d bin ] && rm -rf bin
-	wget https://github.com/containerd/containerd/releases/download/v1.6.15/containerd-1.6.19-linux-amd64.tar.gz 
-	tar xvf containerd-1.6.19-linux-amd64.tar.gz 
-	sudo mv bin/* /usr/bin/
-	# Configure containerd
-	sudo mkdir -p /etc/containerd
-	cat <<- TOML | sudo tee /etc/containerd/config.toml
+if [ -d "/var/temp/" ];
+then
+	[ -d /var/temp/bin ] && rm -rf /var/temp/bin
+else
+  mkdir /var/temp/
+fi
+wget https://github.com/containerd/containerd/releases/download/v1.6.19/containerd-1.6.19-linux-amd64.tar.gz -P /var/temp/
+tar xvf /var/temp/containerd-1.6.19-linux-amd64.tar.gz --directory /var/temp/
+sudo mv /var/temp/bin/* /usr/bin/
+
+# Configure containerd
+sudo mkdir -p /etc/containerd
+cat <<- TOML | sudo tee /etc/containerd/config.toml
 version = 2
 [plugins]
   [plugins."io.containerd.grpc.v1.cri"]
