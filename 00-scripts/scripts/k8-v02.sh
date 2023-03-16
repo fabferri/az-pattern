@@ -27,9 +27,10 @@ EOF
 # reload the above changes
 sudo sysctl --system
 
+# grab the OS version
 OSVER=$(cat /etc/lsb-release | grep  DISTRIB_RELEASE | cut -d "=" -f2 )
 
-if [ $MYOS = "20.04" ]
+if [ $OSVER = "20.04" ]
 then
    # in ubutu 20.04
    mkdir /etc/apt/keyrings
