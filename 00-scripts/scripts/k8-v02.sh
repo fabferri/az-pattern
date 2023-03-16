@@ -65,7 +65,7 @@ else
   mkdir /var/temp/
 fi
 wget https://github.com/containerd/containerd/releases/download/v1.6.19/containerd-1.6.19-linux-amd64.tar.gz -P /var/temp/
-tar xvf /var/temp/containerd-1.6.19-linux-amd64.tar.gz --directory /var/temp/
+tar xzvf /var/temp/containerd-1.6.19-linux-amd64.tar.gz --directory /var/temp/
 sudo mv /var/temp/bin/* /usr/bin/
 
 # Configure containerd
