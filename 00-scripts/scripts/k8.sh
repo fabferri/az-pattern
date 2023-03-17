@@ -94,6 +94,11 @@ sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packag
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 # install Kubernetes components Kubectl, kubeadm & kubelet
+# the last version of kubelet, kubeadm, kubectl will be installed
+# to install a specific release, replace the command below:
+# VERSION=1.25.5-00
+# sudo apt-get install -y kubelet=$VERSION kubeadm=$VERSION kubectl=$VERSION
+#
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
