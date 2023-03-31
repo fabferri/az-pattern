@@ -1,0 +1,344 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "uksouth",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Admin password"
+            }
+        },
+        "vmNamePrefix": {
+            "type": "string",
+            "defaultValue": "provider2-beVM",
+            "metadata": {
+                "description": "Prefix to use for VM names"
+            }
+        },
+        "skuName": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "Load balancer SKU"
+            }
+        }
+    },
+    "variables": {
+        "ubuntu": {
+            "imagePublisher": "canonical",
+            "imageOffer": "0001-com-ubuntu-server-jammy",
+            "imageSKU": "22_04-lts-gen2",
+            "vmsize": "Standard_B1s"
+        },
+        "vnet1Producer": "vnet2Producer",
+        "vnetProducerAddressPrefix": "10.0.2.0/24",
+        "backendSubnetName": "backendSubnet",
+        "backendSubnetPrefix": "10.0.2.0/26",
+        "privateLinkSubnetName": "privateLinkSubnet",
+        "privateLinkSubnetPrefix": "10.0.2.64/26",
+        "privateLinkServiceName": "privateLinkSrv2",
+        "lbName": "ilb",
+        "lbFrontEndConfigName": "lbFrontEnd",
+        "lbFrontEndIP": "10.0.2.10",
+        "lbBackendPoolName": "lbBackEndPool",
+        "lbProbeName": "lbHealthProbe",
+        "backendSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1Producer'), variables('backendSubnetName'))]",
+        "privateLinkSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1Producer'), variables('privateLinkSubnetName'))]",
+        "numberOfInstances": 2,
+        "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
+        "apacheCommand": "[concat('apt update; sleep 1m; apt install -y apache2 && systemctl enable apache2 && systemctl start apache2',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.html')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet1Producer')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetProducerAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('backendSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('backendSubnetPrefix')]",
+                            "PrivateEndpointNetworkPolicies": "Disabled",
+                            "PrivateLinkServiceNetworkPolicies": "Disabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('privateLinkSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('privateLinkSubnetPrefix')]",
+                            "PrivateEndpointNetworkPolicies": "Disabled",
+                            "PrivateLinkServiceNetworkPolicies": "Disabled"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('lbName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnet1Producer'))]"
+            ],
+            "sku": {
+                "name": "[parameters('skuName')]"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[variables('lbFrontEndConfigName')]",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('backendSubnetRef')]"
+                            },
+                            "privateIPAddress": "[variables('lbFrontEndIP')]",
+                            "privateIPAllocationMethod": "Static"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('lbBackendPoolName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "lbAnyPortRule",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackendPoolName'))]"
+                            },
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbProbeName'))]"
+                            },
+                            "protocol": "All",
+                            "frontendPort": 0,
+                            "backendPort": 0,
+                            "loadDistribution": "Default",
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 10,
+                            "numberOfProbes": 2
+                        },
+                        "name": "[variables('lbProbeName')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-nsg')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "nsgLoop",
+                "count": "[variables('numberOfInstances')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allowRSSHInbound",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-pubIP')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "publicIPAddressLoop",
+                "count": "[variables('numberOfInstances')]"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-nic')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "nicLoop",
+                "count": "[variables('numberOfInstances')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Producer'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('vmNamePrefix'), copyindex(),'-pubIP'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vmNamePrefix'), copyindex(),'-nsg'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('vmNamePrefix'), copyindex(),'-pubIP' ))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('backendSubnetRef')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(variables('lbID'), '/backendAddressPools/',variables('lbBackendPoolName') )]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vmNamePrefix'), copyindex(),'-nsg'))]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-11-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('vmNamePrefix'), copyindex())]",
+            "copy": {
+                "name": "vmLoop",
+                "count": "[variables('numberOfInstances')]"
+            },
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmNamePrefix'), copyindex(),'-nic')  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('ubuntu').vmsize]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(parameters('vmNamePrefix'), copyIndex())]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('ubuntu').imagePublisher]",
+                        "offer": "[variables('ubuntu').imageOffer]",
+                        "sku": "[variables('ubuntu').imageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(parameters('vmNamePrefix'), copyindex(),'-OS')]",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmNamePrefix'), copyindex(),'-nic'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2019-03-01",
+            "name": "[concat(parameters('vmNamePrefix'), copyindex(), '/', 'installcustomscript')]",
+            "comments": "custom script extension to install httpd on CentOS",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "extensionCopy",
+                "count": "[variables('numberOfInstances')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', concat(parameters('vmNamePrefix'), copyindex()) )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('apacheCommand')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Network/privateLinkServices",
+            "name": "[variables('privateLinkServiceName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "natNicIpconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('privateLinkSubnetRef')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "loadBalancerFrontendIpConfigurations": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                    }
+                ]
+            }
+        }
+    ]
+}

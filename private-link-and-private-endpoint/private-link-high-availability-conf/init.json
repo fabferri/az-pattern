@@ -1,0 +1,13 @@
+{
+    "provider1SubscriptionName": "AzDev1",
+    "provider2SubscriptionName": "AzDev1",
+    "consumerSubscriptionName": "AzDev1",
+    "Provider1ResourceGroupName": "plink-provider1",
+    "Provider2ResourceGroupName": "plink-provider2",
+    "ConsumerResourceGroupName": "plink-consumer",
+    "provider1Location": "uksouth",
+    "provider2Location": "uksouth",
+    "consumerLocation": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD"
+}
