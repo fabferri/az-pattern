@@ -100,13 +100,12 @@ The sequence for the full project deployment is shown above:
 
 ## <a name="Azure function"></a>2. Configuration of the Azure function
 Configuration of Azure function can be done in three steps: 
-- configuration of Application settings
+- configuration of Application files
 - setting the function app environment variables
 - setup of the Azure function
 
-### <a name="Azure function"></a>2.1 Configuration of the Application settings
+### <a name="Azure function"></a>2.1 Configuration of the Application files
 Before the creation of the function, as first action is required the configuration of Application files. <br>
-The Application settings maintains settings that are used by your function app
 A function app provides an execution context in Azure in which your functions run.
 The **host.json** file contains runtime-specific configurations and is in the root folder of the function app. 
 
@@ -119,7 +118,7 @@ The **requirements.psd1** file is used to automatically download required module
 
 
 ### <a name="Azure function"></a>2.2 Setting the function app environment variables
-Setting the function app environment variables:
+The Application settings maintains settings that are used by your function app. Definition of the following function app environment variables:
 ```
 Variable Name: rgName            Value: plink-consumer
 Variable Name: targetIPPrimary   Value: 10.0.5.4 
