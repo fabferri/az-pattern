@@ -100,12 +100,13 @@ The sequence for the full project deployment is shown above:
 
 ## <a name="Azure function"></a>2. Configuration of the Azure function
 Configuration of Azure function can be done in three steps: 
-- configuration of function application files
+- configuration of Application settings
 - setting the function app environment variables
 - setup of the Azure function
 
-### <a name="Azure function"></a>2.1 Configuration of the function application files
-Before the creation of the function, as first action is required the configuration of application files. <br>
+### <a name="Azure function"></a>2.1 Configuration of the Application settings
+Before the creation of the function, as first action is required the configuration of Application files. <br>
+The Application settings maintains settings that are used by your function app
 A function app provides an execution context in Azure in which your functions run.
 The **host.json** file contains runtime-specific configurations and is in the root folder of the function app. 
 
