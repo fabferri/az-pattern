@@ -41,7 +41,7 @@ The network details inclusive of IP address networks is shown below:
 
 [![2]][2]
 
-When the azure function won't be able to reach out the VMs in **vnet1Producer**, the powershell in Azure function will change the IP address in the DNS A record **ep**:
+When the azure function won't be able to reach out the VMs in **vnet1Producer**, the powershell in Azure function will change the IP address in the DNS A record **ep**: <br>
 <ins>Origin setting:</ins> <br>
 
 | DNS private zone |||
