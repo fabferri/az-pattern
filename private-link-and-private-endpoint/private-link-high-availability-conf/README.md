@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'private link service in high availability configuration through Azure functions' 
-description= "private link service in high availability configuration through Azure functions"
+pageTitle= 'Azure Private Link service in high availability configuration through Azure functions' 
+description= "Private Link service in high availability configuration through Azure functions"
 documentationcenter: na
 services=""
 documentationCenter="github"
@@ -18,38 +18,38 @@ editor=""/>
    ms.review=""
    ms.author="fabferri" />
 
-# private link service in high availability configuration through Azure functions
+# Azure Private Link service in high availability configuration through Azure functions
 
 The article describes a configuration with two Azure Private Link service deployed in two different provider vnets and single consumer vnet able to access both of Private link service:
 
 [![1]][1]
 
-The intent is to create an Azure Private link configuration in high availability. The administrator can designate a private link service as primary and the other as secondary. The idea is to use mainly the primary private link service and switchover to the secondary private link service when the primary won't be accessible. <br>
+The intent is to create an Azure Private link configuration in high availability. the high avaiability is achived by two Azure Private Links. The administrator can designate a Private Link service as primary and the other as secondary. The idea is to use mainly the primary Private Link service and switchover to the secondary Private Link service when the primary won't be accessible. <br>
 Let describe the main characteristics of the configuration.
-- In the consumer vnet are present two private endpoints **ep1** and **ep2**, to reach out respectively the primary and secondary private link services 
-- private DNS zone is linked to the consumer vnet. In our case the private DNS zone manage and resolve the domain name **mydom.net**. In the consumer vnet, each private endpoint associated with the private link service can be resolve through A records of private DNS zone. Three A records are registered in the private DNS zone: 
+- In the consumer vnet are present two private endpoints **ep1** and **ep2**, to reach out respectively the primary and secondary Private Link services 
+- A private DNS zone is linked to the consumer vnet. In our case the private DNS zone manage and resolve the domain name **mydom.net**. In the consumer vnet, each private endpoint associated with the private link service can be resolve through A records of private DNS zone. Three A records are registered in the private DNS zone: 
     - one A record maps the name **ep1** to the IP of private endpoint connected to the private link service 1 
     - one A record maps the name **ep2** to the IP of private endpoint connected to the private link service 2,
     - one A record maps the name **ep** to the IP of the designated primary endpoint
-- in each provider vnet is deployed the private link service, connected to an Azure Standard Load Balancer configured in HA ports. The backend of load balancer is configured to balance the traffic to two Ubuntu VMs. An apache server is installed in each VM, configured to answer to HTTP requests on default TCP port 80 
+- In each provider vnet is deployed the Private Link service, connected to an Azure Standard Load Balancer configured in HA ports. The backend of load balancer is configured to balance the traffic to two Ubuntu VMs. An apache server is installed in each VM, configured to answer to HTTP requests on default TCP port 80 
 - an azure function is configured with vnet integration to access to the consumer vnet. The Azure function requires access Azure storage account where store the configuration file. A storage account is created with this purpose; to keep private the communication private between the Azure function and the storage account four endpoints are create in the consumer vnet. The private endpoints allow to the function to access to blobs, files, tables and queues in the Azure storage account with private transit through the consumer vnet.
 - the Azure function is configured with timer trigger to run on a specified schedule. A powershell runs a specific time interval sending HTTP request to **http://ep.mydom.net**. 
-- in the specific deployment the **ep** endpoint is associated with the IP: 10.0.5.4 of the primary endpoint. The HTTP requests coming from powershell, running in azure function, are sent to the primary endpoint ep1 and forwarded to the primary link service 1
-- the switchover from primary endpoint **ep1** to secondary endpoint **ep2** happens when both of the VMs in the provider1 vnet don't answer to load balancer health probe or when the VMs have apache server down
+- In the specific deployment the **ep** endpoint is associated with the IP: 10.0.5.4 of the primary endpoint. The HTTP requests coming from powershell, running in azure function, are sent to the primary endpoint ep1 and forwarded to the Primary Link service 1
+- The switchover from primary endpoint **ep1** to secondary endpoint **ep2** happens when both of the VMs in the provider1 vnet don't answer to load balancer health probe or when the VMs have apache server down.
 
 The network details inclusive of IP address networks is shown below:
 
 [![2]][2]
 
 When the azure function won't be able to reach out the VMs in **vnet1Producer**, the powershell in Azure function will change the IP address in the DNS A record **ep**:
-<ins>origin setting</ins> <br>
+<ins>Origin setting:</ins> <br>
 
 | DNS private zone |||
 | ---------------- |-|-|
 | Name             | Type | Value |
 | ep               | A | 10.0.5.4 |
 
-<ins>in the switchover the A record is changed into:</ins> <br>
+<ins>In the switchover the A record is changed into:</ins> <br>
 | DNS private zone |||
 | ---------------- |-|-|
 | Name             | Type | Value |
