@@ -100,7 +100,7 @@ The sequence for the full project deployment is shown above:
 [![5]][5]
 
 **NOTE** <br>
-The ARM template **function.json** configures the function app with a system managed identity and create a role assignment granting that identity the contributor permission on the Resource Group of the consumer vnet. This is required to the azure function app to access to the storage accont but also to run the powershell sending HTTP request to the private endpoint **ep**. The json snippet for role assignment is shown below:
+The ARM template **function.json** configures the function app with a system-assigned identity and create a role assignment granting that identity the **Contributor** permission on the Resource Group of the consumer vnet. This is required to the azure function app to access to the storage accont but also to run the powershell sending HTTP request to the private endpoint **ep**. The json snippet for role assignment is shown below:
 ```json
 {
       "type": "Microsoft.Authorization/roleAssignments",
@@ -115,6 +115,7 @@ The ARM template **function.json** configures the function app with a system man
       }
     },
 ```
+A system-assigned identity is tied to your function app and is deleted if your function app is deleted.
 
 ## <a name="Azure function"></a>2. Configuration of the Azure function
 Configuration of Azure function can be done in three steps: 
