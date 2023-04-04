@@ -610,77 +610,12 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2021-04-01-preview",
       "name": "[guid(resourceId('Microsoft.Resources/resourceGroups', resourceGroup().name) )]",
-      "properties": {
-        "roleDefinitionId": "[variables('role')[parameters('builtInRoleType')]]",
-        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2019-08-01', 'Full').identity.principalId]"
-      }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-09-01",
-      "name": "assignRole",
-      "resourceGroup": "[resourceGroup().name]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
       ],
       "properties": {
-        "mode": "Incremental",
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "parameters": {
-          "functionAppName": {
-            "value": "[parameters('functionAppName')]"
-          },
-          "assignedRoleDefinitionId": {
-            "value": "[variables('role')[parameters('builtInRoleType')]]"
-          },
-          "principalId": {
-            "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2019-08-01', 'Full').identity.principalId]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "parameters": {
-            "functionAppName": {
-              "type": "string"
-            },
-            "assignedRoleDefinitionId": {
-              "type": "string"
-            },
-            "principalId": {
-              "type": "string"
-            }
-          },
-          "variables": {
-            "roleName": "[guid(parameters('assignedRoleDefinitionId'), parameters('principalId'), parameters('functionAppName'))]",
-            "roleName1": "[guid(parameters('assignedRoleDefinitionId'), parameters('principalId'), resourceGroup().name)]"
-          },
-          "resources": [
-            //          {
-            //              "type": "Microsoft.Resources/resourceGroups/providers/roleAssignments",
-            //              "apiVersion": "2022-04-01",
-            //              "name": "[concat(resourceGroup().name, '/Microsoft.Authorization/', variables('roleName') )]",
-            //              "properties": {
-            //                "roleDefinitionId": "[parameters('assignedRoleDefinitionId')]",
-            //                "principalId": "[parameters('principalId')]",
-            //                "principalType": "ServicePrincipal"
-            //             }
-            //            }
-            //            {
-            //              "type": "Microsoft.Web/sites/providers/roleAssignments",
-            //              "apiVersion": "2022-04-01",
-            //              "name": "[concat(parameters('functionAppName'), '/Microsoft.Authorization/', variables('roleName') )]",
-            //              "properties": {
-            //                "roleDefinitionId": "[parameters('assignedRoleDefinitionId')]",
-            //                "principalId": "[parameters('principalId')]",
-            //                "principalType": "ServicePrincipal"
-            //              }
-            //            }
-            // https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-template
-          ]
-        }
+        "roleDefinitionId": "[variables('role')[parameters('builtInRoleType')]]",
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2019-08-01', 'Full').identity.principalId]"
       }
     },
     {
