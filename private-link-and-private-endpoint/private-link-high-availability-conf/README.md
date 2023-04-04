@@ -73,6 +73,7 @@ The diagram below shows the transit of HTTP connection initialized from the powe
 | **consumer.json.json**    | ARM template to deploy the consumer vnet with private endpoints **ep1** and **ep2** to access to the private link services1 nd private link service2 |
 | **function.json**         | ARM template to deploy Azure function, storage account, private endpoints for the storage account |
 | **function.ps1**          | powershell script to run **function.json**                                       |
+| **check.sh**              | bash script to be copied in the vm1Consumer  to run HTTP request to the private endpoint **ep** |
 
 Before running the powershell scripts, customize the values of input variables in the **init.json**:
 ```json
