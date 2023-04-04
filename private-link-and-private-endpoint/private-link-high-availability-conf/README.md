@@ -99,7 +99,7 @@ The sequence for the full project deployment is shown above:
 
 [![5]][5]
 
-**NOTE**
+**NOTE** <br>
 The ARM template **function.json** configures the function app with a system managed identity and create a role assignment granting that identity the contributor permission on the Resource Group of the consumer vnet. This is required to the azure function app to access to the storage accont but also to run the powershell sending HTTP request to the private endpoint **ep**. the json snippet for role assignment is shown below:
 ```json
 {
