@@ -163,7 +163,7 @@ As function type select **Timer trigger**; in the schedule specify the schedule 
 
 [![14]][14]
 
-As shown in the picture above the schedule is set to 10 minute (the syntax follow the cron syntax).
+As shown in the picture above the schedule is set to 10 seconds (the syntax follow the cron syntax).
 
 In the **run.ps1** paste the powershell script:
 
