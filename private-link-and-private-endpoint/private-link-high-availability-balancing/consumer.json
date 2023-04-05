@@ -1,0 +1,419 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "uksouth",
+            "metadata": {
+                "description": "azure region where is deployed the first VNet"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "admin username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "admin password for the VMs"
+            }
+        },
+        "privateEndpoint1Name": {
+            "type": "string",
+            "defaultValue": "ep1",
+            "metadata": {
+                "description": "Specifies the name of the Private Endpoint to be created"
+            }
+        },
+        "privateEndpoint2Name": {
+            "type": "string",
+            "defaultValue": "ep2",
+            "metadata": {
+                "description": "Specifies the name of the Private Endpoint to be created"
+            }
+        },
+        "provider1AzureSubscriptionId": {
+            "type": "string",
+            "defaultValue": "[subscription().subscriptionId]",
+            "metadata": {
+                "description": "Specifies the Azure subscription Id where is deployed the Private Link Service"
+            }
+        },
+        "provider2AzureSubscriptionId": {
+            "type": "string",
+            "defaultValue": "[subscription().subscriptionId]",
+            "metadata": {
+                "description": "Specifies the Azure subscription Id where is deployed the Private Link Service"
+            }
+        },
+        "provider1ResourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Specifies the Resource Group where is deployed the Private Link Service"
+            }
+        },
+        "provider2ResourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "Specifies the Resource Group where is deployed the Private Link Service"
+            }
+        },
+        "privateLinkService1Name": {
+            "type": "string",
+            "defaultValue": "privateLinkSrv1",
+            "metadata": {
+                "description": "Specifies the name of the Private Link Service"
+            }
+        },
+        "privateLinkService2Name": {
+            "type": "string",
+            "defaultValue": "privateLinkSrv2",
+            "metadata": {
+                "description": "Specifies the name of the Private Link Service"
+            }
+        },
+        "privateLinkConnectionMessage": {
+            "type": "string",
+            "defaultValue": "Please approve my connection, thanks!",
+            "metadata": {
+                "description": "Text to include when sending a request to connect to a Private Link service"
+            }
+        },
+        "privateDnsZoneName": {
+            "type": "string",
+            "defaultValue": "mydom.net"
+        }
+    },
+    "variables": {
+        "privateLinkService1Id": "[resourceId(parameters('provider1AzureSubscriptionId'), parameters('provider1ResourceGroupName'), 'Microsoft.Network/privateLinkServices', parameters('privateLinkService1Name') )]",
+        "privateLinkService2Id": "[resourceId(parameters('provider2AzureSubscriptionId'), parameters('provider2ResourceGroupName'), 'Microsoft.Network/privateLinkServices', parameters('privateLinkService2Name') )]",
+        "vnetConsumer": {
+            "location": "[parameters('location')]",
+            "name": "vnetConsumer",
+            "addressSpacePrefix": "10.0.5.0/24",
+            "plsSubnetName": "peSubnet",
+            "plsSubnetPrefix": "10.0.5.0/28",
+            "clientSubnetName": "clientSubnet",
+            "clientSubnetPrefix": "10.0.5.16/28",
+            "appGatewaySubnetName": "appGtwSubnet",
+            "appGatewaySubnetPrefix": "10.0.5.64/26"
+        },
+        "ipPrivLink1": "10.0.5.4",
+        "ipPrivLink2": "10.0.5.5",
+        "os": {
+            "windows": {
+                "imagePublisher": "MicrosoftWindowsServer",
+                "imageOffer": "WindowsServer",
+                "imageSKU": "2019-Datacenter",
+                "vmsize": "Standard_DS1_v2"
+            },
+            "ubuntu": {
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-jammy",
+                "imageSKU": "22_04-lts-gen2",
+                "vmsize": "Standard_B1s"
+            }
+        },
+        "vmStorageAccountType": "Premium_LRS",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "vm1Consumer": "vm1Consumer",
+        "vmarray": [
+            {
+                "location": "[variables('vnetConsumer').location]",
+                "vmName": "[variables('vm1Consumer')]",
+                "vmSize": "[variables('os').ubuntu.vmsize]",
+                "imagePublisher": "[variables('os').ubuntu.imagePublisher]",
+                "imageOffer": "[variables('os').ubuntu.imageOffer]",
+                "imageSKU": "[variables('os').ubuntu.imageSKU]",
+                "vnetName": "[variables('vnetConsumer').name]",
+                "subnetName": "[variables('vnetConsumer').clientSubnetName]",
+                "nicName": "[concat(variables('vm1Consumer'),'-nic')]",
+                "privateIP": "10.0.5.20",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "pubIPName": "[concat(variables('vm1Consumer'),'-pubIP')]",
+                "nsgName": "[concat(variables('vm1Consumer'),'-nsg')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmarray'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnetConsumer').name]",
+            "location": "[variables('vnetConsumer').location]",
+            "comments": "vnet Consumer",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetConsumer').addressSpacePrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnetConsumer').plsSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetConsumer').plsSubnetPrefix]",
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnetConsumer').clientSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetConsumer').clientSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnetConsumer').appGatewaySubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnetConsumer').appGatewaySubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/privateEndpoints",
+            "name": "[parameters('privateEndpoint1Name')]",
+            "location": "[variables('vnetConsumer').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetConsumer').name)]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "{plsConnectionAutoApproval}",
+                        "properties": {
+                            "privateLinkServiceId": "[variables('privateLinkService1Id')]",
+                            "requestMessage": "[parameters('privateLinkConnectionMessage')]"
+                        }
+                    }
+                ],
+                "subnet": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetConsumer').name, variables('vnetConsumer').plsSubnetName)]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-11-01",
+            "type": "Microsoft.Network/privateEndpoints",
+            "name": "[parameters('privateEndpoint2Name')]",
+            "location": "[variables('vnetConsumer').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetConsumer').name)]",
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoint1Name') )]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "{plsConnectionAutoApproval}",
+                        "properties": {
+                            "privateLinkServiceId": "[variables('privateLinkService2Id')]",
+                            "requestMessage": "[parameters('privateLinkConnectionMessage')]"
+                        }
+                    }
+                ],
+                "subnet": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetConsumer').name, variables('vnetConsumer').plsSubnetName)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('privateDnsZoneName')]",
+            "location": "global"
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZoneName'), '/',parameters('privateEndpoint1Name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZoneName'))]"
+            ],
+            "properties": {
+                "ttl": 30,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[variables('ipPrivLink1')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZoneName'), '/',parameters('privateEndpoint2Name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZoneName'))]"
+            ],
+            "properties": {
+                "ttl": 30,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[variables('ipPrivLink2')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[format('{0}/{1}', parameters('privateDnsZoneName'), format('{0}-link', variables('vnetConsumer').name))]",
+            "location": "global",
+            "properties": {
+                "registrationEnabled": true,
+                "virtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetConsumer').name)]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZoneName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetConsumer').name)]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('vmarray')[copyIndex()].nsgName]",
+            "location": "[variables('vnetConsumer').location]",
+            "comments": "NSG applied to the subnets in vnetConsumer",
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('vmarray')[copyIndex()].pubIPName]",
+            "location": "[variables('vmarray')[copyIndex()].location]",
+            "comments": "create public IP for the VMs in location1",
+            "copy": {
+                "name": "publicIpCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmarray')[copyIndex()].nicName]",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('vmarray')[copyIndex()].location]",
+            "comments": "create NIC of the VMs in AzureRegion1",
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmarray')[copyIndex()].vnetName )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmarray')[copyIndex()].pubIPName )]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmarray')[copyIndex()].nsgName)]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmarray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmarray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmarray')[copyIndex()].privateIP]",
+                            "publicIPAddress": {
+                                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmarray')[copyIndex()].vmName,'-pubIP' )  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmarray')[copyIndex()].vNetName, variables('vmarray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmarray')[copyIndex()].nsgName)]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-11-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmarray')[copyIndex()].vmName]",
+            "location": "[variables('vmarray')[copyIndex()].location]",
+            "comments": "create VMs in AzureRegion1",
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmarray')[copyIndex()].nicName  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmarray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmarray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmarray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('vmarray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('vmarray')[copyIndex()].imageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmarray')[copyIndex()].vmName,'-OsDisk')]",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmarray')[copyIndex()].nicName  )]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

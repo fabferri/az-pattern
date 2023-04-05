@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "privateEndpoint1Name": {
+            "type": "string",
+            "defaultValue": "ep1"
+        },
+        "privateEndpoint2Name": {
+            "type": "string",
+            "defaultValue": "ep2"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "nested",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "nic1Name": {
+                        "value": "[last(split(reference(resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoint1Name')), '2021-08-01').networkInterfaces[0].id, '/'))]"
+                    },
+                    "nic2Name": {
+                        "value": "[last(split(reference(resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoint2Name')), '2021-08-01').networkInterfaces[0].id, '/'))]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "nic1Name": {
+                            "type": "string"
+                        },
+                         "nic2Name": {
+                            "type": "string"
+                        }
+                    },
+                    "resources": [],
+                    "outputs": {
+                        "ep1PrivIP": {
+                            "type": "string",
+                            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', parameters('nic1Name')), '2021-08-01').ipConfigurations[0].properties.privateIPAddress]"
+                        },
+                        "ep2PrivIP": {
+                            "type": "string",
+                            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', parameters('nic2Name')), '2021-08-01').ipConfigurations[0].properties.privateIPAddress]"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "nic1IpAddress": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'nested')).outputs.ep1PrivIP.value]"
+        },
+        "nic2IpAddress": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'nested')).outputs.ep2PrivIP.value]"
+        }
+    }
+}

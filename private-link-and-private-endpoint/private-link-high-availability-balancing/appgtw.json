@@ -1,0 +1,241 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The location into which the resources should be deployed."
+      }
+    },
+    "probeEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Probe Enabled"
+      }
+    },
+    "privateDnsZoneName": {
+      "type": "string",
+      "defaultValue": "mydom.net"
+    },
+    "serviceName": {
+      "type": "string",
+      "defaultValue": "app"
+    }
+  },
+  "variables": {
+    "vnetConsumer": {
+      "location": "[parameters('location')]",
+      "name": "vnetConsumer",
+      "addressSpacePrefix": "10.0.5.0/24",
+      "plsSubnetName": "peSubnet",
+      "plsSubnetPrefix": "10.0.5.0/28",
+      "clientSubnetName": "clientSubnet",
+      "clientSubnetPrefix": "10.0.5.16/28",
+      "appGatewaySubnetName": "appGtwSubnet",
+      "appGatewaySubnetPrefix": "10.0.5.64/26"
+    },
+    "ipPrivEndpoint1": "10.0.5.4",
+    "ipPrivEndpoint2": "10.0.5.5",
+    "applicationGatewayName": "appgtw1",
+    "applicationGatewayFrontEndprivIP": "10.0.5.70"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('vnetConsumer').name]",
+      "location": "[variables('vnetConsumer').location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetConsumer').addressSpacePrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnetConsumer').plsSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnetConsumer').plsSubnetPrefix]",
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "name": "[variables('vnetConsumer').clientSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnetConsumer').clientSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('vnetConsumer').appGatewaySubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnetConsumer').appGatewaySubnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2022-09-01",
+      "name": "[variables('applicationGatewayName')]",
+      "type": "Microsoft.Network/applicationGateways",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetConsumer').name)]"
+      ],
+      "tags": {
+        "EnhancedNetworkControl": "True"
+      },
+      "properties": {
+        "sku": {
+          "name": "Standard_v2",
+          "tier": "Standard_v2",
+          "capacity": 2
+        },
+        "gatewayIPConfigurations": [
+          {
+            "name": "appGatewayIpConfig",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetConsumer').name, variables('vnetConsumer').appGatewaySubnetName)]"
+              }
+            }
+          }
+        ],
+        "sslCertificates": [],
+        "trustedRootCertificates": [],
+        "trustedClientCertificates": [],
+        "sslProfiles": [],
+        "frontendIPConfigurations": [
+          {
+            "name": "appGatewayFrontendIP",
+            "properties": {
+              "privateIPAddress": "[variables('applicationGatewayFrontEndprivIP')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnetConsumer').name, variables('vnetConsumer').appGatewaySubnetName)]"
+              }
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "appGatewayFrontendPort",
+            "properties": {
+              "Port": 80
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "appGatewayBackendPool",
+            "properties": {
+              "BackendAddresses": [
+                {
+                  "IpAddress": "[variables('ipPrivEndpoint1')]"
+                },
+                {
+                  "IpAddress": "[variables('ipPrivEndpoint2')]"
+                }
+              ]
+            }
+          }
+        ],
+        "loadDistributionPolicies": [],
+        "backendHttpSettingsCollection": [
+          {
+            "name": "appGatewayBackendHttpSettings",
+            "properties": {
+              "Port": 80,
+              "Protocol": "Http",
+              "CookieBasedAffinity": "Disabled",
+              "PickHostNameFromBackendAddress": true,
+              "ProbeEnabled": "[parameters('probeEnabled')]",
+              "Probe": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/probes',variables('applicationGatewayName'), 'Probe1')]"
+              }
+            }
+          }
+        ],
+        "backendSettingsCollection": [],
+        "httpListeners": [
+          {
+            "name": "appGatewayHttpListener",
+            "properties": {
+              "frontendIPConfiguration": {
+                "Id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations',variables('applicationGatewayName'), 'appGatewayFrontendIP')]"
+              },
+              "frontendPort": {
+                "Id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts',variables('applicationGatewayName'), 'appGatewayFrontendPort')]"
+              },
+              "protocol": "Http",
+              "hostNames": [],
+              "requireServerNameIndication": false
+            }
+          }
+        ],
+        "listeners": [],
+        "urlPathMaps": [],
+        "requestRoutingRules": [
+          {
+            "Name": "rule1",
+            "properties": {
+              "RuleType": "Basic",
+              "priority": 10,
+              "httpListener": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners',variables('applicationGatewayName'), 'appGatewayHttpListener')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools',variables('applicationGatewayName'), 'appGatewayBackendPool')]"
+              },
+              "backendHttpSettings": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection',variables('applicationGatewayName'), 'appGatewayBackendHttpSettings')]"
+              }
+            }
+          }
+        ],
+        "routingRules": [],
+        "probes": [
+          {
+            "Name": "Probe1",
+            "properties": {
+              "Protocol": "Http",
+              "Path": "/",
+              "Interval": 10,
+              "Timeout": 10,
+              "UnhealthyThreshold": 3,
+              "MinServers": 0,
+              "PickHostNameFromBackendHttpSettings": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('privateDnsZoneName')]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/A",
+      "apiVersion": "2020-06-01",
+      "name": "[concat(parameters('privateDnsZoneName'), '/',parameters('serviceName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZoneName'))]"
+      ],
+      "properties": {
+        "ttl": 30,
+        "aRecords": [
+          {
+            "ipv4Address": "[variables('applicationGatewayFrontEndprivIP')]"
+          }
+        ]
+      }
+    }
+  ]
+}
