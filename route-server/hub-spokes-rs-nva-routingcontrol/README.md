@@ -22,18 +22,24 @@ editor=""/>
 
 ## Caveat: the configuration is for testing ONLY. 
 
-The article describes a scenario with hub-spoke vnets in peering and connection with on-premises through ExpressRoute circuit. The high-level network diagram is shown below:
+The article describes a scenario with hub-spoke vnets in peering and a connection with on-premises through ExpressRoute circuit. The high-level network diagram is shown below:
 
 [![1]][1]
 
 The configuration has the following intents: 
-- the configuration aims to create a communication between spoke vnets and on-premises through the ExpressRoute circuit,
-- the communications between the spoke vnets are not allowed,
-- each spoke vnet can breakout in internet through the fw vnet,
-- spoke vnets routing is controlled by nva1 in the hub,
-- the traffic spoke vnets to on-premises does <ins>not</ins> transit through the nva1 in the hub.
+- the communications spoke-to-spoke vnet are not allowed
+- the communication between each spoke vnet and on-premises through the ExpressRoute circuit is allowed
+- address space assigned to hub and spoke vnets are minor networks belonging to the network 10.0.0.0/8
+- the customer's edge routers advertise to the ExpressRoute circuit the major network 10.0.0.0/8
+- the traffic between spoke vnets to on-premises does <ins>not</ins> transit through the nva1 in the hub
+- routing in spoke vnets is controlled by nva1 in the hub
+- each spoke vnet can breakout in internet through an NVA (or Azure firewall) in fw vnet
+- the configuration does not use UDRs
 
 <br>
+
+In architectures hub-spoke vnet, the spoke vnets do not communicate each other because **vnet peering does not have the transitive routing property**. Nevertheless, in presence of ExpressRoute Gateway and connection with ExpressRoute circuit, the routing can change. When customer's edge routers advertise to the ExpressRoute circuit a major network, i.e. 10.0.0.0/8, and the spoke vnets have minor networks in the range of major network 10/8, the communication spoke-to-spoke will allow with transit through the MSEE routers (hairpinning transit). The routing behaviour described happens only if the customer's edge routers advertise to the ExpressRoute circuit the major network. <br>
+This post aims to find out a solution to avoid the spoke-to-spoke communication in hairpinning with transit through the MSEE routers.  
 
 ### NOTE:
 #### In the full diagrams below two different NVAs, SEA-Cust33-csr1 and SEA-Cust33-nva1, are deployed in the hub vnet:
@@ -72,7 +78,7 @@ In present setting, the address space of spoke vnets are not sent from the Expre
    - **nva1** applies filtering in BGP advertisements inbound and outbound by route-map. 
    - **nva1** advertises to the spokes the major network of all spoke vnets. In the present configuration the major network for the three spoke vnets is 10.0.4.0/22.
 - the on-premises major network 10.0.0.0/8 is advertised from the **nva1** to each Route Server in spoke vnet
-- When an on-premises major network 10.0.0.0/8 is advertised from on-premises to ExpressRoute Gateway, it will be automatically established a routing between the spoke vnets with data path in transit through the MSEE routers (hairpinning transit). This expected behaviour can be blocked by taken two actions:
+- To block the hairpinning transit through the MSEE routers two actions are required:
    - **nva1** advertises to the spoke Route Server the major network of all spoke vnets. In the present configuration the major network for the three spoke vnets is 10.0.4.0/22 with next-hop the IP address of **nva1**. Having the major network 10.0.4.0/22 in the spoke vnet, it will take the precedence over the on-premises network 10.0.0.0/8 becasue the network 10.0.4.0/22 is more specific than 10.0.0.0/8
    - **nva1** has an inbound ACL to deny all the traffic inter-spoke
 - **nva1** advertise the default route 0.0.0.0/0 with next-hop: IP FW, only to the Route Server in spoke vnets  
