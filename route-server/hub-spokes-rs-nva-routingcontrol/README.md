@@ -42,20 +42,18 @@ In architectures hub-spoke vnet, the spoke vnets do not communicate each other b
 This post aims to find out a solution to avoid the spoke-to-spoke communication in hairpinning with transit through the MSEE routers.  
 
 ### NOTE:
-#### In the full diagrams below two different NVAs, SEA-Cust33-csr1 and SEA-Cust33-nva1, are deployed in the hub vnet:
-#### - SEA-Cust33-csr1 runs with Cisco CSR
-#### - SEA-Cust33-nva1 runs in Ubuntu 22.04 with FRR
-#### In testing only one NVA should active, at one time. The present post reports the configuration for both (cisco CSR and FRR)
-#### In the discussion the active NVA in the hub is referred as **nva1**
+**The configuration has been verified with two different types of NVAs in the hub vnet: NVA with Cisco CSR and NVA with FRR**<br>
+**The full diagrams below shows the different NVAs SEA-Cust33-csr1 and SEA-Cust33-nva1 deployed in the hub vnet.**<br>
+**In testing enviroment only one NVA should active, at one time.**
 
 <br>
-The full diagram with eBGP sessions between Route Server and Cisco CSR in the hub vnet:
+The full diagram with eBGP sessions between Route Servers and Cisco CSR (SEA-Cust33-csr1) in the hub vnet:
 
 [![2]][2]
 
 <br>
 
-The full diagram with eBGP sessions between Route Server and FRR in the hub vnet:
+The full diagram with eBGP sessions between Route Servers and FRR (SEA-Cust33-nva1) in the hub vnet:
 
 [![3]][3]
 
