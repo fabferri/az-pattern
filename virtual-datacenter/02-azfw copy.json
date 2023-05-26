@@ -1,0 +1,680 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "locationonprem": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region for location on-prem"
+      }
+    },
+    "locationhub": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "locationspoke1": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke1"
+      }
+    },
+    "locationspoke2": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke2"
+      }
+    },
+    "locationspoke3": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke3"
+      }
+    },
+    "vnetHubName": {
+      "type": "string",
+      "defaultValue": "hub",
+      "metadata": {
+        "description": "name for the Azure hub vnet"
+      }
+    },
+    "vnetOnPrem": {
+      "type": "string",
+      "defaultValue": "onprem",
+      "metadata": {
+        "description": "name for the Azure vnet simulating the on-premises network"
+      }
+    },
+    "vnetspoke1": {
+      "type": "string",
+      "defaultValue": "spoke1",
+      "metadata": {
+        "description": "name for the Azure spoke1 vnet"
+      }
+    },
+    "vnetspoke2": {
+      "type": "string",
+      "defaultValue": "spoke2",
+      "metadata": {
+        "description": "name for the Azure spoke2 vnet"
+      }
+    },
+    "vnetspoke3": {
+      "type": "string",
+      "defaultValue": "spoke3",
+      "metadata": {
+        "description": "name for the Azure spoke3 vnet"
+      }
+    },
+
+    "ipgroupsVnets": {
+      "type": "string",
+      "defaultValue": "ipgroupVNets"
+    },
+    "firewallAvailabilityZones": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Zone numbers e.g. 1,2,3."
+      }
+    },
+    "numberOfFirewallPublicIPAddresses": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 100,
+      "metadata": {
+        "description": "Number of public IP addresses for the Azure Firewall"
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "workspace1",
+      "metadata": {
+        "description": "Name of the workspace."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "defaultvalue": "pergb2018",
+      "allowedValues": [
+        "pergb2018",
+        "Free",
+        "Standalone",
+        "PerNode",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+      }
+    },
+    "retentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "workspace: Number of days to retain data."
+      }
+    },
+    "resourcePermissions": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "true to use resource or workspace permissions. false to require workspace permissions."
+      }
+    },
+    "diagnosticLogsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 365,
+      "minValue": 0,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+      }
+    }
+  },
+  "variables": {
+    "hub": {
+      "location": "[parameters('locationhub')]",
+      "name": "[parameters('vnetHubName')]",
+      "addressPrefix": "10.0.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.0.1.0/24",
+      "AzureBastionSubnetName": "AzureBastionSubnet",
+      "AzureBastionSubnetPrefix": "10.0.2.0/24",
+      "AzureFirewallSubnetName": "AzureFirewallSubnet",
+      "AzureFirewallSubnetPrefix": "10.0.3.0/24",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.0.4.0/24",
+      "RouteServerSubnetName": "RouteServerSubnet",
+      "RouteServerSubnetPrefix": "10.0.5.0/24"
+    },
+    "spoke1": {
+      "location": "[parameters('locationspoke1')]",
+      "name": "[parameters('vnetspoke1')]",
+      "addressPrefix": "10.1.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.1.1.0/24",
+      "AppGatewaySubnetName": "appGtwSubnet",
+      "AppGatewaySubnetPrefix": "10.1.2.0/24"
+    },
+    "spoke2": {
+      "location": "[parameters('locationspoke2')]",
+      "name": "[parameters('vnetspoke2')]",
+      "addressPrefix": "10.2.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.2.1.0/24",
+      "subnetfeName": "fe-subnet",
+      "subnetfePrefix": "10.2.2.0/24",
+      "subnetpeName": "pe-subnet",
+      "subnetpePrefix": "10.2.3.0/24"
+    },
+    "spoke3": {
+      "location": "[parameters('locationspoke3')]",
+      "name": "[parameters('vnetspoke3')]",
+      "addressPrefix": "10.3.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.3.1.0/24"
+    },
+    "onprem": {
+      "location": "[parameters('locationonprem')]",
+      "name": "[parameters('vnetOnPrem')]",
+      "addressPrefix": "10.10.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.10.1.0/24",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.10.3.0/24",
+      "AzureBastionSubnetName": "AzureBastionSubnet",
+      "AzureBastionSubnetPrefix": "10.10.2.0/24"
+    },
+
+    "lbFrontEndIP": "10.2.2.50",
+    "vm1hubPrivIP": "10.0.1.4",
+
+    "firewallName": "azfw",
+    "azfw1PubIPNamePrefix": "[concat(variables('firewallNAme'),'-pubIP')]",
+    "azfw1SubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('hub').name, variables('hub').AzureFirewallSubnetName)]",
+    "azfw1SubnetJSON": "[json(format('{{\"id\": \"{0}\"}}', variables('azfw1SubnetId')))]",
+    "firewallPolicy1Name": "azfwpolicy1",
+    "copy": [
+      {
+        "name": "azfw1IpConfigurations",
+        "count": "[parameters('numberOfFirewallPublicIPAddresses')]",
+        "input": {
+          "name": "[concat('IpConf', copyIndex('azfw1IpConfigurations'))]",
+          "properties": {
+            "subnet": "[if(equals(copyIndex('azfw1IpConfigurations'), 0), variables('azfw1SubnetJSON'), json('null'))]",
+            "publicIPAddress": {
+              "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('azfw1PubIPNamePrefix'), add(copyIndex('azfw1IpConfigurations'), 1)))]"
+            }
+          }
+        }
+      }
+    ],
+    "diagnosticSettingName": "azfwDiagnostic",
+    "diagnosticLogsRetentionInDays": "[parameters('diagnosticLogsRetentionInDays')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/ipGroups",
+      "apiVersion": "2022-05-01",
+      "name": "[parameters('ipgroupsVnets')]",
+      "location": "[variables('spoke1').location]",
+      "properties": {
+        "ipAddresses": [
+          "[variables('hub').addressPrefix]",
+          "[variables('spoke1').addressPrefix]",
+          "[variables('spoke2').addressPrefix]",
+          "[variables('spoke3').addressPrefix]"
+        ]
+      }
+    },
+    {
+      "comments": "Azure Firewall Public IP Addresses",
+      "name": "[concat(variables('azfw1PubIPNamePrefix'), add(copyIndex(), 1))]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('hub').location]",
+      "dependsOn": [],
+      "sku": {
+        "name": "Standard"
+      },
+      "copy": {
+        "name": "azfwpublicIpCopy",
+        "count": "[parameters('numberOfFirewallPublicIPAddresses')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "comments": "Azure Firewall Policy",
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/firewallPolicies",
+      "name": "[variables('firewallPolicy1Name')]",
+      "location": "[variables('hub').location]",
+      "dependsOn": [],
+      "properties": {
+        "threatIntelMode": "Alert"
+      }
+    },
+    {
+      "comments": "azure firewall in hub1",
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/azureFirewalls",
+      "name": "[variables('firewallName')]",
+      "location": "[variables('hub').location]",
+      "zones": "[if(equals(length(parameters('firewallAvailabilityZones')), 0), json('null'), parameters('firewallAvailabilityZones'))]",
+      "dependsOn": [
+        //     "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]",
+        "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]",
+        "azfwpublicIpCopy"
+      ],
+      "properties": {
+        "ipConfigurations": "[variables('azfw1IpConfigurations')]",
+        "firewallPolicy": {
+          "id": "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]"
+        }
+      }
+    },
+    {
+      "comments": "Azure Firewall Policy Network Rule Collection",
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+      "name": "[format('{0}/{1}', variables('firewallPolicy1Name'), 'hubFWNetwRCGroup1')]",
+      "location": "[variables('hub').location]",
+      "dependsOn": [
+        //     "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]",
+        "[resourceId('Microsoft.Network/ipGroups', parameters('ipgroupsVnets'))]",
+        "[resourceId('Microsoft.Network/firewallPolicies',variables('firewallPolicy1Name'))]",
+        "[resourceId('Microsoft.Network/azureFirewalls',variables('firewallName'))]"
+      ],
+      "properties": {
+        "priority": 100,
+        "ruleCollections": [
+          {
+            "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+            "name": "hubFWNet",
+            "action": {
+              "type": "Allow"
+            },
+            "priority": 100,
+            "rules": [
+              {
+                "ruleType": "NetworkRule",
+                "name": "allow-RDP-vnets",
+                "ipProtocols": [
+                  "TCP"
+                ],
+                "destinationPorts": [
+                  "3389"
+                ],
+                "sourceAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "allow-web-vnets",
+                "ipProtocols": [
+                  "TCP"
+                ],
+                "destinationPorts": [
+                  "80",
+                  "443"
+                ],
+                "sourceAddresses": [
+                  "*"
+                ],
+                "destinationAddresses": [
+                  "[variables('lbFrontEndIP')]",
+                  "[variables('vm1hubPrivIP')]",
+                  "[variables('spoke2').subnetpePrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "allow-SMB-vnets",
+                "description": "Allow SMB inside the private network for all Azure VMs",
+                "ipProtocols": [
+                  "Any"
+                ],
+                "destinationPorts": [
+                  "445",
+                  "137",
+                  "139"
+                ],
+                "sourceAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('spoke2').addressPrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "allow-SSH-vnets",
+                "description": "Allow SSH access between On-Prem VM and Hub NVA",
+                "ipProtocols": [
+                  "TCP"
+                ],
+                "destinationPorts": [
+                  "22"
+                ],
+                "sourceAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "Allow-ICMP",
+                "ipProtocols": [
+                  "ICMP"
+                ],
+                "sourceAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ],
+                "sourceIpGroups": [],
+                "destinationAddresses": [
+                  "[variables('hub').addressPrefix]",
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]",
+                  "[variables('onprem').addressPrefix]"
+                ],
+                "destinationIpGroups": [],
+                "destinationFqdns": [],
+                "destinationPorts": [
+                  "*"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "onprem-to-vnets",
+                "ipProtocols": [
+                  "Any"
+                ],
+                "sourceAddresses": [
+                  "[variables('onprem').addressPrefix]"
+                ],
+                "sourceIpGroups": [],
+                "destinationAddresses": [
+                 "[variables('hub').addressPrefix]",
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]"
+                ],
+                "destinationIpGroups": [],
+                "destinationFqdns": [],
+                "destinationPorts": [
+                  "*"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+      "name": "[format('{0}/{1}', variables('firewallPolicy1Name'), 'hubFWAppRCGroup1')]",
+      "apiVersion": "2022-05-01",
+      "location": "westus2",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]",
+        "[resourceId('Microsoft.Network/ipGroups', parameters('ipgroupsVnets'))]",
+        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups',variables('firewallPolicy1Name'),'hubFWNetwRCGroup1')]"
+      ],
+      "properties": {
+        "priority": 200,
+        "ruleCollections": [
+          {
+            "name": "hubFWApp",
+            "priority": 100,
+            "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+            "action": {
+              "type": "Allow"
+            },
+            "rules": [
+              {
+                "ruleType": "ApplicationRule",
+                "name": "Allow-storage",
+                "description": "Allow VM subnets access to Storage blobs",
+                "protocols": [
+                  {
+                    "protocolType": "Https",
+                    "port": 443
+                  },
+                  {
+                    "protocolType": "Http",
+                    "port": 80
+                  }
+                ],
+                "fqdnTags": [],
+                "webCategories": [],
+                "targetFqdns": [
+                  "*.blob.core.windows.net",
+                  "raw.githubusercontent.com"
+                ],
+                "targetUrls": [],
+                "terminateTLS": false,
+                "sourceAddresses": [],
+                "destinationAddresses": [],
+                "sourceIpGroups": [
+                  "[resourceId('Microsoft.Network/ipGroups', parameters('ipgroupsVnets'))]"
+                ]
+              },
+              {
+                "ruleType": "ApplicationRule",
+                "name": "Allow-WU",
+                "description": "Allow Tenant subnet VM access to Windows Update",
+                "protocols": [
+                  {
+                    "protocolType": "Http",
+                    "port": 80
+                  },
+                  {
+                    "protocolType": "Https",
+                    "port": 443
+                  },
+                  {
+                    "protocolType": "Mssql",
+                    "port": 1433
+                  }
+                ],
+                "fqdnTags": [
+                  "WindowsUpdate"
+                ],
+                "webCategories": [],
+                "targetFqdns": [],
+                "targetUrls": [],
+                "terminateTLS": false,
+                "sourceAddresses": [],
+                "destinationAddresses": [],
+                "sourceIpGroups": [
+                  "[resourceId('Microsoft.Network/ipGroups', parameters('ipgroupsVnets'))]"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "comments": "Azure Firewall Policy NAT Rule Collection",
+      "name": "[format('{0}/{1}',variables('firewallPolicy1Name'), 'DnatRuleCollectionGroup1')]",
+      "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+      "apiVersion": "2022-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/firewallPolicies',variables('firewallPolicy1Name'))]",
+        "[resourceId('Microsoft.Network/azureFirewalls',variables('firewallName'))]",
+        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups',variables('firewallPolicy1Name'),'hubFWAppRCGroup1')]"
+      ],
+      "properties": {
+        "priority": "300",
+        "ruleCollections": [
+          {
+            "name": "hubFW-inbound-NatRules",
+            "ruleCollectionType": "FirewallPolicyNatRuleCollection",
+            "priority": 100,
+            "action": {
+              "type": "Dnat"
+            },
+            "rules": [
+              {
+                "ruleType": "NatRule",
+                "name": "vm1hub",
+                "translatedAddress": "[variables('vm1hubPrivIP')]",
+                "translatedPort": "80",
+                "ipProtocols": [
+                  "TCP"
+                ],
+                "sourceAddresses": [
+                  "*"
+                ],
+                "sourceIpGroups": [],
+                "destinationAddresses": [
+                  "[reference(resourceId('Microsoft.Network/publicIPAddresses',  concat(variables('azfw1PubIPNamePrefix'), '1' ) )).ipAddress]"
+                ],
+                "destinationPorts": [
+                  "80"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "name": "[parameters('workspaceName')]",
+      "apiVersion": "2020-10-01",
+      "location": "[variables('hub').location]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('sku')]"
+        },
+        "retentionInDays": "[parameters('retentionInDays')]",
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": "[parameters('resourcePermissions')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "name": "[concat(variables('firewallName'), '/Microsoft.Insights/', variables('diagnosticSettingName'))]",
+      "dependsOn": [
+        "[resourceid('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+        "[resourceId('Microsoft.Network/azureFirewalls',variables('firewallName'))]"
+      ],
+      "properties": {
+        "storageAccountId": null,
+        "eventHubAuthorizationRuleId": null,
+        "eventHubName": null,
+        "workspaceId": "[resourceid('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+            }
+          }
+        ],
+        "logs": [
+          {
+            "category": "AzureFirewallApplicationRule",
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+            }
+          },
+          {
+            "category": "AzureFirewallNetworkRule",
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+            }
+          },
+          {
+            "category": "AzureFirewallDnsProxy",
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+            }
+          },
+          {
+            "category": "AZFWNetworkRule",
+            "categoryGroup": null,
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+
+            }
+          },
+          {
+            "category": "AZFWApplicationRule",
+            "categoryGroup": null,
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+            }
+          },
+          {
+            "category": "AZFWNatRule",
+            "categoryGroup": null,
+            "enabled": true,
+            "retentionPolicy": {
+              "enabled": true,
+              "days": "[variables('diagnosticLogsRetentionInDays')]"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "azfwPrivIP": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+    }
+  }
+}

@@ -1,0 +1,396 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {},
+  "parameters": {
+     "locationonprem": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region for location on-prem"
+      }
+    },
+    "locationhub": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "locationspoke1": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke1"
+      }
+    },
+    "locationspoke2": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke2"
+      }
+    },
+    "locationspoke3": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke3"
+      }
+    },
+    "vnetHubName": {
+      "type": "string",
+      "defaultValue": "hub",
+      "metadata": {
+        "description": "name for the Azure hub vnet"
+      }
+    },
+    "vnetOnPrem": {
+      "type": "string",
+      "defaultValue": "onprem",
+      "metadata": {
+        "description": "name for the Azure vnet simulating the on-premises network"
+      }
+    },
+    "vnetspoke1": {
+      "type": "string",
+      "defaultValue": "spoke1",
+      "metadata": {
+        "description": "name for the Azure spoke1 vnet"
+      }
+    },
+    "vnetspoke2": {
+      "type": "string",
+      "defaultValue": "spoke2",
+      "metadata": {
+        "description": "name for the Azure spoke2 vnet"
+      }
+    },
+    "vnetspoke3": {
+      "type": "string",
+      "defaultValue": "spoke3",
+      "metadata": {
+        "description": "name for the Azure spoke3 vnet"
+      }
+    },
+    "webStorageAccountName": {
+      "type": "string",
+      "defaultValue": "[format('storg{0}', uniqueString(resourceGroup().id))]",
+      "metadata": {
+        "description": "The name of the storage account to use for site hosting."
+      }
+    },
+    "storageSku": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "The storage account sku name."
+      },
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_ZRS",
+        "Premium_LRS"
+      ]
+    },
+    "indexDocumentPath": {
+      "type": "string",
+      "defaultValue": "index.html",
+      "metadata": {
+        "description": "The path to the web index document."
+      }
+    },
+    "indexDocumentContents": {
+      "type": "string",
+      "defaultValue": "<style> h1 { color: DarkViolet; } </style> <h1>Example static website</h1>",
+      "metadata": {
+        "description": "The contents of the web index document."
+      }
+    },
+    "errorDocument404Path": {
+      "type": "string",
+      "defaultValue": "error.html",
+      "metadata": {
+        "description": "The path to the web error document."
+      }
+    },
+    "errorDocument404Contents": {
+      "type": "string",
+      "defaultValue": "<h1>Example 404 error page</h1>",
+      "metadata": {
+        "description": "The contents of the web error document."
+      }
+    },
+    "webStorageAccountPrivateEndpointName": {
+      "type": "string",
+      "defaultValue": "webStorageAccountPrivateEndpoint",
+      "metadata": {
+        "description": "Specifies the name of the private link to the boot diagnostics storage account."
+      }
+    }
+  },
+  "variables": {
+    "hub": {
+      "location": "[parameters('locationhub')]",
+      "name": "[parameters('vnetHubName')]",
+      "addressPrefix": "10.0.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.0.1.0/24",
+      "AzureBastionSubnetName": "AzureBastionSubnet",
+      "AzureBastionSubnetPrefix": "10.0.2.0/24",
+      "AzureFirewallSubnetName": "AzureFirewallSubnet",
+      "AzureFirewallSubnetPrefix": "10.0.3.0/24",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.0.4.0/24",
+      "RouteServerSubnetName": "RouteServerSubnet",
+      "RouteServerSubnetPrefix": "10.0.5.0/24"
+    },
+    "spoke1": {
+      "location": "[parameters('locationspoke1')]",
+      "name": "[parameters('vnetspoke1')]",
+      "addressPrefix": "10.1.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.1.1.0/24",
+      "AppGatewaySubnetName": "appGtwSubnet",
+      "AppGatewaySubnetPrefix": "10.1.2.0/24"
+    },
+    "spoke2": {
+      "location": "[parameters('locationspoke2')]",
+      "name": "[parameters('vnetspoke2')]",
+      "addressPrefix": "10.2.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.2.1.0/24",
+      "subnetfeName": "fe-subnet",
+      "subnetfePrefix": "10.2.2.0/24",
+      "subnetpeName": "pe-subnet",
+      "subnetpePrefix": "10.2.3.0/24"
+    },
+    "spoke3": {
+      "location": "[parameters('locationspoke3')]",
+      "name": "[parameters('vnetspoke3')]",
+      "addressPrefix": "10.3.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.3.1.0/24"
+    },
+    "onprem": {
+      "location": "[parameters('locationonprem')]",
+      "name": "[parameters('vnetOnPrem')]",
+      "addressPrefix": "10.10.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.10.1.0/24",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.10.3.0/24",
+      "AzureBastionSubnetName": "AzureBastionSubnet",
+      "AzureBastionSubnetPrefix": "10.10.2.0/24"
+    },
+    "privateEndpointSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('spoke2').name, variables('spoke2').subnetpeName)]",
+    "webStorageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName'))]",
+    "webPublicDNSZoneForwarder": "[concat('.web.', environment().suffixes.storage)]",
+    "webPrivateDnsZoneName": "[concat('privatelink', variables('webPublicDNSZoneForwarder'))]",
+    "webPrivateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('webPrivateDnsZoneName'))]",
+    "webStorageAccountPrivateEndpointId": "[resourceId('Microsoft.Network/privateEndpoints', parameters('webStorageAccountPrivateEndpointName'))]",
+    "webStorageAccountPrivateEndpointGroupName": "web",
+    "webPrivateDnsZoneGroup": "[concat(parameters('webStorageAccountPrivateEndpointName'),'/', variables('webStorageAccountPrivateEndpointGroupName'), 'PrivateDnsZoneGroup')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('webStorageAccountName')]",
+      "location": "[variables('spoke2').location]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "[parameters('storageSku')]"
+      },
+      "properties": {
+        "supportsHttpsTrafficOnly": false
+      }
+    },
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "name": "DeploymentScript",
+      "location": "[variables('spoke2').location]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2020-04-01-preview",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('webStorageAccountName'))]",
+      "name": "[guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'DeploymentScript'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '17d1049b-9a84-46fb-8f53-869881c3d3ab'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'DeploymentScript')).principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'DeploymentScript')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "deploymentScript",
+      "location": "[variables('spoke2').location]",
+      "kind": "AzurePowerShell",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'DeploymentScript'))]": {}
+        }
+      },
+      "properties": {
+        "azPowerShellVersion": "3.0",
+        "scriptContent": "$ErrorActionPreference = 'Stop'\n$storageAccount = Get-AzStorageAccount -ResourceGroupName $env:ResourceGroupName -AccountName $env:StorageAccountName\n\n# Enable the static website feature on the storage account.\n$ctx = $storageAccount.Context\nEnable-AzStorageStaticWebsite -Context $ctx -IndexDocument $env:IndexDocumentPath -ErrorDocument404Path $env:ErrorDocument404Path\n\n# Add the two HTML pages.\n$tempIndexFile = New-TemporaryFile\nSet-Content $tempIndexFile $env:IndexDocumentContents -Force\nSet-AzStorageBlobContent -Context $ctx -Container '$web' -File $tempIndexFile -Blob $env:IndexDocumentPath -Properties @{'ContentType' = 'text/html'} -Force\n\n$tempErrorDocument404File = New-TemporaryFile\nSet-Content $tempErrorDocument404File $env:ErrorDocument404Contents -Force\nSet-AzStorageBlobContent -Context $ctx -Container '$web' -File $tempErrorDocument404File -Blob $env:ErrorDocument404Path -Properties @{'ContentType' = 'text/html'} -Force\n",
+        "retentionInterval": "PT4H",
+        "environmentVariables": [
+          {
+            "name": "ResourceGroupName",
+            "value": "[resourceGroup().name]"
+          },
+          {
+            "name": "StorageAccountName",
+            "value": "[parameters('webStorageAccountName')]"
+          },
+          {
+            "name": "IndexDocumentPath",
+            "value": "[parameters('indexDocumentPath')]"
+          },
+          {
+            "name": "IndexDocumentContents",
+            "value": "[parameters('indexDocumentContents')]"
+          },
+          {
+            "name": "ErrorDocument404Path",
+            "value": "[parameters('errorDocument404Path')]"
+          },
+          {
+            "name": "ErrorDocument404Contents",
+            "value": "[parameters('errorDocument404Contents')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'DeploymentScript')]",
+        "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName')), 'Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'DeploymentScript'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '17d1049b-9a84-46fb-8f53-869881c3d3ab')))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('webPrivateDnsZoneName')]",
+      "location": "global",
+      "properties": {
+        "maxNumberOfRecordSets": 25000,
+        "maxNumberOfVirtualNetworkLinks": 1000,
+        "maxNumberOfVirtualNetworkLinksWithRegistration": 100
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[concat(variables('webPrivateDnsZoneName'), '/link_to_', toLower(variables('spoke2').name))]",
+      "location": "global",
+      "dependsOn": [
+        "[variables('webPrivateDnsZoneId')]",
+    //    "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke2').name)]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke2').name)]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[concat(variables('webPrivateDnsZoneName'), '/link_to_', toLower(variables('spoke1').name))]",
+      "location": "global",
+      "dependsOn": [
+        "[variables('webPrivateDnsZoneId')]",
+    //    "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[concat(variables('webPrivateDnsZoneName'), '/link_to_', toLower(variables('hub').name))]",
+      "location": "global",
+      "dependsOn": [
+        "[variables('webPrivateDnsZoneId')]",
+    //    "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2022-05-01",
+      "name": "[parameters('webStorageAccountPrivateEndpointName')]",
+      "location": "[variables('spoke2').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName'))]"
+   //    "[resourceId('Microsoft.Network/virtualNetworks',variables('spoke2').name)]"
+      ],
+      "properties": {
+        "privateLinkServiceConnections": [
+          {
+            "name": "[parameters('webStorageAccountPrivateEndpointName')]",
+            "properties": {
+              "privateLinkServiceId": "[variables('webStorageAccountId')]",
+              "groupIds": [
+                "[variables('webStorageAccountPrivateEndpointGroupName')]"
+              ]
+            }
+          }
+        ],
+        "subnet": {
+          "id": "[variables('privateEndpointSubnetId')]"
+        },
+        "customDnsConfigs": [
+          {
+            "fqdn": "[concat(parameters('webStorageAccountName'), variables('webPublicDNSZoneForwarder'))]"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('webPrivateDnsZoneGroup')]",
+      "location": "[variables('spoke2').location]",
+      "dependsOn": [
+        "[variables('webPrivateDnsZoneId')]",
+        "[variables('webStorageAccountPrivateEndpointId')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "dnsConfig",
+            "properties": {
+              "privateDnsZoneId": "[variables('webPrivateDnsZoneId')]"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "staticWebsiteUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName'))).primaryEndpoints.web]"
+    }
+  }
+}

@@ -1,0 +1,1343 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "locationonprem": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region for location on-prem"
+      }
+    },
+    "locationhub": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "locationspoke1": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke1"
+      }
+    },
+    "locationspoke2": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke2"
+      }
+    },
+    "locationspoke3": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region spoke3"
+      }
+    },
+    "vnetHubName": {
+      "type": "string",
+      "defaultValue": "hub",
+      "metadata": {
+        "description": "name for the Azure hub vnet"
+      }
+    },
+    "vnetOnPrem": {
+      "type": "string",
+      "defaultValue": "onprem",
+      "metadata": {
+        "description": "name for the Azure vnet simulating the on-premises network"
+      }
+    },
+    "vnetspoke1": {
+      "type": "string",
+      "defaultValue": "spoke1",
+      "metadata": {
+        "description": "name for the Azure spoke1 vnet"
+      }
+    },
+    "vnetspoke2": {
+      "type": "string",
+      "defaultValue": "spoke2",
+      "metadata": {
+        "description": "name for the Azure spoke2 vnet"
+      }
+    },
+    "vnetspoke3": {
+      "type": "string",
+      "defaultValue": "spoke3",
+      "metadata": {
+        "description": "name for the Azure spoke3 vnet"
+      }
+    },
+    "gateway1Name": {
+      "type": "string",
+      "defaultValue": "vpnGw1",
+      "metadata": {
+        "description": "Arbitrary name for the new gateway"
+      }
+    },
+    "gateway2Name": {
+      "type": "string",
+      "defaultValue": "vpnGw2",
+      "metadata": {
+        "description": "Arbitrary name for the new gateway"
+      }
+    },
+    "gatewaySku": {
+      "type": "string",
+      "defaultValue": "VpnGw2",
+      "allowedValues": [
+        "VpnGw2",
+        "VpnGw2AZ",
+        "VpnGw3",
+        "VpnGw3AZ",
+        "VpnGw4",
+        "VpnGw4AZ",
+        "VpnGw5",
+        "VpnGw5AZ"
+      ],
+      "metadata": {
+        "description": "The Sku of the Gateway"
+      }
+    },
+    "asnGtw1": {
+      "type": "int",
+      "defaultValue": 65001,
+      "metadata": {
+        "description": "BGP Autonomous System Number of the VNet"
+      }
+    },
+    "asnGtw2": {
+      "type": "int",
+      "defaultValue": 65002,
+      "metadata": {
+        "description": "BGP Autonomous System Number of the remote VNet"
+      }
+    },
+
+    "natPublicIPPrefixLength": {
+      "type": "int",
+      "defaultValue": 31,
+      "metadata": {
+        "description": "Length of public IP prefix for nat gateway"
+      },
+      "maxValue": 31,
+      "minValue": 28
+    },
+    "loadDistribution": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "SourceIP",
+        "SourceIPProtocol"
+      ],
+      "metadata": {
+        "description": "Azure Load Balancer distribution modes for routing connections to instances in the backend pool"
+      }
+    },
+    "ipgroupsVnets": {
+      "type": "string",
+      "defaultValue": "ipgroupVNets"
+    },
+    "firewallAvailabilityZones": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Zone numbers e.g. 1,2,3."
+      }
+    },
+    "numberOfFirewallPublicIPAddresses": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 100,
+      "metadata": {
+        "description": "Number of public IP addresses for the Azure Firewall"
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "workspace1",
+      "metadata": {
+        "description": "Name of the workspace."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "defaultvalue": "pergb2018",
+      "allowedValues": [
+        "pergb2018",
+        "Free",
+        "Standalone",
+        "PerNode",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+      }
+    },
+    "retentionInDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "workspace: Number of days to retain data."
+      }
+    },
+    "resourcePermissions": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "true to use resource or workspace permissions. false to require workspace permissions."
+      }
+    },
+    "diagnosticLogsRetentionInDays": {
+      "type": "int",
+      "defaultValue": 365,
+      "minValue": 0,
+      "maxValue": 365,
+      "metadata": {
+        "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+      }
+    },
+    "blobStorageAccountName": {
+      "type": "string",
+      "defaultValue": "[concat('morgasa', uniquestring(resourceGroup().id))]",
+      "metadata": {
+        "description": "Specifies the globally unique name for the storage account used to store the boot diagnostics logs of the virtual machine."
+      }
+    },
+    "blobStorageAccountPrivateEndpointName": {
+      "type": "string",
+      "defaultValue": "BlobStorageAccountPrivateEndpoint",
+      "metadata": {
+        "description": "Specifies the name of the private link to the boot diagnostics storage account."
+      }
+    },
+    "fileStorageAccountPrivateEndpointName": {
+      "type": "string",
+      "defaultValue": "FileSharePrivateEndpoint",
+      "metadata": {
+        "description": "Specifies the name of the private link to the boot diagnostics storage account."
+      }
+    },
+    "networkAclsDefaultAction": {
+      "type": "string",
+      "defaultValue": "Deny",
+      "allowedValues": [
+        "Allow",
+        "Deny"
+      ],
+      "metadata": {
+        "description": "Allow or disallow public access to all blobs or containers in the storage accounts. The default interpretation is true for this property."
+      }
+    },
+    "allowBlobPublicAccess": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Allow or disallow public access to all blobs or containers in the storage accounts. The default interpretation is true for this property."
+      }
+    },
+    "fileStorageAccountName": {
+      "type": "string",
+      "defaultValue": "[concat('file', uniquestring(resourceGroup().id))]",
+      "metadata": {
+        "description": "Specifies the name of the Azure Storage account hosting the File Share."
+      }
+    },
+    "fileShareName": {
+      "type": "string",
+      "defaultValue": "documents",
+      "minLength": 3,
+      "maxLength": 63,
+      "metadata": {
+        "description": "Specifies the name of the File Share. File share names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only."
+      }
+    },
+    "shareQuota": {
+      "type": "int",
+      "defaultValue": 5120,
+      "metadata": {
+        "description": "Specifies the maximum size of the share, in gigabytes. Must be greater than 0, and less than or equal to 5TB (5120). For Large File Shares, the maximum size is 102400."
+      }
+    },
+    "appGatewayName": {
+      "type": "string",
+      "defaultValue": "appGtw1",
+      "metadata": {
+        "description": "Application Gateway name"
+      }
+    },
+    "appGwSize": {
+      "type": "string",
+      "defaultValue": "WAF_v2",
+      "allowedValues": [
+        "Standard",
+        "WAF",
+        "Standard_v2",
+        "WAF_v2"
+      ],
+      "metadata": {
+        "description": "Application Gateway size"
+      }
+    },
+    "appGwCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "allowedValues": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "metadata": {
+        "description": "Application Gateway instance count"
+      }
+    },
+    "frontendPort": {
+      "type": "int",
+      "defaultValue": 80,
+      "metadata": {
+        "description": "Application Gateway front end port"
+      }
+    },
+    "backendPort": {
+      "type": "int",
+      "defaultValue": 80,
+      "metadata": {
+        "description": "Application Gateway back end port"
+      }
+    },
+    "cookieBasedAffinity": {
+      "type": "string",
+      "defaultValue": "Disabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "Cookie based affinity"
+      }
+    },
+    "wafEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "WAF Enabled"
+      }
+    },
+    "wafMode": {
+      "type": "string",
+      "defaultValue": "Prevention",
+      "allowedValues": [
+        "Detection",
+        "Prevention"
+      ],
+      "metadata": {
+        "description": "WAF Mode"
+      }
+    },
+    "wafRuleSetType": {
+      "type": "string",
+      "defaultValue": "OWASP",
+      "allowedValues": [
+        "OWASP"
+      ],
+      "metadata": {
+        "description": "WAF Rule Set Type"
+      }
+    },
+    "wafRuleSetVersion": {
+      "type": "string",
+      "defaultValue": "3.1",
+      "allowedValues": [
+        "2.2.9",
+        "3.0",
+        "3.1"
+      ],
+      "metadata": {
+        "description": "WAF Rule Set Version"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "administrator username of the VMs"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "administrator password of the VMs"
+      }
+    },
+    "user1Name": {
+      "type": "string"
+    },
+    "user1Password": {
+      "type": "string"
+    },
+    "user2Name": {
+      "type": "string"
+    },
+    "user2Password": {
+      "type": "string"
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_B2S",
+      "metadata": {
+        "description": "Size of the Virtual Machine."
+      }
+    },
+    "_artifactsLocationSasToken": {
+      "defaultValue": "",
+      "type": "securestring",
+      "metadata": {
+        "description": "The sasToken required to access _artifactsLocation. When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+      }
+    },
+    "_artifactsLocation": {
+      //"defaultValue": "[deployment().properties.templateLink.uri]",
+      "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern2/master/",
+      "type": "string",
+      "metadata": {
+        "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+      }
+    }
+  },
+  "variables": {
+    "hub": {
+      "location": "[parameters('locationhub')]",
+      "name": "[parameters('vnetHubName')]",
+      "addressPrefix": "10.0.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.0.1.0/24",
+      "AzureBastionSubnetName": "AzureBastionSubnet",
+      "AzureBastionSubnetPrefix": "10.0.2.0/24",
+      "AzureFirewallSubnetName": "AzureFirewallSubnet",
+      "AzureFirewallSubnetPrefix": "10.0.3.0/24",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.0.4.0/24",
+      "RouteServerSubnetName": "RouteServerSubnet",
+      "RouteServerSubnetPrefix": "10.0.5.0/24"
+    },
+    "spoke1": {
+      "location": "[parameters('locationspoke1')]",
+      "name": "[parameters('vnetspoke1')]",
+      "addressPrefix": "10.1.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.1.1.0/24",
+      "AppGatewaySubnetName": "appGtwSubnet",
+      "AppGatewaySubnetPrefix": "10.1.2.0/24"
+    },
+    "spoke2": {
+      "location": "[parameters('locationspoke2')]",
+      "name": "[parameters('vnetspoke2')]",
+      "addressPrefix": "10.2.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.2.1.0/24",
+      "subnetfeName": "fe-subnet",
+      "subnetfePrefix": "10.2.2.0/24",
+      "subnetpeName": "pe-subnet",
+      "subnetpePrefix": "10.2.3.0/24"
+    },
+    "spoke3": {
+      "location": "[parameters('locationspoke3')]",
+      "name": "[parameters('vnetspoke3')]",
+      "addressPrefix": "10.3.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.3.1.0/24",
+      "AppGatewaySubnetName": "appGtwSubnet",
+      "AppGatewaySubnetPrefix": "10.3.2.0/24",
+      "subnetpeName": "pe-subnet",
+      "subnetpePrefix": "10.3.3.0/24"
+    },
+    "onprem": {
+      "location": "[parameters('locationonprem')]",
+      "name": "[parameters('vnetOnPrem')]",
+      "addressPrefix": "10.10.0.0/16",
+      "TenantName": "Tenant",
+      "TenantPrefix": "10.10.1.0/24",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.10.3.0/24"
+    },
+
+    "peeringNamehub1spoke1": "[concat(variables('hub').name,'-to-',variables('spoke1').name)]",
+    "peeringNamespoke1hub1": "[concat(variables('spoke1').name,'-to-',variables('hub').name)]",
+    "peeringNamehub1spoke2": "[concat(variables('hub').name,'-to-',variables('spoke2').name)]",
+    "peeringNamespoke2hub1": "[concat(variables('spoke2').name,'-to-',variables('hub').name)]",
+    "peeringNamehub1spoke3": "[concat(variables('hub').name,'-to-',variables('spoke3').name)]",
+    "peeringNamespoke3hub1": "[concat(variables('spoke3').name,'-to-',variables('hub').name)]",
+
+    "rshubName": "[concat(variables('hub').name,'-rshub')]",
+    "rshubPubIPName": "[concat(variables('rshubName'),'-pubIP')]",
+    "rshubSubnetId": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets',variables('hub').name,'RouteServerSubnet' )]",
+    "vHubIPconfigName": "vhubipconfig1",
+
+    "natGatewayName": "[concat(variables('hub').name,'-natGw')]",
+    "natPublicIPAddressName": "[concat(variables('hub').name,'-natpip')]",
+    "natPublicIPPrefixName": "[concat(variables('hub').name,'-nat-ip-prefix')]",
+    "natPublicIPPrefixLength": "[parameters('natPublicIPPrefixLength')]",
+    "nsgHubName": "[concat(variables('hub').name,'-nsg')]",
+    "nsgonprem": "[concat(variables('onprem').name,'-nsg')]",
+
+    "bastionName": "bastion1",
+    "bastionLocation": "[variables('hub').location]",
+    "bastionpubIPName": "[concat(variables('bastionName'),'-pubIP')]",
+
+    "azfwIP": "10.0.3.4",
+
+    "RT-hub-Tenant": "[concat('RT-',variables('hub').name, '-', variables('hub').TenantName)]",
+    "RT-hub-GatewaySubnet": "[concat('RT-',variables('hub').name, '-', variables('hub').GatewaySubnetName)]",
+    "win": {
+      "publisher": "MicrosoftWindowsServer",
+      "offer": "WindowsServer",
+      "sku": "2022-Datacenter",
+      "version": "latest"
+    },
+    "ubuntu": {
+      "publisher": "canonical",
+      "offer": "0001-com-ubuntu-server-jammy",
+      "sku": "22_04-lts-gen2",
+      "version": "latest"
+    },
+    "vm1hub": "[concat(variables('hub').name,'-vm1')]",
+    "vm1onprem": "[concat(variables('onprem').name,'-vm1')]",
+    "acceleratedNetworking": false,
+    "vmStorageAccountType": "Standard_LRS",
+    "vmArray": [
+      {
+        "vmName": "[variables('vm1hub')]",
+        "location": "[variables('hub').location]",
+        "vmSize": "[parameters('vmsize')]",
+        "vnetName": "[variables('hub').name]",
+        "subnetName": "[variables('hub').TenantName]",
+        "nicName": "[concat(variables('vm1hub'),'-nic')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[variables('acceleratedNetworking')]",
+        "imagePublisher": "[variables('win').publisher]",
+        "imageOffer": "[variables('win').offer]",
+        "imageSKU": "[variables('win').sku]",
+        "imageVersion": "[variables('win').version]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]"
+      },
+      {
+        "vmName": "[variables('vm1onprem')]",
+        "location": "[variables('onprem').location]",
+        "vmSize": "[parameters('vmsize')]",
+        "vnetName": "[variables('onprem').name]",
+        "subnetName": "[variables('onprem').TenantName]",
+        "nicName": "[concat(variables('vm1onprem'),'-nic')]",
+        "enableIPForwarding": false,
+        "acceleratedNetworking": "[variables('acceleratedNetworking')]",
+        "imagePublisher": "[variables('win').publisher]",
+        "imageOffer": "[variables('win').offer]",
+        "imageSKU": "[variables('win').sku]",
+        "imageVersion": "[variables('win').version]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]"
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]",
+    "scriptFileName": "IISBuildHub.ps1",
+    "scriptExe": "[concat(variables('scriptFileName'),' -User1 ', parameters('user1Name'), ' -Pass1 ',parameters('user1Password'),' -User2 ', parameters('user2Name'), ' -Pass2 ', parameters('user2Password'))]",
+    "scriptLocation": "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
+
+  },
+  "resources": [
+    {
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('natPublicIPAddressName')]",
+      "location": "[variables('hub').location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPPrefixes",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('natPublicIPPrefixName')]",
+      "location": "[variables('hub').location]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "prefixLength": "[variables('natPublicIPPrefixLength')]",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "type": "Microsoft.Network/natGateways",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('natGatewayName')]",
+      "location": "[variables('hub').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('natPublicIPAddressName'))]",
+        "[resourceId('Microsoft.Network/publicIPPrefixes', variables('natPublicIPPrefixName'))]"
+      ],
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAddresses": [
+          {
+            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('natPublicIPAddressName'))]"
+          }
+        ],
+        "publicIPPrefixes": [
+          {
+            "id": "[resourceId('Microsoft.Network/publicIPPrefixes', variables('natPublicIPPrefixName'))]"
+          }
+        ],
+        "idleTimeoutInMinutes": 10
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('nsgonprem')]",
+      "location": "[variables('onprem').location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-priv-10Network",
+            "properties": {
+              "description": "allow incoming 10.0.0.0/8",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "10.0.0.0/8",
+              "destinationAddressPrefix": "10.0.0.0/8",
+              "access": "Allow",
+              "priority": 300,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('nsgHubName')]",
+      "location": "[variables('hub').location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-priv-10Network",
+            "properties": {
+              "description": "allow incoming 10.0.0.0/8",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "10.0.0.0/8",
+              "destinationAddressPrefix": "10.0.0.0/8",
+              "access": "Allow",
+              "priority": 300,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-hub-Tenant')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('hub').location]",
+      "comments": "Routing Table hub",
+      "dependsOn": [],
+      "properties": {
+        "routes": [
+          {
+            "name": "[concat('to-',variables('spoke1').name)]",
+            "properties": {
+              "addressPrefix": "[variables('spoke1').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          },
+          {
+            "name": "[concat('to-',variables('spoke2').name)]",
+            "properties": {
+              "addressPrefix": "[variables('spoke2').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          },
+          {
+            "name": "[concat('to-',variables('spoke3').name)]",
+            "properties": {
+              "addressPrefix": "[variables('spoke3').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          },
+          {
+            "name": "[concat('to-',variables('onprem').name)]",
+            "properties": {
+              "addressPrefix": "[variables('onprem').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-hub-GatewaySubnet')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('hub').location]",
+      "comments": "Routing Table hub",
+      "dependsOn": [],
+      "properties": {
+        "routes": [
+          {
+            "name": "[concat('to-',variables('spoke1').name)]",
+            "properties": {
+              "addressPrefix": "[variables('spoke1').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          },
+          {
+            "name": "[concat('to-',variables('spoke2').name)]",
+            "properties": {
+              "addressPrefix": "[variables('spoke2').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          },
+          {
+            "name": "[concat('to-',variables('spoke3').name)]",
+            "properties": {
+              "addressPrefix": "[variables('spoke3').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          },
+          {
+            "name": "[concat('to-',variables('onprem').name)]",
+            "properties": {
+              "addressPrefix": "[variables('onprem').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[variables('azfwIP')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('hub').name]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('hub').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/natGateways', variables('natGatewayName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgHubName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('hub').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('hub').TenantName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').TenantPrefix]",
+              "natGateway": {
+                "id": "[resourceId('Microsoft.Network/natGateways', variables('natGatewayName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgHubName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('hub').AzureBastionSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').AzureBastionSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('hub').AzureFirewallSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').AzureFirewallSubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('hub').GatewaySubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').GatewaySubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('hub').RouteServerSubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').RouteServerSubnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('spoke1').name]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('spoke1').location]",
+      "dependsOn": [
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('spoke1').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('spoke1').TenantName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke1').TenantPrefix]"
+            }
+          },
+          {
+            "name": "[variables('spoke1').AppGatewaySubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke1').AppGatewaySubnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('spoke2').name]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('spoke2').location]",
+      "dependsOn": [],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('spoke2').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('spoke2').TenantName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke2').TenantPrefix]"
+            }
+          },
+          {
+            "name": "[variables('spoke2').subnetfeName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke2').subnetfePrefix]"
+            }
+          },
+          {
+            "name": "[variables('spoke2').subnetpeName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke2').subnetpePrefix]",
+              "privateEndpointNetworkPolicies": "Disabled"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('spoke3').name]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('spoke3').location]",
+      "dependsOn": [],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('spoke3').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('spoke3').TenantName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke3').TenantPrefix]"
+            }
+          },
+          {
+            "name": "[variables('spoke3').AppGatewaySubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke3').AppGatewaySubnetPrefix]"
+            }
+          },
+          {
+            "name": "[variables('spoke3').subnetpeName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke3').subnetpePrefix]",
+              "privateEndpointNetworkPolicies": "Disabled"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('onprem').name]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('onprem').location]",
+      "dependsOn": [],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('onprem').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('onprem').TenantName]",
+            "properties": {
+              "addressPrefix": "[variables('onprem').TenantPrefix]"
+            }
+          },
+          {
+            "name": "GatewaySubnet",
+            "properties": {
+              "addressPrefix": "[variables('onprem').GatewaySubnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "comments": "Azure Bastion public IP Address",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('bastionpubIPName')]",
+      "location": "[variables('bastionLocation')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 4,
+        "ipTags": []
+      }
+    },
+    {
+      "comments": "Azure Bastion deployment in the hub vnet",
+      "type": "Microsoft.Network/bastionHosts",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('bastionName')]",
+      "location": "[variables('bastionLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionpubIPName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name )]"
+      ],
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "disableCopyPaste": false,
+        "enableFileCopy": true,
+        "enableIpConnect": true,
+        "enableShareableLink": true,
+        "enableTunneling": true,
+        "ipConfigurations": [
+          {
+            "name": "IpConf",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionpubIPName'))]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hub').name, 'AzureBastionSubnet')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "comments": "create a virtual hub object - Note: the ARM template run successful only if the main vnet with already exists",
+      "type": "Microsoft.Network/virtualHubs",
+      "apiVersion": "2021-05-01",
+      "name": "[variables('rshubName')]",
+      "location": "[variables('hub').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks',variables('hub').name)]"
+      ],
+      "properties": {
+        "sku": "Standard",
+        "allowBranchToBranchTraffic": true
+      },
+      "resources": []
+    },
+    {
+      "comments": "public IP of the route server",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('rshubPubIPName')]",
+      "apiVersion": "2021-05-01",
+      "location": "[variables('hub').location]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+      "apiVersion": "2021-05-01",
+      "name": "[format('{0}/{1}', variables('rshubName'), variables('vHubIPconfigName'))]",
+      "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualHubs', variables('rshubName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('rshubPubIPName') )]"
+      ],
+      "properties": {
+        "privateIPAllocationMethod": "Dynamic",
+        "subnet": {
+          "id": "[variables('rshubSubnetId')]"
+        },
+        "publicIPAddress": {
+          "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rshubPubIPName') )]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('vmArray')[copyIndex()].nicName]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName)]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+              }
+            }
+          }
+        ],
+        "primary": true,
+        "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+        "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]"
+      },
+      "copy": {
+        "name": "nicCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmArray')[copyIndex()].vmName]",
+      "apiVersion": "2022-11-01",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName )]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmarray')[copyIndex()].vmName]",
+          "adminUsername": "[variables('vmArray')[copyIndex()].adminUsername]",
+          "adminPassword": "[variables('vmArray')[copyIndex()].adminPassword]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmarray')[copyIndex()].imagePublisher]",
+            "offer": "[variables('vmarray')[copyIndex()].imageOffer]",
+            "sku": "[variables('vmarray')[copyIndex()].imageSKU]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "deleteOption": "Delete",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-OSdisk')]",
+            "caching": "ReadWrite",
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[variables('vmStorageAccountType')]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName)]",
+              "properties": {
+                "deleteOption": "Delete"
+              }
+            }
+          ]
+        }
+      },
+      "copy": {
+        "name": "VMCopy",
+        "count": "[variables('vmCount')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[format('{0}/{1}', variables('vmArray')[copyIndex()].vmName, 'customscript')]",
+      "apiVersion": "2022-11-01",
+      "comments": "custom script extension to install IIS in the Windows VMs",
+      "location": "[variables('vmArray')[copyIndex()].location]",
+      "copy": {
+        "name": "vmExtensionCopy",
+        "count": "[variables('vmCount')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.9",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[variables('scriptLocation')]"
+          ],
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ./',variables('scriptExe'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-01-01",
+      "name": "createVnetPeering",
+      "comments": "create vnet peering ",
+      "dependsOn": [
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('hub').name)]",
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke1').name)]",
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke2').name)]",
+        "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke3').name)]",
+        "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations',variables('rshubName'),variables('vHubIPconfigName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "name": "[format('{0}/{1}', variables('hub').name, variables('peeringNamehub1spoke1'))]",
+              "apiVersion": "2021-05-01",
+              "location": "[variables('hub').location]",
+              "comments": "This is the peering from vnet1 to vnet2",
+              "dependsOn": [],
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "name": "[format('{0}/{1}', variables('spoke1').name, variables('peeringNamespoke1hub1'))]",
+              "apiVersion": "2021-05-01",
+              "location": "[variables('spoke1').location]",
+              "comments": "This is the peering from vnet2 to vnet1",
+              "dependsOn": [],
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('hub').name)]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "name": "[format('{0}/{1}', variables('hub').name, variables('peeringNamehub1spoke2'))]",
+              "apiVersion": "2021-05-01",
+              "location": "[variables('hub').location]",
+              "comments": "This is the peering from vnet1 to vnet3",
+              "dependsOn": [],
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke2').name)]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "name": "[format('{0}/{1}', variables('spoke2').name,variables('peeringNamespoke2hub1'))]",
+              "apiVersion": "2021-05-01",
+              "location": "[variables('spoke2').location]",
+              "comments": "This is the peering from vnet2 to vnet1",
+              "dependsOn": [],
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('hub').name)]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "name": "[format('{0}/{1}', variables('hub').name,variables('peeringNamehub1spoke3'))]",
+              "apiVersion": "2021-05-01",
+              "location": "[variables('hub').location]",
+              "comments": "This is the peering from vnet1 to vnet2",
+              "dependsOn": [],
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke3').name)]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+              "name": "[format('{0}/{1}', variables('spoke3').name,variables('peeringNamespoke3hub1'))]",
+              "apiVersion": "2021-05-01",
+              "location": "[variables('spoke1').location]",
+              "comments": "This is the peering from vnet2 to vnet1",
+              "dependsOn": [],
+              "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                  "id": "[resourceId( 'Microsoft.Network/virtualNetworks',variables('hub').name)]"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "comments": "adding route table to the Tenant subnet of the hub",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-01-01",
+      "name": "applyUDRhub",
+      "dependsOn": [
+        "vmExtensionCopy",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]",
+        "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-Tenant'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "name": "[variables('hub').name]",
+              "apiVersion": "2022-05-01",
+              "location": "[variables('hub').location]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('hub').addressPrefix]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('hub').TenantName]",
+                    "properties": {
+                      "addressPrefix": "[variables('hub').TenantPrefix]",
+                      "natGateway": {
+                        "id": "[resourceId('Microsoft.Network/natGateways', variables('natGatewayName'))]"
+                      },
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgHubName'))]"
+                      },
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-Tenant'))]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "[variables('hub').AzureBastionSubnetName]",
+                    "properties": {
+                      "addressPrefix": "[variables('hub').AzureBastionSubnetPrefix]"
+                    }
+                  },
+                  {
+                    "name": "[variables('hub').AzureFirewallSubnetName]",
+                    "properties": {
+                      "addressPrefix": "[variables('hub').AzureFirewallSubnetPrefix]"
+                    }
+                  },
+                  {
+                    "name": "[variables('hub').GatewaySubnetName]",
+                    "properties": {
+                      "addressPrefix": "[variables('hub').GatewaySubnetPrefix]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-GatewaySubnet'))]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "[variables('hub').RouteServerSubnetName]",
+                    "properties": {
+                      "addressPrefix": "[variables('hub').RouteServerSubnetPrefix]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

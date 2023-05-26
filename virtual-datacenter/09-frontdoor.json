@@ -1,0 +1,184 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "endpointName": {
+            "type": "string",
+            "defaultValue": "[format('fd-{0}', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "The name of the Front Door endpoint to create. This must be globally unique."
+            }
+        },
+        "frontDoorSkuName": {
+            "type": "string",
+            "defaultValue": "Standard_AzureFrontDoor",
+            "allowedValues": [
+                "Standard_AzureFrontDoor",
+                "Premium_AzureFrontDoor"
+            ],
+            "metadata": {
+                "description": "The name of the SKU to use when creating the Front Door profile."
+            }
+        },
+        "wafMode": {
+            "type": "string",
+            "defaultValue": "Prevention",
+            "allowedValues": [
+                "Detection",
+                "Prevention"
+            ],
+            "metadata": {
+                "description": "The mode that the WAF should be deployed using. In \"Prevention\" mode, the WAF will block requests it detects as malicious. In \"Detection\" mode, the WAF will not block requests and will simply log the request."
+            }
+        },
+        "appGw1Name": {
+            "type": "string",
+            "defaultValue": "appGtw1",
+            "metadata": {
+                "description": "Application Gateway name"
+            }
+        },
+        "appGw3Name": {
+            "type": "string",
+            "defaultValue": "appGtw3",
+            "metadata": {
+                "description": "Application Gateway name"
+            }
+        }
+    },
+    "variables": {
+
+        "frontDoorProfileName": "FrontDoor1",
+        "originGroupName": "MyOriginGroup",
+        "originName1": "origin1",
+        "originName2": "origin2",
+        "routeName": "MyRoute",
+       
+        "appGw1pubIPAddressName": "[concat(parameters('appGw1Name'), '-pubIP')]",
+        "appGw3pubIPAddressName": "[concat(parameters('appGw3Name'), '-pubIP')]"
+    },
+    "resources": [
+
+        {
+            "type": "Microsoft.Cdn/profiles",
+            "apiVersion": "2022-11-01-preview",
+            "name": "[variables('frontDoorProfileName')]",
+            "location": "Global",
+            "sku": {
+                "name": "[parameters('frontDoorSkuName')]"
+            },
+            "kind": "frontdoor",
+            "properties": {
+                "originResponseTimeoutSeconds": 60,
+                "extendedProperties": {}
+            }
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/afdendpoints",
+            "apiVersion": "2022-11-01-preview",
+            "name": "[format('{0}/{1}', variables('frontDoorProfileName'), parameters('endpointName'))]",
+            "location": "Global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]"
+            ],
+            "properties": {
+                "enabledState": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/origingroups",
+            "apiVersion": "2022-11-01-preview",
+            "name": "[format('{0}/{1}', variables('frontDoorProfileName'), variables('originGroupName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]"
+            ],
+            "properties": {
+                "loadBalancingSettings": {
+                    "sampleSize": 4,
+                    "successfulSamplesRequired": 3,
+                    "additionalLatencyInMilliseconds": 50
+                },
+                "healthProbeSettings": {
+                    "probePath": "/",
+                    "probeRequestType": "HEAD",
+                    "probeProtocol": "Http",
+                    "probeIntervalInSeconds": 20
+                },
+                "sessionAffinityState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/origingroups/origins",
+            "apiVersion": "2022-11-01-preview",
+            "name": "[format('{0}/{1}/{2}', variables('frontDoorProfileName'), variables('originGroupName'), variables('originName1'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]",
+                "[resourceId('Microsoft.Cdn/profiles/origingroups', variables('frontDoorProfileName'), variables('originGroupName'))]"
+            ],
+            "properties": {
+                "hostName": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/publicIPAddresses', variables('appGw1pubIPAddressName')), '2020-04-01').ipAddress]",
+                "httpPort": 80,
+                "httpsPort": 443,
+                "originHostHeader": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/publicIPAddresses', variables('appGw1pubIPAddressName')), '2020-04-01').ipAddress]",
+                "priority": 1,
+                "weight": 1000,
+                "enabledState": "Enabled",
+                "enforceCertificateNameCheck": false
+            }
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/origingroups/origins",
+            "apiVersion": "2022-11-01-preview",
+            "name": "[format('{0}/{1}/{2}', variables('frontDoorProfileName'), variables('originGroupName'), variables('originName2'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]",
+                "[resourceId('Microsoft.Cdn/profiles/origingroups', variables('frontDoorProfileName'), variables('originGroupName'))]"
+            ],
+            "properties": {
+                "hostName": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/publicIPAddresses', variables('appGw3pubIPAddressName')), '2020-04-01').ipAddress]",
+                "httpPort": 80,
+                "httpsPort": 443,
+                "originHostHeader": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/publicIPAddresses', variables('appGw3pubIPAddressName')), '2020-04-01').ipAddress]",
+                "priority": 1,
+                "weight": 1000,
+                "enabledState": "Enabled",
+                "enforceCertificateNameCheck": false
+            }
+        },
+        {
+            "type": "Microsoft.Cdn/profiles/afdendpoints/routes",
+            "apiVersion": "2022-11-01-preview",
+            "name": "[format('{0}/{1}/{2}', variables('frontDoorProfileName'), parameters('endpointName'), variables('routeName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('frontDoorProfileName'), parameters('endpointName'))]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', variables('frontDoorProfileName'), variables('originGroupName'), variables('originName1'))]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', variables('frontDoorProfileName'), variables('originGroupName'), variables('originName2'))]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('frontDoorProfileName'), variables('originGroupName'))]"
+            ],
+            "properties": {
+                "customDomains": [],
+                "originGroup": {
+                    "id": "[resourceId('Microsoft.Cdn/profiles/origingroups', variables('frontDoorProfileName'), variables('originGroupName'))]"
+                },
+                "ruleSets": [],
+                "supportedProtocols": [
+                    "Http",
+                    "Https"
+                ],
+                "patternsToMatch": [
+                    "/*"
+                ],
+                "forwardingProtocol": "MatchRequest",
+                "linkToDefaultDomain": "Enabled",
+                "httpsRedirect": "Disabled",
+                "enabledState": "Enabled"
+            }
+        }
+    ],
+    "outputs": {
+        "frontDoorEndpointHostName": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('frontDoorProfileName'), parameters('endpointName'))).hostName]"
+        }
+    }
+}

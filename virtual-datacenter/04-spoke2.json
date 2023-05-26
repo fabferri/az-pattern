@@ -1,0 +1,589 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationonprem": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region for location on-prem"
+            }
+        },
+        "locationhub": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspoke1": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region spoke1"
+            }
+        },
+        "locationspoke2": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region spoke2"
+            }
+        },
+        "locationspoke3": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region spoke3"
+            }
+        },
+        "vnetHubName": {
+            "type": "string",
+            "defaultValue": "hub",
+            "metadata": {
+                "description": "name for the Azure hub vnet"
+            }
+        },
+        "vnetOnPrem": {
+            "type": "string",
+            "defaultValue": "onprem",
+            "metadata": {
+                "description": "name for the Azure vnet simulating the on-premises network"
+            }
+        },
+        "vnetspoke1": {
+            "type": "string",
+            "defaultValue": "spoke1",
+            "metadata": {
+                "description": "name for the Azure spoke1 vnet"
+            }
+        },
+        "vnetspoke2": {
+            "type": "string",
+            "defaultValue": "spoke2",
+            "metadata": {
+                "description": "name for the Azure spoke2 vnet"
+            }
+        },
+        "vnetspoke3": {
+            "type": "string",
+            "defaultValue": "spoke3",
+            "metadata": {
+                "description": "name for the Azure spoke3 vnet"
+            }
+        },
+
+        "loadDistribution": {
+            "type": "string",
+            "defaultValue": "Default",
+            "allowedValues": [
+                "Default",
+                "SourceIP",
+                "SourceIPProtocol"
+            ],
+            "metadata": {
+                "description": "Azure Load Balancer distribution modes for routing connections to instances in the backend pool"
+            }
+        },
+        "virtualMachineScaleSetAvailabilityZone": {
+            "type": "string",
+            "defaultValue": "1",
+            "metadata": {
+                "description": "Specify an Availability Zone for the Virtual Machine Scale Set. All Virtual Machines added the the scale set will inherit this zone. Not all Azure regions support Availability zones. VMSS deployed into a zone must have a platformFaultDomainCount = 5. Learn more about maximum fault domain count by region: https://aka.ms/azurefdcountbyregion"
+            },
+            "allowedValues": [
+                "none",
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "administrator username of the VMs"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "administrator password of the VMs"
+            }
+        },
+        "user1Name": {
+            "type": "string"
+        },
+        "user1Password": {
+            "type": "string"
+        },
+        "user2Name": {
+            "type": "string"
+        },
+        "user2Password": {
+            "type": "string"
+        },
+        "overProvision": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Over Provision VMSS Instances"
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "defaultValue": "",
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation. When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            }
+        },
+        "_artifactsLocation": {
+            "defaultValue": "[deployment().properties.templateLink.uri]",
+            //  "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern2/master/",
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            }
+        }
+    },
+    "variables": {
+        "spoke2": {
+            "location": "[parameters('locationspoke2')]",
+            "name": "[parameters('vnetspoke2')]",
+            "addressPrefix": "10.2.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.2.1.0/24",
+            "subnetfeName": "fe-subnet",
+            "subnetfePrefix": "10.2.2.0/24",
+            "subnetpeName": "pe-subnet",
+            "subnetpePrefix": "10.2.3.0/24"
+        },
+        "hub": {
+            "location": "[parameters('locationhub')]",
+            "name": "[parameters('vnetHubName')]",
+            "addressPrefix": "10.0.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.0.1.0/24",
+            "AzureBastionSubnetName": "AzureBastionSubnet",
+            "AzureBastionSubnetPrefix": "10.0.2.0/24",
+            "AzureFirewallSubnetName": "AzureFirewallSubnet",
+            "AzureFirewallSubnetPrefix": "10.0.3.0/24",
+            "GatewaySubnetName": "GatewaySubnet",
+            "GatewaySubnetPrefix": "10.0.4.0/24",
+            "RouteServerSubnetName": "RouteServerSubnet",
+            "RouteServerSubnetPrefix": "10.0.5.0/24"
+        },
+        "spoke1": {
+            "location": "[parameters('locationspoke1')]",
+            "name": "[parameters('vnetspoke1')]",
+            "addressPrefix": "10.1.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.1.1.0/24",
+            "AppGatewaySubnetName": "appGtwSubnet",
+            "AppGatewaySubnetPrefix": "10.1.2.0/24"
+        },
+        "nsgSpoke2Name": "[concat(variables('spoke2').name,'-nsg')]",
+        "RT-Spoke2": "[concat('RT-',variables('spoke2').name,'-',variables('spoke2').TenantName)]",
+        "azfwIP": "10.0.3.4",
+
+        "lbName": "lb",
+        "lbFrontEndIP": "10.2.2.50",
+        "lbFrontEndConfigName": "lbFrontEndConf",
+        "lbBackEndAddressPoolName": "lbBackEndPool",
+        "lbprobeName": "lbprobe",
+        "lbVnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke2').name)]",
+        "lbSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('spoke2').name, variables('spoke2').subnetfeName)]",
+
+        "vmNamePrefix": "[concat(variables('spoke2').name,'-vm')]",
+        "vmScaleSetName": "[concat(variables('spoke2').name,'-vmss')]",
+
+        "operatingSystemValues": {
+            "PublisherValue": "MicrosoftWindowsServer",
+            "OfferValue": "WindowsServer",
+            "SkuValue": "2022-Datacenter"
+        },
+        "selectedZone": [ "1", "2", "3" ],
+        "vmssCount": 2,
+        "vmsize": "Standard_B2S",
+        "scriptFileName": "FSBuildS2.ps1",
+        "scriptExe": "[concat(variables('scriptFileName'),' -User1 ', parameters('user1Name'), ' -Pass1 ',parameters('user1Password'),' -User2 ', parameters('user2Name'), ' -Pass2 ', parameters('user2Password'))]",
+        "scriptLocation": "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-Spoke2')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('spoke2').location]",
+            "comments": "Routing Table Spoke1",
+            "dependsOn": [],
+            "properties": {
+                "disableBgpRoutePropagation": true,
+                "routes": [
+                    {
+                        "name": "to-10network",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/8",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "to-internet",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "[concat('to-',variables('hub').name,'-',variables('hub').TenantName)]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').TenantPrefix]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    } 
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('nsgSpoke2Name')]",
+            "location": "[variables('spoke2').location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "AllowRDP3389",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationPortRange": "3389",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "AllowHTTP80",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationPortRange": "80",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 400,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "AllowHTTPS443",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "allow-private-10",
+                        "properties": {
+                            "description": "allow incoming 10.0.0.0/8",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/8",
+                            "destinationAddressPrefix": "10.0.0.0/8",
+                            "access": "Allow",
+                            "priority": 600,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('spoke2').name]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('spoke2').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgSpoke2Name'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('spoke2').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('spoke2').TenantName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke2').TenantPrefix]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2'))]"
+                            },
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgSpoke2Name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('spoke2').subnetfeName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke2').subnetfePrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('spoke2').subnetpeName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke2').subnetpePrefix]",
+                            "privateEndpointNetworkPolicies": "Disabled"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('lbName')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('spoke2').location]",
+            "comments": "Load Balancer in spoke2",
+            "dependsOn": [
+                "[variables('lbVnetID')]"
+            ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[variables('lbFrontEndConfigName')]",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('lbSubnetRef')]"
+                            },
+                            "privateIPAddress": "[variables('lbFrontEndIP')]",
+                            "privateIPAllocationMethod": "Static"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('lbBackEndAddressPoolName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "HTTP80",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndAddressPoolName'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbprobeName') )]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "HTTP443",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndAddressPoolName'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 443,
+                            "backendPort": 443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbprobeName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "SMB445",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndAddressPoolName'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 445,
+                            "backendPort": 445,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbprobeName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "SMB137",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndAddressPoolName'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 137,
+                            "backendPort": 137,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbprobeName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "SMB139",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndAddressPoolName'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 139,
+                            "backendPort": 139,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbprobeName'))]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": "[variables('vmssCount')]"
+                        },
+                        "name": "[variables('lbprobeName')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "name": "[variables('vmScaleSetName')]",
+            "apiVersion": "2022-11-01",
+            "location": "[variables('spoke2').location]",
+            "zones": "[variables('selectedZone')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('spoke2').name)]",
+                "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]"
+            ],
+            "sku": {
+                "name": "[variables('vmSize')]",
+                "tier": "Standard",
+                "capacity": "[variables('vmssCount')]"
+            },
+            "properties": {
+                "overprovision": "[parameters('overProvision')]",
+                "upgradePolicy": {
+                    "mode": "Automatic"
+                },
+                "virtualMachineProfile": {
+                    "storageProfile": {
+                        "osDisk": {
+                            "caching": "ReadWrite",
+                            "createOption": "FromImage"
+                        },
+                        "imageReference": {
+                            "publisher": "[variables('operatingSystemValues').PublisherValue]",
+                            "offer": "[variables('operatingSystemValues').OfferValue]",
+                            "sku": "[variables('operatingSystemValues').SkuValue]",
+                            "version": "latest"
+                        }
+                    },
+                    "osProfile": {
+                        "computerNamePrefix": "[variables('vmNamePrefix')]",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "adminPassword": "[parameters('adminPassword')]"
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[concat(variables('vmScaleSetName'),'-nic')]",
+                                "properties": {
+                                    "primary": true,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "ipconfig1",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('spoke2').name, variables('spoke2').TenantName)]"
+                                                },
+                                                "loadBalancerBackendAddressPools": [
+                                                    {
+                                                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndAddressPoolName'))]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "customScript",
+                                "properties": {
+                                    "type": "CustomScriptExtension",
+                                    "publisher": "Microsoft.Compute",
+                                    "settings": {
+                                        "fileUris": [
+                                            "[variables('scriptLocation')]"
+                                        ]
+                                    },
+                                    "protectedSettings": {
+                                        "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ./',variables('scriptExe'))]"
+                                    },
+                                    "typeHandlerVersion": "1.8",
+                                    "autoUpgradeMinorVersion": true
+                                }
+                            }
+                        ]
+                    }
+
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

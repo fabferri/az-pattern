@@ -1,0 +1,1025 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationonprem": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region for location on-prem"
+            }
+        },
+        "locationhub": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationspoke1": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region spoke1"
+            }
+        },
+        "locationspoke2": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region spoke2"
+            }
+        },
+        "locationspoke3": {
+            "type": "string",
+            "defaultValue": "westus2",
+            "metadata": {
+                "description": "Azure region spoke3"
+            }
+        },
+        "vnetHubName": {
+            "type": "string",
+            "defaultValue": "hub",
+            "metadata": {
+                "description": "name for the Azure hub vnet"
+            }
+        },
+        "vnetOnPrem": {
+            "type": "string",
+            "defaultValue": "onprem",
+            "metadata": {
+                "description": "name for the Azure vnet simulating the on-premises network"
+            }
+        },
+        "vnetspoke1": {
+            "type": "string",
+            "defaultValue": "spoke1",
+            "metadata": {
+                "description": "name for the Azure spoke1 vnet"
+            }
+        },
+        "vnetspoke2": {
+            "type": "string",
+            "defaultValue": "spoke2",
+            "metadata": {
+                "description": "name for the Azure spoke2 vnet"
+            }
+        },
+        "vnetspoke3": {
+            "type": "string",
+            "defaultValue": "spoke3",
+            "metadata": {
+                "description": "name for the Azure spoke3 vnet"
+            }
+        },
+        "gateway1Name": {
+            "type": "string",
+            "defaultValue": "vpnGw1",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "gateway2Name": {
+            "type": "string",
+            "defaultValue": "vpnGw2",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "VpnGw2",
+            "allowedValues": [
+                "VpnGw2",
+                "VpnGw2AZ",
+                "VpnGw3",
+                "VpnGw3AZ",
+                "VpnGw4",
+                "VpnGw4AZ",
+                "VpnGw5",
+                "VpnGw5AZ"
+            ],
+            "metadata": {
+                "description": "The Sku of the Gateway"
+            }
+        },
+        "asnGtw1": {
+            "type": "int",
+            "defaultValue": 65001,
+            "metadata": {
+                "description": "BGP Autonomous System Number of the VNet"
+            }
+        },
+        "asnGtw2": {
+            "type": "int",
+            "defaultValue": 65002,
+            "metadata": {
+                "description": "BGP Autonomous System Number of the remote VNet"
+            }
+        },
+
+        "natPublicIPPrefixLength": {
+            "type": "int",
+            "defaultValue": 31,
+            "metadata": {
+                "description": "Length of public IP prefix for nat gateway"
+            },
+            "maxValue": 31,
+            "minValue": 28
+        },
+
+        "loadDistribution": {
+            "type": "string",
+            "defaultValue": "Default",
+            "allowedValues": [
+                "Default",
+                "SourceIP",
+                "SourceIPProtocol"
+            ],
+            "metadata": {
+                "description": "Azure Load Balancer distribution modes for routing connections to instances in the backend pool"
+            }
+        },
+        "ipgroupsVnets": {
+            "type": "string",
+            "defaultValue": "ipgroupVNets"
+        },
+        "firewallAvailabilityZones": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Zone numbers e.g. 1,2,3."
+            }
+        },
+        "numberOfFirewallPublicIPAddresses": {
+            "type": "int",
+            "defaultValue": 1,
+            "minValue": 1,
+            "maxValue": 100,
+            "metadata": {
+                "description": "Number of public IP addresses for the Azure Firewall"
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "workspace1",
+            "metadata": {
+                "description": "Name of the workspace."
+            }
+        },
+        "diagnosticLogsRetentionInDays": {
+            "type": "int",
+            "defaultValue": 365,
+            "minValue": 0,
+            "maxValue": 365,
+            "metadata": {
+                "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultvalue": "pergb2018",
+            "allowedValues": [
+                "pergb2018",
+                "Free",
+                "Standalone",
+                "PerNode",
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+            }
+        },
+        "retentionInDays": {
+            "type": "int",
+            "defaultValue": 30,
+            "metadata": {
+                "description": "workspace: Number of days to retain data."
+            }
+        },
+        "resourcePermissions": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "true to use resource or workspace permissions. false to require workspace permissions."
+            }
+        },
+
+        "blobStorageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('morgasa', uniquestring(resourceGroup().id))]",
+            "metadata": {
+                "description": "Specifies the globally unique name for the storage account used to store the boot diagnostics logs of the virtual machine."
+            }
+        },
+        "blobStorageAccountPrivateEndpointName": {
+            "type": "string",
+            "defaultValue": "BlobStorageAccountPrivateEndpoint",
+            "metadata": {
+                "description": "Specifies the name of the private link to the boot diagnostics storage account."
+            }
+        },
+        "fileStorageAccountPrivateEndpointName": {
+            "type": "string",
+            "defaultValue": "FileSharePrivateEndpoint",
+            "metadata": {
+                "description": "Specifies the name of the private link to the boot diagnostics storage account."
+            }
+        },
+        "networkAclsDefaultAction": {
+            "type": "string",
+            "defaultValue": "Deny",
+            "allowedValues": [
+                "Allow",
+                "Deny"
+            ],
+            "metadata": {
+                "description": "Allow or disallow public access to all blobs or containers in the storage accounts. The default interpretation is true for this property."
+            }
+        },
+        "allowBlobPublicAccess": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Allow or disallow public access to all blobs or containers in the storage accounts. The default interpretation is true for this property."
+            }
+        },
+        "fileStorageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('file', uniquestring(resourceGroup().id))]",
+            "metadata": {
+                "description": "Specifies the name of the Azure Storage account hosting the File Share."
+            }
+        },
+        "fileShareName": {
+            "type": "string",
+            "defaultValue": "documents",
+            "minLength": 3,
+            "maxLength": 63,
+            "metadata": {
+                "description": "Specifies the name of the File Share. File share names must be between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only."
+            }
+        },
+        "shareQuota": {
+            "type": "int",
+            "defaultValue": 5120,
+            "metadata": {
+                "description": "Specifies the maximum size of the share, in gigabytes. Must be greater than 0, and less than or equal to 5TB (5120). For Large File Shares, the maximum size is 102400."
+            }
+        },
+        "appGatewayName": {
+            "type": "string",
+            "defaultValue": "appGtw1",
+            "metadata": {
+                "description": "Application Gateway name"
+            }
+        },
+        "appGwSize": {
+            "type": "string",
+            "defaultValue": "WAF_v2",
+            "allowedValues": [
+                "Standard",
+                "WAF",
+                "Standard_v2",
+                "WAF_v2"
+            ],
+            "metadata": {
+                "description": "Application Gateway size"
+            }
+        },
+        "appGwCapacity": {
+            "type": "int",
+            "defaultValue": 1,
+            "allowedValues": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "metadata": {
+                "description": "Application Gateway instance count"
+            }
+        },
+        "frontendPort": {
+            "type": "int",
+            "defaultValue": 80,
+            "metadata": {
+                "description": "Application Gateway front end port"
+            }
+        },
+        "backendPort": {
+            "type": "int",
+            "defaultValue": 80,
+            "metadata": {
+                "description": "Application Gateway back end port"
+            }
+        },
+        "cookieBasedAffinity": {
+            "type": "string",
+            "defaultValue": "Disabled",
+            "allowedValues": [
+                "Enabled",
+                "Disabled"
+            ],
+            "metadata": {
+                "description": "Cookie based affinity"
+            }
+        },
+        "wafEnabled": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "WAF Enabled"
+            }
+        },
+        "wafMode": {
+            "type": "string",
+            "defaultValue": "Prevention",
+            "allowedValues": [
+                "Detection",
+                "Prevention"
+            ],
+            "metadata": {
+                "description": "WAF Mode"
+            }
+        },
+        "wafRuleSetType": {
+            "type": "string",
+            "defaultValue": "OWASP",
+            "allowedValues": [
+                "OWASP"
+            ],
+            "metadata": {
+                "description": "WAF Rule Set Type"
+            }
+        },
+        "wafRuleSetVersion": {
+            "type": "string",
+            "defaultValue": "3.1",
+            "allowedValues": [
+                "2.2.9",
+                "3.0",
+                "3.1"
+            ],
+            "metadata": {
+                "description": "WAF Rule Set Version"
+            }
+        },
+
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "administrator username of the VMs"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "administrator password of the VMs"
+            }
+        },
+        "user1Name": {
+            "type": "string"
+        },
+        "user1Password": {
+            "type": "string"
+        },
+        "user2Name": {
+            "type": "string"
+        },
+        "user2Password": {
+            "type": "string"
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B2S",
+            "metadata": {
+                "description": "Size of the Virtual Machine."
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "defaultValue": "",
+            "type": "securestring",
+            "metadata": {
+                "description": "The sasToken required to access _artifactsLocation. When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            }
+        },
+        "_artifactsLocation": {
+            "defaultValue": "[deployment().properties.templateLink.uri]",
+            //"defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern2/master/",
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
+            }
+        },
+        "webStorageAccountName": {
+            "type": "string",
+            "defaultValue": "[format('storg{0}', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "The name of the storage account to use for site hosting."
+            }
+        }
+    },
+    "variables": {
+        "hub": {
+            "location": "[parameters('locationhub')]",
+            "name": "[parameters('vnetHubName')]",
+            "addressPrefix": "10.0.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.0.1.0/24",
+            "AzureBastionSubnetName": "AzureBastionSubnet",
+            "AzureBastionSubnetPrefix": "10.0.2.0/24",
+            "AzureFirewallSubnetName": "AzureFirewallSubnet",
+            "AzureFirewallSubnetPrefix": "10.0.3.0/24",
+            "GatewaySubnetName": "GatewaySubnet",
+            "GatewaySubnetPrefix": "10.0.4.0/24",
+            "RouteServerSubnetName": "RouteServerSubnet",
+            "RouteServerSubnetPrefix": "10.0.5.0/24"
+        },
+        "azfwIP": "10.0.3.4",
+        "spoke1": {
+            "location": "[parameters('locationspoke1')]",
+            "name": "[parameters('vnetspoke1')]",
+            "addressPrefix": "10.1.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.1.1.0/24",
+            "AppGatewaySubnetName": "appGtwSubnet",
+            "AppGatewaySubnetPrefix": "10.1.2.0/24"
+        },
+        "spoke2": {
+            "location": "[parameters('locationspoke2')]",
+            "name": "[parameters('vnetspoke2')]",
+            "addressPrefix": "10.2.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.2.1.0/24",
+            "subnetfeName": "fe-subnet",
+            "subnetfePrefix": "10.2.2.0/24",
+            "subnetpeName": "pe-subnet",
+            "subnetpePrefix": "10.2.3.0/24"
+        },
+        "nsgSpoke1Name": "[concat(variables('spoke1').name,'-nsg')]",
+        "RT-spoke1-Tenant": "[concat('RT-',variables('spoke1').name,'-', variables('spoke1').TenantName)]",
+        "appGwName": "[parameters('appGatewayName')]",
+        "appGwpubIPAddressName": "[concat(variables('appGwName'), '-pubIP')]",
+        "appGtwbackendIP1Addresses": "10.1.1.4",
+        "appGtwbackendIP2Addresses": "10.1.1.5",
+        "appGtwWWAFPoliciesName": "[concat(variables('appGwName'), '-wafPolicy')]",
+        "appGatewayZones": [ "1", "2", "3" ],
+        "diagnosticSettingName": "appGtwDiagnostic",
+        "diagnosticLogsRetentionInDays": "[parameters('diagnosticLogsRetentionInDays')]",
+        "os": {
+            "Publisher": "MicrosoftWindowsServer",
+            "Offer": "WindowsServer",
+            "Sku": "2022-Datacenter",
+            "version": "latest"
+        },
+        "vm1spoke1": "[concat(variables('spoke1').name,'-vm1')]",
+        "vm2spoke1": "[concat(variables('spoke1').name,'-vm2')]",
+        "acceleratedNetworking": false,
+        "vmStorageAccountType": "Standard_LRS",
+        "vmArray": [
+            {
+                "vmName": "[variables('vm1spoke1')]",
+                "location": "[variables('spoke1').location]",
+                "vmSize": "[parameters('vmsize')]",
+                "vnetName": "[variables('spoke1').name]",
+                "subnetName": "[variables('spoke1').TenantName]",
+                "privIP": "[variables('appGtwbackendIP1Addresses')]",
+                "nicName": "[concat(variables('vm1spoke1'),'-nic')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[variables('acceleratedNetworking')]",
+                "imagePublisher": "[variables('os').publisher]",
+                "imageOffer": "[variables('os').offer]",
+                "imageSKU": "[variables('os').sku]",
+                "imageVersion": "[variables('os').version]",
+                "adminUsername": "[parameters('adminUsername')]",
+                "adminPassword": "[parameters('adminPassword')]",
+                "zone": 1
+            },
+            {
+                "vmName": "[variables('vm2spoke1')]",
+                "location": "[variables('spoke1').location]",
+                "vmSize": "[parameters('vmsize')]",
+                "vnetName": "[variables('spoke1').name]",
+                "subnetName": "[variables('spoke1').TenantName]",
+                "privIP": "[variables('appGtwbackendIP2Addresses')]",
+                "nicName": "[concat(variables('vm2spoke1'),'-nic')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": "[variables('acceleratedNetworking')]",
+                "imagePublisher": "[variables('os').publisher]",
+                "imageOffer": "[variables('os').offer]",
+                "imageSKU": "[variables('os').sku]",
+                "imageVersion": "[variables('os').version]",
+                "adminUsername": "[parameters('adminUsername')]",
+                "adminPassword": "[parameters('adminPassword')]",
+                 "zone": 3
+            }
+        ],
+        "PEPName": "[parameters('webStorageAccountName')]",
+        "vmCount": "[length(variables('vmArray'))]",
+        "scriptFileName": "IISBuildS1.ps1",
+        "scriptExe": "[concat(variables('scriptFileName'),' -User1 ', parameters('user1Name'), ' -Pass1 ',parameters('user1Password'),' -User2 ', parameters('user2Name'), ' -Pass2 ', parameters('user2Password'),  ' -PEPName ', variables('PEPName'))]",
+        "scriptLocation": "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-spoke1-Tenant')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('spoke1').location]",
+            "comments": "Routing Table Spoke1",
+            "dependsOn": [],
+            "properties": {
+                "disableBgpRoutePropagation": true,
+                "routes": [
+                    {
+                        "name": "to-10network",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/8",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "to-internet",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "[concat('to-',variables('hub').name,'-',variables('hub').TenantName)]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').TenantPrefix]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('nsgSpoke1Name')]",
+            "location": "[variables('spoke1').location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allow-private-10",
+                        "properties": {
+                            "description": "allow incoming 10.0.0.0/8",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/8",
+                            "destinationAddressPrefix": "10.0.0.0/8",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('spoke1').name]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('spoke1').location]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('spoke1').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('spoke1').TenantName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke1').TenantPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('spoke1').AppGatewaySubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke1').AppGatewaySubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('appGtwWWAFPoliciesName')]",
+            "location": "[variables('spoke1').location]",
+            "properties": {
+                "customRules": [
+                    {
+                        "name": "Deny-AUS",
+                        "priority": 10,
+                        "ruleType": "MatchRule",
+                        "action": "Block",
+                        "matchConditions": [
+                            {
+                                "matchVariables": [
+                                    {
+                                        "variableName": "RemoteAddr"
+                                    }
+                                ],
+                                "operator": "GeoMatch",
+                                "negationConditon": false,
+                                "matchValues": [
+                                    "AU"
+                                ],
+                                "transforms": []
+                            }
+                        ]
+                    }
+                ],
+                "policySettings": {
+                    "requestBodyCheck": true,
+                    "maxRequestBodySizeInKb": 128,
+                    "fileUploadLimitInMb": 100,
+                    "state": "Enabled",
+                    "mode": "Prevention"
+                },
+                "managedRules": {
+                    "managedRuleSets": [
+                        {
+                            "ruleSetType": "OWASP",
+                            "ruleSetVersion": "[parameters('wafRuleSetVersion')]",
+                            "ruleGroupOverrides": []
+                        }
+                    ],
+                    "exclusions": []
+                }
+            }
+        },
+        {
+            "apiVersion": "2022-05-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('appGwpubIPAddressName')]",
+            "location": "[variables('spoke1').location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": "[variables('appGatewayZones')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            }
+        },
+        {
+            "apiVersion": "2022-05-01",
+            "name": "[variables('appGwName')]",
+            "type": "Microsoft.Network/applicationGateways",
+            "location": "[variables('spoke1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('appGwpubIPAddressName'))]",
+                "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', variables('appGtwWWAFPoliciesName'))]"
+            ],
+            "zones": "[variables('appGatewayZones')]",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('appGwSize')]",
+                    "tier": "WAF_v2",
+                    "capacity": "[parameters('appGwCapacity')]"
+                },
+                "gatewayIPConfigurations": [
+                    {
+                        "name": "appGatewayIpConfig",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('spoke1').name, variables('spoke1').appGatewaySubnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "sslCertificates": [],
+                "authenticationCertificates": [],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "appGatewayFrontendIP",
+                        "properties": {
+                            "PublicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('appGwpubIPAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "frontendPorts": [
+                    {
+                        "name": "appGatewayFrontendPort",
+                        "properties": {
+                            "Port": "[parameters('frontendPort')]"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "appGatewayBackendPool",
+                        "properties": {
+                            "BackendAddresses": [
+                                {
+                                    "IpAddress": "[variables('appGtwbackendIP1Addresses')]"
+                                },
+                                {
+                                    "IpAddress": "[variables('appGtwbackendIP2Addresses')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "backendHttpSettingsCollection": [
+                    {
+                        "name": "appGatewayBackendHttpSettings",
+                        "properties": {
+                            "Port": "[parameters('backendPort')]",
+                            "Protocol": "Http",
+                            "CookieBasedAffinity": "[parameters('cookieBasedAffinity')]"
+                        }
+                    }
+                ],
+                "httpListeners": [
+                    {
+                        "name": "appGatewayHttpListener",
+                        "properties": {
+                            "FrontendIpConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', variables('appGwName'), 'appGatewayFrontendIP')]"
+                            },
+                            "FrontendPort": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', variables('appGwName'), 'appGatewayFrontendPort')]"
+                            },
+                            "Protocol": "Http"
+                        }
+                    }
+                ],
+                "urlPathMaps": [],
+                "requestRoutingRules": [
+                    {
+                        "Name": "rule1",
+                        "properties": {
+                            "RuleType": "Basic",
+                            "priority": 100,
+                            "httpListener": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', variables('appGwName'), 'appGatewayHttpListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('appGwName'), 'appGatewayBackendPool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('appGwName'),'appGatewayBackendHttpSettings')]"
+                            }
+                        }
+                    }
+                ],
+                "webApplicationFirewallConfiguration": {
+                    "enabled": "[parameters('wafEnabled')]",
+                    "firewallMode": "[parameters('wafMode')]",
+                    "ruleSetType": "[parameters('wafRuleSetType')]",
+                    "ruleSetVersion": "[parameters('wafRuleSetVersion')]"
+                },
+                "firewallPolicy": {
+                    "id": "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', variables('appGtwWWAFPoliciesName'))]"
+                },
+                "probes": [],
+                "rewriteRuleSets": [],
+                "redirectConfigurations": [],
+                "enableHttp2": true
+            }
+        },
+        {
+            "type": "Microsoft.Insights/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "scope": "[format('Microsoft.Network/applicationGateways/{0}', variables('appGwName'))]",
+            "name": "[variables('diagnosticSettingName')]",
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName') )]",
+                "logs": [
+                    {
+                        "category": "ApplicationGatewayAccessLog",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+
+                        }
+                    },
+                    {
+                        "category": "ApplicationGatewayPerformanceLog",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+
+                        }
+                    },
+                    {
+                        "category": "ApplicationGatewayFirewallLog",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+
+                        }
+                    }
+                ],
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                //   "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName') )]",
+                "[resourceId('Microsoft.Network/applicationGateways', variables('appGwName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privIP]",
+                            "subnet": {
+                                "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2022-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName )]"
+            ],
+            "zones": [
+                "[variables('vmArray')[copyIndex()].zone]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmarray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('vmArray')[copyIndex()].adminUsername]",
+                    "adminPassword": "[variables('vmArray')[copyIndex()].adminPassword]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmarray')[copyIndex()].imagePublisher]",
+                        "offer": "[variables('vmarray')[copyIndex()].imageOffer]",
+                        "sku": "[variables('vmarray')[copyIndex()].imageSKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "deleteOption": "Delete",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-OSdisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName)]",
+                            "properties": {
+                                "deleteOption": "Delete"
+                            }
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "VMCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'customscript')]",
+            "apiVersion": "2022-11-01",
+            "comments": "custom script extension to install IIS in the Windows VMs",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "vmExtensionCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[variables('scriptLocation')]"
+                    ],
+                    "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File ./',variables('scriptExe'))]"
+                }
+            }
+        },
+        {
+            "condition": true,
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "applyNSG",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke1-Tenant'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgspoke1Name'))]",
+                "vmExtensionCopy"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "name": "[variables('spoke1').name]",
+                            "apiVersion": "2021-05-01",
+                            "location": "[variables('spoke1').location]",
+                            "dependsOn": [
+                            ],
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[variables('spoke1').addressPrefix]"
+                                    ]
+                                },
+                                "subnets": [
+                                    {
+                                        "name": "[variables('spoke1').TenantName]",
+                                        "properties": {
+                                            "addressPrefix": "[variables('spoke1').TenantPrefix]",
+                                            "networkSecurityGroup": {
+                                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgSpoke1Name'))]"
+                                            },
+                                            "routeTable": {
+                                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke1-Tenant'))]"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "[variables('spoke1').AppGatewaySubnetName]",
+                                        "properties": {
+                                            "addressPrefix": "[variables('spoke1').AppGatewaySubnetPrefix]"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}
