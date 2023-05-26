@@ -14,7 +14,7 @@
     "vnetspoke3": "spoke3",
     "gateway1Name": "vpnGw1",
     "gateway2Name": "vpnGw2",
-    "artifactsLocation": "https://raw.githubusercontent.com/fabferri/az-pattern2/master/",
+    "artifactsLocation": "https://raw.githubusercontent.com/fabferri/az-pattern/master/virtual-datacenter/",
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "adminPassword": "ADMINISTRATOR_PASSWORD",
     "user1Name": "ADMINISTRATOR1_USERNAME",
