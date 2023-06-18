@@ -1,0 +1,257 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network 1"
+            }
+        },
+        "snetWorkloadName": {
+            "type": "string",
+            "defaultValue": "snet-workload",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet1 in vnet1"
+            }
+        },
+        "snetPrivEPName": {
+            "type": "string",
+            "defaultValue": "snet-privep",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet2 in vnet1"
+            }
+        },
+        "snetInboundName": {
+            "type": "string",
+            "defaultValue": "snet-inbound",
+            "metadata": {
+                "description": "name of the subnet that will be used for private resolver inbound endpoint"
+            }
+        },
+        "snetOutboundName": {
+            "type": "string",
+            "defaultValue": "snet-outbound",
+            "metadata": {
+                "description": "name of the subnet that will be used for private resolver outbound endpoint"
+            }
+        },
+        "blobStorageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('strg', uniquestring(resourceGroup().id))]",
+            "metadata": {
+                "description": "Specifies the globally unique name for the storage account used with private link"
+            }
+        },
+        "blobStorageAccountPrivateEndpointName": {
+            "type": "string",
+            "defaultValue": "BlobStorageAccountPrivateEndpoint",
+            "metadata": {
+                "description": "Specifies the name of the private link to the storage account."
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location1')]",
+        "vnet1Name": "[parameters('vnet1Name')]",
+        "snetWorkloadName": "[parameters('snetWorkloadName')]",
+        "snetPrivEPName": "[parameters('snetPrivEPName')]",
+        "snetInboundName": "[parameters('snetInboundName')]",
+        "snetOutboundName": "[parameters('snetOutboundName')]",
+        "vnet1AddressPrefix": "10.100.0.0/16",
+        "snetWorkloadPrefix": "10.100.1.0/24",
+        "snetPrivEPPrefix": "10.100.2.0/24",
+        "gateway1SubnetPrefix": "10.100.3.0/24",
+        "inboundAddressPrefix": "10.100.10.0/28",
+        "outboundAddressPrefix": "10.100.10.16/28",
+
+        "subnetPEId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1Name'), variables('snetPrivEPName'))]",
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]",
+        "blobStorageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName'))]",
+        "blobPublicDNSZoneForwarder": "[concat('.blob.', environment().suffixes.storage)]",
+        "blobPrivateDnsZoneName": "[concat('privatelink', variables('blobPublicDNSZoneForwarder'))]",
+        "blobPrivateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
+        "blobStorageAccountPrivateEndpointId": "[resourceId('Microsoft.Network/privateEndpoints', parameters('blobStorageAccountPrivateEndpointName'))]",
+        "blobStorageAccountPrivateEndpointGroupName": "blob",
+        "blobPrivateDnsZoneGroup": "[concat(parameters('blobStorageAccountPrivateEndpointName'),'/', variables('blobStorageAccountPrivateEndpointGroupName'), 'PrivateDnsZoneGroup')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2019-06-01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('blobStorageAccountName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2"
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet1Name')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location')]",
+            "comments": "Virtual Network1",
+            "dependsOn": [
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet1AddressPrefix')]"
+                    ]
+                },
+                "enableDdosProtection": false,
+                "enableVmProtection": false,
+                "subnets": [
+                    {
+                        "name": "[variables('snetWorkloadName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('snetWorkloadPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('snetPrivEPName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('snetPrivEPPrefix')]",
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('gateway1subnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('snetInboundName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('inboundAddressPrefix')]",
+                            "delegations": [
+                                {
+                                    "name": "Microsoft.Network.dnsResolvers",
+                                    "properties": {
+                                        "serviceName": "Microsoft.Network/dnsResolvers"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[variables('snetOutboundName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('outboundAddressPrefix')]",
+                            "delegations": [
+                                {
+                                    "name": "Microsoft.Network.dnsResolvers",
+                                    "properties": {
+                                        "serviceName": "Microsoft.Network/dnsResolvers"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2018-09-01",
+            "name": "[variables('blobPrivateDnsZoneName')]",
+            "location": "global",
+            "properties": {
+                "maxNumberOfRecordSets": 25000,
+                "maxNumberOfVirtualNetworkLinks": 1000,
+                "maxNumberOfVirtualNetworkLinksWithRegistration": 100
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2018-09-01",
+            "name": "[concat(variables('blobPrivateDnsZoneName'), '/link_to_', toLower(variables('vnet1Name')))]",
+            "location": "global",
+            "dependsOn": [
+                "[variables('blobPrivateDnsZoneId')]",
+                "[variables('vnetId')]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[variables('vnetId')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('blobStorageAccountPrivateEndpointName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('vnetId')]",
+                "[variables('blobStorageAccountId')]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('blobStorageAccountPrivateEndpointName')]",
+                        "properties": {
+                            "privateLinkServiceId": "[variables('blobStorageAccountId')]",
+                            "groupIds": [
+                                "[variables('blobStorageAccountPrivateEndpointGroupName')]"
+                            ]
+                        }
+                    }
+                ],
+                "subnet": {
+                    "id": "[variables('subnetPEId')]"
+                },
+                "customDnsConfigs": [
+                    {
+                        "fqdn": "[concat(parameters('blobStorageAccountName'), variables('blobPublicDNSZoneForwarder'))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2020-03-01",
+            "name": "[variables('blobPrivateDnsZoneGroup')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('blobPrivateDnsZoneId')]",
+                "[variables('blobStorageAccountPrivateEndpointId')]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+                    {
+                        "name": "dnsConfig",
+                        "properties": {
+                            "privateDnsZoneId": "[variables('blobPrivateDnsZoneId')]"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "blobStorageAccountPrivateEndpoint": {
+            "value": "[reference(resourceId('Microsoft.Network/privateEndpoints', parameters('blobStorageAccountPrivateEndpointName')), '2020-04-01', 'Full')]",
+            "type": "object"
+        },
+        "blobStorageAccount": {
+            "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName')), '2019-06-01', 'Full')]",
+            "type": "object"
+        },
+        "environment": {
+            "value": "[environment()]",
+            "type": "object"
+        }
+    }
+}

@@ -1,0 +1,46 @@
+{
+    "parameters": {
+        "subscriptionName": {
+            "value": "AzDev1",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "resourceGroupName": {
+            "value": "test-dns3",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "location": {
+            "value": "uksouth",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "location1": {
+            "value": "uksouth",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        },
+        "location2": {
+            "value": "uksouth",
+            "metadata": {
+                "description": "azure region where is deployed the vnet2"
+            }
+        },
+        "adminUsername": {
+            "value": "ADMINISTRATOR_USERNAME",
+            "metadata": {
+                "description": "VM Administrator username"
+            }
+        },
+        "adminPassword": {
+            "value": "ADMINISTRATOR_PASSWORD",
+            "metadata": {
+                "description": "VM Administrator password"
+            }
+        }
+    }
+}

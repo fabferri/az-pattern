@@ -1,0 +1,277 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {},
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "metadata": {
+        "description": "the location for resolver VNET and dns private resolver - Azure DNS Private Resolver available in specific region, refer the documenation to select the supported region for this deployment. For more information https://docs.microsoft.com/azure/dns/dns-private-resolver-overview#regional-availability"
+      }
+    },
+    "vnet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network 1"
+      }
+    },
+    "snetWorkloadName": {
+      "type": "string",
+      "defaultValue": "snet-workload",
+      "metadata": {
+        "description": "Arbitrary name for the Azure subnet1 in vnet1"
+      }
+    },
+    "snetPrivEPName": {
+      "type": "string",
+      "defaultValue": "snet-privep",
+      "metadata": {
+        "description": "Arbitrary name for the Azure subnet2 in vnet1"
+      }
+    },
+    "snetInboundName": {
+      "type": "string",
+      "defaultValue": "snet-inbound",
+      "metadata": {
+        "description": "name of the subnet that will be used for private resolver inbound endpoint"
+      }
+    },
+    "snetOutboundName": {
+      "type": "string",
+      "defaultValue": "snet-outbound",
+      "metadata": {
+        "description": "name of the subnet that will be used for private resolver outbound endpoint"
+      }
+    },
+    "dnsResolverName": {
+      "type": "string",
+      "defaultValue": "dnsResolver",
+      "metadata": {
+        "description": "name of the dns private resolver"
+      }
+    },
+    "resolvervnetlink": {
+      "type": "string",
+      "defaultValue": "vnetlink",
+      "metadata": {
+        "description": "name of the vnet link that links outbound endpoint with forwarding rule set"
+      }
+    },
+    "forwardingRulesetName": {
+      "type": "string",
+      "defaultValue": "forwardingRule",
+      "metadata": {
+        "description": "name of the forwarding ruleset"
+      }
+    },
+    "forwardingRuleName": {
+      "type": "string",
+      "defaultValue": "contosocom",
+      "metadata": {
+        "description": "name of the forwarding rule name"
+      }
+    },
+    "DomainName": {
+      "type": "string",
+      "defaultValue": "contoso.com.",
+      "metadata": {
+        "description": "the target domain name for the forwarding ruleset"
+      }
+    },
+    "vmDNSIPAddress": {
+      "type": "string",
+      "defaultValue": "10.200.0.10",
+      "metadata": {
+        "description": "IP address DNS server in the vnet2"
+      }
+    },
+    "targetDNS": {
+      "type": "array",
+      "defaultValue": [
+        {
+          "ipaddress": "[parameters('vmDNSIPAddress')]",
+          "port": 53
+        }
+      ],
+      "metadata": {
+        "description": "the list of target DNS servers ip address and the port number for conditional forwarding"
+      }
+    }
+  },
+  "variables": {
+    "location": "[parameters('location1')]",
+    "vnet1Name": "[parameters('vnet1Name')]",
+    "snetWorkloadName": "[parameters('snetWorkloadName')]",
+    "snetPrivEPName": "[parameters('snetPrivEPName')]",
+    "snetInboundName": "[parameters('snetInboundName')]",
+    "snetOutboundName": "[parameters('snetOutboundName')]",
+    "vnet1AddressPrefix": "10.100.0.0/16",
+    "snetWorkloadPrefix": "10.100.1.0/24",
+    "snetPrivEPPrefix": "10.100.2.0/24",
+    "gateway1SubnetPrefix": "10.100.3.0/24",
+    "inboundAddressPrefix": "10.100.10.0/28",
+    "outboundAddressPrefix": "10.100.10.16/28"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/dnsResolvers",
+      "apiVersion": "2022-07-01",
+      "name": "[parameters('dnsResolverName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/dnsResolvers/inboundEndpoints",
+      "apiVersion": "2022-07-01",
+      "name": "[format('{0}/{1}', parameters('dnsResolverName'), variables('snetInboundName'))]",
+      "location": "[variables('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "privateIpAllocationMethod": "Dynamic",
+            "subnet": {
+              "id": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name')), variables('snetInboundName'))]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/dnsResolvers', parameters('dnsResolverName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/dnsResolvers/outboundEndpoints",
+      "apiVersion": "2022-07-01",
+      "name": "[format('{0}/{1}', parameters('dnsResolverName'), variables('snetOutboundName'))]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name')), variables('snetOutboundName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/dnsResolvers', parameters('dnsResolverName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/dnsForwardingRulesets",
+      "apiVersion": "2022-07-01",
+      "name": "[parameters('forwardingRulesetName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "dnsResolverOutboundEndpoints": [
+          {
+            "id": "[resourceId('Microsoft.Network/dnsResolvers/outboundEndpoints', parameters('dnsResolverName'), variables('snetOutboundName'))]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/dnsResolvers/outboundEndpoints', parameters('dnsResolverName'), variables('snetOutboundName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/dnsForwardingRulesets/virtualNetworkLinks",
+      "apiVersion": "2022-07-01",
+      "name": "[format('{0}/{1}', parameters('forwardingRulesetName'), parameters('resolvervnetlink'))]",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vNet1Name'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/dnsForwardingRulesets', parameters('forwardingRulesetName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vNet1Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/dnsForwardingRulesets/forwardingRules",
+      "apiVersion": "2022-07-01",
+      "name": "[format('{0}/{1}', parameters('forwardingRulesetName'), parameters('forwardingRuleName'))]",
+      "properties": {
+        "domainName": "[parameters('DomainName')]",
+        "targetDnsServers": "[parameters('targetDNS')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/dnsForwardingRulesets', parameters('forwardingRulesetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet1Name')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('location')]",
+      "comments": "Virtual Network1",
+      "dependsOn": [
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet1AddressPrefix')]"
+          ]
+        },
+        "enableDdosProtection": false,
+        "enableVmProtection": false,
+        "subnets": [
+          {
+            "name": "[variables('snetWorkloadName')]",
+            "properties": {
+              "addressPrefix": "[variables('snetWorkloadPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('snetPrivEPName')]",
+            "properties": {
+              "addressPrefix": "[variables('snetPrivEPPrefix')]",
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "name": "GatewaySubnet",
+            "properties": {
+              "addressPrefix": "[variables('gateway1subnetPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('snetInboundName')]",
+            "properties": {
+              "addressPrefix": "[variables('inboundAddressPrefix')]",
+              "delegations": [
+                {
+                  "name": "Microsoft.Network.dnsResolvers",
+                  "properties": {
+                    "serviceName": "Microsoft.Network/dnsResolvers"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "[variables('snetOutboundName')]",
+            "properties": {
+              "addressPrefix": "[variables('outboundAddressPrefix')]",
+              "delegations": [
+                {
+                  "name": "Microsoft.Network.dnsResolvers",
+                  "properties": {
+                    "serviceName": "Microsoft.Network/dnsResolvers"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
