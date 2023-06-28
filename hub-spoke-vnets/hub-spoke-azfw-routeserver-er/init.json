@@ -1,0 +1,21 @@
+{
+    "subscriptionName": "AzDev1",
+    "ResourceGroupName": "test-fw",
+    "locationhub1": "uksouth",
+    "locationhub2": "uksouth",
+    "locationspoke1": "uksouth",
+    "locationspoke2": "uksouth",
+    "locationspoke3": "uksouth",
+    "locationspoke4": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
+    "er_subscriptionId1": "ER-SUBSCRIPTION1",
+    "er_resourceGroup1": "SEA-Cust34",
+    "er_circuitName1": "SEA-Cust34-ER",
+    "er_authorizationKey1": "AUTHORIZATION_CODE_ER_CIRCUIT1",
+    "er_subscriptionId2": "ER-SUBSCRIPTION2",
+    "er_resourceGroup2": "SEA-Cust34",
+    "er_circuitName2": "SEA-Cust34-ER",
+    "er_authorizationKey2": "AUTHORIZATION_CODE_ER_CIRCUIT2"
+}

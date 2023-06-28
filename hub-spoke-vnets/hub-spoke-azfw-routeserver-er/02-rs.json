@@ -1,0 +1,716 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "er_subscriptionId1": {
+            "type": "string",
+            "metadata": {
+                "description": "ExpresssRoute subscription Id"
+            }
+        },
+        "er_resourceGroup1": {
+            "type": "string",
+            "metadata": {
+                "description": "resource group of the ER circuit"
+            }
+        },
+        "er_circuitName1": {
+            "type": "string",
+            "metadata": {
+                "description": "ER circuit name"
+            }
+        },
+        "er_authorizationKey1": {
+            "type": "string",
+            "metadata": {
+                "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
+            }
+        },
+        "er_subscriptionId2": {
+            "type": "string",
+            "metadata": {
+                "description": "ExpresssRoute subscription Id"
+            }
+        },
+        "er_resourceGroup2": {
+            "type": "string",
+            "metadata": {
+                "description": "resource group of the ER circuit"
+            }
+        },
+        "er_circuitName2": {
+            "type": "string",
+            "metadata": {
+                "description": "ER circuit name"
+            }
+        },
+        "er_authorizationKey2": {
+            "type": "string",
+            "metadata": {
+                "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
+            }
+        },
+        "ExpressRouteGateway1Name": {
+            "type": "string",
+            "defaultValue": "gw1",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway in hub1"
+            }
+        },
+        "ExpressRouteGateway2Name": {
+            "type": "string",
+            "defaultValue": "gw2",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway in hub2"
+            }
+        },
+        "er_connection1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('ExpressRouteGateway1Name'),'-conn')]",
+            "metadata": {
+                "description": "name of Expressroute Connection between ER Gateway1 and ER circuit"
+            }
+        },
+        "er_connection2Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('ExpressRouteGateway2Name'),'-conn')]",
+            "metadata": {
+                "description": "name of Expressroute Connection between ER Gateway2 and ER circuit"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "HighPerformance",
+                "UltraPerformance",
+                "ErGw1Az",
+                "ErGw2Az",
+                "ErGw3Az"
+            ],
+            "metadata": {
+                "description": "The SKU for the ExpressRoute Gateway"
+            }
+        },
+        "cloudInitContentNVA1": {
+            "type": "string",
+            "metadata": {
+                "description": "content of cloud-init config file for NVA1"
+            }
+        },
+        "cloudInitContentNVA2": {
+            "type": "string",
+            "metadata": {
+                "description": "content of cloud-init config file for NVA2"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for sample VM"
+            }
+        },
+        "authenticationType": {
+            "type": "string",
+            "defaultValue": "password",
+            "allowedValues": [
+                "sshPublicKey",
+                "password"
+            ],
+            "metadata": {
+                "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+            }
+        },
+        "locationhub1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "hub1": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub1')]",
+                "name": "hub1",
+                "addressPrefix": "10.11.0.0/23",
+                "AzureFirewallSubnetName": "AzureFirewallSubnet",
+                "AzureFirewallSubnetPrefix": "10.11.0.0/26",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.11.0.64/27",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.11.0.128/26",
+                "RouteServerSubnetName": "RouteServerSubnet",
+                "RouteServerSubnetPrefix": "10.11.1.0/27",
+                "nvaSubnetName": "nvasubnet",
+                "nvaSubnetPrefix": "10.11.1.32/27",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.11.1.224/27",
+                "gatewayName": "[parameters('ExpressRouteGateway1Name')]",
+                "gatewayPublicIPName": "[concat(parameters('ExpressRouteGateway1Name'),'-pubIP')]",
+                "gatewaySku": "[parameters('gatewaySku')]"
+            }
+        },
+        "locationhub2": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "hub2": {
+            "type": "object",
+            "defaultValue": {
+                "location": "[parameters('locationhub2')]",
+                "name": "hub2",
+                "addressPrefix": "10.12.0.0/23",
+                "AzureFirewallSubnetName": "AzureFirewallSubnet",
+                "AzureFirewallSubnetPrefix": "10.12.0.0/26",
+                "appSubnetName": "appSubnet",
+                "appSubnetPrefix": "10.12.0.64/27",
+                "AzureBastionSubnetName": "AzureBastionSubnet",
+                "AzureBastionSubnetPrefix": "10.12.0.128/26",
+                "RouteServerSubnetName": "RouteServerSubnet",
+                "RouteServerSubnetPrefix": "10.12.1.0/27",
+                "nvaSubnetName": "nvasubnet",
+                "nvaSubnetPrefix": "10.12.1.32/27",
+                "GatewaySubnetName": "GatewaySubnet",
+                "GatewaySubnetPrefix": "10.12.1.224/27",
+                "gatewayName": "[parameters('ExpressRouteGateway2Name')]",
+                "gatewayPublicIPName": "[concat(parameters('ExpressRouteGateway2Name'),'-pubIP')]",
+                "gatewaySku": "[parameters('gatewaySku')]"
+            }
+        },
+        "nva1Name": {
+            "type": "string",
+            "defaultValue": "nva1",
+            "metadata": {
+                "description": "NVA in hub1"
+            }
+        },
+        "nva2Name": {
+            "type": "string",
+            "defaultValue": "nva2",
+            "metadata": {
+                "description": "NVA in hub2"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of VM"
+            }
+        },
+        "linux": {
+            "type": "object",
+            "defaultValue": {
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2"
+            }
+        },
+        "acceleratedNetworking": {
+            "type": "bool",
+            "defaultValue": false,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "acceletated networking"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VM"
+            }
+        }
+    },
+    "variables": {
+        "customDataNVA1": "[parameters('cloudInitContentNVA1') ]",
+        "customDataNVA2": "[parameters('cloudInitContentNVA2') ]",
+
+        "rs1Name": "rs1",
+        "rs1peering1IP": "10.11.1.50",
+        "rs1peering1ASN": 65001,
+        "rs1BGPconnectionName": "bgp-conn1",
+        "subnet_rs1_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', parameters('hub1').name,parameters('hub1').RouteServerSubnetName )]",
+        "vHub1IPconfigName": "ipconfig1",
+        "rs1PubIPName": "[concat(variables('rs1Name'),'-pubIP')]",
+        "nva1Name": "[parameters('nva1Name')]",
+        "nva1PrivIP": "10.11.1.50",
+
+        "rs2Name": "rs2",
+        "rs2peering1IP": "10.12.1.50",
+        "rs2peering1ASN": 65002,
+        "rs2BGPconnectionName": "bgp-conn1",
+        "subnet_rs2_Id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', parameters('hub2').name,parameters('hub2').RouteServerSubnetName )]",
+        "vHub2IPconfigName": "ipconfig1",
+        "rs2PubIPName": "[concat(variables('rs2Name'),'-pubIP')]",
+        "nva2Name": "[parameters('nva2Name')]",
+        "nva2PrivIP": "10.12.1.50",
+
+        "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+                "publicKeys": [
+                    {
+                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                        "keyData": "[parameters('adminPasswordOrKey')]"
+                    }
+                ]
+            }
+        },
+        "erCircuitId1": "[concat('/subscriptions/', parameters('er_subscriptionId1'),'/resourceGroups/',parameters('er_resourceGroup1'),'/providers/Microsoft.Network/expressRouteCircuits/',parameters('er_circuitName1'))]",
+        "erCircuitId2": "[concat('/subscriptions/', parameters('er_subscriptionId2'),'/resourceGroups/',parameters('er_resourceGroup2'),'/providers/Microsoft.Network/expressRouteCircuits/',parameters('er_circuitName2'))]",
+        "nvaArray": [
+            {
+                "deployment": true,
+                "location": "[parameters('hub1').location]",
+                "vmName": "[variables('nva1Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub1').name]",
+                "subnetName": "[parameters('hub1').nvaSubnetName]",
+                "nicName": "[concat(variables('nva1Name'),'-nic')]",
+                "privateIP": "[variables('nva1PrivIP')]",
+                "enableIPForwarding": true,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "customData": "[variables('customDataNVA1')]",
+                "nsgName": "[concat(variables('nva1Name'),'-nsg')]",
+                "pubIP": "[concat(variables('nva1Name'),'-pubIP')]"
+            },
+            {
+                "deployment": true,
+                "location": "[parameters('hub2').location]",
+                "vmName": "[variables('nva2Name')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[parameters('linux').publisher]",
+                "offer": "[parameters('linux').offer]",
+                "sku": "[parameters('linux').sku]",
+                "vnetName": "[parameters('hub2').name]",
+                "subnetName": "[parameters('hub2').nvaSubnetName]",
+                "nicName": "[concat(variables('nva2Name'),'-nic')]",
+                "privateIP": "[variables('nva2PrivIP')]",
+                "enableIPForwarding": true,
+                "acceleratedNetworking": "[parameters('acceleratedNetworking')]",
+                "customData": "[variables('customDataNVA2')]",
+                "nsgName": "[concat(variables('nva2Name'),'-nsg')]",
+                "pubIP": "[concat(variables('nva2Name'),'-pubIP')]"
+            }
+        ],
+        "nvaCount": "[length(variables('nvaArray'))]",
+        "vmStorageAccountType": "[parameters('storageAccountType')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('rs1Name')]",
+            "location": "[parameters('hub1').location]",
+            "comments": "create a virtual hub2 object to host the route server1",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rs1PubIPName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "public IP of the route server1",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(variables('rs1Name'), '/',variables('vHub1IPconfigName'))]",
+            "comments": "create the route server1 and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rs1Name'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rs1PubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('subnet_rs1_Id')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rs1PubIPName') )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[concat(variables('rs1Name'), '/', variables('rs1BGPconnectionName'))]",
+            "apiVersion": "2022-05-01",
+            "comments": "name of the BGP connection configured on the route server1- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rs1Name'), variables('vHub1IPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rs1peering1IP')]",
+                "peerAsn": "[variables('rs1peering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "name": "[variables('rs2Name')]",
+            "apiVersion": "2022-05-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "create a virtual hub2 object to host the route server2",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rs2PubIPName')]",
+            "apiVersion": "2022-05-01",
+            "comments": "public IP of the route server2",
+            "location": "[parameters('hub2').location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rs2Name'), '/',variables('vHub2IPconfigName'))]",
+            "comments": "create the route server2 and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rs2Name'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rs2PubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('subnet_rs2_Id')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rs2PubIPName') )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rs2Name'), '/', variables('rs2BGPconnectionName'))]",
+            "comments": "name of the BGP connection configured on the route server2- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rs2Name'), variables('vHub2IPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rs2peering1IP')]",
+                "peerAsn": "[variables('rs2peering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('hub1').gatewayPublicIPName]",
+            "apiVersion": "2022-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "This is the public IP for ExpressRoute Gateway",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[parameters('hub1').gatewayName]",
+            "apiVersion": "2022-05-01",
+            "location": "[parameters('hub1').location]",
+            "comments": "This is the ExpressRoute Gateway1 for hub1",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('hub1').gatewayPublicIPName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hub1').name, parameters('hub1').GatewaySubnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('hub1').gatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "gw1ipconf"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[parameters('hub1').gatewaySku]",
+                    "tier": "[parameters('hub1').gatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('hub2').gatewayPublicIPName]",
+            "apiVersion": "2022-05-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "This is the public IP for ExpressRoute Gateway2",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[parameters('hub2').gatewayName]",
+            "apiVersion": "2022-05-01",
+            "location": "[parameters('hub2').location]",
+            "comments": "This is the ExpressRoute Gateway2 for the hub2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('hub2').gatewayPublicIPName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hub2').name, parameters('hub2').GatewaySubnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',parameters('hub2').gatewayPublicIPName)]"
+                            }
+                        },
+                        "name": "gw2ipconf"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[parameters('hub2').gatewaySku]",
+                    "tier": "[parameters('hub2').gatewaySku]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "condition": "[and( not(empty(parameters('er_resourceGroup1'))), not(empty(parameters('er_circuitName1'))) )]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('er_connection1Name')]",
+            "location": "[parameters('hub1').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('hub1').gatewayName )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('hub1').gatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[if(empty(parameters('er_authorizationKey1')), json('null'), parameters('er_authorizationKey1'))]",
+                "peer": {
+                    "id": "[variables('erCircuitId1')]"
+                }
+            }
+        },
+        {
+            "condition": "[and( not(empty(parameters('er_resourceGroup2'))), not(empty(parameters('er_circuitName2'))) )]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('er_connection2Name')]",
+            "location": "[parameters('hub2').location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('hub2').gatewayName )]",
+                "[resourceId('Microsoft.Network/connections', parameters('er_connection1Name') )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', parameters('hub2').gatewayName )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[if(empty(parameters('er_authorizationKey2')), json('null'), parameters('er_authorizationKey2'))]",
+                "peer": {
+                    "id": "[variables('erCircuitId2')]"
+                }
+            }
+        },
+        {
+            "condition": "[variables('nvaArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-11-01",
+            "name": "[variables('nvaArray')[copyIndex()].nsgName]",
+            "location": "[variables('nvaArray')[copyIndex()].location]",
+            "comments": " NSG applied to the NIC of the NVA",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('nvaCount')]"
+            }
+        },
+        {
+            "condition": "[variables('nvaArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat( variables('nvaArray')[copyIndex()].pubIP )]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('nvaArray')[copyIndex()].location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('nvaCount')]"
+            }
+        },
+        {
+            "condition": "[variables('nvaArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nvaArray')[copyIndex()].nicName]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('nvaArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses',variables('nvaArray')[copyIndex()].pubIP) ]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nvaArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('nvaArray')[copyIndex()].privateIP]",
+                            "subnet": {
+                                "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('nvaArray')[copyIndex()].vnetName, variables('nvaArray')[copyIndex()].subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('nvaArray')[copyIndex()].pubIP) ]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nvaArray')[copyIndex()].nsgName )]"
+                },
+                "primary": true,
+                "enableIPForwarding": "[variables('nvaArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('nvaArray')[copyIndex()].acceleratedNetworking]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('nvaCount')]"
+            }
+        },
+        {
+            "condition": "[variables('nvaArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('nvaArray')[copyIndex()].vmName]",
+            "apiVersion": "2022-11-01",
+            "location": "[variables('nvaArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nvaArray')[copyIndex()].nicName )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('nvaArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('nvaArray')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "customData": "[base64(variables('nvaArray')[copyIndex()].customData)]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('nvaArray')[copyIndex()].publisher]",
+                        "offer": "[variables('nvaArray')[copyIndex()].offer]",
+                        "sku": "[variables('nvaArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        },
+                        "name": "[concat(variables('nvaArray')[copyIndex()].vmName, '-OSdisk')]",
+                        "deleteOption": "Delete"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true,
+                                "deleteOption": "Delete"
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('nvaArray')[copyIndex()].nicName)]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('nvaCount')]"
+            }
+        }
+    ]
+}
