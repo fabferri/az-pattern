@@ -30,7 +30,7 @@ A network diagram with more details, is shown the follogin diagram:
 [![2]][2]
 
 The configuration aims to make intercommunication any-to-any with traffic in transit through the Azure firewalls. 
-* all the UDRs applied to the subnets in the spoke vnets have BGP propagation disabled and only the default route 0.0.0.0/0, pointing to the private IP address of the Azure firewall (nearest Azure firewall)
+* all the UDRs applied to the subnets in the spoke vnets have BGP propagation disabled and only the default route 0.0.0.0/0, pointing to the private IP address of the local Azure firewall
 * the Azure firewall subnets have a UDR to guarantee that traffic with destination of remote spoke is sent through the vnet peering
 * vnet peering between hub and spokes are created without Remote Gateway transit; the networks of spoke vnets are advertised on-premises through the NVAs
 * To keep the deployment simple, the firewall policies have two network security rules: 
