@@ -84,7 +84,8 @@ $parameters = @{
      "user1Name"      = $user1Name;
      "user1Password"  = $user1Password;
      "user2Name"      = $user2Name;
-     "user2Password"  = $user2Password
+     "user2Password"  = $user2Password;
+     "_artifactsLocation" = $artifactsLocation
 }
 
 $subscr = Get-AzSubscription -SubscriptionName $subscriptionName
