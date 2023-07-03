@@ -267,6 +267,9 @@ By **tcpdump** in nva, you should see the bidirectional traffic passing through 
 ## Reference
 [Uncomplicated Firewall](https://ubuntu.com/server/docs/security-firewall)
 
+`Tags: nat, Uncomplicated Firewall` <br>
+`date: 14-08-21`
+
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
