@@ -1,9 +1,7 @@
-#
 ################# Input parameters #################
 $deploymentName = 'hub-spoke'
 $armTemplateFile = '01-vnets.json'
 $inputParams = 'init.json'
-
 ####################################################
 
 $pathFiles = Split-Path -Parent $PSCommandPath
@@ -45,8 +43,7 @@ if (!$locationspoke1) { Write-Host 'variable $locationspoke1 is null' ; Exit }  
 if (!$locationspoke2) { Write-Host 'variable $locationspoke2 is null' ; Exit }         else { Write-Host '  locationspoke2........: '$locationspoke2 -ForegroundColor Yellow }
 if (!$locationhub2) { Write-Host 'variable $locationhub2 is null' ; Exit }             else { Write-Host '  locationhub2..........: '$locationhub2 -ForegroundColor Yellow }
 if (!$locationspoke3) { Write-Host 'variable $locationspoke3 is null' ; Exit }         else { Write-Host '  locationspoke3........: '$locationspoke3 -ForegroundColor Yellow }
-if (!$locationspoke4) { Write-Host 'variable $locationspoke4 is null' ; Exit }         else { Write-Host '  locationspoke4........: '$locationspoke4 -ForegroundColor Yellow }
-if (!$mngIP) { Write-Host 'variable $mngIP is null' }                  
+if (!$locationspoke4) { Write-Host 'variable $locationspoke4 is null' ; Exit }         else { Write-Host '  locationspoke4........: '$locationspoke4 -ForegroundColor Yellow }               
 $rgName = $ResourceGroupName
 $location = $locationhub1
 
@@ -62,8 +59,7 @@ $parameters = @{
   "locationspoke2"     = $locationspoke2;
   "locationhub2"       = $locationhub2;
   "locationspoke3"     = $locationspoke3;
-  "locationspoke4"     = $locationspoke4;
-  "mngIP"              = $mngIP
+  "locationspoke4"     = $locationspoke4
 }
 
 

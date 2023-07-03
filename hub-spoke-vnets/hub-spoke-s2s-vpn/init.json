@@ -7,8 +7,7 @@
     "locationhub2": "westeurope",
     "locationspoke3": "westeurope",
     "locationspoke4": "westeurope",
-    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminUsername": "edge",
     "authenticationType": "password",
-    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
-    "mngIP": ""
+    "adminPasswordOrKey": "Verdicchio**2016"
 }

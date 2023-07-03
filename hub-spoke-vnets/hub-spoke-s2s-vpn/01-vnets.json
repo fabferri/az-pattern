@@ -49,15 +49,15 @@
             "defaultValue": {
                 "location": "[parameters('locationhub1')]",
                 "name": "hub1",
-                "addressPrefix": "10.1.0.0/24",
+                "addressPrefix": "10.11.0.0/24",
                 "nvaSubnetName": "nvasubnet",
-                "nvaSubnetPrefix": "10.1.0.0/27",
+                "nvaSubnetPrefix": "10.11.0.0/27",
                 "appSubnetName": "appSubnet",
-                "appSubnetPrefix": "10.1.0.32/27",
+                "appSubnetPrefix": "10.11.0.32/27",
                 "AzureBastionSubnetName": "AzureBastionSubnet",
-                "AzureBastionSubnetPrefix": "10.1.0.128/26",
+                "AzureBastionSubnetPrefix": "10.11.0.128/26",
                 "GatewaySubnetName": "GatewaySubnet",
-                "GatewaySubnetPrefix": "10.1.0.224/27"
+                "GatewaySubnetPrefix": "10.11.0.224/27"
             }
         },
         "spoke1": {
@@ -85,13 +85,13 @@
             "defaultValue": {
                 "location": "[parameters('locationhub2')]",
                 "name": "hub2",
-                "addressPrefix": "10.2.0.0/24",
+                "addressPrefix": "10.12.0.0/24",
                 "nvaSubnetName": "nvasubnet",
-                "nvaSubnetPrefix": "10.2.0.0/27",
+                "nvaSubnetPrefix": "10.12.0.0/27",
                 "appSubnetName": "appSubnet",
-                "appSubnetPrefix": "10.2.0.32/27",
+                "appSubnetPrefix": "10.12.0.32/27",
                 "GatewaySubnetName": "GatewaySubnet",
-                "GatewaySubnetPrefix": "10.2.0.224/27"
+                "GatewaySubnetPrefix": "10.12.0.224/27"
             }
         },
         "spoke3": {
@@ -178,7 +178,7 @@
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering"
+                "description": "management public IP address to connect in SSH to the VM. it can be set to empty string if you do not want filtering incoming connection"
             }
         }
     },
@@ -210,17 +210,17 @@
         "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
         "linuxCommand": "[concat( 'sleep 1m', ' &&', variables('linuxUpdate'), ' && ', variables('linuxNgixCommand') )]",
         "nva1": "nva1",
-        "nva1IPAddr": "10.1.0.5",
+        "nva1IPAddr": "10.11.0.5",
         "vmhub1": "vmhub1",
-        "vmhub1IPAddr": "10.1.0.50",
+        "vmhub1IPAddr": "10.11.0.50",
         "vmspoke1": "vmspoke1",
         "vmspoke1IPAddr": "10.0.1.10",
         "vmspoke2": "vmspoke2",
         "vmspoke2IPAddr": "10.0.2.10",
         "nva2": "nva2",
-        "nva2IPAddr": "10.2.0.5",
+        "nva2IPAddr": "10.12.0.5",
         "vmhub2": "vmhub2",
-        "vmhub2IPAddr": "10.2.0.50",
+        "vmhub2IPAddr": "10.12.0.50",
         "vmspoke3": "vmspoke3",
         "vmspoke3IPAddr": "10.0.3.10",
         "vmspoke4": "vmspoke4",
@@ -379,8 +379,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('hub1').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub1').location]",
+            "comments": "hub1 vnet",
             "dependsOn": [
             ],
             "properties": {
@@ -420,8 +421,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('spoke1').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke1').location]",
+            "comments": "spoke1 vnet",
             "dependsOn": [],
             "properties": {
                 "addressSpace": {
@@ -442,8 +444,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('spoke2').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke2').location]",
+            "comments": "spoke2 vnet",
             "dependsOn": [],
             "properties": {
                 "addressSpace": {
@@ -464,9 +467,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1spoke1'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub1').location]",
-            "comments": "This is the peering from vnet1 to vnet2",
+            "comments": "This is the peering from hub1 to spoke1",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke1').name)]"
@@ -484,9 +487,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('spoke1').name,'/',variables('peeringNamespoke1hub1'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke1').location]",
-            "comments": "This is the peering from vnet2 to vnet1",
+            "comments": "This is the peering from spoke1 to hub1",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke1').name)]"
@@ -504,9 +507,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1spoke2'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub1').location]",
-            "comments": "This is the peering from vnet1 to vnet3",
+            "comments": "This is the peering from hub1 to spoke2",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke2').name)]"
@@ -524,9 +527,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('spoke2').name,'/',variables('peeringNamespoke2hub1'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke2').location]",
-            "comments": "This is the peering from vnet2 to vnet1",
+            "comments": "This is the peering from spoke2 to hub1",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub1').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke2').name)]"
@@ -544,7 +547,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('hub2').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub2').location]",
             "dependsOn": [],
             "properties": {
@@ -578,7 +581,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('spoke3').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke3').location]",
             "dependsOn": [],
             "properties": {
@@ -600,7 +603,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('spoke4').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke4').location]",
             "dependsOn": [],
             "properties": {
@@ -622,9 +625,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2spoke3'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub2').location]",
-            "comments": "This is the peering from vnet1 to vnet2",
+            "comments": "This is the peering from hub2 to spoke3",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke3').name)]"
@@ -642,9 +645,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('spoke3').name,'/',variables('peeringNamespoke3hub2'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('spoke1').location]",
-            "comments": "This is the peering from vnet2 to vnet1",
+            "comments": "This is the peering from spoke3 to hub2",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke3').name)]"
@@ -662,9 +665,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2spoke4'))]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub2').location]",
-            "comments": "This is the peering from vnet1 to vnet3",
+            "comments": "This is the peering from hub2 to spoke4",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke4').name)]"
@@ -684,7 +687,7 @@
             "name": "[concat(parameters('spoke4').name,'/',variables('peeringNamespoke4hub2'))]",
             "apiVersion": "2021-05-01",
             "location": "[parameters('spoke4').location]",
-            "comments": "This is the peering from vnet2 to vnet1",
+            "comments": "This is the peering from spoke4 to hub2",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('hub2').name)]",
                 "[resourceId( 'Microsoft.Network/virtualNetworks', parameters('spoke4').name)]"
@@ -702,7 +705,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('bastion1PublicIPAddressName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub1').location]",
             "comments": "public IP of the Azure bastion in hub1 vnet",
             "sku": {
@@ -715,7 +718,7 @@
         },
         {
             "type": "Microsoft.Network/bastionHosts",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[variables('bastion1Name')]",
             "location": "[parameters('hub1').location]",
             "comments": "Azure bastion in hub1 vnet",
@@ -751,7 +754,7 @@
         {
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[variables('vmArray')[copyIndex()].nsgName]",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "properties": {
@@ -781,7 +784,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat( variables('vmArray')[copyIndex()].pubIP )]",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "properties": {
                 "publicIPAllocationMethod": "Static"
@@ -798,7 +801,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('vmArray')[copyIndex()].nicName]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vnetName) ]",
@@ -837,7 +840,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
-            "apiVersion": "2021-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName )]"
@@ -884,7 +887,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'installcustomscript')]",
-            "apiVersion": "2021-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "custom script extension for ubuntu",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "copy": {

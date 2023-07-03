@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'Hub-spoke vnets with Azure Bastion in one hub vnet'
-description= "Hub-spoke vnets with Azure Bastion in one hub vnet"
+pageTitle= 'Hub-spoke vnets with S2S tunnels between the hubs'
+description= "Hub-spoke vnets with S2S tunnels between the hubs"
 documentationcenter: na
 services=""
 documentationCenter="github"
@@ -18,30 +18,19 @@ editor=""/>
    ms.review=""
    ms.author="fabferri" />
 
-# Hub-spoke vnets with Azure Bastion in one hub vnet
-The article describes a scenario with hub-spoke vnets in peering, with Azure Bastion deployed only in one hub vnet. The network diagram is reported below:
+# Hub-spoke vnets with site-to-site VPN tunnels between the hubs
+The article describes a scenario with hub-spoke vnets in peering. The hub vnets are connected with S2S VPN tunnels through the VPN Gateways.<br>. The network diagram is reported below:
 
 [![1]][1]
 
-The configuration aims to use Azure Bastion to manage all the VMs in the local hub-spoke vnets, as well as in the remote hub-spoke vnets.
 
-- the Azure Bastion has to be deployed with **Standard** SKU;
-
-- the properties of Azure Bastion are configured as:<br>
-   "disableCopyPaste": false,<br>
-   "enableFileCopy": true,<br>
-   **"enableIpConnect": true,**<br>
-   "enableShareableLink": false,<br>
-   "enableTunneling": true, <br>
-The property **enableIpConnect** is required to connect via Bastion to the VMs via private IP address.  
-
-- Azure Bastion can reach out the remote spoke3 and spoke4 across the site-to-site VPN between VPN gtw1 and VPN Gtw2. 
-
-- the vnet peering betwen hub2-spoke3 and hub2-spoke4 has to correctly assigned:
-   - vnet peering property in spoke3 is set to "Use the remote virtual network's gateway"
-   - vnet peering property in spoke4 is set to "Use the remote virtual network's gateway" 
-   - vnet peering in hub2 is set to "Use this virtual network's gateway"
-
+- The vnet peering betwen hub2-spoke3 and hub2-spoke4 are configured:
+   - in spoke3, the vnet peering property is set to **"Use the remote virtual network's gateway"**
+   - in spoke4, vnet peering property is set to **"Use the remote virtual network's gateway"** 
+   - in hub2 vnet peering is set to **"Use this virtual network's gateway"**
+- A single Azure Bastion is used to manage all the VMs.  Azure Bastion can reach out the remote spoke3 and spoke4 across the site-to-site VPN between VPN gtw1 and VPN Gtw2. The Azure Bastion has to be deployed with **Standard** SKU.
+- all the VMs, in spokes and in the hubs, can communicate (there is no need of ip forwarder)
+- the configuration does not use UDRs
 
 Below the property of the vnet peering in hub2 and spoke3 vnets:
 
@@ -55,12 +44,18 @@ Option in Azure Bastion to connect to the vmspoke3 via IP:
 
 [![4]][4]
 
+<br>
+
+Site-to-site VPN between the two Azure VPN Gateways:
+
+[![5]][5]
+
 ## <a name="list of files"></a>2. Files
 
 | File name                 | Description                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------ |
 | **init.json**             | define the value of input variables required for the full deployment           |
-| **01-vnets.json**         | ARM template to deploy spoke vnets, hub vnets,Azure firewalls, Azure bastions  |
+| **01-vnets.json**         | ARM template to deploy spoke vnets, hub vnets, Azure Bastion, Azure VMS        |
 | **01-vnets.ps1**          | powershell script to run **01-vnets.json**                                     |
 | **02-vpn.json**           | ARM template to deploy VPN Gateways in hub1 and hub2 and create the S2S VPN    |
 | **02-vpn.ps1**            | powershell script to run **02-vpn.json**                                       |
@@ -70,11 +65,11 @@ Option in Azure Bastion to connect to the vmspoke3 via IP:
 
 To run the project, follow the steps in sequence:
 1. change/modify the value of input variables in the file **init.json**
-2. run the powershell script **01-vnets.ps1**; at the end of execution the two hub-spoke will be created, with the VMs
-3. run the powershell script **02-vpn.ps1**; at the end the IPsec tunnels between VPN gtw1 adn VPN gtw2 will be created
+2. run the powershell script **01-vnets.ps1**; at the end of execution the two hub-spoke will be created, with the Azure VMs
+3. run the powershell script **02-vpn.ps1**; at the end the site-to-site IPsec tunnels between VPN gtw1 and VPN gtw2 will be created
 4. run the powershell script **vnet-peering.ps1**; the properties of vnet peering hub-spoke are changed: 
-   - The vnet peering in the spokes will have the attribute "Use the remote virtual network's gateway" enabled
-   - The vnet peering in the hubs will have the attribute "Use this virtual network's gateway" enabled 
+   - The vnet peering in the spokes will have the attribute **"Use the remote virtual network's gateway"** <ins>enabled</ins>
+   - The vnet peering in the hubs will have the attribute **"Use this virtual network's gateway"** <ins>enabled</ins> 
 
 The meaning of input variables in **init.json** are shown below:
 ```json
@@ -90,8 +85,7 @@ The meaning of input variables in **init.json** are shown below:
     "locationvnet1": "AZURE_LOCATION_vnet1",
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "authenticationType": "password",
-    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
-    "mngIP": "PUBLIC_IP_ADDRESS_TO_FILTER_SSH_ACCESS_TO_VMS - it can be empty string, if you do not want to filter access!"
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD"
 }
 ```
 **authenticationType**: it can take two options: 
@@ -100,7 +94,8 @@ The meaning of input variables in **init.json** are shown below:
 
 
 `Tags: hub-spoke vnets, azure Bastion` <br>
-`date: 21-06-22`
+`date: 21-06-22` <br>
+`date: 03-07-23` <br>
 
 <!--Image References-->
 
@@ -108,6 +103,7 @@ The meaning of input variables in **init.json** are shown below:
 [2]: ./media/vnet-peering1.png "vnet peering properties in hub2"
 [3]: ./media/vnet-peering2.png "vnet peering properties in spoke3"
 [4]: ./media/bastion.png "from Bastion connect to the VM via IP"
+[5]: ./media/s2s-vpn.png "site-to-site VPN"
 
 <!--Link References-->
 
