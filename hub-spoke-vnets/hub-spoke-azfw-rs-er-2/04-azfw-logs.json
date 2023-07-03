@@ -1,0 +1,254 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationhub1": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "locationhub2": {
+            "type": "string",
+            "defaultValue": "northeurope",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "workspace1",
+            "metadata": {
+                "description": "Name of the workspace."
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultvalue": "pergb2018",
+            "allowedValues": [
+                "pergb2018",
+                "Free",
+                "Standalone",
+                "PerNode",
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Pricing tier: PerGB2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
+            }
+        },
+        "retentionInDays": {
+            "type": "int",
+            "defaultValue": 30,
+            "metadata": {
+                "description": "workspace: Number of days to retain data."
+            }
+        },
+        "resourcePermissions": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "true to use resource or workspace permissions. false to require workspace permissions."
+            }
+        },
+        "diagnosticLogsRetentionInDays": {
+            "type": "int",
+            "defaultValue": 365,
+            "minValue": 0,
+            "maxValue": 365,
+            "metadata": {
+                "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+            }
+        }
+    },
+    "variables": {
+        "firewall1Name": "azfw1",
+        "firewall2Name": "azfw2",
+        "diagnosticSettingName": "azfwDiagnostic",
+        "diagnosticLogsRetentionInDays": "[parameters('diagnosticLogsRetentionInDays')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "apiVersion": "2020-10-01",
+            "location": "[parameters('locationhub1')]",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('sku')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]",
+                "features": {
+                    "enableLogAccessUsingOnlyResourcePermissions": "[parameters('resourcePermissions')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "name": "[format('{0}/Microsoft.Insights/{1}',variables('firewall1Name'),  variables('diagnosticSettingName'))]",
+            "dependsOn": [
+                "[resourceid('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]"
+            ],
+            "properties": {
+                "storageAccountId": null,
+                "eventHubAuthorizationRuleId": null,
+                "eventHubName": null,
+                "workspaceId": "[resourceid('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    }
+                ],
+                "logs": [
+                    {
+                        "category": "AzureFirewallApplicationRule",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AzureFirewallNetworkRule",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AzureFirewallDnsProxy",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AZFWNetworkRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+
+                        }
+                    },
+                    {
+                        "category": "AZFWApplicationRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AZFWNatRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    }
+                ]
+            }
+        },
+         {
+            "type": "Microsoft.Network/azureFirewalls/providers/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "name": "[format('{0}/Microsoft.Insights/{1}',variables('firewall2Name'),  variables('diagnosticSettingName'))]",
+            "dependsOn": [
+                "[resourceid('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+            ],
+            "properties": {
+                "storageAccountId": null,
+                "eventHubAuthorizationRuleId": null,
+                "eventHubName": null,
+                "workspaceId": "[resourceid('Microsoft.OperationalInsights/workspaces',parameters('workspaceName'))]",
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    }
+                ],
+                "logs": [
+                    {
+                        "category": "AzureFirewallApplicationRule",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AzureFirewallNetworkRule",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AzureFirewallDnsProxy",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AZFWNetworkRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+
+                        }
+                    },
+                    {
+                        "category": "AZFWApplicationRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    },
+                    {
+                        "category": "AZFWNatRule",
+                        "categoryGroup": null,
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": true,
+                            "days": "[variables('diagnosticLogsRetentionInDays')]"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "azfw1PrivIP": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/azureFirewalls', variables('firewall1Name')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+        },
+        "azfw2PrivIP": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/azureFirewalls', variables('firewall2Name')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+        }
+    }
+}

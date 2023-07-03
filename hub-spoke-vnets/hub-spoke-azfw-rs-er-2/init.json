@@ -11,9 +11,8 @@
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "authenticationType": "password",
     "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
-    "mngIP": "",
-    "er_subscriptionId": "AZURE_SUBSCRIPTION_ID_WHERE_IS_DEPLOYED_THE_EXPRESSROUTE_CIRCUIT",
-    "er_resourceGroup": "RESOUCE_GROUP_NAME_WHERE_IS_DEPLOYED_THE_EXPRESSROUTE_CIRCUIT",
-    "er_circuitName": "NAME_OF_EXPRESSROUTE_CIRCUIT",
-    "er_authorizationKey": "ANUTHORIZATION_KEY_TO_JOIN_TO_THE_EXPRESSROUTE_CIRCUIT"
+    "er_subscriptionId1": "AZURE_SUBSCRIPTION_ID_WHERE_IS_DEPLOYED_THE_EXPRESSROUTE_CIRCUIT1",
+    "er_resourceGroup1": "SEA-Cust34",
+    "er_circuitName1": "SEA-Cust34-ER",
+    "er_authorizationKey1": "AUTHORIZATION_CODE_ASSOCIATED_WITH_THE_EXPRESSROUTE_CIRCUIT1"
 }

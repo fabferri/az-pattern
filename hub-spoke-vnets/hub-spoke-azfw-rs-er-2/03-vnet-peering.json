@@ -42,15 +42,13 @@
             "defaultValue": {
                 "location": "[parameters('locationhub1')]",
                 "name": "hub1",
-                "addressPrefix": "10.1.0.0/24",
+                "addressPrefix": "10.11.0.0/23",
                 "AzureFirewallSubnetName": "AzureFirewallSubnet",
-                "AzureFirewallSubnetPrefix": "10.1.0.0/26",
+                "AzureFirewallSubnetPrefix": "10.11.0.0/26",
                 "appSubnetName": "appSubnet",
-                "appSubnetPrefix": "10.1.0.64/27",
+                "appSubnetPrefix": "10.11.0.64/27",
                 "AzureBastionSubnetName": "AzureBastionSubnet",
-                "AzureBastionSubnetPrefix": "10.1.0.128/26",
-                "GatewaySubnetName": "GatewaySubnet",
-                "GatewaySubnetPrefix": "10.1.0.224/27"
+                "AzureBastionSubnetPrefix": "10.11.0.128/26"
             }
         },
         "hub2": {
@@ -58,15 +56,13 @@
             "defaultValue": {
                 "location": "[parameters('locationhub2')]",
                 "name": "hub2",
-                "addressPrefix": "10.2.0.0/24",
+                "addressPrefix": "10.12.0.0/23",
                 "AzureFirewallSubnetName": "AzureFirewallSubnet",
-                "AzureFirewallSubnetPrefix": "10.2.0.0/26",
+                "AzureFirewallSubnetPrefix": "10.12.0.0/26",
                 "appSubnetName": "appSubnet",
-                "appSubnetPrefix": "10.2.0.64/27",
+                "appSubnetPrefix": "10.12.0.64/27",
                 "AzureBastionSubnetName": "AzureBastionSubnet",
-                "AzureBastionSubnetPrefix": "10.2.0.128/26",
-                "GatewaySubnetName": "GatewaySubnet",
-                "GatewaySubnetPrefix": "10.2.0.224/27"
+                "AzureBastionSubnetPrefix": "10.12.0.128/26"
             }
         }
     },
@@ -80,7 +76,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('hub1').name,'/',variables('peeringNamehub1vnet1'))]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub1').location]",
             "comments": "This is the peering from hub1 to vnet1",
             "dependsOn": [],
@@ -97,7 +93,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('vnet1').name,'/',variables('peeringNamevnet1hub1'))]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "comments": "This is the peering from vnet1 to hub1",
             "dependsOn": [],
@@ -114,7 +110,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('hub2').name,'/',variables('peeringNamehub2vnet1'))]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('hub2').location]",
             "comments": "This is the peering from hub2 to vnet1",
             "dependsOn": [],
@@ -131,7 +127,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
             "name": "[concat(parameters('vnet1').name,'/',variables('peeringNamevnet1hub2'))]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "comments": "This is the peering from vnet1 to hub2",
             "dependsOn": [],

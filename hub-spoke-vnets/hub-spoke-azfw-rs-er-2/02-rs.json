@@ -2,25 +2,25 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "er_subscriptionId": {
+        "er_subscriptionId1": {
             "type": "string",
             "metadata": {
                 "description": "ExpresssRoute subscription Id"
             }
         },
-        "er_resourceGroup": {
+        "er_resourceGroup1": {
             "type": "string",
             "metadata": {
                 "description": "resource group of the ER circuit"
             }
         },
-        "er_circuitName": {
+        "er_circuitName1": {
             "type": "string",
             "metadata": {
                 "description": "ER circuit name"
             }
         },
-        "er_authorizationKey": {
+        "er_authorizationKey1": {
             "type": "string",
             "metadata": {
                 "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
@@ -114,17 +114,10 @@
             "metadata": {
                 "description": "The SKU for the ExpressRoute Gateway"
             }
-        },
-        "mngIP": {
-            "type": "string",
-            "metadata": {
-                "description": "management IP to connect to the VM"
-            }
         }
     },
     "variables": {
         "customData": "[parameters('cloudInitContent') ]",
-
         "rsName": "rs1",
         "peering1IP": "10.101.0.50",
         "peering1ASN": 65001,
@@ -152,15 +145,14 @@
                 ]
             }
         },
-        "erCircuitId": "[concat('/subscriptions/', parameters('er_subscriptionId'),'/resourceGroups/',parameters('er_resourceGroup'),'/providers/Microsoft.Network/expressRouteCircuits/',parameters('er_circuitName'))]",
-        "mngIP": "[parameters('mngIP')]"
+        "erCircuitId": "[concat('/subscriptions/', parameters('er_subscriptionId1'),'/resourceGroups/',parameters('er_resourceGroup1'),'/providers/Microsoft.Network/expressRouteCircuits/',parameters('er_circuitName1'))]"
     },
     "resources": [
 
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('vnet1').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "dependsOn": [],
             "comments": "Create vnet1",
@@ -194,7 +186,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[variables('rsName')]",
             "location": "[parameters('vnet1').location]",
             "comments": "create a virtual hub object",
@@ -211,7 +203,7 @@
             "comments": "public IP of the route server",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('rsPubIPName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "sku": {
                 "name": "Standard"
@@ -222,7 +214,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs/ipConfigurations",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
             "comments": "create the route server and attach it to the RouteServerSubnet subnet",
             "dependsOn": [
@@ -241,7 +233,7 @@
         },
         {
             "type": "Microsoft.Network/virtualHubs/bgpConnections",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[concat(variables('rsName'), '/', variables('rsBGPconnectionName'))]",
             "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
             "dependsOn": [
@@ -255,7 +247,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[parameters('vnet1').gatewayPublicIPName]",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "comments": "This is the public IP for ExpressRoute Gateway",
             "properties": {
@@ -265,7 +257,7 @@
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[parameters('vnet1').gatewayName]",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "comments": "This is the ExpressRoute Gateway for vNet",
             "dependsOn": [
@@ -298,7 +290,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsgName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "properties": {
                 "securityRules": [
@@ -309,7 +301,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[if(equals(variables('mngIP'), ''), '*', variables('mngIP'))]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 100,
@@ -322,7 +314,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('nvapubIPName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "comments": "public IP of the VM",
             "properties": {
@@ -335,7 +327,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nvanicName')]",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[parameters('vnet1').location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet1').name)]",
@@ -368,7 +360,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('nvaName') ]",
-            "apiVersion": "2021-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[parameters('vnet1').location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('nvanicName'))]"
@@ -410,9 +402,9 @@
             }
         },
         {
-            "condition": "[and( not(empty(parameters('er_resourceGroup'))), not(empty(parameters('er_circuitName'))) )]",
+            "condition": "[and( not(empty(parameters('er_resourceGroup1'))), not(empty(parameters('er_circuitName1'))) )]",
             "type": "Microsoft.Network/connections",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[parameters('er_connectionName')]",
             "location": "[parameters('vnet1').location]",
             "dependsOn": [
@@ -424,7 +416,7 @@
                 },
                 "connectionType": "ExpressRoute",
                 "routingWeight": 0,
-                "authorizationKey": "[if(empty(parameters('er_authorizationKey')), json('null'), parameters('er_authorizationKey'))]",
+                "authorizationKey": "[if(empty(parameters('er_authorizationKey1')), json('null'), parameters('er_authorizationKey1'))]",
                 "peer": {
                     "id": "[variables('erCircuitId')]"
                 }

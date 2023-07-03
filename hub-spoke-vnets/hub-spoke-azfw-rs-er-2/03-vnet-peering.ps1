@@ -1,37 +1,33 @@
-#
 ################# Input parameters #################
-$deploymentName = 'test-hubspoke'
-$armTemplateFile = 'azfw.json'
+$deploymentName = 'vnet-peering'
+$armTemplateFile = '03-vnet-peering.json'
 $inputParams = 'init.json'
-
 ####################################################
 
 $pathFiles = Split-Path -Parent $PSCommandPath
 $templateFile = "$pathFiles\$armTemplateFile"
+$parametersFile = "$pathFiles\$inputParams"
 
 # reading the input parameter file $inputParams and convert the values in hashtable 
-If (Test-Path -Path $pathFiles\$inputParams) {
-  # convert the json into PSCustomObject
-  $jsonObj = Get-Content -Raw $pathFiles\$inputParams | ConvertFrom-Json
-  if ($null -eq $jsonObj) {
-    Write-Host "file $inputParams is empty"
-    Exit
-  }
-  # convert the PSCustomObject in hashtable
-  if ($jsonObj -is [psobject]) {
-    $hash = @{}
-    foreach ($property in $jsonObj.PSObject.Properties) {
-      $hash[$property.Name] = $property.Value
-    }
-  }
-  foreach ($key in $hash.keys) {
-    $message = '{0} = {1} ' -f $key, $hash[$key]
-    # Write-Output $message
-    Try { New-Variable -Name $key -Value $hash[$key] -ErrorAction Stop }
-    Catch { Set-Variable -Name $key -Value $hash[$key] }
-  }
-} 
-else { Write-Warning "$inputParams file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
+try {
+  $arrayParams = (Get-Content -Raw $parametersFile | ConvertFrom-Json)
+  $subscriptionName = $arrayParams.subscriptionName
+  $resourceGroupName = $arrayParams.resourceGroupName
+  $location = $arrayParams.location
+  $locationhub1 = $arrayParams.locationhub1
+  $locationhub2 = $arrayParams.locationhub2
+  $locationspoke1 = $arrayParams.locationspoke1
+  $locationspoke2 = $arrayParams.locationspoke2
+  $locationspoke3 = $arrayParams.locationspoke3
+  $locationspoke4 = $arrayParams.locationspoke4
+  $adminUsername = $arrayParams.adminUsername
+  $authenticationType = $arrayParams.authenticationType
+  $adminPasswordOrKey = $arrayParams.adminPasswordOrKey
+  $er_subscriptionId1 = $arrayParams.er_subscriptionId1
+  $er_resourceGroup1 = $arrayParams.er_resourceGroup1
+  $er_circuitName1 = $arrayParams.er_circuitName1
+  $er_authorizationKey1 = $arrayParams.er_authorizationKey1
+  
 
 # checking the values of variables
 Write-Host "$(Get-Date) - values from file: $inputParams" -ForegroundColor Yellow
@@ -46,7 +42,17 @@ if (!$locationspoke2) { Write-Host 'variable $locationspoke2 is null' ; Exit }  
 if (!$locationhub2) { Write-Host 'variable $locationhub2 is null' ; Exit }             else { Write-Host '  locationhub2..........: '$locationhub2 -ForegroundColor Yellow }
 if (!$locationspoke3) { Write-Host 'variable $locationspoke3 is null' ; Exit }         else { Write-Host '  locationspoke3........: '$locationspoke3 -ForegroundColor Yellow }
 if (!$locationspoke4) { Write-Host 'variable $locationspoke4 is null' ; Exit }         else { Write-Host '  locationspoke4........: '$locationspoke4 -ForegroundColor Yellow }
-if (!$mngIP) { Write-Host 'variable $mngIP is null' }                  
+if (!$er_subscriptionId1) { Write-Host 'variable$er_subscriptionId1 is null' ; Exit }        else { Write-Host '  er_subscriptionId1....: '$er_subscriptionId1 -ForegroundColor Green }
+if (!$er_resourceGroup1) { Write-Host 'variable $er_resourceGroup1 is null' ; Exit }         else { Write-Host '  er_resourceGroup1.....: '$er_resourceGroup1 -ForegroundColor Green }
+if (!$er_circuitName1 ) { Write-Host 'variable $er_circuitName1  is null' ; Exit }           else { Write-Host '  er_circuitName1 ......: '$er_circuitName1 -ForegroundColor Green }
+if (!$er_authorizationKey1) { Write-Host 'variable $er_authorizationKey1  is null' ; Exit }  else { Write-Host '  er_authorizationKey1..: '$er_authorizationKey1 -ForegroundColor Green }
+}
+catch {
+  Write-Host 'error in reading the template file: '$parametersFile -ForegroundColor Yellow
+  Exit
+}
+
+
 $rgName = $ResourceGroupName
 $location = $locationhub1
 
@@ -54,16 +60,9 @@ $subscr = Get-AzSubscription -SubscriptionName $subscriptionName
 Select-AzSubscription -SubscriptionId $subscr.Id
 
 $parameters = @{
-  "adminUsername"      = $adminUsername;
-  "authenticationType" = $authenticationType;
-  "adminPasswordOrKey" = $adminPasswordOrKey;
   "locationhub1"       = $locationhub1;
-  "locationspoke1"     = $locationspoke1;
-  "locationspoke2"     = $locationspoke2;
   "locationhub2"       = $locationhub2;
-  "locationspoke3"     = $locationspoke3;
-  "locationspoke4"     = $locationspoke4;
-  "mngIP"              = $mngIP
+  "locationvnet1"      = $locationvnet1
 }
 
 
