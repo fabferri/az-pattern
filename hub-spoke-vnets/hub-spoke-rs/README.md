@@ -227,7 +227,7 @@ Communication between spoke vnets connected with the same hub can be achieved wi
 In this case, the presence of UDRs in spoke vnets create a static route in system routing table forcing the traffic towards the local nva. <br>
 **_NOTE: the ARM template does not create the UDRs applied to the spoke vnets._**
 
-`Tags: hub-spoke vnets, route server`
+`Tags: hub-spoke vnets, route server` <br>
 `date: 28-06-22`
 
 <!--Image References-->
