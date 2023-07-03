@@ -428,7 +428,7 @@ LocalAddress Network       NextHop    SourcePeer Origin AsPath            Weight
 ### <a name="Routing table in ExpressRoute Gateway"></a>3.10 Routing table in ExpressRoute circuit
 [![12]][12]
 
-`Tags: hub-spoke vnets, route server, NVA`
+`Tags: hub-spoke vnets, route server, NVA` <br>
 `date: 14-02-23`
 
 <!--Image References-->
