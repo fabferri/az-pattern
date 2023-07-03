@@ -29,26 +29,29 @@ The article describes a scenario with hub-spoke vnets in peering. The hub vnets 
    - in spoke4, vnet peering property is set to **"Use the remote virtual network's gateway"** 
    - in hub2 vnet peering is set to **"Use this virtual network's gateway"**
 - A single Azure Bastion is used to manage all the VMs.  Azure Bastion can reach out the remote spoke3 and spoke4 across the site-to-site VPN between VPN gtw1 and VPN Gtw2. The Azure Bastion has to be deployed with **Standard** SKU.
-- all the VMs, in spokes and in the hubs, can communicate (there is no need of ip forwarder)
-- the configuration does not use UDRs
-
-Below the property of the vnet peering in hub2 and spoke3 vnets:
+- The configuration does not use UDRs
+- There is no communications between spoke vnets connected to the same hub, for the property of not transitive routing in vnet peering.
+- Communication between spoke vnets connected to different hubs happens through the site-to-site VPN
 
 [![2]][2]
 
-<br>
+Below the property of the vnet peering in hub2 and spoke3 vnets:
 
 [![3]][3]
 
-Option in Azure Bastion to connect to the vmspoke3 via IP:
+<br>
 
 [![4]][4]
+
+Option in Azure Bastion to connect to the vmspoke3 via IP:
+
+[![5]][5]
 
 <br>
 
 Site-to-site VPN between the two Azure VPN Gateways:
 
-[![5]][5]
+[![6]][6]
 
 ## <a name="list of files"></a>2. Files
 
@@ -100,10 +103,11 @@ The meaning of input variables in **init.json** are shown below:
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
-[2]: ./media/vnet-peering1.png "vnet peering properties in hub2"
-[3]: ./media/vnet-peering2.png "vnet peering properties in spoke3"
-[4]: ./media/bastion.png "from Bastion connect to the VM via IP"
-[5]: ./media/s2s-vpn.png "site-to-site VPN"
+[2]: ./media/data-paths.png "data paths between vnets"
+[3]: ./media/vnet-peering1.png "vnet peering properties in hub2"
+[4]: ./media/vnet-peering2.png "vnet peering properties in spoke3"
+[5]: ./media/bastion.png "from Bastion connect to the VM via IP"
+[6]: ./media/s2s-vpn.png "site-to-site VPN"
 
 <!--Link References-->
 
