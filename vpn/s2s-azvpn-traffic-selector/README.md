@@ -65,7 +65,6 @@ Before running the deployment modify the input variables in the file **init.json
 For a successful deployment, respect the sequence.
 
 
-
 ## <a name="S2S tunnels established"></a>2. S2S connections established
 After deployment of **01-vpn.json**, **02-vpn-connections.json**, the network configuration is shown below:
 
@@ -237,7 +236,7 @@ In the ARM template **06-udr.json** to get the private IP of the Azure firewall:
 "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
 ```
 
-`Tags: S2S VPN, site-to-site VPN, Azure VPN, traffic selector` <br>
+`Tags: S2S VPN, site-to-site VPN, Azure VPN Gateway, traffic selector` <br>
 `date: 08-07-23`
 
 <!--Image References-->
