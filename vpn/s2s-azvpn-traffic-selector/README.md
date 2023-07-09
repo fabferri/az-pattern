@@ -224,7 +224,12 @@ The presence of Azure firewall does not influence the communications, because th
 
 [![11]][11]
 
-## <a name="Annex"></a>7. Annex: Reference an existing IP in ARM template
+## <a name="create and apply UDRs"></a>7. create and apply UDRs
+The ARM template **06-udr.json** creates UDRs and apply them to GatewaySubnet in vnet1, spoke2subnet1 and spoke3subnet1.
+
+[![12]][12]
+
+## <a name="Annex"></a>8. Annex: Reference an existing IP in ARM template
 The **02-vpn-connections.json** reference the existing public IPs of VPN gateways. As reported in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
 
 In the AM template **02-vpn-connections.json** to get the existing public IP of the VPN Gateway: 
@@ -252,6 +257,7 @@ In the ARM template **06-udr.json** to get the private IP of the Azure firewall:
 [9]: ./media/update-connections-towards-vnet2.png "update the Connections towards vpnGtw2"
 [10]: ./media/update-connections-towards-vnet3.png "update the Connections towards vpnGtw3"
 [11]: ./media/az-firewall.png "azure firewall security policy"
+[12]: ./media/udr.png "UDRs in GatewaySubnet, in spoke2 and spoke3"
 
 <!--Link References-->
 
