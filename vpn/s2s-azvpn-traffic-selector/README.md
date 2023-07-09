@@ -225,7 +225,7 @@ The presence of Azure firewall does not influence the communications, because th
 
 [![11]][11]
 
-## <a name="Annex"></a>4. Annex: Reference an existing IP in ARM template
+## <a name="Annex"></a>7. Annex: Reference an existing IP in ARM template
 The **02-vpn-connections.json** reference the existing public IPs of VPN gateways. As reported in the official Microsoft documentation, **reference an existing resource (or one not defined in the same template), a full resourceId must be supplied to the reference() function**
 
 In the AM template **02-vpn-connections.json** to get the existing public IP of the VPN Gateway: 
@@ -237,9 +237,8 @@ In the ARM template **06-udr.json** to get the private IP of the Azure firewall:
 "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
 ```
 
-
-
-
+`Tags: S2S VPN, site-to-site VPN, Azure VPN, traffic selector` <br>
+`date: 08-07-23`
 
 <!--Image References-->
 
