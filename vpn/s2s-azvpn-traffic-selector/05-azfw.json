@@ -1,0 +1,371 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location3": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "vnet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet2Name": {
+      "type": "string",
+      "defaultValue": "vnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet3Name": {
+      "type": "string",
+      "defaultValue": "vnet3",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "spoke2Name": {
+      "type": "string",
+      "defaultValue": "spoke2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "spoke3Name": {
+      "type": "string",
+      "defaultValue": "spoke3",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "numberOfFirewallPublicIPAddresses": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 100,
+      "metadata": {
+        "description": "Number of public IP addresses for the Azure Firewall"
+      }
+    },
+    "firewallAvailabilityZones": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Zone numbers e.g. 1,2,3."
+      }
+    }
+  },
+  "variables": {
+    "vnet1": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('vnet1Name')]",
+      "addressPrefix": "10.0.0.0/23",
+      "subnet1Name": "subnet11",
+      "subnet1Prefix": "10.0.1.0/27",
+      "azfirewallName": "AzureFirewallSubnet",
+      "azfirewallPrefix": "10.0.1.128/26",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.1.224/27"
+    },
+    "vnet2": {
+      "location": "[parameters('location2')]",
+      "name": "[parameters('vnet2Name')]",
+      "addressPrefix": "10.0.2.0/24",
+      "subnet1Name": "subnet21",
+      "subnet1Prefix": "10.0.2.0/27",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.2.224/27"
+    },
+    "vnet3": {
+      "location": "[parameters('location3')]",
+      "name": "[parameters('vnet3Name')]",
+      "addressPrefix": "10.0.3.0/24",
+      "subnet1Name": "subnet31",
+      "subnet1Prefix": "10.0.3.0/27",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.3.224/27"
+    },
+    "spoke2": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('spoke2Name')]",
+      "addressPrefix": "10.2.0.0/24",
+      "subnet1Name": "spoke2subnet1",
+      "subnet1Prefix": "10.2.1.0/27"
+    },
+    "spoke3": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('spoke3Name')]",
+      "addressPrefix": "10.3.0.0/24",
+      "subnet1Name": "spoke3subnet1",
+      "subnet1Prefix": "10.3.1.0/27"
+    },
+    "firewallName": "azfw",
+    "azfw1PubIPNamePrefix": "[concat(variables('firewallNAme'),'-pubIP')]",
+    "azfw1SubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnet1').name, 'AzureFirewallSubnet')]",
+    "azfw1SubnetJSON": "[json(format('{{\"id\": \"{0}\"}}', variables('azfw1SubnetId')))]",
+    "firewallPolicy1Name": "azfwpolicy1",
+    "copy": [
+      {
+        "name": "azfw1IpConfigurations",
+        "count": "[parameters('numberOfFirewallPublicIPAddresses')]",
+        "input": {
+          "name": "[concat('IpConf', copyIndex('azfw1IpConfigurations'))]",
+          "properties": {
+            "subnet": "[if(equals(copyIndex('azfw1IpConfigurations'), 0), variables('azfw1SubnetJSON'), json('null'))]",
+            "publicIPAddress": {
+              "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('azfw1PubIPNamePrefix'), add(copyIndex('azfw1IpConfigurations'), 1)))]"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "resources": [
+    {
+      "comments": "Azure Firewall Public IP Addresses",
+      "name": "[concat(variables('azfw1PubIPNamePrefix'), add(copyIndex(), 1))]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [],
+      "sku": {
+        "name": "Standard"
+      },
+      "copy": {
+        "name": "azfwpublicIpCopy",
+        "count": "[parameters('numberOfFirewallPublicIPAddresses')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "comments": "Azure Firewall Policy",
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/firewallPolicies",
+      "name": "[variables('firewallPolicy1Name')]",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [],
+      "properties": {
+        "threatIntelMode": "Alert"
+      }
+    },
+    {
+      "comments": "azure firewall in vnet1",
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/azureFirewalls",
+      "name": "[variables('firewallName')]",
+      "location": "[variables('vnet1').location]",
+      "zones": "[if(equals(length(parameters('firewallAvailabilityZones')), 0), json('null'), parameters('firewallAvailabilityZones'))]",
+      "dependsOn": [
+        //     "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]",
+        "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]",
+        "azfwpublicIpCopy"
+      ],
+      "properties": {
+        "ipConfigurations": "[variables('azfw1IpConfigurations')]",
+        "firewallPolicy": {
+          "id": "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]"
+        }
+      }
+    },
+    {
+      "comments": "Azure Firewall Policy Network Rule Collection",
+      "apiVersion": "2022-05-01",
+      "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+      "name": "[format('{0}/{1}', variables('firewallPolicy1Name'), 'fwNetwRCGroup1')]",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [
+        //     "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]",
+        "[resourceId('Microsoft.Network/firewallPolicies',variables('firewallPolicy1Name'))]",
+        "[resourceId('Microsoft.Network/azureFirewalls',variables('firewallName'))]"
+      ],
+      "properties": {
+        "priority": 100,
+        "ruleCollections": [
+          {
+            "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+            "name": "from-to-vnet2",
+            "action": {
+              "type": "Allow"
+            },
+            "priority": 100,
+            "rules": [
+              {
+                "ruleType": "NetworkRule",
+                "name": "vnet2-spoke2",
+                "ipProtocols": [
+                  "Any"
+                ],
+                "destinationPorts": [
+                  "*"
+                ],
+                "sourceAddresses": [
+                  "[variables('vnet2').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('vnet2').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "vnet1-vnet2",
+                "ipProtocols": [
+                  "Any"
+                ],
+                "destinationPorts": [
+                  "*"
+                ],
+                "sourceAddresses": [
+                  "[variables('vnet1').addressPrefix]",
+                  "[variables('vnet2').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('vnet1').addressPrefix]",
+                  "[variables('vnet2').addressPrefix]"
+
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+      "name": "[format('{0}/{1}', variables('firewallPolicy1Name'), 'fwNetwRCGroup2')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]",
+        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups',variables('firewallPolicy1Name'),'fwNetwRCGroup1')]"
+      ],
+      "properties": {
+        "priority": 110,
+        "ruleCollections": [
+          {
+            "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+            "name": "vnet3-spoke3",
+            "action": {
+              "type": "Allow"
+            },
+            "priority": 100,
+            "rules": [
+              {
+                "ruleType": "NetworkRule",
+                "name": "vnet3-spoke3",
+                "ipProtocols": [
+                  "Any"
+                ],
+                "destinationPorts": [
+                  "*"
+                ],
+                "sourceAddresses": [
+                  "[variables('vnet3').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('vnet3').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
+                "name": "vnet1-vnet3",
+                "ipProtocols": [
+                  "Any"
+                ],
+                "destinationPorts": [
+                  "*"
+                ],
+                "sourceAddresses": [
+                  "[variables('vnet1').addressPrefix]",
+                  "[variables('vnet3').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                  "[variables('vnet1').addressPrefix]",
+                  "[variables('vnet3').addressPrefix]"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+      "name": "[format('{0}/{1}', variables('firewallPolicy1Name'), 'fwNetwRCGroup3')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicy1Name'))]",
+        "[resourceId('Microsoft.Network/firewallPolicies/ruleCollectionGroups',variables('firewallPolicy1Name'),'fwNetwRCGroup2')]"
+      ],
+      "properties": {
+        "priority": 120,
+        "ruleCollections": [
+          {
+            "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
+            "name": "allow-ICMP-echo-all",
+            "action": {
+              "type": "Allow"
+            },
+            "priority": 100,
+            "rules": [
+              {
+                "ruleType": "NetworkRule",
+                "name": "ICMP-rule",
+                "ipProtocols": [
+                  "ICMP"
+                ],
+                "sourceAddresses": [
+                  "[variables('vnet1').addressPrefix]",
+                  "[variables('vnet2').addressPrefix]",
+                  "[variables('vnet3').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]"
+                ],
+                "sourceIpGroups": [],
+                "destinationAddresses": [
+                  "[variables('vnet1').addressPrefix]",
+                  "[variables('vnet2').addressPrefix]",
+                  "[variables('vnet3').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]",
+                  "[variables('spoke3').addressPrefix]"
+                ],
+                "destinationIpGroups": [],
+                "destinationFqdns": [],
+                "destinationPorts": [
+                  "*"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location3": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "vnet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet2Name": {
+      "type": "string",
+      "defaultValue": "vnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet3Name": {
+      "type": "string",
+      "defaultValue": "vnet3",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "spoke2Name": {
+      "type": "string",
+      "defaultValue": "spoke2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "spoke3Name": {
+      "type": "string",
+      "defaultValue": "spoke3",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    }
+  },
+  "variables": {
+    "location1": "[parameters('location1')]",
+    "location2": "[parameters('location2')]",
+    "location3": "[parameters('location3')]",
+
+    "vnet1": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('vnet1Name')]",
+      "addressPrefix": "10.0.0.0/23",
+      "subnet1Name": "subnet11",
+      "subnet1Prefix": "10.0.1.0/27",
+      "azfirewallName": "AzureFirewallSubnet",
+      "azfirewallPrefix": "10.0.1.128/26",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.1.224/27"
+    },
+    "vnet2": {
+      "location": "[parameters('location2')]",
+      "name": "[parameters('vnet2Name')]",
+      "addressPrefix": "10.0.2.0/24",
+      "subnet1Name": "subnet21",
+      "subnet1Prefix": "10.0.2.0/27",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.2.224/27"
+    },
+    "vnet3": {
+      "location": "[parameters('location3')]",
+      "name": "[parameters('vnet3Name')]",
+      "addressPrefix": "10.0.3.0/24",
+      "subnet1Name": "subnet31",
+      "subnet1Prefix": "10.0.3.0/27",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.3.224/27"
+    },
+    "spoke2": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('spoke2Name')]",
+      "addressPrefix": "10.2.0.0/24",
+      "subnet1Name": "spoke2subnet1",
+      "subnet1Prefix": "10.2.0.0/27"
+    },
+    "spoke3": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('spoke3Name')]",
+      "addressPrefix": "10.3.0.0/24",
+      "subnet1Name": "spoke3subnet1",
+      "subnet1Prefix": "10.3.0.0/27"
+    },
+    "firewallName": "azfw",
+    "RT-spoke2": "RT-spoke2",
+    "RT-spoke3": "RT-spoke3",
+    "RT-GatewaySubnetvnet1": "RT-GTWvnet1"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-GatewaySubnetvnet1')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('vnet1').location]",
+      "comments": "Routing Table applied to subnet in GatewaySubnet of the vnet1",
+      "dependsOn": [],
+      "properties": {
+        "disableBgpRoutePropagation": true,
+        "routes": [
+          {
+            "name": "to-spoke2",
+            "properties": {
+              "addressPrefix": "[variables('spoke2').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+            }
+          },
+          {
+            "name": "to-spoke3",
+            "properties": {
+              "addressPrefix": "[variables('spoke3').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-spoke2')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('spoke2').location]",
+      "comments": "Routing Table applied to subnet in spoke2",
+      "dependsOn": [],
+      "properties": {
+        "disableBgpRoutePropagation": true,
+        "routes": [
+          {
+            "name": "to-vnet2",
+            "properties": {
+              "addressPrefix": "[variables('vnet2').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('RT-spoke3')]",
+      "apiVersion": "2022-05-01",
+      "location": "[variables('spoke3').location]",
+      "comments": "Routing Table applied to subnet in spoke3",
+      "dependsOn": [],
+      "properties": {
+        "disableBgpRoutePropagation": true,
+        "routes": [
+          {
+            "name": "to-vnet3",
+            "properties": {
+              "addressPrefix": "[variables('vnet3').addressPrefix]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[reference(resourceId(resourceGroup().name, 'Microsoft.Network/azureFirewalls', variables('firewallName')), '2022-05-01').ipConfigurations[0].properties.privateIPAddress]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "applyUDRs",
+      "resourceGroup": "[resourceGroup().name]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke2'))]",
+        "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke3'))]",
+        "[resourceId('Microsoft.Network/routeTables',variables('RT-GatewaySubnetvnet1'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "name": "[variables('vnet1').name]",
+              "apiVersion": "2022-05-01",
+              "location": "[variables('vnet1').location]",
+              "dependsOn": [],
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('vnet1').addressPrefix]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('vnet1').subnet1Name]",
+                    "properties": {
+                      "addressPrefix": "[variables('vnet1').subnet1Prefix]"
+                    }
+                  },
+                  {
+                    "name": "AzureFirewallSubnet",
+                    "properties": {
+                      "addressPrefix": "[variables('vnet1').azfirewallPrefix]"
+                    }
+                  },
+                  {
+                    "name": "GatewaySubnet",
+                    "properties": {
+                      "addressPrefix": "[variables('vnet1').gatewaySubnetPrefix]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-GatewaySubnetvnet1'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "name": "[variables('spoke2').name]",
+              "apiVersion": "2022-05-01",
+              "location": "[variables('spoke2').location]",
+              "dependsOn": [],
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('spoke2').addressPrefix]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('spoke2').subnet1Name]",
+                    "properties": {
+                      "addressPrefix": "[variables('spoke2').subnet1Prefix]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke2'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "name": "[variables('spoke3').name]",
+              "apiVersion": "2022-05-01",
+              "location": "[variables('spoke3').location]",
+              "dependsOn": [],
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[variables('spoke3').addressPrefix]"
+                  ]
+                },
+                "subnets": [
+                  {
+                    "name": "[variables('spoke3').subnet1Name]",
+                    "properties": {
+                      "addressPrefix": "[variables('spoke3').subnet1Prefix]",
+                      "routeTable": {
+                        "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke3'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
