@@ -1,0 +1,13 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "transit-vpn-er",
+    "location1": "westus2",
+    "location2": "westus2",
+    "erSubscriptionId": "AZURE_SUBSCRIPTION_ID_ER_CIRCUIT",
+    "erResourceGroup": "SEA-Cust34",
+    "erCircuitName": "SEA-Cust34-ER",
+    "erAuthorizationKey": "AUTHORIZATION_KEY_ER_CIRCUIT",
+    "onPremisesAddressPrefix": "10.1.34.0/25"
+}

@@ -1,0 +1,288 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure regions with Availability Zone"
+            }
+        },
+        
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network 1"
+            }
+        },
+        "vnet1AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.100.0.0/23",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet 1"
+            }
+        },
+        "subnet11Name": {
+            "type": "string",
+            "defaultValue": "subnet11",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet1 in VNet1"
+            }
+        },
+        "subnet12Name": {
+            "type": "string",
+            "defaultValue": "subnet12",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet2 in VNet1"
+            }
+        },
+        "subnet11Prefix": {
+            "type": "string",
+            "defaultValue": "10.100.0.0/27",
+            "metadata": {
+                "description": "CIDR block for VNet1-subnet1. It is a subset of vnet1AddressPrefix address space"
+            }
+        },
+        "subnet12Prefix": {
+            "type": "string",
+            "defaultValue": "10.100.0.32/27",
+            "metadata": {
+                "description": "CIDR block for VNet1-subnet2. It is a subset of vnet1AddressPrefix address space"
+            }
+        },
+        "routeserver1subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.100.0.64/26",
+            "metadata": {
+                "description": "CIDR block for VNet1-RouteServerSubnet. It is a subset of vnet1AddressPrefix address space"
+            }
+        },
+        "gateway1subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.100.0.192/26",
+            "metadata": {
+                "description": "CIDR block for gateway subnet- it is a subset of vnet1AddressPrefix address space"
+            }
+        },
+        "erSubscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "ExpresssRoute subscription Id"
+            }
+        },
+        "erResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "resource group of the ER circuit"
+            }
+        },
+        "erCircuitName": {
+            "type": "string",
+            "metadata": {
+                "description": "ER circuit name"
+            }
+        },
+        "erAuthorizationKey": {
+            "type": "string",
+            "metadata": {
+                "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
+            }
+        },
+        "erGatewayName": {
+            "type": "string",
+            "defaultValue": "ergw",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "erConnectionName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('erGatewayName'),'-conn')]",
+            "metadata": {
+                "description": "name of Expressroute Connection between ER Gateway1 and ER circuit"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "vnet1Name": "[parameters('vnet1Name')]",
+        "subnet11Name": "[parameters('subnet11Name')]",
+        "subnet12Name": "[parameters('subnet12Name')]",
+        "vnet1AddressPrefix": "[parameters('vnet1AddressPrefix')]",
+        "subnet11Prefix": "[parameters('subnet11Prefix')]",
+        "subnet12Prefix": "[parameters('subnet12Prefix')]",
+        "routeserver1subnetPrefix": "[parameters('routeserver1subnetPrefix')]",
+        "gateway1SubnetPrefix": "[parameters('gateway1SubnetPrefix')]",
+        "erGatewayName": "[parameters('erGatewayName')]",
+        "erGatewayPublicIPName": "[concat(parameters('erGatewayName'),'-pubIP')]",
+        "erGatewaySku": "ErGw1Az",
+        "erCircuitId1" :  "[concat('/subscriptions/', parameters('erSubscriptionId'),'/resourceGroups/',parameters('erResourceGroup'),'/providers/Microsoft.Network/expressRouteCircuits/', parameters('erCircuitName'))]",
+        "rsName": "rs",
+        "rsPubIPName": "[concat(variables('rsName'),'-pubIP')]",
+        "vHubIPconfigName": "[concat(variables('rsName'),'-ipcfg1')]"
+        
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet1Name')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "comments": "Virtual Network1",
+            "dependsOn": [
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet1AddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet11Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet11Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet12Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet12Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "RouteServerSubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('routeserver1subnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('gateway1subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('rsName')]",
+            "location": "[variables('location1')]",
+            "comments": "create a virtual hub object",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnet1Name') )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rsPubIPName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vnet1Name'),'RouteServerSubnet' )]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+                }
+            }
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('erGatewayPublicIPName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('erGatewayName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "comments": "This is the ExpressRoute Gateway for the vNet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('erGatewayPublicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1Name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1Name'), 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('erGatewayPublicIPName'))]"
+                            }
+                        },
+                        "name": "gwipcfg"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[variables('erGatewaySku')]",
+                    "tier": "[variables('erGatewaySku')]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "condition": "[and( not(empty(parameters('erResourceGroup'))), not(empty(parameters('erCircuitName'))) )]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('erConnectionName')]",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('erGatewayName') )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('erGatewayName') )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[if(empty(parameters('erAuthorizationKey')), json('null'), parameters('erAuthorizationKey'))]",
+                "peer": {
+                    "id": "[variables('erCircuitId1')]"
+                }
+            }
+        },
+    ]
+}
