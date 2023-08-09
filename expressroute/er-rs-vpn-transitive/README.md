@@ -30,7 +30,7 @@ To allow the advertisement of remote network (in our case vnet2 but it can be a 
 - the Azure Route Server in **vnet1** establishes automatically iBGP sessions with Azure VPN Gateway and ExpressRoute Gateway. The Route Server works as reflector: 
    - the Azure Route Server advertises the networks learnt from the ExpressRoute Gateway to the VPN Gateway
    - the Azure Route Server advertises the networks learnt from the VPN Gateway to the ExpressRoute Gateway
-- 
+
 
 <br> 
 
