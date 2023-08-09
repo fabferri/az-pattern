@@ -26,7 +26,7 @@ To allow the advertisement of remote network (in our case vnet2 but it can be a 
 - An ExpressRoute Gateway and Azure VPN Gateway coexist in the GatewaySubnet of the **vnet1**. 
 - The on-premises network 10.1.34.0/25 is advertised from the customer's edge routers to the ExpressRoute circuit (MSEE routers). The MSEE routers advertise in BGP the on-premises network 10.1.34.0/25 to the ExpressRoute Gateway.
 - Two site-to-site VPN tunnels connect the **vnet1** and the remote site (**vnet2**) through Azure VPN Gateways **vpngtw1**  and **vpngtw2**.
-- The Azure VPN Gateways **vpngtw1**  and **vpngtw2** are configured in active-active with static routing (without BGP). In Azure VPN Gateway BGP is not mandatory on site-to-site VPN, so if you choose not to enable its fine. The communication in BGP between Azure VPN Gateway and Azure Route server will still happen. 
+- The Azure VPN Gateways **vpngtw1**  and **vpngtw2** are configured in active-active with static routing (without BGP). In Azure VPN Gateway BGP is not mandatory on site-to-site VPN, so if you choose not to enable it's fine. The communication in BGP between Azure VPN Gateway and Azure Route server will still happen. 
 - the Azure Route Server in **vnet1** establishes automatically iBGP sessions with Azure VPN Gateway and ExpressRoute Gateway. The Route Server works as reflector: 
    - the Azure Route Server advertises the networks learnt from the ExpressRoute Gateway to the VPN Gateway
    - the Azure Route Server advertises the networks learnt from the VPN Gateway to the ExpressRoute Gateway
@@ -181,7 +181,8 @@ Network       NextHop       LocPrf Weight Path
 ```
 
 ## <a name="summary"></a>4. Conclusions
-The deployment proofs that's possible connect on-premises network and remote site through site-to-site VPN. The site-to-site VPN does not require activation of BGP in VPN Gateway to advertise the remote networks to the Azure Route Server. The BGP peering between Azure Route Server <--> ExpressRoute Gateway and Azure Route Server <--> VPN Gateway happens automatically and does not require a peering configuration.<br>
+The deployment proofs that's possible connect on-premises network and remote site through site-to-site VPN. The site-to-site VPN does not require activation of BGP in VPN Gateway to advertise the remote networks to the Azure Route Server.<br>
+The BGP peering between Azure Route Server <--> ExpressRoute Gateway and Azure Route Server <--> VPN Gateway happens automatically and do not require a peering configuration.<br>
 
 
 ## <a name="Estimated deployment time"></a>5. Estimated deployment time
