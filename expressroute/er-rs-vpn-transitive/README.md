@@ -23,14 +23,14 @@ To allow the advertisement of remote network (in our case vnet2 but it can be a 
 
 [![2]][2]
 
-- An ExpressRoute Gateway and an Azure VPN Gateway coexist in the GatewaySubnet of the **vnet1**. 
-- The on-premises network 10.1.34.0/25 is advertised from the customer's edge routers to the ExpressRoute circuit (MSEE routers). The MSEE routers advertise in BGP the on-premises network 10.1.34.0/25to the ExpressRoute Gateway.
-and the VPN Gateway connect the VNet01 to the remote site (VNet02).
-- The **vnet2** is connected to the VNet01 through site-to-site VPN, in configuration active-active with static routing. Two IPsec tunnels are established between the two VPN Gateways.
+- An ExpressRoute Gateway and Azure VPN Gateway coexist in the GatewaySubnet of the **vnet1**. 
+- The on-premises network 10.1.34.0/25 is advertised from the customer's edge routers to the ExpressRoute circuit (MSEE routers). The MSEE routers advertise in BGP the on-premises network 10.1.34.0/25 to the ExpressRoute Gateway.
+- Two site-to-site VPN tunnels connect the **vnet1** and the remote site (**vnet2**) through Azure VPN Gateways **vpngtw1**  and **vpngtw2**.
+- The Azure VPN Gateways **vpngtw1**  and **vpngtw2** are configured in active-active with static routing (without BGP). In Azure VPN Gateway BGP is not mandatory on site-to-site VPN, so if you choose not to enable its fine. The communication in BGP between Azure VPN Gateway and Azure Route server will still happen. 
 - the Azure Route Server in **vnet1** establishes automatically iBGP sessions with Azure VPN Gateway and ExpressRoute Gateway. The Route Server works as reflector: 
    - the Azure Route Server advertises the networks learnt from the ExpressRoute Gateway to the VPN Gateway
    - the Azure Route Server advertises the networks learnt from the VPN Gateway to the ExpressRoute Gateway
-- The site-to-site VPN in Azure VPN Gateway is configured in **active-active** <ins>without BGP</ins>. In Azure VPN Gateway BGP is not mandatory on Site-2-Site VPN, so if you choose not to enable its fine. The communication in BGP between Azure VPN Gateway and Azure Route server will still happen. 
+- 
 
 <br> 
 
@@ -70,7 +70,7 @@ The meaning of input variables specified in the **init.json** are described here
 
 ## <a name="VPN Gateway"></a>2. VPN Gateways
 The VPN Gateways in vnet1 and vnet2 are configured in **active-active** with static routing. 
-The Local Network Gateways in VPM Gateway define the remote networks; the local network for **vpngw2** are: 
+The **Local Network Gateways** in VPN Gateway define the remote networks; the Local Network Gateways associated with  **vpngw2** are: 
 
 ```json
 {
