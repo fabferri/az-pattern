@@ -203,8 +203,8 @@ The connections in **hub1** are in total 4:
 - connection with vnet2
 - connection with branch1
 - connection with ExpressRoute circuit
-When the routing intent is configured, the propagation of all connection is created automatically in **None** routing table.
 
+When the routing intent is configured, the propagation of all connection is created automatically in **None** routing table.
 
 The Route tables in **hub2** 
 | Name              | Labels  | Associated connections | Propagating connections |
