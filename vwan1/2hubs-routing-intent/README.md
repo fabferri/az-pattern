@@ -90,8 +90,7 @@ Networks in IP Groups:
 
 <br>
 
-Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values:
-The structure of **init.json** file is shown below:
+Before spinning up the powershell scripts, you should edit the file **init.json** and customize the values. The structure of **init.json** file is shown below:
 ```json
 {
     "adminUsername": "ADMINISTRATOR_USERNAME",
