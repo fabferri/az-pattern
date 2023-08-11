@@ -336,10 +336,11 @@ Routing table in ExpressRoute circuit - private peering:
 ## <a name="how to run the deployment"></a>4. How to run the deployment and runtime
 Deployment needs to be carried out in sequence:
 - _1st step_: customize the values in **init.json**
-- _2nd step_: run the script **01-vwan.ps1**. The runtime is 1 hour and 5 minutes (_estimated time_).
-- _3rd step_: run the script **02-vpn.ps1**. The runtime is 20 minutes (_estimated time_).
-- _4rd step_: run the script **03-vwan-site.ps1**. the runtime is 5 minutes (_estimated time_).
-- _5th step_: run the script **04-er.json**. The runtime is 30 minutes (_estimated time_).
+- _2nd step_: run the script **01-vwan.ps1**
+- _3rd step_: run the script **02-vpn.json**
+- _4th step_: run the script **04-routing-intent-hub1.ps1** and **04-routing-intent-hub2.ps1**
+- _5th step_: run the script **05-azfw-logs.jps1**
+- _6th step_: run the script **04-er.json**
 
 Estimation time to deploy ARM templates:
 
