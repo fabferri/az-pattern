@@ -113,9 +113,8 @@ The file **init.json** guarantees a consistency of input parameters across all t
 
 <br>
 
-**NOTE**
-The ARM template **06-er.json** requires access to an existing ExpressRoute circuit through the ExpressRoute circuit ID and the authorization key. <br>
-The variable **ercircuitId** in **init.json** file has the following format:
+**NOTE** <br>
+The ARM template **06-er.json** requires access to an existing ExpressRoute circuit through the ExpressRoute circuit ID and the authorization key. The variable **ercircuitId** in **init.json** file has the following format:
 ```console
 /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP_NAME>/providers/Microsoft.Network/expressRouteCircuits/<EXPRESSROUTE_CIRCUIT_NAME>
 ```
