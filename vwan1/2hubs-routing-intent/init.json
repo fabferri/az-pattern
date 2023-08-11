@@ -1,0 +1,15 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "vwan2",
+    "hub1location": "uksouth",
+    "hub2location": "uksouth",
+    "branch1location": "uksouth",
+    "branch2location": "uksouth",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "ercircuitId": "/subscriptions/<SUBSCRIPTION_ID>/resourceGroups/SEA-Cust34/providers/Microsoft.Network/expressRouteCircuits/SEA-Cust34-ER",
+    "authorizationKey": "EXPRESSROUTE_AUTHORIZATION_CODE",
+    "er1AddressPrefix": "10.1.34.0/25"
+}

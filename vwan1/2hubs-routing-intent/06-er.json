@@ -1,0 +1,108 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hub1location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location where all resources will be created."
+            }
+        },
+        "hub1Name": {
+            "type": "string",
+            "defaultValue": "hub1",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "hub2Name": {
+            "type": "string",
+            "defaultValue": "hub2",
+            "metadata": {
+                "description": "Name of the Virtual Hub. A virtual hub is created inside a virtual wan."
+            }
+        },
+        "hub1_ExpressRouteGatewayScaleUnit": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Scale Units for Express Route Gateway in the first Hub"
+            }
+        },
+        "ercircuitId": {
+            "type": "string",
+            "metadata": {
+                "description": "ExpressRoute circuit ID: /subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Network/expressRouteCircuits/NAME_EXPRESSROUTE_CIRCUIT"
+            }
+        },
+        "authorizationKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Authorization key associated with the ExpressRoute circuit"
+            }
+        }
+    },
+    "variables": {
+        "hub1Name": "[parameters('hub1Name')]",
+        "hub2Name": "[parameters('hub2Name')]",
+        "hub1location": "[parameters('hub1location')]",
+        "ercircuitId": "[parameters('ercircuitId')]",
+        "authorizationKey": "[parameters('authorizationKey')]",
+        "expressrouteGatewayName": "[format('{0}_ERGW', variables('hub1Name'))]",
+        "expressrouteConnectionName": "[concat(variables('expressrouteGatewayName'),'/', 'er-conn1')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/expressRouteGateways",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('expressrouteGatewayName')]",
+            "location": "[variables('hub1location')]",
+            "dependsOn": [],
+            "properties": {
+                "virtualHub": {
+                    "id": "[resourceId('Microsoft.Network/virtualHubs', variables('hub1Name'))]"
+                },
+                "autoScaleConfiguration": {
+                    "bounds": {
+                        "min": "[parameters('hub1_ExpressRouteGatewayScaleUnit')]",
+                        "max": "[parameters('hub1_ExpressRouteGatewayScaleUnit')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/expressRouteGateways/expressRouteConnections",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('expressrouteConnectionName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/expressRouteGateways', variables('expressrouteGatewayName'))]"
+            ],
+            "properties": {
+                "enableInternetSecurity": true,
+            //    "routingConfiguration": {
+            //        "associatedRouteTable": {
+            //            "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+            //        },
+            //        "propagatedRouteTables": {
+            //            "ids": [
+            //                {
+            //                    "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('hub1Name'), 'defaultRouteTable')]"
+            //                }
+            //            ],
+            //            "labels": []
+            //        },
+            //        "vnetRoutes": {
+            //            "staticRoutes": []
+            //        }
+            //    },
+                "expressRouteCircuitPeering": {
+                    "id": "[concat(variables('ercircuitId'), '/peerings/AzurePrivatePeering')]"
+
+                },
+                "routingWeight": 0,
+                "authorizationKey": "[variables('authorizationKey')]"
+            }
+        }
+    ]
+}
