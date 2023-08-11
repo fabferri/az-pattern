@@ -64,9 +64,10 @@ For this reason, the network rules rule in security policy allows transit throug
 | ------------------------------------------------- | -------------------------------------------------- | ----------- | ---- |
 |AddrList_branches, AddrList_onprem, AddrList_vnets | AddrList_branches, AddrList_onprem, AddrList_vnets | TCP, ICMP   | *    |
 
-AddrList_branches: 192.168.1.0/24,192.168.w.0/24 
-AddrList_onprem: 10.1.34.0/25
-AddrList_vnets: 10.0.1.0/24, 10.0.2.0/24, 10.0.3.0/24, 10.0.4.0/24
+Networks in IP Groups:
+- AddrList_branches: 192.168.1.0/24,192.168.w.0/24 
+- AddrList_onprem: 10.1.34.0/25
+- AddrList_vnets: 10.0.1.0/24, 10.0.2.0/24, 10.0.3.0/24, 10.0.4.0/24
 
 ## <a name="List of files"></a>1. List of ARM templates and scripts
 
