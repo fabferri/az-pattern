@@ -92,6 +92,8 @@ $WebConfig ='<?xml version="1.0" encoding="utf-8"?>
 $MainPage | Out-File -FilePath "C:\inetpub\wwwroot\Home.aspx" -Encoding ascii
 $WebConfig | Out-File -FilePath "C:\inetpub\wwwroot\Web.config" -Encoding ascii
 
+Start-Sleep -Seconds 10
+
 # Make sure the IIS settings take
 Write-Host "Restarting the W3SVC" -ForegroundColor Cyan
 Restart-Service -Name W3SVC

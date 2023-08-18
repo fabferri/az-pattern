@@ -166,6 +166,8 @@ Write-Host "Updaing IIS Settings" -ForegroundColor Cyan
 c:\windows\system32\inetsrv\appcmd.exe set app "Default Web Site/" /applicationPool:".NET v4.5 Classic"
 c:\windows\system32\inetsrv\appcmd.exe set config "Default Web Site/" /section:system.webServer/security/authentication/anonymousAuthentication  /userName:$User1 /password:$Pass1 /commit:apphost
 
+Start-Sleep -Seconds 10
+
 # Make sure the IIS settings take
 Write-Host "Restarting the W3SVC" -ForegroundColor Cyan
 Restart-Service -Name W3SVC
