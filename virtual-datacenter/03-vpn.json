@@ -4,35 +4,35 @@
     "parameters": {
         "locationonprem": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region for location on-prem"
             }
         },
         "locationhub": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region"
             }
         },
         "locationspoke1": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region spoke1"
             }
         },
         "locationspoke2": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region spoke2"
             }
         },
         "locationspoke3": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region spoke3"
             }
@@ -88,7 +88,7 @@
         },
         "gatewaySku": {
             "type": "string",
-            "defaultValue": "VpnGw2AZ",
+            "defaultValue": "VpnGw3AZ",
             "allowedValues": [
                 "VpnGw2",
                 "VpnGw2AZ",
@@ -434,10 +434,10 @@
             }
         },
         {
+            "comments": "public IP of remote IPSec peer",
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName11')]",
             "apiVersion": "2022-05-01",
-            "comments": "public IP of remote IPSec peer",
             "location": "[variables('location1')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gateway1Name'))]"
@@ -452,10 +452,10 @@
             }
         },
         {
+            "comments": "public IP of remote IPSec peer",
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName12')]",
             "apiVersion": "2021-05-01",
-            "comments": "public IP of remote IPSec peer",
             "location": "[variables('location1')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gateway1Name'))]"
@@ -470,10 +470,10 @@
             }
         },
         {
+            "comments": "public IP of remote IPSec peer",
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName21')]",
             "apiVersion": "2022-05-01",
-            "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gateway2Name'))]"
@@ -488,10 +488,10 @@
             }
         },
         {
+            "comments": "public IP of remote IPSec peer",
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName22')]",
             "apiVersion": "2022-05-01",
-            "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gateway2Name'))]"

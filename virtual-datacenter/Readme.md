@@ -34,12 +34,12 @@ IP address assignment:
 
 [![2]][2]
 
-
+[![3]][3]
 
 ## <a name="File list with sequence of steps"></a>1. File list with sequence of steps
 The full deployment can be achieved running ARM templates in sequence. Here the diagram with the step sequence:
 
-[![3]][3]
+[![4]][4]
 
 The table below describes the purpose of each step, with short description actions and outcome produced in each step.
 
@@ -121,7 +121,7 @@ This is a preliminary step you can't skip. The value of variables in **init.json
 
 The step 1 establishes the pattern for all subsequent steps.
 
-[![4]][4]
+[![5]][5]
 
 **Validation** <br>
 - in the Azure Management Portal browse to the Azure Resource Group 
@@ -141,13 +141,14 @@ The step 1 establishes the pattern for all subsequent steps.
 - create the Azure Log Analytics workspace
 - define the Azure firewall logs to be sent to the load analytics workspace
 
-[![5]][5]
+[![6]][6]
 
 **Azure firewall- Network Rules**
 | Rule name               | Source                                                           | Port        | Protocol | Destination                                                      | Action |
 | ----------------------- | ---------------------------------------------------------------- | ----------- | -------- | ---------------------------------------------------------------- | ------ |
 | allow-web-hub-to-spoke  | 10.0.1.0/24                                                      | 80,443      | TCP      | 10.1.0.0/16, 10.2.0.0/16, 10.3.0.0/16, 10.10.0.0/16              | Allow  |
 | allow-SMB-spoke2        | 10.0.0.0/16, 10.1.0.0/16, 10.2.0.0/16, 10.3.0.0/16, 10.10.0.0/16 | 445,137,139 | Any      | 10.2.0.0/16                                                      | Allow  |
+| allow-web-spoke1-spoke2 | 10.1.0.0/16, 10.2.0.0/16                                         | 80,443      | TCP      | 10.1.0.0/16, 10.2.0.0/16                                         | Allow  |
 | allow-web-spoke1-spoke3 | 10.1.0.0/16, 10.3.0.0/16                                         | 80,443      | TCP      | 10.1.0.0/16, 10.3.0.0/16                                         | Allow  |
 | allow-RDP-spoke2-spoke3 | 10.2.0.0/16, 10.3.0.0/16                                         | 3389        | TCP      | 10.2.0.0/16, 10.3.0.0/16                                         | Allow  |
 | onprem-to-vnets         | 10.10.0.0/16                                                     | \*          | Any      | 10.0.0.0/16, 10.1.0.0/16, 10.2.0.0/16, 10.3.0.0/16               | Allow  |
@@ -155,15 +156,15 @@ The step 1 establishes the pattern for all subsequent steps.
 
 A network diagram with graphical representation of <ins>network security rules</ins> in Azure firewall is shown below:
 
-[![6]][6]
 [![7]][7]
+[![8]][8]
 
 ### <a name="step3"></a>1.4 <ins>step 3</ins>: site-to-site VPN between hub vnet and onprem vnet
 - create the VPN Gateway in hub vnet 
 - create the VPN Gateway in the onprem vnet
 - establish two site-to-site VPN tunnels between the VPN gateway in hub VNet and VPN gateway in onprem VNet
 
-[![8]][8]
+[![9]][9]
 
 At the end of deployment verifying the presence of two public IPs associated with VPN Gateway1 deployed in hub vnet, two public IPs associated with VPN Gateway2 deployment in on-prem vnet. There are in total 4 Connection objects.
 
@@ -173,18 +174,18 @@ At the end of deployment verifying the presence of two public IPs associated wit
 - by custom script extension install IIS and shared folder in the Windows VMs in spoke2
 
 
-[![9]][9]
+[![10]][10]
 
 ### <a name="step5"></a>1.6 <ins>step 5</ins>: static web in storage account connected to the spoke2 vnet through private endpoint
 - create a storage account in the same region of spoke2 vnet
-- create a "User Assigned Identity" to access to the storage account in spoke2
+- create a <ins>"User Assigned Identity"</ins> to access to the storage account in spoke2
 - assign **"Storage Account Contributor"** role (17d1049b-9a84-46fb-8f53-869881c3d3ab) to the user assigned identity
 - create a static web site in the storage account 
 - create a private endpoint to access to the static web site
 - create a private DNS zone for the web site
 - link the private DNS zone to the spoke2 vnet
 
-[![10]][10]
+[![11]][11]
 
 ### <a name="step 6"></a>1.7 <ins>step 6</ins>: spoke1 vnet
 - create the application gateway in spoke1 
@@ -193,7 +194,7 @@ At the end of deployment verifying the presence of two public IPs associated wit
 - the IIS web page contains a link to the private endpoint for static web page running in Azure storage account
 
 
-[![11]][11]
+[![12]][12]
 
 ### <a name="step 7"></a>1.8 <ins>step 7</ins>: spoke3 vnet
 - create an Azure load balancer in spoke3 vnet
@@ -201,7 +202,7 @@ At the end of deployment verifying the presence of two public IPs associated wit
 - by custom script extension, install IIS in the Windows VMs in spoke3
 
 
-[![12]][12]
+[![13]][13]
 
 ### <a name="step 8"></a>1.9 <ins>step 8</ins>: static web in storage account nd private endpoint for the connection with spoke3 
 - create a storage account in the same region of spoke3 vnet
@@ -209,38 +210,38 @@ At the end of deployment verifying the presence of two public IPs associated wit
 - create a private endpoint in spoke3 to access to the static web site
 - link the spoke3 vnet to the Azure private DNS zone
 
-[![13]][13]
+[![14]][14]
 
 ### <a name="step 9"></a>1.10 <ins>step 9</ins>: Azure Front door
 - create the Front Door with origin to the public IPs of the Application Gateways in spoke1 and spoke3. An endpoint domain names is automatically generated. The endpoint domain name has the following structure: myendpoint-mdjf2jfgjf82mnzx.z01.azurefd.net
 
 
-[![14]][14]
+[![15]][15]
 
 
 ## <a name="paths of data  traffic"></a>2. UDRs
 The ARM templates configure different UDRs applied to the subnets; the picture below reports a visual of the UDRs.
  
-[![15]][15]
+[![16]][16]
 
 ## <a name="paths of data  traffic"></a>3. Paths of data  traffic
 Transit of data is determinated by UDRs and Azure firewall security rules.
 Below few diagrams with data paths.
 
-[![16]][16]
+[![17]][17]
 
 The Azure hub-vm1 gets access to internet across the vnet NAT Gateway. There are in internet few web sites providing information about the public IP of HTTP/HTTPS request. Verification of transit through the vnet NAT Gateway can be done connecting through an internet through one of those web sites.
 
-[![17]][17]
-
 [![18]][18]
+
+[![19]][19]
 
 HTTP requests in Windows can be done through command line:
 ```powershell
 Invoke-WebRequest -Uri http://IP_ADDRESS
 ```
 
-Login in the onprem-vm1 VM and run the following command to check the HTTP connection to the web servers:
+Login in the **onprem-vm1** VM and run the following command to check the HTTP connection to the web servers:
 ```powershell
 Invoke-WebRequest -Uri http://10.1.1.4
 Invoke-WebRequest -Uri http://10.1.1.5
@@ -249,6 +250,50 @@ Invoke-WebRequest -Uri http://10.3.1.4
 Invoke-WebRequest -Uri http://10.3.1.5
 ```
 
+
+## <a name="effective routing tables"></a>4. Effective routing tables
+
+Effective routing table **hub-vm1-nic**:
+| Source                  | State   | Address Prefixes | Next Hop Type           | Next Hop IP Address | User Defined Route Name |
+| ----------------------- | ------- | ---------------- | ----------------------- | ------------------- | ----------------------- |
+| Default                 | Active  | 10.0.0.0/16      | Virtual network         | \-                  | \-                      |
+| Default                 | Invalid | 10.1.0.0/16      | VNet peering            | \-                  | \-                      |
+| Default                 | Invalid | 10.2.0.0/16      | VNet peering            | \-                  | \-                      |
+| Virtual network gateway | Invalid | 10.10.0.0/16     | Virtual network gateway | 10.0.4.4            | \-                      |
+| Virtual network gateway | Invalid | 10.10.0.0/16     | Virtual network gateway | 10.0.4.5            | \-                      |
+| Default                 | Active  | 0.0.0.0/0        | Internet                | \-                  | \-                      |
+| User                    | Active  | 10.1.0.0/16      | Virtual appliance       | 10.0.3.4            | to-spoke1               |
+| User                    | Active  | 10.2.0.0/16      | Virtual appliance       | 10.0.3.4            | to-spoke2               |
+| User                    | Active  | 10.3.0.0/16      | Virtual appliance       | 10.0.3.4            | to-spoke3               |
+| User                    | Active  | 10.10.0.0/16     | Virtual appliance       | 10.0.3.4            | to-onprem               |
+| Default                 | Invalid | 10.3.0.0/16      | VNetGlobalPeering       | \-                  | \-                      |
+| Default                 | Active  | 10.3.3.4/32      | InterfaceEndpoint       | \-                  | \-                      |
+| Default                 | Invalid | 10.2.3.4/32      | InterfaceEndpoint       | \-                  | \-                      |
+
+
+Effective routing table **spoke1-vm1-nic**:
+| Source  | State   | Address Prefixes | Next Hop Type           | Next Hop IP Address | User Defined Route Name |
+| ------- | ------- | ---------------- | ----------------------- | ------------------- | ----------------------- |
+| Default | Active  | 10.1.0.0/16      | Virtual network         | \-                  | \-                      |
+| Default | Active  | 10.0.0.0/16      | VNet peering            | \-                  | \-                      |
+| User    | Active  | 10.0.2.0/24      | Virtual network gateway | \-                  | to-AzureBastionSubnet   |
+| Default | Invalid | 0.0.0.0/0        | Internet                | \-                  | \-                      |
+| User    | Active  | 0.0.0.0/0        | Virtual appliance       | 10.0.3.4            | to-anynet-azfw          |
+
+
+
+
+
+Effective routing table **spoke3-vm1-nic**:
+| Source  | State   | Address Prefixes | Next Hop Type           | Next Hop IP Address | User Defined Route Name |
+| ------- | ------- | ---------------- | ----------------------- | ------------------- | ----------------------- |
+| Default | Active  | 10.3.0.0/16      | Virtual network         | \-                  | \-                      |
+| User    | Active  | 10.0.2.0/24      | Virtual network gateway | \-                  | to-AzureBastionSubnet   |
+| Default | Invalid | 0.0.0.0/0        | Internet                | \-                  | \-                      |
+| User    | Active  | 0.0.0.0/0        | Virtual appliance       | 10.0.3.4            | to-anynet-azfw          |
+| Default | Active  | 10.0.0.0/16      | VNetGlobalPeering       | \-                  | \-                      |
+| Default | Active  | 10.3.3.4/32      | InterfaceEndpoint       | \-                  | \-                      |
+
 `Tags: virtual datacenter, hub-spoke` <br>
 `date: 24-05-23`
 
@@ -256,22 +301,23 @@ Invoke-WebRequest -Uri http://10.3.1.5
 
 [1]: ./media/network-diagram.png "network diagram"
 [2]: ./media/ip-assigments.png "ip address assigments"
-[3]: ./media/step-sequence.png "sequence of steps to run the full deployment"
-[4]: ./media/step1.png "step1: create all the vnets and vnet peering, Route Server"
-[5]: ./media/step2.png "step2: create azure firewall in the hub vnet"
-[6]: ./media/security-policy1.png "Azure firewall network security rules"
-[7]: ./media/security-policy2.png "Azure firewall network security rules"
-[8]: ./media/step3.png "step3: create VPN Gateways and site-to-site VPN between hub vnet and onprem vnet"
-[9]: ./media/step4.png "step4: create spoke2 vnet"
-[10]: ./media/step5.png "step5: create static web in storage account and private endpoint in spoke2 vnet to connect to the web site"
-[11]: ./media/step6.png "step6: create spoke1 with application and windows VMs in the backend. A customs script extension deploys IIS in the VMs"
-[12]: ./media/step7.png "step7: create spok3 vnet with application gateway and windows VMs in the backend. A customs script extension deploys IIS in the VMs"
-[13]: ./media/step8.png "step8: create a static web site and private endpoint to connect the web site to the spoke3 vnet"
-[14]: ./media/step9.png "step9: create Azure front door. the front door origin reference the public IPs of the Application Gateways in spoke1 and spoke3"
-[15]: ./media/udr.png "UDR applied to the subnets"
-[16]: ./media/datapath1.png "access from internet to the web servers in spoke1 and spoke3"
-[17]: ./media/datapath2.png "access from internet to the web server in Tenant subnet of hub vnet through the Azure firewall"
-[18]: ./media/datapath3.png "access from on-premises to the web servers in hub and spoke vnets"
+[3]: ./media/ip-assigments2.png "ip address assigments"
+[4]: ./media/step-sequence.png "sequence of steps to run the full deployment"
+[5]: ./media/step1.png "step1: create all the vnets and vnet peering, Route Server"
+[6]: ./media/step2.png "step2: create azure firewall in the hub vnet"
+[7]: ./media/security-policy1.png "Azure firewall network security rules"
+[8]: ./media/security-policy2.png "Azure firewall network security rules"
+[9]: ./media/step3.png "step3: create VPN Gateways and site-to-site VPN between hub vnet and onprem vnet"
+[10]: ./media/step4.png "step4: create spoke2 vnet"
+[11]: ./media/step5.png "step5: create static web in storage account and private endpoint in spoke2 vnet to connect to the web site"
+[12]: ./media/step6.png "step6: create spoke1 with application and windows VMs in the backend. A customs script extension deploys IIS in the VMs"
+[13]: ./media/step7.png "step7: create spok3 vnet with application gateway and windows VMs in the backend. A customs script extension deploys IIS in the VMs"
+[14]: ./media/step8.png "step8: create a static web site and private endpoint to connect the web site to the spoke3 vnet"
+[15]: ./media/step9.png "step9: create Azure front door. the front door origin reference the public IPs of the Application Gateways in spoke1 and spoke3"
+[16]: ./media/udr.png "UDR applied to the subnets"
+[17]: ./media/datapath1.png "access from internet to the web servers in spoke1 and spoke3"
+[18]: ./media/datapath2.png "access from internet to the web server in Tenant subnet of hub vnet through the Azure firewall"
+[19]: ./media/datapath3.png "access from on-premises to the web servers in hub and spoke vnets"
 
 <!--Link References-->
 

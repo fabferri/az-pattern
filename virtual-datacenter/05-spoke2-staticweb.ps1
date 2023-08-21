@@ -77,9 +77,16 @@ if (!$user2Password) { Write-Host 'variable $user2Password is null' ; Exit }    
 
 
 $parameters = @{
-     "adminUsername" = $adminUsername;
-     "adminPassword" = $adminPassword;
-     "_artifactsLocation" = $artifactsLocation
+     "locationonprem"     = $locationonprem;
+     "locationhub"        = $locationhub;
+     "locationspoke1"     = $locationspoke1;
+     "locationspoke2"     = $locationspoke2;
+     "locationspoke3"     = $locationspoke3;
+     "vnetHubName"        = $vnetHubName;
+     "vnetOnprem"         = $vnetOnprem;
+     "vnetspoke1"         = $vnetspoke1;
+     "vnetspoke2"         = $vnetspoke2;
+     "vnetspoke3"         = $vnetspoke3
 }
 
 $subscr = Get-AzSubscription -SubscriptionName $subscriptionName
@@ -97,8 +104,8 @@ Catch {
 
 $StartTime = Get-Date
 Write-Host "$StartTime - ARM template:"$templateFile -ForegroundColor Yellow
-#New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose
-New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile  -Verbose
+New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose
+
 
 $EndTime = Get-Date
 $TimeDiff = New-TimeSpan $StartTime $EndTime

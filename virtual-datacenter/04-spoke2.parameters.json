@@ -1,0 +1,54 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationonprem": {
+            "value": "##locationonprem##"
+        },
+        "locationhub": {
+            "value": "##locationhub##"
+        },
+        "locationspoke1": {
+            "value": "##locationspoke1##"
+        },
+        "locationspoke2": {
+            "value": "##locationspoke2##"
+        },
+        "locationspoke3": {
+            "value": "##locationspoke3##"
+        },
+        "vnetHubName": {
+            "value": "##vnetHubName##"
+        },
+        "vnetOnprem": {
+            "value": "##vnetOnprem##"
+        },
+        "vnetspoke1": {
+            "value": "##vnetspoke1##"
+        },
+        "vnetspoke2": {
+            "value": "##vnetspoke2##"
+        },
+        "vnetspoke3": {
+            "value": "##vnetspoke3##"
+        },
+        "adminUsername": {
+            "value": "##adminUsername##"
+        },
+        "adminPassword": {
+            "value": "##maximusAdPassword##"
+        },
+        "user1Name": {
+            "value": "##user1Name##"
+        },
+        "user1Password": {
+            "value": "##maximusUserPassword##"
+        },
+        "user2Name": {
+            "value": "##user2Name##"
+        },
+        "user2Password": {
+            "value": "##maximusUserPassword##"
+        }
+    }
+}

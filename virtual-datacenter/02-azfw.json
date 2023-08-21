@@ -4,35 +4,35 @@
   "parameters": {
     "locationonprem": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region for location on-prem"
       }
     },
     "locationhub": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region"
       }
     },
     "locationspoke1": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region spoke1"
       }
     },
     "locationspoke2": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region spoke2"
       }
     },
     "locationspoke3": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region spoke3"
       }
@@ -79,7 +79,7 @@
     },
     "firewallAvailabilityZones": {
       "type": "array",
-      "defaultValue": [],
+      "defaultValue": ["1","2","3"],
       "metadata": {
         "description": "Zone numbers e.g. 1,2,3."
       }
@@ -236,23 +236,24 @@
       }
     },
     {
-      "comments": "Azure Firewall Public IP Addresses",
-      "name": "[concat(variables('azfw1PubIPNamePrefix'), add(copyIndex(), 1))]",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2022-05-01",
-      "location": "[variables('hub').location]",
-      "dependsOn": [],
-      "sku": {
-        "name": "Standard"
-      },
-      "copy": {
-        "name": "azfwpublicIpCopy",
-        "count": "[parameters('numberOfFirewallPublicIPAddresses')]"
-      },
-      "properties": {
-        "publicIPAllocationMethod": "Static",
-        "publicIPAddressVersion": "IPv4"
-      }
+        "comments": "Azure Firewall Public IP Addresses",
+        "name": "[concat(variables('azfw1PubIPNamePrefix'), add(copyIndex(), 1))]",
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2022-05-01",
+        "location": "[variables('hub').location]",
+        "zones": "[if(equals(length(parameters('firewallAvailabilityZones')), 0), json('null'), parameters('firewallAvailabilityZones'))]",
+        "dependsOn": [],
+        "sku": {
+            "name": "Standard"
+        },
+        "copy": {
+            "name": "azfwpublicIpCopy",
+            "count": "[parameters('numberOfFirewallPublicIPAddresses')]"
+        },
+        "properties": {
+            "publicIPAllocationMethod": "Static",
+            "publicIPAddressVersion": "IPv4"
+        }
     },
     {
       "comments": "Azure Firewall Policy",
@@ -307,7 +308,6 @@
             },
             "priority": 100,
             "rules": [
-              
               {
                 "ruleType": "NetworkRule",
                 "name": "allow-web-hub-to-spoke",
@@ -353,8 +353,28 @@
               },
               {
                 "ruleType": "NetworkRule",
+                "name": "allow-web-spoke1-spoke2",
+                "description": "Allow HTTP access between spoke1 and spoke2",
+                "ipProtocols": [
+                  "TCP"
+                ],
+                "destinationPorts": [
+                  "80",
+                  "443"
+                ],
+                "sourceAddresses": [
+                  "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]"
+                ],
+                "destinationAddresses": [
+                   "[variables('spoke1').addressPrefix]",
+                  "[variables('spoke2').addressPrefix]"
+                ]
+              },
+              {
+                "ruleType": "NetworkRule",
                 "name": "allow-web-spoke1-spoke3",
-                "description": "Allow SSH access between On-Prem VM and Hub NVA",
+                "description": "Allow HTTP access between spoke1 and spoke3",
                 "ipProtocols": [
                   "TCP"
                 ],
@@ -604,65 +624,36 @@
         "metrics": [
           {
             "category": "AllMetrics",
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-            }
+            "enabled": true
           }
         ],
         "logs": [
           {
             "category": "AzureFirewallApplicationRule",
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-            }
+            "enabled": true
           },
           {
             "category": "AzureFirewallNetworkRule",
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-            }
+            "enabled": true
           },
           {
             "category": "AzureFirewallDnsProxy",
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-            }
+            "enabled": true
           },
           {
             "category": "AZFWNetworkRule",
             "categoryGroup": null,
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-
-            }
+            "enabled": true
           },
           {
             "category": "AZFWApplicationRule",
             "categoryGroup": null,
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-            }
+            "enabled": true
           },
           {
             "category": "AZFWNatRule",
             "categoryGroup": null,
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": true,
-              "days": "[variables('diagnosticLogsRetentionInDays')]"
-            }
+            "enabled": true
           }
         ]
       }

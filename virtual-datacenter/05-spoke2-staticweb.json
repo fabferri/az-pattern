@@ -3,37 +3,37 @@
   "contentVersion": "1.0.0.0",
   "metadata": {},
   "parameters": {
-     "locationonprem": {
+    "locationonprem": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region for location on-prem"
       }
     },
     "locationhub": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region"
       }
     },
     "locationspoke1": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region spoke1"
       }
     },
     "locationspoke2": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region spoke2"
       }
     },
     "locationspoke3": {
       "type": "string",
-      "defaultValue": "westus2",
+      "defaultValue": "eastus2euap",
       "metadata": {
         "description": "Azure region spoke3"
       }
@@ -82,7 +82,7 @@
     },
     "storageSku": {
       "type": "string",
-      "defaultValue": "Standard_LRS",
+      "defaultValue": "Standard_ZRS",
       "metadata": {
         "description": "The storage account sku name."
       },
@@ -203,7 +203,9 @@
         "name": "[parameters('storageSku')]"
       },
       "properties": {
-        "supportsHttpsTrafficOnly": false
+        "accessTier": "Hot",
+        "supportsHttpsTrafficOnly": false,
+        "allowBlobPublicAccess": true
       }
     },
     {
@@ -213,6 +215,7 @@
       "location": "[variables('spoke2').location]"
     },
     {
+      "comments": "built-in role: Storage Account Contributor ID: 17d1049b-9a84-46fb-8f53-869881c3d3ab",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
       "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('webStorageAccountName'))]",
@@ -294,7 +297,7 @@
       "location": "global",
       "dependsOn": [
         "[variables('webPrivateDnsZoneId')]",
-    //    "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke2').name)]"
+        //    "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke2').name)]"
       ],
       "properties": {
         "registrationEnabled": false,
@@ -304,13 +307,14 @@
       }
     },
     {
+      "comments": "virtual network link to bind the spoke1 vnet to the private DNS zone",
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2018-09-01",
       "name": "[concat(variables('webPrivateDnsZoneName'), '/link_to_', toLower(variables('spoke1').name))]",
       "location": "global",
       "dependsOn": [
-        "[variables('webPrivateDnsZoneId')]",
-    //    "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+        "[variables('webPrivateDnsZoneId')]"
+        //    "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
       ],
       "properties": {
         "registrationEnabled": false,
@@ -320,18 +324,36 @@
       }
     },
     {
+      "comments": "virtual network link to bind the hub vnet to the private DNS zone",
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2018-09-01",
       "name": "[concat(variables('webPrivateDnsZoneName'), '/link_to_', toLower(variables('hub').name))]",
       "location": "global",
       "dependsOn": [
-        "[variables('webPrivateDnsZoneId')]",
-    //    "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+        "[variables('webPrivateDnsZoneId')]"
+        //    "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
       ],
       "properties": {
         "registrationEnabled": false,
         "virtualNetwork": {
           "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+        }
+      }
+    },
+    {
+      "comments": "virtual network link to bind the on-prem vnet to the private DNS zone",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[concat(variables('webPrivateDnsZoneName'), '/link_to_', toLower(variables('onprem').name))]",
+      "location": "global",
+      "dependsOn": [
+        "[variables('webPrivateDnsZoneId')]"
+        //    "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('onprem').name)]"
         }
       }
     },
@@ -342,7 +364,7 @@
       "location": "[variables('spoke2').location]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('webStorageAccountName'))]"
-   //    "[resourceId('Microsoft.Network/virtualNetworks',variables('spoke2').name)]"
+        //    "[resourceId('Microsoft.Network/virtualNetworks',variables('spoke2').name)]"
       ],
       "properties": {
         "privateLinkServiceConnections": [

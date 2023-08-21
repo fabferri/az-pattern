@@ -4,35 +4,35 @@
     "parameters": {
         "locationonprem": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region for location on-prem"
             }
         },
         "locationhub": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region"
             }
         },
         "locationspoke1": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region spoke1"
             }
         },
         "locationspoke2": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region spoke2"
             }
         },
         "locationspoke3": {
             "type": "string",
-            "defaultValue": "westus2",
+            "defaultValue": "eastus2euap",
             "metadata": {
                 "description": "Azure region spoke3"
             }
@@ -72,7 +72,12 @@
                 "description": "name for the Azure spoke3 vnet"
             }
         },
-
+        "resourceTags": {
+            "type": "object",
+            "defaultValue": {
+                "DataplaneDriver": "MaximusDataPlane-latest-Test.json"
+            }
+        },
         "loadDistribution": {
             "type": "string",
             "defaultValue": "Default",
@@ -137,8 +142,8 @@
             }
         },
         "_artifactsLocation": {
-            "defaultValue": "[deployment().properties.templateLink.uri]",
-            //  "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern2/master/",
+            //"defaultValue": "[deployment().properties.templateLink.uri]",
+            "defaultValue": "https://raw.githubusercontent.com/fabferri/az-pattern2/master/",
             "type": "string",
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
@@ -181,8 +186,29 @@
             "AppGatewaySubnetName": "appGtwSubnet",
             "AppGatewaySubnetPrefix": "10.1.2.0/24"
         },
+         "spoke3": {
+            "location": "[parameters('locationspoke3')]",
+            "name": "[parameters('vnetspoke3')]",
+            "addressPrefix": "10.3.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.3.1.0/24",
+            "AppGatewaySubnetName": "appGtwSubnet",
+            "AppGatewaySubnetPrefix": "10.3.2.0/24",
+            "subnetpeName": "pe-subnet",
+            "subnetpePrefix": "10.3.3.0/24"
+        },
+        "onprem": {
+            "location": "[parameters('locationonprem')]",
+            "name": "[parameters('vnetOnPrem')]",
+            "addressPrefix": "10.10.0.0/16",
+            "TenantName": "Tenant",
+            "TenantPrefix": "10.10.1.0/24",
+            "GatewaySubnetName": "GatewaySubnet",
+            "GatewaySubnetPrefix": "10.10.3.0/24"
+        },
         "nsgSpoke2Name": "[concat(variables('spoke2').name,'-nsg')]",
-        "RT-Spoke2": "[concat('RT-',variables('spoke2').name,'-',variables('spoke2').TenantName)]",
+        "RT-Spoke2-Tenant": "[concat('RT-',variables('spoke2').name,'-',variables('spoke2').TenantName)]",
+        "RT-Spoke2-pe": "[concat('RT-',variables('spoke2').name,'-',variables('spoke2').subnetpeName)]",
         "azfwIP": "10.0.3.4",
 
         "lbName": "lb",
@@ -206,30 +232,22 @@
         "vmsize": "Standard_B2S",
         "scriptFileName": "FSBuildS2.ps1",
         "scriptExe": "[concat(variables('scriptFileName'),' -User1 ', parameters('user1Name'), ' -Pass1 ',parameters('user1Password'),' -User2 ', parameters('user2Name'), ' -Pass2 ', parameters('user2Password'))]",
-        "scriptLocation": "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]"
-
+        "scriptLocation": "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('scriptFileName'), parameters('_artifactsLocationSasToken')))]",
+        "majorPrivNetworks": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
     },
     "resources": [
         {
             "type": "Microsoft.Network/routeTables",
-            "name": "[variables('RT-Spoke2')]",
+            "name": "[variables('RT-Spoke2-Tenant')]",
             "apiVersion": "2022-05-01",
             "location": "[variables('spoke2').location]",
-            "comments": "Routing Table Spoke1",
+            "comments": "Routing Table Spoke1 Tenant subnet",
             "dependsOn": [],
             "properties": {
                 "disableBgpRoutePropagation": true,
                 "routes": [
                     {
-                        "name": "to-10network",
-                        "properties": {
-                            "addressPrefix": "10.0.0.0/8",
-                            "nextHopType": "VirtualAppliance",
-                            "nextHopIpAddress": "[variables('azfwIP')]"
-                        }
-                    },
-                    {
-                        "name": "to-internet",
+                        "name": "to-anynet-azfw",
                         "properties": {
                             "addressPrefix": "0.0.0.0/0",
                             "nextHopType": "VirtualAppliance",
@@ -237,13 +255,66 @@
                         }
                     },
                     {
-                        "name": "[concat('to-',variables('hub').name,'-',variables('hub').TenantName)]",
+                        "name": "[concat('to-',variables('hub').AzureBastionSubnetName)]",
+                        "properties": {
+                            "addressPrefix": "[variables('hub').AzureBastionSubnetPrefix]",
+                            "nextHopType": "VirtualNetworkGateway"
+                            
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-Spoke2-pe')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('spoke2').location]",
+            "comments": "Routing Table Spoke2- pe subnet",
+            "dependsOn": [],
+            "properties": {
+                "disableBgpRoutePropagation": true,
+                "routes": [
+                    {
+                        "name": "[concat('major-',variables('spoke2').name)]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke2').addressPrefix]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "[concat('to-',variables('hub').TenantName)]",
                         "properties": {
                             "addressPrefix": "[variables('hub').TenantPrefix]",
                             "nextHopType": "VirtualAppliance",
                             "nextHopIpAddress": "[variables('azfwIP')]"
                         }
-                    } 
+                    },
+                    {
+                        "name": "[concat('to-',variables('spoke1').name)]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke1').addressPrefix]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "[concat('to-',variables('spoke3').name)]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke3').addressPrefix]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    },
+                    {
+                        "name": "[concat('to-',variables('onprem').name)]",
+                        "properties": {
+                            "addressPrefix": "[variables('onprem').addressPrefix]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('azfwIP')]"
+                        }
+                    }
                 ]
             }
         },
@@ -255,25 +326,13 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "AllowRDP3389",
+                        "name": "allow-heathprobe",
                         "properties": {
+                            "description": "allow incoming health probe from 168.63.129.16/32",
                             "protocol": "*",
                             "sourcePortRange": "*",
-                            "sourceAddressPrefix": "*",
-                            "destinationPortRange": "3389",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 300,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "AllowHTTP80",
-                        "properties": {
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "sourceAddressPrefix": "Internet",
                             "destinationPortRange": "80",
+                            "sourceAddressPrefix": "168.63.129.16/32",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 400,
@@ -281,29 +340,16 @@
                         }
                     },
                     {
-                        "name": "AllowHTTPS443",
+                        "name": "allow-private-networks",
                         "properties": {
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "sourceAddressPrefix": "Internet",
-                            "destinationPortRange": "443",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 500,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "allow-private-10",
-                        "properties": {
-                            "description": "allow incoming 10.0.0.0/8",
+                            "description": "allow incoming traffic from private networks",
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "*",
-                            "sourceAddressPrefix": "10.0.0.0/8",
+                            "sourceAddressPrefixes": "[variables('majorPrivNetworks')]",
                             "destinationAddressPrefix": "10.0.0.0/8",
                             "access": "Allow",
-                            "priority": 600,
+                            "priority": 300,
                             "direction": "Inbound"
                         }
                     }
@@ -316,7 +362,7 @@
             "apiVersion": "2022-05-01",
             "location": "[variables('spoke2').location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2'))]",
+                "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2-Tenant'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgSpoke2Name'))]"
             ],
             "properties": {
@@ -331,7 +377,7 @@
                         "properties": {
                             "addressPrefix": "[variables('spoke2').TenantPrefix]",
                             "routeTable": {
-                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2'))]"
+                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2-Tenant'))]"
                             },
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgSpoke2Name'))]"
@@ -348,7 +394,10 @@
                         "name": "[variables('spoke2').subnetpeName]",
                         "properties": {
                             "addressPrefix": "[variables('spoke2').subnetpePrefix]",
-                            "privateEndpointNetworkPolicies": "Disabled"
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-Spoke2-pe'))]"
+                            },
+                             "privateEndpointNetworkPolicies": "Enabled"
                         }
                     }
                 ]
@@ -500,6 +549,7 @@
             "name": "[variables('vmScaleSetName')]",
             "apiVersion": "2022-11-01",
             "location": "[variables('spoke2').location]",
+            "tags": "[parameters('resourceTags')]",
             "zones": "[variables('selectedZone')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/virtualNetworks/', variables('spoke2').name)]",
