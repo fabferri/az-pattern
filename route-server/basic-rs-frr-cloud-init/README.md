@@ -64,7 +64,7 @@ package_update: true
 packages:
    - frr
 write_files:
-  - path: /etc/frr/frr.conf
+  - path: /opt/frr.conf
     owner: frr:frr
     content: |
       !
@@ -112,11 +112,11 @@ runcmd:
   - [ sed, -i, -e, '$a\net.ipv4.ip_forward = 1', /etc/sysctl.conf]
   # Apply kernel parameters
   - [ sysctl, --system ]
-  - [ apt, install, frr, -y ]
-  - [ systemctl, stop, frr.service ]
   - [ sed, -i, -e, 's/^bgpd=no/bgpd=yes/', /etc/frr/daemons]
+  - cat /opt/frr.conf >> /etc/frr/frr.conf
   - [ systemctl, enable, frr.service ]
-  - [ systemctl, start, frr.service ]
+  - [ systemctl, restart, frr.service ]
+
 ```
 
 ## <a name="FRR"></a>3. Network prefixes learned and advertised in route server
@@ -141,7 +141,50 @@ LocalAddress Network      NextHop   SourcePeer Origin AsPath Weight
 ```
 
 
+## <a name="ping the Azure Route Server"></a>4. Test TCP connectivity with Azure Route Server
+In vm1 install hping3:
 
+```bash
+sudo apt update
+sudo apt install -y hping3
+hping3 --version
+```
+
+```
+# initiate a classic TCP SYN Scan
+# –S sets the syn flag in the TCP header
+# -c 5 sets the count as 5
+# –p 179 crafts the TCP segment with the destination port as TCP
+#
+root@vm1:~# hping3 -S 10.10.1.4 -p 179 -c 5
+HPING 10.10.1.4 (eth0 10.10.1.4): S set, 40 headers + 0 data bytes
+len=46 ip=10.10.1.4 ttl=128 DF id=47195 sport=179 flags=SA seq=0 win=65392 rtt=4.3 ms
+len=46 ip=10.10.1.4 ttl=128 DF id=47196 sport=179 flags=SA seq=1 win=65392 rtt=4.1 ms
+len=46 ip=10.10.1.4 ttl=128 DF id=47197 sport=179 flags=SA seq=2 win=65392 rtt=3.8 ms
+len=46 ip=10.10.1.4 ttl=128 DF id=47198 sport=179 flags=SA seq=3 win=65392 rtt=3.7 ms
+len=46 ip=10.10.1.4 ttl=128 DF id=47199 sport=179 flags=SA seq=4 win=65392 rtt=3.6 ms
+
+--- 10.10.1.4 hping statistic ---
+5 packets transmitted, 5 packets received, 0% packet loss
+round-trip min/avg/max = 3.6/3.9/4.3 ms
+
+root@vm1:~# hping3 -S 10.10.1.5 -p 179 -c 3
+HPING 10.10.1.5 (eth0 10.10.1.5): S set, 40 headers + 0 data bytes
+len=46 ip=10.10.1.5 ttl=128 DF id=39341 sport=179 flags=SA seq=0 win=65392 rtt=6.7 ms
+len=46 ip=10.10.1.5 ttl=128 DF id=39342 sport=179 flags=SA seq=1 win=65392 rtt=6.6 ms
+len=46 ip=10.10.1.5 ttl=128 DF id=39343 sport=179 flags=SA seq=2 win=65392 rtt=6.4 ms
+
+--- 10.10.1.5 hping statistic ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 6.4/6.6/6.7 ms
+
+```
+The Route server private IPs (10.10.1.4, 10.10.1.5) answer to TCP SYN messages.
+
+
+`Tags: virtual datacenter, hub-spoke` <br>
+`version date: 10-08-22`
+`version date: 22-08-23`
 
 <!--Image References-->
 

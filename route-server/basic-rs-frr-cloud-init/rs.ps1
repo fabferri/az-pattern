@@ -47,9 +47,8 @@ if (!$subscriptionName) { Write-Host 'variable $subscriptionName is null' ; Exit
 if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit }           else { Write-Host '  admin username........: '$adminUsername -ForegroundColor Green }
 if (!$authenticationType) { Write-Host 'variable $authenticationType is null' ; Exit } else { Write-Host '  authentication type...: '$authenticationType -ForegroundColor Green }
 if (!$adminPasswordOrKey) { Write-Host 'variable $adminPasswordOrKey is null' ; Exit } else { Write-Host '  admin password/key....: '$adminPasswordOrKey -ForegroundColor Green }
-if (!$location) { Write-Host 'variable $location1 is null' ; Exit }                    else { Write-Host '  location.............: '$location -ForegroundColor Yellow }
-if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit }   else { Write-Host '  resource group name...: '$ResourceGroupName -ForegroundColor Yellow }
-if (!$mngIP) { Write-Host 'variable $mngIP is null' }                  
+if (!$location) { Write-Host 'variable $location1 is null' ; Exit }                    else { Write-Host '  location..............: '$location -ForegroundColor Yellow }
+if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit }   else { Write-Host '  resource group name...: '$ResourceGroupName -ForegroundColor Yellow }     
 $rgName = $ResourceGroupName
 
 $subscr = Get-AzSubscription -SubscriptionName $subscriptionName
@@ -60,8 +59,7 @@ $parameters = @{
   "authenticationType" = $authenticationType;
   "adminPasswordOrKey" = $adminPasswordOrKey;
   "cloudInitContent"   = $filecontentCloudInit;
-  "location"           = $location;
-  "mngIP"              = $mngIP
+  "location"           = $location
 }
 
 

@@ -1,9 +1,8 @@
 {
     "subscriptionName": "AzDev1",
-    "ResourceGroupName": "test-rs",
+    "ResourceGroupName": "test-rs1",
     "location": "northeurope",
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "authenticationType": "password",
-    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD",
-    "mngIP": ""
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD"
 }

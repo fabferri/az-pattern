@@ -9,12 +9,6 @@
                 "description": "azure region where is deployed the vnet1"
             }
         },
-        "mngIP": {
-            "type": "string",
-            "metadata": {
-                "description": "management IP to connect to the VM"
-            }
-        },
         "cloudInitContent": {
             "type": "string",
             "metadata": {
@@ -51,11 +45,18 @@
                 "description": "virtual network name"
             }
         },
-        "vmName": {
+        "nvaName": {
+            "type": "string",
+            "defaultValue": "nva",
+            "metadata": {
+                "description": "nva VM"
+            }
+        },
+        "vm1Name": {
             "type": "string",
             "defaultValue": "vm1",
             "metadata": {
-                "description": "virtual machine name"
+                "description": "vm1 VM"
             }
         }
     },
@@ -73,7 +74,7 @@
         "subnet4Name": "subnet4",
         "subnet4Prefix": "10.10.4.0/24",
         "gatewaysubnetPrefix": "10.10.5.0/24",
-        "rsName": "test-srv1",
+        "rsName": "rs1",
         "peering1IP": "10.10.4.10",
         "peering1ASN": 65001,
         "rsBGPconnectionName": "bgp-conn1",
@@ -81,10 +82,17 @@
         "vHubIPconfigName": "ipconfig1",
         "bgpConnectionName": "[concat(variables('rsName'), '/', variables('rsBGPconnectionName'))]",
         "rsPubIPName": "[concat(variables('rsName'),'-pubIP')]",
-        "vmName": "[parameters('vmName')]",
-        "nicName": "[concat(variables('vmName'),'-nic')]",
-        "pubIPName": "[concat(variables('vmName'),'-pubIP')]",
-        "vmPrivIP": "10.10.4.10",
+
+        "nvaName": "[parameters('nvaName')]",
+        "nvaNicName": "[concat(variables('nvaName'),'-nic')]",
+        "nvapubIPName": "[concat(variables('nvaName'),'-pubIP')]",
+        "nvaPrivIP": "10.10.4.10",
+
+        "vm1Name": "[parameters('vm1Name')]",
+        "vm1NicName": "[concat(variables('vm1Name'),'-nic')]",
+        "vm1pubIPName": "[concat(variables('vm1Name'),'-pubIP')]",
+        "vm1PrivIP": "10.10.2.10",
+
         "publisher": "canonical",
         "offer": "0001-com-ubuntu-server-jammy",
         "sku": "22_04-lts-gen2",
@@ -100,14 +108,14 @@
                     }
                 ]
             }
-        },
-        "mngIP": "[parameters('mngIP')]"
+        }
     },
     "resources": [
         {
+            "comments": "NSG applied to the subnets",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsgName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[variables('location')]",
             "properties": {
                 "securityRules": [
@@ -118,10 +126,24 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[if(equals(variables('mngIP'), ''), '*', variables('mngIP'))]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "allow-private-netw",
+                        "properties": {
+                            "description": "allow private network",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "10.0.0.0/8",
+                            "destinationAddressPrefix": "10.0.0.0/8",
+                            "access": "Allow",
+                            "priority": 200,
                             "direction": "Inbound"
                         }
                     }
@@ -129,14 +151,14 @@
             }
         },
         {
+            "comments": "Create VNet1",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vnetName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]"
             ],
-            "comments": "Create VNet1",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -187,11 +209,11 @@
             }
         },
         {
+            "comments": "create a virtual hub object",
             "type": "Microsoft.Network/virtualHubs",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "name": "[variables('rsName')]",
             "location": "[variables('location')]",
-            "comments": "create a virtual hub object",
             "dependsOn": [
                 "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnetName') )]"
             ],
@@ -205,20 +227,21 @@
             "comments": "public IP of the route server",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('rsPubIPName')]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2022-05-01",
             "location": "[variables('location')]",
             "sku": {
-                "name": "Standard"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAllocationMethod": "Static"
             }
         },
         {
-            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
-            "apiVersion": "2021-05-01",
-            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
             "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]",
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
@@ -234,10 +257,10 @@
             }
         },
         {
-            "type": "Microsoft.Network/virtualHubs/bgpConnections",
-            "apiVersion": "2021-05-01",
-            "name": "[variables('bgpConnectionName')]",
             "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('bgpConnectionName')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
             ],
@@ -247,26 +270,27 @@
             }
         },
         {
+            "comments": "public IP of the nva",
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('pubIPName')]",
-            "apiVersion": "2021-05-01",
+            "name": "[variables('nvapubIPName')]",
+            "apiVersion": "2022-05-01",
             "location": "[variables('location')]",
-            "comments": "public IP of the VM",
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+             "sku": {
+                "name": "Standard",
+                "tier": "Regional"
             },
-            "sku": {
-                "name": "Basic"
+            "properties": {
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('nicName')]",
-            "apiVersion": "2021-05-01",
+            "name": "[variables('nvaNicName')]",
+            "apiVersion": "2022-05-01",
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('pubIPName'))]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('nvapubIPName'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -274,9 +298,9 @@
                         "name": "ipconf-nic0",
                         "properties": {
                             "privateIPAllocationMethod": "Static",
-                            "privateIPAddress": "[variables('vmPrivIP')]",
+                            "privateIPAddress": "[variables('nvaPrivIP')]",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('pubIPName')  )]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('nvapubIPName')  )]"
                             },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet4Name') )]"
@@ -290,18 +314,18 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[variables('vmName') ]",
-            "apiVersion": "2021-11-01",
+            "name": "[variables('nvaName') ]",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nvaNicName'))]"
             ],
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[variables('vmSize')]"
                 },
                 "osProfile": {
-                    "computerName": "[variables('vmName')]",
+                    "computerName": "[variables('nvaName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
                     "customData": "[base64(variables('customData'))]",
@@ -315,7 +339,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "[concat(variables('vmName'),'-OSdisk')]",
+                        "name": "[concat(variables('nvaName'),'-OSdisk')]",
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     }
@@ -326,7 +350,96 @@
                             "properties": {
                                 "primary": true
                             },
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName') )]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nvaNicName') )]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "comments": "public IP of the vm1",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vm1pubIPName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location')]",
+             "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "NIC of the vm1",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vm1NicName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm1pubIPName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconf-nic",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vm1PrivIP')]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vm1pubIPName')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet2Name') )]"
+
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": false
+            }
+        },
+        {
+            "comments": "create vm1 in subnet1",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vm1Name') ]",
+            "apiVersion": "2022-11-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vm1NicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vm1Name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('publisher')]",
+                        "offer": "[variables('offer')]",
+                        "sku": "[variables('sku')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vm1Name'),'-OSdisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage",
+                        "deleteOption": "Delete"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vm1NicName') )]"
                         }
                     ]
                 }

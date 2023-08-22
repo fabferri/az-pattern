@@ -3,7 +3,7 @@ package_update: true
 packages:
    - frr
 write_files:
-  - path: /etc/frr/frr.conf
+  - path: /opt/frr.conf
     owner: frr:frr
     content: |
       !
@@ -51,8 +51,7 @@ runcmd:
   - [ sed, -i, -e, '$a\net.ipv4.ip_forward = 1', /etc/sysctl.conf]
   # Apply kernel parameters
   - [ sysctl, --system ]
-  - [ apt, install, frr, -y ]
-  - [ systemctl, stop, frr.service ]
   - [ sed, -i, -e, 's/^bgpd=no/bgpd=yes/', /etc/frr/daemons]
+  - cat /opt/frr.conf >> /etc/frr/frr.conf
   - [ systemctl, enable, frr.service ]
-  - [ systemctl, start, frr.service ]
+  - [ systemctl, restart, frr.service ]
