@@ -1,0 +1,12 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzureDemo",
+    "ResourceGroupName": "test-er-rs",
+    "location1": "uksouth",
+    "location2": "uksouth",
+    "erSubscriptionId": "EXPRESSROUTE_SUBSCRIPTION_ID",
+    "erResourceGroup": "SEA-Cust34",
+    "erCircuitName": "SEA-Cust34-ER",
+    "erAuthorizationKey": "EXPRESSROUTE_AUTORIZATION_CODE"
+}

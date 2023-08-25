@@ -1,0 +1,43 @@
+nva# show run
+Building configuration...
+
+Current configuration:
+!
+frr version 8.1
+frr defaults traditional
+hostname nva
+log syslog informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+ip route 10.0.50.0/24 10.0.100.1
+ip route 10.0.100.64/26 10.0.100.1
+!
+router bgp 65001
+ neighbor 10.0.100.68 remote-as 65515
+ neighbor 10.0.100.69 remote-as 65515
+ !
+ address-family ipv4 unicast
+  network 10.0.50.0/24
+  neighbor 10.0.100.68 soft-reconfiguration inbound
+  neighbor 10.0.100.68 route-map BGP_IN in
+  neighbor 10.0.100.68 route-map BGP_OUT out
+  neighbor 10.0.100.69 soft-reconfiguration inbound
+  neighbor 10.0.100.69 route-map BGP_IN in
+  neighbor 10.0.100.69 route-map BGP_OUT out
+ exit-address-family
+exit
+!
+ip prefix-list BGP_OUT seq 10 permit 0.0.0.0/0 le 32
+ip prefix-list BGP_IN seq 10 permit 0.0.0.0/0 le 32
+!
+route-map BGP_OUT permit 10
+ match ip address prefix-list BGP_OUT
+exit
+!
+route-map BGP_IN permit 10
+ match ip address prefix-list BGP_IN
+exit
+!
+end
+nva#

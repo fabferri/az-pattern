@@ -1,0 +1,547 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region to deploy the hub vnet. Azure regions with Availability Zone."
+            }
+        },
+        "location2": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region to deploy the spoke1 vnet."
+            }
+        },
+        "hubName": {
+            "type": "string",
+            "defaultValue": "hub",
+            "metadata": {
+                "description": "Arbitrary name for the Azure hub vnet"
+            }
+        },
+        "hubAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the subnet1 in hub vnet"
+            }
+        },
+        "hubSubnet1Name": {
+            "type": "string",
+            "defaultValue": "hubSubnet1",
+            "metadata": {
+                "description": "Arbitrary name for the subnet1 in hub vnet"
+            }
+        },
+        "hubSubnet2Name": {
+            "type": "string",
+            "defaultValue": "hubSubnet2",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet2 in VNet1"
+            }
+        },
+        "hubSubnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.0/27",
+            "metadata": {
+                "description": "CIDR block for VNet1-subnet1. It is a subset of hubAddressPrefix address space"
+            }
+        },
+        "hubSubnet2Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.32/27",
+            "metadata": {
+                "description": "CIDR block for VNet1-subnet2. It is a subset of hubAddressPrefix address space"
+            }
+        },
+        "routeserverSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.64/26",
+            "metadata": {
+                "description": "CIDR block for VNet1-RouteServerSubnet. It is a subset of hubAddressPrefix address space"
+            }
+        },
+        "azureBastionSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.128/26",
+            "metadata": {
+                "description": "CIDR block for gateway subnet- it is a subset of AzureBastionSubnetPrefix address space"
+            }
+        },
+        "gatewaySubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.192/26",
+            "metadata": {
+                "description": "CIDR block for gateway subnet- it is a subset of hubAddressPrefix address space"
+            }
+        },
+        "erSubscriptionId": {
+            "type": "string",
+            "metadata": {
+                "description": "ExpresssRoute subscription Id"
+            }
+        },
+        "erResourceGroup": {
+            "type": "string",
+            "metadata": {
+                "description": "resource group of the ER circuit"
+            }
+        },
+        "erCircuitName": {
+            "type": "string",
+            "metadata": {
+                "description": "ER circuit name"
+            }
+        },
+        "erAuthorizationKey": {
+            "type": "string",
+            "metadata": {
+                "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
+            }
+        },
+        "erGatewayName": {
+            "type": "string",
+            "defaultValue": "ergw",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "erConnectionName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('erGatewayName'),'-conn')]",
+            "metadata": {
+                "description": "name of Expressroute Connection between ER Gateway1 and ER circuit"
+            }
+        },
+        "spoke1Name": {
+            "type": "string",
+            "defaultValue": "spoke1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network 1"
+            }
+        },
+        "spoke1Subnet1Name": {
+            "type": "string",
+            "defaultValue": "spoke1Subnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet1 in spoke1"
+            }
+        },
+        "spoke1AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.50.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the spoke1 vnet"
+            }
+        },
+        "spoke1Subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.50.0/24",
+            "metadata": {
+                "description": "CIDR block for subnet1 in spoke1 vnet"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "hubName": "[parameters('hubName')]",
+        "hubSubnet1Name": "[parameters('hubSubnet1Name')]",
+        "hubSubnet2Name": "[parameters('hubSubnet2Name')]",
+        "hubAddressPrefix": "[parameters('hubAddressPrefix')]",
+        "hubSubnet1Prefix": "[parameters('hubSubnet1Prefix')]",
+        "hubSubnet2Prefix": "[parameters('hubSubnet2Prefix')]",
+        "routeserverSubnetPrefix": "[parameters('routeserverSubnetPrefix')]",
+        "gatewaySubnetPrefix": "[parameters('gatewaySubnetPrefix')]",
+        "azureBastionSubnetPrefix": "[parameters('azureBastionSubnetPrefix')]",
+        "erGatewayName": "[parameters('erGatewayName')]",
+        "erGatewayPublicIPName": "[concat(parameters('erGatewayName'),'-pubIP')]",
+        "erGatewaySku": "ErGw1Az",
+        "erCircuitId1": "[concat('/subscriptions/', parameters('erSubscriptionId'),'/resourceGroups/',parameters('erResourceGroup'),'/providers/Microsoft.Network/expressRouteCircuits/', parameters('erCircuitName'))]",
+        "rsName": "rs",
+        "rsPubIPName": "[concat(variables('rsName'),'-pubIP')]",
+        "vHubIPconfigName": "[concat(variables('rsName'),'-ipcfg1')]",
+        "rsBGPconnectionName": "conn1",
+        "bgpConnectionName": "[concat(variables('rsName'), '/', variables('rsBGPconnectionName'))]",
+        "peeringASN": 65001,
+        "nvahubPrivIP": "10.0.100.10",
+        "spoke1Name": "[parameters('spoke1Name')]",
+        "spoke1Subnet1Name": "[parameters('spoke1Subnet1Name')]",
+        "spoke1AddressPrefix": "[parameters('spoke1AddressPrefix')]",
+        "spoke1Subnet1Prefix": "[parameters('spoke1Subnet1Prefix')]",
+        "peeringNamehub1spoke1": "[concat(variables('hubName'),'-to-',variables('spoke1Name'))]",
+        "peeringNamespoke1hub1": "[concat(variables('spoke1Name'),'-to-',variables('hubName'))]",
+        "RT-hub-Subnet2": "[concat('RT-',variables('hubName'), '-', variables('hubSubnet2Name'))]",
+        "RT-hub-GatewaySubnet": "[concat('RT-',variables('hubName'), '-', 'GatewaySubnet')]",
+        "RT-spoke1-Subnet1": "[concat('RT-',variables('spoke1Name'), '-', variables('spoke1Subnet1Name'))]"
+    },
+    "resources": [
+        {
+            "comments": "UDR applied to hub-Tenant subnet",
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-hub-Subnet2')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "dependsOn": [],
+            "properties": {
+                "disableBgpRoutePropagation": true,
+                "routes": [
+                    {
+                        "name": "[concat('to-',variables('spoke1Name'))]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke1AddressPrefix')]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('nvahubPrivIP')]"
+                        }
+                    },
+                    {
+                        "name": "to-10network",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/8",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('nvahubPrivIP')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "UDR applied to hub-Tenant subnet",
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-spoke1-Subnet1')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location2')]",
+            "dependsOn": [],
+            "properties": {
+                "disableBgpRoutePropagation": true,
+                "routes": [
+                    {
+                        "name": "[concat('to-',variables('hubName'))]",
+                        "properties": {
+                            "addressPrefix": "[variables('hubAddressPrefix')]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('nvahubPrivIP')]"
+                        }
+                    },
+                    {
+                        "name": "to-10network",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/8",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('nvahubPrivIP')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "UDR applied to hub-GatewaySubnet",
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('RT-hub-GatewaySubnet')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "dependsOn": [],
+            "properties": {
+                "routes": [
+                    {
+                        "name": "[concat('to-',variables('hubSubnet2Name'))]",
+                        "properties": {
+                            "addressPrefix": "[variables('hubSubnet2Prefix')]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('nvahubPrivIP')]"
+                        }
+                    },
+                    {
+                        "name": "[concat('to-',variables('spoke1Name'))]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke1AddressPrefix')]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('nvahubPrivIP')]"
+                        }
+                    },
+                    {
+                        "name": "to-RouteServer",
+                        "properties": {
+                            "addressPrefix": "[variables('routeserverSubnetPrefix')]",
+                            "nextHopType": "VirtualNetworkGateway"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "create hub vnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('hubName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-GatewaySubnet'))]",
+                "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-Subnet2'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('hubAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('hubSubnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('hubSubnet1Prefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('hubSubnet2Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('hubSubnet2Prefix')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-Subnet2'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "RouteServerSubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('routeserverSubnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "AzureBastionSubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('azureBastionSubnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[variables('gatewaySubnetPrefix')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-hub-GatewaySubnet'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "spoke1 vnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('spoke1Name')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke1-Subnet1'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('spoke1AddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('spoke1Subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('spoke1Subnet1Prefix')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables',variables('RT-spoke1-Subnet1'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "create a virtual hub object for the Route Server",
+            "type": "Microsoft.Network/virtualHubs",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('rsName')]",
+            "location": "[variables('location1')]",
+            
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('hubName') )]"
+            ],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "comments": "public IP of the Route Server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rsPubIPName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rsName'), '/',variables('vHubIPconfigName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('hubName'),'RouteServerSubnet' )]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsPubIPName') )]"
+                }
+            }
+        },
+        {
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('bgpConnectionName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('nvahubPrivIP')]",
+                "peerAsn": "[variables('peeringASN')]"
+            }
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('erGatewayPublicIPName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('erGatewayName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('location1')]",
+            "comments": "This is the ExpressRoute Gateway for the vNet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('erGatewayPublicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('hubName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hubName'), 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('erGatewayPublicIPName'))]"
+                            }
+                        },
+                        "name": "gwipcfg"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "sku": {
+                    "name": "[variables('erGatewaySku')]",
+                    "tier": "[variables('erGatewaySku')]"
+                },
+                "vpnType": "RouteBased"
+            }
+        },
+        {
+            "condition": "[and( not(empty(parameters('erResourceGroup'))), not(empty(parameters('erCircuitName'))) )]",
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('erConnectionName')]",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('erGatewayName') )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('erGatewayName') )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[if(empty(parameters('erAuthorizationKey')), json('null'), parameters('erAuthorizationKey'))]",
+                "peer": {
+                    "id": "[variables('erCircuitId1')]"
+                }
+            }
+        },
+        {
+            "comments": "setting attribute in vnet peering hub - spoke1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-01-01",
+            "name": "vnetPeering-hub-spoke1",
+            "dependsOn": [
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('hubName'))]",
+                "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke1Name'))]",
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations',variables('rsName'),variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "name": "[format('{0}/{1}', variables('hubName'), variables('peeringNamehub1spoke1'))]",
+                            "apiVersion": "2022-05-01",
+                            "location": "[variables('location1')]",
+                            "comments": "This is the peering from hub to spoke1",
+                            "dependsOn": [],
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": true,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('spoke1Name'))]"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "name": "[format('{0}/{1}', variables('spoke1Name'), variables('peeringNamespoke1hub1'))]",
+                            "apiVersion": "2022-05-01",
+                            "location": "[variables('spoke1Name')]",
+                            "comments": "This is the peering from spoke1 to hub",
+                            "dependsOn": [],
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('hubName'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

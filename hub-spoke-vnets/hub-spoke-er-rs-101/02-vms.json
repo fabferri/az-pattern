@@ -1,0 +1,429 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+         "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region to deploy the hub vnet. Azure regions with Availability Zone."
+            }
+        },
+        "location2": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region to deploy the spoke1 vnet. Azure regions with Availability Zone."
+            }
+        },
+        "hubName": {
+            "type": "string",
+            "defaultValue": "hub",
+            "metadata": {
+                "description": "Arbitrary name for the Azure hub vnet"
+            }
+        },
+        "hubAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the subnet1 in hub vnet"
+            }
+        },
+        "hubSubnet1Name": {
+            "type": "string",
+            "defaultValue": "hubSubnet1",
+            "metadata": {
+                "description": "Arbitrary name for the subnet1 in hub vnet"
+            }
+        },
+        "hubSubnet2Name": {
+            "type": "string",
+            "defaultValue": "hubSubnet2",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet2 in VNet1"
+            }
+        },
+        "hubSubnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.0/27",
+            "metadata": {
+                "description": "CIDR block for VNet1-subnet1. It is a subset of hubAddressPrefix address space"
+            }
+        },
+        "hubSubnet2Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.32/27",
+            "metadata": {
+                "description": "CIDR block for VNet1-subnet2. It is a subset of hubAddressPrefix address space"
+            }
+        },
+        "routeserverSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.64/26",
+            "metadata": {
+                "description": "CIDR block for VNet1-RouteServerSubnet. It is a subset of hubAddressPrefix address space"
+            }
+        },
+        "azureBastionSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.128/26",
+            "metadata": {
+                "description": "CIDR block for gateway subnet- it is a subset of AzureBastionSubnetPrefix address space"
+            }
+        },
+        "gatewaySubnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.100.192/26",
+            "metadata": {
+                "description": "CIDR block for gateway subnet- it is a subset of hubAddressPrefix address space"
+            }
+        },
+        "spoke1Name": {
+            "type": "string",
+            "defaultValue": "spoke1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network 1"
+            }
+        },
+        "spoke1Subnet1Name": {
+            "type": "string",
+            "defaultValue": "spoke1Subnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure subnet1 in spoke1"
+            }
+        },
+        "spoke1AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.50.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the spoke1 vnet"
+            }
+        },
+        "spoke1Subnet1Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.50.0/24",
+            "metadata": {
+                "description": "CIDR block for subnet1 in spoke1 vnet"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "allowedValues": [
+                "Standard_B1ls",
+                "Standard_B1s",
+                "Standard_DS1_v2",
+                "Standard_DS5_v2"
+            ],
+            "metadata": {
+                "description": "Size of the Virtual Machine"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VMs"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "administrator username of the VMs"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "administrator password of the VMs"
+            }
+        },
+        "cloudInitContent": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "cloud-init config file"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "hubName": "[parameters('hubName')]",
+        "hubSubnet1Name": "[parameters('hubSubnet1Name')]",
+        "hubSubnet2Name": "[parameters('hubSubnet2Name')]",
+        "hubAddressPrefix": "[parameters('hubAddressPrefix')]",
+        "hubSubnet1Prefix": "[parameters('hubSubnet1Prefix')]",
+        "hubSubnet2Prefix": "[parameters('hubSubnet2Prefix')]",
+        "routeserverSubnetPrefix": "[parameters('routeserverSubnetPrefix')]",
+        "gatewaySubnetPrefix": "[parameters('gatewaySubnetPrefix')]",
+        "azureBastionSubnetPrefix": "[parameters('azureBastionSubnetPrefix')]",
+
+        "spoke1Name": "[parameters('spoke1Name')]",
+        "spoke1Subnet1Name": "[parameters('spoke1Subnet1Name')]",
+        "spoke1AddressPrefix": "[parameters('spoke1AddressPrefix')]",
+        "spoke1Subnet1Prefix": "[parameters('spoke1Subnet1Prefix')]",
+ 
+        "imagePublisher": "canonical",
+        "imageOffer": "0001-com-ubuntu-server-jammy",
+        "imageSKU": "22_04-lts-gen2",
+
+        "vmStorageAccountType": "[parameters('storageAccountType')]",
+        "hubvmName": "[concat('vm-',variables('hubSubnet2Name'))]",
+        "hubvmPrivIPAddr": "10.0.100.50",
+        "spoke1vmName": "[concat('vm-',variables('spoke1Subnet1Name'))]",
+        "spoke1vmPrivIPAddr": "10.0.50.10",
+        "nvahubName": "nva",
+        "nvahubPrivIP": "10.0.100.10",
+
+        "linuxUpdate": "sudo apt update",
+        "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
+        "linuxCommand": "[concat( 'sleep 1m', ' && ', 'echo \"debconf debconf/frontend select Noninteractive\" | debconf-set-selections',  ' && ', variables('linuxUpdate'), ' && ', variables('linuxNgixCommand') )]",
+        "vmArray": [
+            {
+                "deployment": true,
+                "deploymentCustomScript": false,
+                "location": "[variables('location1')]",
+                "vmName": "[variables('nvahubName')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[variables('imagePublisher')]",
+                "offer": "[variables('imageOffer')]",
+                "sku": "[variables('imageSKU')]",
+                "vnetName": "[variables('hubName')]",
+                "subnetName": "[variables('hubSubnet1Name')]",
+                "nicName": "[concat(variables('nvahubName'),'-nic')]",
+                "privateIP": "[variables('nvahubPrivIP')]",
+                "enableIPForwarding": true,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('nvahubName'),'-nsg')]",
+                "pubIP": "[concat(variables('nvahubName'),'-pubIP')]",
+                "customData": "[ parameters('cloudInitContent') ]",
+                "commandToExecute": ""
+            },
+            {
+                "deployment": true,
+                "deploymentCustomScript": true,
+                "location": "[variables('location1')]",
+                "vmName": "[variables('hubvmName')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[variables('imagePublisher')]",
+                "offer": "[variables('imageOffer')]",
+                "sku": "[variables('imageSKU')]",
+                "vnetName": "[variables('hubName')]",
+                "subnetName": "[variables('hubSubnet2Name')]",
+                "nicName": "[concat(variables('hubvmName'),'-nic')]",
+                "privateIP": "[variables('hubvmPrivIPAddr')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('hubvmName'),'-nsg')]",
+                "pubIP": "[concat(variables('hubvmName'),'-pubIP')]",
+                "customData": "",
+                "commandToExecute": "[variables('linuxCommand')]"
+            },
+            {
+                "deployment": true,
+                "deploymentCustomScript": true,
+                "location": "[variables('location2')]",
+                "vmName": "[variables('spoke1VMName')]",
+                "vmSize": "[parameters('vmsize')]",
+                "publisher": "[variables('imagePublisher')]",
+                "offer": "[variables('imageOffer')]",
+                "sku": "[variables('imageSKU')]",
+                "vnetName": "[variables('spoke1Name')]",
+                "subnetName": "[variables('spoke1Subnet1Name')]",
+                "nicName": "[concat(variables('spoke1VMName'),'-nic')]",
+                "privateIP": "[variables('spoke1vmPrivIPAddr')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "nsgName": "[concat(variables('spoke1VMName'),'-nsg')]",
+                "pubIP": "[concat(variables('spoke1VMName'),'-pubIP')]",
+                "customData": "",
+                "commandToExecute": "[variables('linuxCommand')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+    },
+    "resources": [
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allow-privateNet",
+                        "properties": {
+                            "description": "allow all inbound connections from private IP networks",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/8",
+                            "destinationAddressPrefix": "10.0.0.0/8",
+                            "access": "Allow",
+                            "priority": 200,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat( variables('vmArray')[copyIndex()].pubIP )]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2022-05-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "comments": "create NIC for the Azure VMs",
+            "dependsOn": [
+            //    "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vnetName) ]",
+                "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIP) ]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "subnet": {
+                                "id": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].pubIP) ]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName )]"
+                },
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]"
+            },
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2022-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "linuxConfiguration": "[json('null')]",
+                    "customData": "[base64(variables('vmArray')[copyIndex()].customData)]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('vmStorageAccountType')]"
+                        },
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-OSdisk')]",
+                        "deleteOption": "Delete"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true,
+                                "deleteOption": "Delete"
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',  variables('vmArray')[copyIndex()].nicName)]"
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            }
+        },
+        {
+            "condition": "[and( bool(variables('vmArray')[copyIndex()].deployment), bool(variables('vmArray')[copyIndex()].deploymentCustomScript) )]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'installcustomscript')]",
+            "apiVersion": "2022-11-01",
+            "comments": "custom script extension for ubuntu",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "nodeCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
+                }
+            }
+        }
+    ]
+}
