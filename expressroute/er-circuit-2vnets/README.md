@@ -26,16 +26,16 @@ The network diagram is shown below:
 
 
 > > [!NOTE]
-> Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.json**:
-> variable **$subscriptionName**:  name of your Azure subscription 
-> variable **$adminUsername**: username of administrator of the Azure VMs
-> variable **$adminPassword**: password of the administrator of the Azure VMs
+> Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.json**: <br>
+> variable **$subscriptionName**:  name of your Azure subscription  <br>
+> variable **$adminUsername**: username of administrator of the Azure VMs <br>
+> variable **$adminPassword**: password of the administrator of the Azure VMs <br>
 >
 > 
-> Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.ps1**:
-> parameter **azureRegion1**:  name of Azure region where is deployed the Azure VNet1
-> parameter **azureRegion2**:  name of Azure region where is deployed the Azure VNet2
-> **authorizationKey**:  authorization Key associated with the Expressroute circuit. Each Azure VNet requires a specific autorization key; you can't use the same authorization key to join more then one VNet to the same ExpressRoute circuit.
+> Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.ps1**: <vr>
+> parameter **azureRegion1**:  name of Azure region where is deployed the Azure VNet1 <br>
+> parameter **azureRegion2**:  name of Azure region where is deployed the Azure VNet2 <br>
+> **authorizationKey**:  authorization Key associated with the Expressroute circuit. Each Azure VNet requires a specific autorization key; you can't use the same authorization key to join more then one VNet to the same ExpressRoute circuit. <br>
 > **erCircuitId**: ExpressRoute circuit Id. The structure of Expressroute circuit Id is: **"/subscriptions/<subscription_ID>/resourceGroups/<resourceGroup_Name>/providers/Microsoft.Network/expressRouteCircuits/<ER_circuit_Name>"**
 > 
 
