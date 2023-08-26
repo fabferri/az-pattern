@@ -25,13 +25,13 @@ The network diagram is shown below:
 [![1]][1]
 
 
-> > [!NOTE1]
+> > [!NOTE]
 > Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.json**:
 > * variable **$subscriptionName**:  name of your Azure subscription
 > * variable **$adminUsername**: username of administrator of the Azure VMs
 > * variable **$adminPassword**: password of the administrator of the Azure VMs
-
-> > [!NOTE2]
+>
+> 
 > Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.ps1**:
 > * parameter **azureRegion1**:  name of Azure region wher eis deployed the Azure VNet1
 > * parameter **azureRegion2**:  name of Azure region wher eis deployed the Azure VNet2
