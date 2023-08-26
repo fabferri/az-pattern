@@ -34,10 +34,10 @@ The network diagram is shown below:
 
 > > [!NOTE]
 > Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.ps1**: <br>
-> - parameter **azureRegion1**:  name of Azure region where is deployed the Azure VNet1 <br>
-> - parameter **azureRegion2**:  name of Azure region where is deployed the Azure VNet2 <br>
-> - **authorizationKey**:  authorization Key associated with the Expressroute circuit. Each Azure VNet requires a specific autorization key; you can't use the same authorization key to join more then one VNet to the same ExpressRoute circuit. <br>
-> - **erCircuitId**: ExpressRoute circuit Id. The structure of Expressroute circuit Id is: **"/subscriptions/<subscription_ID>/resourceGroups/<resourceGroup_Name>/providers/Microsoft.Network/expressRouteCircuits/<ER_circuit_Name>"**
+> parameter **azureRegion1**:  name of Azure region where is deployed the Azure VNet1 <br>
+> parameter **azureRegion2**:  name of Azure region where is deployed the Azure VNet2 <br>
+> **authorizationKey**:  authorization Key associated with the Expressroute circuit. Each Azure VNet requires a specific autorization key; you can't use the same authorization key to join more then one VNet to the same ExpressRoute circuit. <br>
+> **erCircuitId**: ExpressRoute circuit Id. The structure of Expressroute circuit Id is: **"/subscriptions/<subscription_ID>/resourceGroups/<resourceGroup_Name>/providers/Microsoft.Network/expressRouteCircuits/<ER_circuit_Name>"**
 > 
 
 
