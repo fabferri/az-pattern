@@ -1,11 +1,10 @@
 <properties
 pageTitle= 'ARM template to create 2 Azure VNets connected to an ExpressRoute circuit in different Azure subscription'
 description= "ARM template to create 2 VNets connected to an ExpressRoute circuit in different Azure subscription"
-documentationcenter: na
-services=""
+documentationcenter: github
+services="ExpressRoute"
 documentationCenter="na"
 authors="fabferri"
-manager=""
 editor=""/>
 
 <tags
@@ -13,7 +12,7 @@ editor=""/>
    ms.devlang="na"
    ms.topic="article"
    ms.tgt_pltfrm="na"
-   ms.workload="na"
+   ms.workload="ExpressRoute"
    ms.date="29/09/2019"
    ms.author="fabferri" />
 
@@ -26,13 +25,13 @@ The network diagram is shown below:
 [![1]][1]
 
 
-> [!NOTE1]
+> > [!NOTE1]
 > Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.json**:
 > * variable **$subscriptionName**:  name of your Azure subscription
 > * variable **$adminUsername**: username of administrator of the Azure VMs
 > * variable **$adminPassword**: password of the administrator of the Azure VMs
 
-> [!NOTE2]
+> > [!NOTE2]
 > Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.ps1**:
 > * parameter **azureRegion1**:  name of Azure region wher eis deployed the Azure VNet1
 > * parameter **azureRegion2**:  name of Azure region wher eis deployed the Azure VNet2
@@ -40,6 +39,9 @@ The network diagram is shown below:
 > * **erCircuitId**: ExpressRoute circuit Id. The structure of Expressroute circuit Id is: **"/subscriptions/<subscription_ID>/resourceGroups/<resourceGroup_Name>/providers/Microsoft.Network/expressRouteCircuits/<ER_circuit_Name>"**
 > 
 
+
+`Tags: ExpressRoute`<br>
+`date: 10-08-22`
 
 <!--Image References-->
 [1]: ./media/network-diagram.png "network diagram"
