@@ -31,7 +31,8 @@ The network diagram is shown below:
 > variable **$adminUsername**: username of administrator of the Azure VMs <br>
 > variable **$adminPassword**: password of the administrator of the Azure VMs <br>
 >
-> 
+
+> > [!NOTE]
 > Before spinning up the ARM template you should change the following in the file **2VNets-1ERcircuit.ps1**: <vr>
 > parameter **azureRegion1**:  name of Azure region where is deployed the Azure VNet1 <br>
 > parameter **azureRegion2**:  name of Azure region where is deployed the Azure VNet2 <br>
