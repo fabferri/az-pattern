@@ -48,7 +48,7 @@ A full network diagram with IP network addresses is shown below:
 The Private Endpoint to access to Azure Storage blob is deployed in **pe-subnet** subnet of the **spoke1**. <br>
 A private DNS zone is created **privatelink.blob.core.windows.net** to resolve the storage blob connected to the vnet through Private Endpoint. The private DNS zone is linked to the **hub** and **spoke1** vnets.
 
-> Note <br>
+> [!NOTE]
 > - SNAT is still required and best practice for traffic symmetry to ensure return traffic from Private Endpoints takes the same route back to the user. <br>
 > - the default /32 route of Private endpoint is protocol aware and will only apply to TCP traffic. UDP and ICMP traffic will not be affected. <br>
 >
@@ -269,7 +269,7 @@ Routing table in ExpressRoute circuit private peering-primary link:
 
 The BGP routin table in ExpressRoute circuit remains unchanged vs the CASE1 described above.
 
-Running the capture in the **nva** for traffic going to the Private Endpoint 10.0.50.4:
+Running the capture in the **nva** for traffic going to the Private Endpoint 10.0.50.4: <br>
 root@nva:~# **tcpdump -nq net 10.0.50.0/27** <br>
 or larger tcpdump filter: <br>
 root@nva:~# **tcpdump -nq net 10.1.34.0/25 or net 10.0.100.32/27 or net 10.0.50.32/27 or net 10.0.50.0/27** <br>
