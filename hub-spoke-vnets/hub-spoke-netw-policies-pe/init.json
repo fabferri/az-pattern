@@ -1,0 +1,12 @@
+{
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "subscriptionName": "AzDev1",
+    "ResourceGroupName": "test-pe",
+    "location1": "westus2",
+    "location2": "westus2",
+    "erSubscriptionId": "SUBSCRIPTION_ID_WHERE_IS_DEPLOYED_THE_EXPRESS_ROUTE_CIRCUIT",
+    "erResourceGroup": "SEA-Cust34",
+    "erCircuitName": "SEA-Cust34-ER",
+    "erAuthorizationKey": "AUTHROIZATION_CODE_EXPRESS_ROUTE_CIRCUIT"
+}

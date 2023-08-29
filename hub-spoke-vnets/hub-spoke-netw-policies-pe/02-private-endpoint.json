@@ -1,0 +1,258 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "hubName": {
+      "type": "string",
+      "defaultValue": "hub",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "spoke1Name": {
+      "type": "string",
+      "defaultValue": "spoke1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "blobStorageAccountName": {
+      "type": "string",
+      "defaultValue": "[concat('bl', uniquestring(resourceGroup().id))]",
+      "metadata": {
+        "description": "Specifies the globally unique name for the storage account used to store the boot diagnostics logs of the virtual machine."
+      }
+    },
+    "blobStorageAccountPrivateEndpointName": {
+      "type": "string",
+      "defaultValue": "BlobStorageAccountPrivateEndpoint",
+      "metadata": {
+        "description": "Specifies the name of the private link to the boot diagnostics storage account."
+      }
+    }
+  },
+  "variables": {
+    "hub": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('hubName')]",
+      "addressPrefix": "10.0.100.0/24",
+      "subnetNVAName": "nva-subnet",
+      "subnetNVAPrefix": "10.0.100.0/27",
+      "subnetTenantName":"tenant-subnet",
+      "subnetTenantPrefix": "10.0.100.32/27",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.100.192/26"
+    },
+    "spoke1": {
+      "location": "[parameters('location2')]",
+      "name": "[parameters('spoke1Name')]",
+      "addressPrefix": "10.0.50.0/24",
+      "subnetPEName": "pe-subnet",
+      "subnetPEPrefix": "10.0.50.0/27",
+      "subnetTenantName": "subnet-tenant",
+      "subnetTenantPrefix": "10.0.50.32/27"
+    },
+
+    "blobPublicDNSZoneForwarder": "[concat('.blob.', environment().suffixes.storage)]",
+    "blobPrivateDnsZoneName": "[concat('privatelink', variables('blobPublicDNSZoneForwarder'))]",
+    "blobStorageAccountPrivateEndpointGroupName": "blob",
+    "blobPrivateDnsZoneGroup": "[concat(parameters('blobStorageAccountPrivateEndpointName'),'/', variables('blobStorageAccountPrivateEndpointGroupName'), 'PrivateDnsZoneGroup')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-06-01",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('blobStorageAccountName')]",
+      "location": "[parameters('location2')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "publicNetworkAccess": "Disabled",
+        "minimumTlsVersion": "TLS1_0",
+        "allowBlobPublicAccess": true,
+        "networkAcls": {
+          "resourceAccessRules": [],
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Deny"
+        },
+        "supportsHttpsTrafficOnly": true,
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('blobPrivateDnsZoneName')]",
+      "location": "global",
+      "properties": {
+        "maxNumberOfRecordSets": 25000,
+        "maxNumberOfVirtualNetworkLinks": 1000,
+        "maxNumberOfVirtualNetworkLinksWithRegistration": 100
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[concat(variables('blobPrivateDnsZoneName'), '/link_to_', toLower(variables('spoke1').name))]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[concat(variables('blobPrivateDnsZoneName'), '/link_to_', toLower(variables('hub').name))]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2020-04-01",
+      "name": "[parameters('blobStorageAccountPrivateEndpointName')]",
+      "location": "[variables('spoke1').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('spoke1').name)]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName'))]"
+      ],
+      "properties": {
+        "privateLinkServiceConnections": [
+          {
+            "name": "[parameters('blobStorageAccountPrivateEndpointName')]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('blobStorageAccountName'))]",
+              "groupIds": [
+                "[variables('blobStorageAccountPrivateEndpointGroupName')]"
+              ]
+            }
+          }
+        ],
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('spoke1').name, variables('spoke1').subnetPEName)]"
+        },
+        "customDnsConfigs": [
+          {
+            "fqdn": "[concat(parameters('blobStorageAccountName'), variables('blobPublicDNSZoneForwarder'))]"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2020-03-01",
+      "name": "[variables('blobPrivateDnsZoneGroup')]",
+      "location": "[variables('spoke1').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
+        "[resourceId('Microsoft.Network/privateEndpoints', parameters('blobStorageAccountPrivateEndpointName'))]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "dnsConfig",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('hub').name]",
+      "apiVersion": "2023-04-01",
+      "location": "[variables('hub').location]",
+      "dependsOn": [],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('hub').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('hub').subnetNVAName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').subnetNVAPrefix]"
+            }
+          },
+          {
+            "name": "[variables('hub').subnetTenantName]",
+            "properties": {
+              "addressPrefix": "[variables('hub').subnetTenantPrefix]"
+            }
+          },
+          {
+            "name": "GatewaySubnet",
+            "properties": {
+              "addressPrefix": "[variables('hub').gatewaySubnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('spoke1').name]",
+      "apiVersion": "2023-04-01",
+      "location": "[variables('spoke1').location]",
+      "dependsOn": [],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('spoke1').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('spoke1').subnetPEName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke1').subnetPEPrefix]",
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "name": "[variables('spoke1').subnetTenantName]",
+            "properties": {
+              "addressPrefix": "[variables('spoke1').subnetTenantPrefix]"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,310 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "hubName": {
+      "type": "string",
+      "defaultValue": "hub",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "spoke1Name": {
+      "type": "string",
+      "defaultValue": "spoke1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "linux": {
+      "type": "object",
+      "defaultValue": {
+        "publisher": "canonical",
+        "offer": "0001-com-ubuntu-server-jammy",
+        "sku": "22_04-lts-gen2",
+        "version": "latest"
+      }
+    },
+    "windows": {
+      "type": "object",
+      "defaultValue": {
+        "publisher": "MicrosoftWindowsServer",
+        "offer": "WindowsServer",
+        "sku": "2022-Datacenter",
+        "version": "latest"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for sample VM"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "User password for sample VM"
+      }
+    },
+    "diskStorageAccounType": {
+      "type": "string",
+      "defaultValue": "Premium_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Standard_ZRS",
+        "Premium_LRS",
+        "Premium_ZRS",
+        "Standard_GZRS",
+        "Standard_RAGZRS"
+      ],
+      "metadata": {
+        "description": "Specifies the storage account type for OS and data disk."
+      }
+    },
+    "erSubscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "ExpresssRoute subscription Id"
+      }
+    },
+    "erResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "resource group of the ER circuit"
+      }
+    },
+    "erCircuitName": {
+      "type": "string",
+      "metadata": {
+        "description": "ER circuit name"
+      }
+    },
+    "erAuthorizationKey": {
+      "type": "string",
+      "metadata": {
+        "description": "authroization key of the ER circuit. it has the format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX"
+      }
+    },
+    "erGatewayName": {
+      "type": "string",
+      "defaultValue": "ergw",
+      "metadata": {
+        "description": "Arbitrary name for the new gateway"
+      }
+    },
+    "erConnectionName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('erGatewayName'),'-conn')]",
+      "metadata": {
+        "description": "name of Expressroute Connection between ER Gateway1 and ER circuit"
+      }
+    }
+  },
+  "variables": {
+    "hub": {
+      "location": "[parameters('location1')]",
+      "name": "[parameters('hubName')]",
+      "addressPrefix": "10.0.100.0/24",
+      "subnetNVAName": "nva-subnet",
+      "subnetNVAPrefix": "10.0.100.0/27",
+      "subnetTenantName": "tenant-subnet",
+      "subnetTenantPrefix": "10.0.100.32/27",
+      "gatewaySubnetName": "GatewaySubnet",
+      "gatewaySubnetPrefix": "10.0.100.192/26"
+    },
+    "spoke1": {
+      "location": "[parameters('location2')]",
+      "name": "[parameters('spoke1Name')]",
+      "addressPrefix": "10.0.50.0/24",
+      "subnetPEName": "pe-subnet",
+      "subnetPEPrefix": "10.0.50.0/27",
+      "subnetTenantName": "subnet-tenant",
+      "subnetTenantPrefix": "10.0.50.32/27"
+    },
+    "peeringNamehubspoke1": "[concat(variables('hub').name,'To',variables('spoke1').name)]",
+    "peeringNamespoke1hub": "[concat(variables('spoke1').name,'To',variables('hub').name)]",
+    "erGatewayName": "[parameters('erGatewayName')]",
+    "erGatewayPublicIPName": "[concat(parameters('erGatewayName'),'-pubIP')]",
+    "erGatewaySku": "ErGw1Az",
+    "erCircuitId": "[concat('/subscriptions/', parameters('erSubscriptionId'),'/resourceGroups/',parameters('erResourceGroup'),'/providers/Microsoft.Network/expressRouteCircuits/',parameters('erCircuitName'))]",
+
+    "linuxUpdate": "sudo apt update",
+    "linuxNgixCommand": "[concat('sudo apt-get -y install nginx && sudo systemctl enable nginx && sudo systemctl start nginx',' && ','echo \"<style> h1 { color: blue; } </style> <h1>\" > /var/www/html/index.nginx-debian.html', ' && ', 'cat /etc/hostname >> /var/www/html/index.nginx-debian.html', ' && ', 'echo \" </h1>\" >> /var/www/html/index.nginx-debian.html')]",
+    "linuxCommand": "[concat( 'sleep 1m', ' && ', variables('linuxUpdate'), ' && ', variables('linuxNgixCommand'))]",
+
+    "linuxIPFowardingCommand": "sed -i -e '/^\\(net.ipv4.ip_forward=\\).*/{s//\\11/;:a;n;ba;q}' -e '$anet.ipv4.ip_forward=1' /etc/sysctl.conf; sysctl -p",
+    "nvalinuxCommand": "[concat( 'sleep 1m', ' && ', variables('linuxUpdate'), ' && ', variables('linuxIPFowardingCommand'))]",
+
+    "windowsCommand": "powershell.exe Install-WindowsFeature -name Web-Server -IncludeManagementTools && powershell.exe remove-item 'C:\\inetpub\\wwwroot\\iisstart.htm' && powershell.exe Add-Content -Path 'C:\\inetpub\\wwwroot\\iisstart.htm' -Value $('Hello World from ' + $env:computername) && powershell.exe New-NetFirewallRule -Name 'allow_ICMPv4_in' -DisplayName 'Allow ICMPv4' -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol ICMPv4",
+
+    "nvaName": "nva",
+    "nvaIpAddresses": "10.0.100.10",
+    "vm1hubName": "vm1hub",
+    "vm1hubIpAddresses": "10.0.100.50",
+    "vm1spoke1Name": "vm1spoke1",
+    "vm1spoke1IpAddresses": "10.0.50.50",
+    "vmpespoke1Name": "vmpespoke1",
+    "vmpespoke1IpAddresses": "10.0.50.10",
+
+    "vmArray": [
+      {
+        "location": "[variables('hub').location]",
+        "vmName": "[variables('nvaName')]",
+        "vmSize": "Standard_B1s",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "version": "[parameters('linux').version]",
+        "vnetName": "[variables('hub').name]",
+        "subnetName": "[variables('hub').subnetNVAName]",
+        "nicName": "[concat(variables('nvaName'),'-nic')]",
+        "privateIP": "[variables('nvaIpAddresses')]",
+        "enableIPForwarding": "true",
+        "nsgName": "[concat(variables('nvaName'),'-nsg')]",
+        "pubIP": "[concat(variables('nvaName'),'-pubIP')]",
+        "commandToExecute": "[variables('nvalinuxCommand')]"
+      },
+      {
+        "location": "[variables('hub').location]",
+        "vmName": "[variables('vm1hubName')]",
+        "vmSize": "Standard_B2ms",
+        "publisher": "[parameters('windows').publisher]",
+        "offer": "[parameters('windows').offer]",
+        "sku": "[parameters('windows').sku]",
+        "version": "[parameters('windows').version]",
+        "vnetName": "[variables('hub').name]",
+        "subnetName": "[variables('hub').subnetTenantName]",
+        "nicName": "[concat(variables('vm1hubName'),'-nic')]",
+        "privateIP": "[variables('vm1hubIpAddresses')]",
+        "enableIPForwarding": "false",
+        "nsgName": "[concat(variables('vm1hubName'),'-nsg')]",
+        "pubIP": "[concat(variables('vm1hubName'),'-pubIP')]",
+        "commandToExecute": "[variables('windowsCommand')]"
+      },
+      {
+        "location": "[variables('spoke1').location]",
+        "vmName": "[variables('vm1spoke1Name')]",
+        "vmSize": "Standard_B2ms",
+        "publisher": "[parameters('windows').publisher]",
+        "offer": "[parameters('windows').offer]",
+        "sku": "[parameters('windows').sku]",
+        "version": "[parameters('windows').version]",
+        "vnetName": "[variables('spoke1').name]",
+        "subnetName": "[variables('spoke1').subnetTenantName]",
+        "nicName": "[concat(variables('vm1spoke1Name'),'-nic')]",
+        "privateIP": "[variables('vm1spoke1IpAddresses')]",
+        "enableIPForwarding": "false",
+        "nsgName": "[concat(variables('vm1spoke1Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vm1spoke1Name'),'-pubIP')]",
+        "commandToExecute": "[variables('windowsCommand')]"
+      },
+      {
+        "location": "[variables('spoke1').location]",
+        "vmName": "[variables('vmpespoke1Name')]",
+        "vmSize": "Standard_B1s",
+        "publisher": "[parameters('linux').publisher]",
+        "offer": "[parameters('linux').offer]",
+        "sku": "[parameters('linux').sku]",
+        "version": "[parameters('linux').version]",
+        "vnetName": "[variables('spoke1').name]",
+        "subnetName": "[variables('spoke1').subnetPEName]",
+        "nicName": "[concat(variables('vmpespoke1Name'),'-nic')]",
+        "privateIP": "[variables('vmpespoke1IpAddresses')]",
+        "enableIPForwarding": "false",
+        "nsgName": "[concat(variables('vmpespoke1Name'),'-nsg')]",
+        "pubIP": "[concat(variables('vmpespoke1Name'),'-pubIP')]",
+        "commandToExecute": "[variables('linuxCommand')]"
+      }
+    ],
+    "vmCount": "[length(variables('vmArray'))]"
+  },
+  "resources": [
+   
+    {
+      "comments": "public IP of the ExpressRoute Gateway",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('erGatewayPublicIPName')]",
+      "apiVersion": "2023-04-01",
+      "location": "[variables('hub').location]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      },
+      "zones": [ "1", "2", "3" ]
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworkGateways",
+      "name": "[variables('erGatewayName')]",
+      "apiVersion": "2023-04-01",
+      "location": "[variables('hub').location]",
+      "comments": "This is the ExpressRoute Gateway for the vNet",
+      "dependsOn": [
+         //  "[resourceId('Microsoft.Network/virtualNetworks', variables('hub').name)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('erGatewayPublicIPName'))]"
+     
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('hub').name, 'GatewaySubnet')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('erGatewayPublicIPName'))]"
+              }
+            },
+            "name": "gwipcfg"
+          }
+        ],
+        "gatewayType": "ExpressRoute",
+        "sku": {
+          "name": "[variables('erGatewaySku')]",
+          "tier": "[variables('erGatewaySku')]"
+        },
+        "vpnType": "RouteBased"
+      }
+    },
+    {
+      "condition": "[and( not(empty(parameters('erResourceGroup'))), not(empty(parameters('erCircuitName'))) )]",
+      "type": "Microsoft.Network/connections",
+      "apiVersion": "2023-04-01",
+      "name": "[parameters('erConnectionName')]",
+      "location": "[variables('hub').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('erGatewayName') )]"
+      ],
+      "properties": {
+        "virtualNetworkGateway1": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('erGatewayName') )]"
+        },
+        "connectionType": "ExpressRoute",
+        "routingWeight": 0,
+        "authorizationKey": "[if(empty(parameters('erAuthorizationKey')), json('null'), parameters('erAuthorizationKey'))]",
+        "peer": {
+          "id": "[variables('erCircuitId')]"
+        }
+      }
+    }
+  ]
+}
