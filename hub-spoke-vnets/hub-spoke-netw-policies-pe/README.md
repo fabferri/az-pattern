@@ -269,10 +269,14 @@ Routing table in ExpressRoute circuit private peering-primary link:
 
 The BGP routin table in ExpressRoute circuit remains unchanged vs the CASE1 described above.
 
-Running the capture in the **nva** for traffic going to the Private Endpoint 10.0.50.4: <br>
-root@nva:~# **tcpdump -nq net 10.0.50.0/27** <br>
-or larger tcpdump filter: <br>
-root@nva:~# **tcpdump -nq net 10.1.34.0/25 or net 10.0.100.32/27 or net 10.0.50.32/27 or net 10.0.50.0/27** <br>
+Running the capture in the **nva** for traffic going to the Private Endpoint 10.0.50.4: 
+```console
+root@nva:~# tcpdump -nq net 10.0.50.0/27
+
+or larger tcpdump filter:
+
+root@nva:~# tcpdump -nq net 10.1.34.0/25 or net 10.0.100.32/27 or net 10.0.50.32/27 or net 10.0.50.0/27
+```
 
 From on-prem client 10.1.34.11, connect by storage explorer through Private Endpoint. The traffic is pass through the **nva**; here a snippet of the capture:
 
