@@ -48,10 +48,11 @@ A full network diagram with IP network addresses is shown below:
 The Private Endpoint to access to Azure Storage blob is deployed in **pe-subnet** subnet of the **spoke1**. <br>
 A private DNS zone is created **privatelink.blob.core.windows.net** to resolve the storage blob connected to the vnet through Private Endpoint. The private DNS zone is linked to the **hub** and **spoke1** vnets.
 
-> > Note <br>
+> Note <br>
 > - SNAT is still required and best practice for traffic symmetry to ensure return traffic from Private Endpoints takes the same route back to the user. <br>
 > - the default /32 route of Private endpoint is protocol aware and will only apply to TCP traffic. UDP and ICMP traffic will not be affected. <br>
 >
+
 ## <a name="privateEndpointNetworkPolicies Disabled"></a>1. CASE1: privateEndpointNetworkPolicies is Disabled and no UDR applied to pe-subnet in spoke1
 In this case:
 - in the Private Endpoint subnet the **"privateEndpointNetworkPolicies"** is **Disabled**. <br>
