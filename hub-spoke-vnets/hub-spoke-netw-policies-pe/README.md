@@ -23,9 +23,9 @@ The article aims to discuss the network policies for Private Endpoints with UDR 
 [![1]][1]
 
 When a Private Endpoints is defined a virtual NIC which is placed within a vnet and is attached to a PaaS service. <br>
-Unlike regular NICs, private endpoints are a bit different because automatically create a /32 default route that will be propagated across its own vnet and other peered vnets. This means that if you have a hub-and-spoke model where you have a Private Endpoint in one of the spokes, then the private endpoint default route will be also propagated into the hub network as well.<br>
-There is no option to see the effective routes directly on the private endpoints; therefore, if you want to see the routes you need to do it from a NIC of a virtual machine attached to the subnet of the private endpoint. <br>
-You can configure a User-Defined Routes (UDR) or NSG for a private endpoint, but that requires that network policies must be enabled for the subnet to allow communication. <br>
+Unlike regular NICs, Private Endpoints are a bit different because automatically create a /32 default route that will be propagated across its own vnet and other peered vnets. This means that if you have a hub-and-spoke model where you have a Private Endpoint in one of the spokes, then the Private Endpoint default route will be also propagated into the hub network as well.<br>
+There is no option to see the effective routes directly on the Private Endpoints; therefore, if you want to see the routes you need to do it from a NIC of a virtual machine attached to the subnet of the Private Endpoint. <br>
+You can configure a User-Defined Routes (UDR) or NSG for a Private Endpoint, but that requires that network policies must be enabled for the subnet to allow communication. <br>
 Network policies can be enabled either for NSG only, for UDR only, or for both. <br>
 The attribute to enable the network policy in a subnet is named **PrivateEndpointNetworkPolicies**. In other words, an Azure subnet **"Microsoft.Network/virtualNetworks/subnets"** has a property: <br>
 **"privateEndpointNetworkPolicies"**: "string" <br>
@@ -37,9 +37,9 @@ This property can take the following values:
 **"privateEndpointNetworkPolicies"**: "NetworkSecurityGroupEnabled" <br>
 **"privateEndpointNetworkPolicies"**: "RouteTableEnabled" <br>
 
-By default, network policy for private endpoint is **"Disabled"** for a subnet in a virtual network.<br>
+By default, network policy for Private Endpoint is **"Disabled"** for a subnet in a virtual network.<br>
 
-If you enable network security policies for UDR, <ins>you can use a custom address prefix equal to or larger than the VNet address space to invalidate the /32 default route propagated by the Private Endpoint</ins>. This can be useful if you want to ensure private endpoint connection requests go through a firewall or Virtual Appliance. Otherwise, the /32 default route would send traffic directly to the private endpoint in accordance with the longest prefix match algorithm.
+If you enable network security policies for UDR, <ins>you can use a custom address prefix equal to or larger than the VNet address space to invalidate the /32 default route propagated by the Private Endpoint</ins>. This can be useful if you want to ensure private endpoint connection requests go through a firewall or Virtual Appliance. Otherwise, the /32 default route would send traffic directly to the Private Endpoint in accordance with the longest prefix match algorithm.
 
 A full network diagram with IP network addresses is shown below:
 
@@ -154,7 +154,7 @@ Routing table in ExpressRoute circuit private peering-primary link:
 | 10.1.34.0/25  | 192.168.34.17  |        | 0      | 65020 |
 
 
-The Expressroute circuit BGP table contains the address space of hub vnet, spoke1 vnets and the network on-premises (10.1.34.0/25) but it doesn't contain the Private Endpoint default route **10.0.50.4/32**.
+The ExpressRoute circuit BGP table contains the address space of hub vnet, spoke1 vnets and the network on-premises (10.1.34.0/25) but it doesn't contain the Private Endpoint default route **10.0.50.4/32**.
 
 <br>
 
@@ -187,7 +187,7 @@ Effective routes in **vmpespoke1-nic**:
 | User    | Active  | 0.0.0.0/0        | Virtual appliance | 10.0.100.10         | to-nva                  |
 | Default | Invalid | 10.0.50.4/32     | InterfaceEndpoint | \-                  | \-                      |
 
-the effective routing table shows that the default network for the private endpoint **10.0.50.4/32** is invalid.
+the effective routing table shows that the default network for the Private Endpoint **10.0.50.4/32** is invalid.
 
 <br>
 
@@ -320,9 +320,9 @@ The data traffic paths are shown in the diagrams:
 | File name                    | Description                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------- |
 | **init.json**                | define the value of input variables required for the full deployment                                    |
-| **01-az.json**               | ARM template to deploy hub and spoke vnets, vnet peering,  ExpressRoute Gateway and Connection to the Expressroute circuit, Azure VMs |
+| **01-az.json**               | ARM template to deploy hub and spoke vnets, vnet peering,  ExpressRoute Gateway and Connection to the ExpressRoute circuit, Azure VMs |
 | **01-az.ps1**                | powershell script to deploy **01-az.json**                                                              |
-| **02-private-endpoint.json** | ARM template to create an Azure storage account, private endpoint for the blob, Azure private DNS zone for the blob |
+| **02-private-endpoint.json** | ARM template to create an Azure storage account, Private Endpoint for the blob, Azure private DNS zone for the blob |
 | **02-private-endpoint.ps1**  | powershell to script to run **02-private-endpoint.json**                                               | 
 | **03-vnet-peering-udr.json** | ARM template to modify the vnet peering , create UDRs and apply the UDRs                               |
 | **03-vnet-peering-udr.ps1**  | powershell to script to run **03-vnet-peering-udr.json**                                               | 
@@ -358,10 +358,10 @@ The meaning of input variables in **init.json** are explained below:
 
 [1]: ./media/network-diagram01.png "high level network diagram"
 [2]: ./media/network-diagram02.png "network diagram with details"
-[3]: ./media/network-diagram03.png "network diagram with privateEndpointNetworkPolicies Disabled and no UDR applied to the private endpoint subnet"
+[3]: ./media/network-diagram03.png "network diagram with privateEndpointNetworkPolicies Disabled and no UDR applied to the Private Endpoint subnet"
 [4]: ./media/network-diagram04.png "CASE1: data path"
 [5]: ./media/network-diagram05.png "CASE1: data path"
-[6]: ./media/network-diagram06.png "network diagram with privateEndpointNetworkPolicies Enabled and UDR applied to the private endpoint subnet"
+[6]: ./media/network-diagram06.png "network diagram with privateEndpointNetworkPolicies Enabled and UDR applied to the Private Endpoint subnet"
 [7]: ./media/network-diagram07.png "CASE2: data path"
 [8]: ./media/network-diagram08.png "CASE2: data path"
 
