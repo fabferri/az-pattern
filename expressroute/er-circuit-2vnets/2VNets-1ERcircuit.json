@@ -2,38 +2,23 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "azureRegion1": {
+        "location1": {
             "type": "string",
-            "defaultValue": "eastus2",
-            "allowedValues": [ 
-                    "northeurope","westeurope", "francecentral", "uksouth", "ukwest",
-                    "centralindia", "southindia","westindia","southeastasia", "eastasia",
-                    "eastus","eastus2","centralus","southcentralus","northcentralus","westus","westus2",
-                    "australiaeast","australiacentral","australiasoutheast" ],
+            "defaultValue": "westus2",
             "metadata": {
-              "description": "azure region where is deployed the first VNet"
+                "description": "azure region where is deployed the first VNet"
             }
-          },
-          "azureRegion2": {
+        },
+        "location2": {
             "type": "string",
-            "defaultValue": "centralus",
-            "allowedValues": [ 
-                "northeurope","westeurope", "francecentral", "uksouth", "ukwest",
-                "centralindia", "southindia","westindia","southeastasia", "eastasia",
-                "eastus","eastus2","centralus","southcentralus","northcentralus","westus","westus2",
-                "australiaeast","australiacentral","australiasoutheast" ],
+            "defaultValue": "westus2",
             "metadata": {
-              "description": "azure region where is deployed the second VNet"
+                "description": "azure region where is deployed the second VNet"
             }
-          },
-          "gatewaySku": {
+        },
+        "gatewaySku": {
             "type": "string",
-            "defaultValue": "HighPerformance",
-            "allowedValues": [
-                "Standard",
-                "HighPerformance",
-                "UltraPerformance"
-            ],
+            "defaultValue": "ErGw1Az",
             "metadata": {
                 "description": "The SKU for the ExpressRoute Gateway"
             }
@@ -50,76 +35,81 @@
                 "description": "admin password for the VMs"
             }
         },
-        "vmsize":{
+        "vmsize": {
             "type": "string",
-            "defaultValue": "Standard_D8s_v3",
-            "allowedValues": [ 
-                "Standard_D2s_v3", "Standard_D4s_v3", "Standard_D8s_v3"
-            ],
+            "defaultValue": "Standard_F2s_v2",
             "metadata": {
                 "description": "VM SKU"
-              }
+            }
         }
     },
     "variables": {
         "vNet1": {
-            "location": "[parameters('azureRegion1')]",
-            "name": "vNet1",
+            "location": "[parameters('location1')]",
+            "name": "vnet1",
             "addressSpacePrefix": "10.0.1.0/24",
             "subnet1Name": "subnet1",
             "subnet1Prefix": "10.0.1.0/27",
             "subnet2Name": "GatewaySubnet",
-            "subnet2Prefix": "10.0.1.224/27",
-            "gatewayPublicIPName":"vNet1-gw-pubIP",
-            "gatewayName": "vNet1-gw",
-            "gatewaySku" : "[parameters('gatewaySku')]",
+            "subnet2Prefix": "10.0.1.192/26",
+            "gatewayPublicIPName": "gw1-pubIP",
+            "gatewayName": "gw1",
+            "gatewaySku": "[parameters('gatewaySku')]",
             "connectionName": "conn-er-vnet1",
-            "authorizationKey" : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXX",
-            "erCircuitId": "EXPRESSROUTE_CIRCUIT_Identification"
+            "authorizationKey": "AUTHORIZATION_CODE_1",
+            "erCircuitId": "EXPRESSROUTE_CIRCUIT1_ID"
         },
         "vNet2": {
-            "location": "[parameters('azureRegion2')]",
-            "name": "vNet2",
+            "location": "[parameters('location2')]",
+            "name": "vnet2",
             "addressSpacePrefix": "10.0.2.0/24",
             "subnet1Name": "subnet1",
             "subnet1Prefix": "10.0.2.0/27",
             "subnet2Name": "GatewaySubnet",
-            "subnet2Prefix": "10.0.2.224/27",
-            "gatewayPublicIPName":"vNet2-gw-pubIP",
-            "gatewayName": "vNet2-gw",
-            "gatewaySku" : "[parameters('gatewaySku')]",
+            "subnet2Prefix": "10.0.2.192/26",
+            "gatewayPublicIPName": "gw2-pubIP",
+            "gatewayName": "gw2",
+            "gatewaySku": "[parameters('gatewaySku')]",
             "connectionName": "conn-er-vnet2",
-            "authorizationKey" : "YYYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYY",
-            "erCircuitId": "EXPRESSROUTE_CIRCUIT_Identification"
+            "authorizationKey": "AUTHORIZATION_CODE_2",
+            "erCircuitId": "EXPRESSROUTE_CIRCUIT2_ID"
         },
         "nsg1Name": "nsg1",
         "nsg2Name": "nsg2",
-        "vmsize":  "[parameters('vmsize')]", 
-        "adminUsername":"[parameters('adminUsername')]",
-        "adminPassword":"[parameters('adminPassword')]",
+        "vmsize": "[parameters('vmsize')]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]",
+        "vm1Name": "vm1",
+        "vm2Name": "vm2",
         "vmarray": [
             {
                 "location": "[variables('vNet1').location]",
-                "vmName": "vm1",
+                "vmName": "[variables('vm1Name')]",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.6",
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-jammy",
+                "imageSKU": "22_04-lts-gen2",
                 "vNetName": "[variables('vNet1').name]",
                 "subnetName": "[variables('vNet1').subnet1Name]",
+                "nicName": "[format('{0}-{1}',variables('vm1Name'),'NIC')]",
+                "privateIPName":"[format('{0}-{1}',variables('vm1Name'),'privIP')]",
+                "publicIPName":"[format('{0}-{1}',variables('vm1Name'),'pubIP')]",
                 "privateIP": "10.0.1.10",
                 "enableIPForwarding": false,
                 "acceleratedNetworking": false
             },
             {
                 "location": "[variables('vNet2').location]",
-                "vmName": "vm2",
+                "vmName": "[variables('vm2Name')]",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.6",
+                "imagePublisher": "canonical",
+                "imageOffer": "0001-com-ubuntu-server-jammy",
+                "imageSKU": "22_04-lts-gen2",
                 "vNetName": "[variables('vNet2').name]",
                 "subnetName": "[variables('vNet2').subnet1Name]",
+                "nicName": "[format('{0}-{1}',variables('vm2Name'),'NIC')]",
+                "privateIPName":"[format('{0}-{1}',variables('vm2Name'),'privIP')]",
+                "publicIPName":"[format('{0}-{1}',variables('vm2Name'),'pubIP')]",
                 "privateIP": "10.0.2.10",
                 "enableIPForwarding": false,
                 "acceleratedNetworking": false
@@ -129,7 +119,7 @@
     },
     "resources": [
         {
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsg1Name')]",
             "location": "[variables('vNet1').location]",
@@ -168,7 +158,7 @@
             }
         },
         {
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsg2Name')]",
             "location": "[variables('vNet2').location]",
@@ -191,9 +181,9 @@
                     }
                 ]
             }
-        },   
+        },
         {
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet1').name]",
             "location": "[variables('vNet1').location]",
@@ -227,7 +217,7 @@
             }
         },
         {
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet2').name]",
             "location": "[variables('vNet2').location]",
@@ -263,19 +253,23 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('vNet1').gatewayPublicIPName]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('vNet1').location]",
-            "comments": "This is the public IP for ExpressRoute Gateway",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "comments": "This is the public IP for ExpressRoute Gateway in vnet1",
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[variables('vNet1').gatewayName]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('vNet1').location]",
-            "comments": "This is the ExpressRoute Gateway for vNet",
+            "comments": "This is the ExpressRoute Gateway for vNet1",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('vNet1').gatewayPublicIPName)]",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1').name)]"
@@ -292,7 +286,7 @@
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNet1').gatewayPublicIPName)]"
                             }
                         },
-                        "name": "gwipconf-1"
+                        "name": "gwipconf1"
                     }
                 ],
                 "gatewayType": "ExpressRoute",
@@ -306,17 +300,21 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('vNet2').gatewayPublicIPName]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('vNet2').location]",
-            "comments": "This is the public IP for ExpressRoute Gateway",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "comments": "This is the public IP for ExpressRoute Gateway in vnet2",
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[variables('vNet2').gatewayName]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('vNet2').location]",
             "comments": "This is the ExpressRoute Gateway for vNet",
             "dependsOn": [
@@ -348,7 +346,7 @@
         },
         {
             "type": "Microsoft.Network/connections",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "name": "[variables('vNet1').connectionName]",
             "location": "[variables('vNet1').location]",
             "dependsOn": [
@@ -368,7 +366,7 @@
         },
         {
             "type": "Microsoft.Network/connections",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "name": "[variables('vNet2').connectionName]",
             "location": "[variables('vNet2').location]",
             "dependsOn": [
@@ -388,16 +386,17 @@
             }
         },
         {
-            "apiVersion": "2019-07-01",
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "name": "[variables('vmArray')[copyIndex()].publicIPName]",
+            "apiVersion": "2022-11-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "crate public IP for the VMs",
             "sku": {
-                "name": "Basic"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
             },
             "copy": {
                 "name": "publicIpCopy",
@@ -405,13 +404,13 @@
             }
         },
         {
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+            "name": "[ variables('vmArray')[copyIndex()].nicName]",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vNetName )]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].publicIPName )]"
             ],
             "properties": {
                 "primary": true,
@@ -424,7 +423,7 @@
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
                             "publicIPAddress": {
-                                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+                                "id": "[resourceId( 'Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].publicIPName) ]"
                             },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vNetName, variables('vmArray')[copyIndex()].subnetName)]"
@@ -439,12 +438,12 @@
             }
         },
         {
-            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2023-03-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -459,7 +458,7 @@
                     "imageReference": {
                         "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
                         "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
-                        "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+                        "sku": "[variables('vmArray')[copyIndex()].imageSKU]",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -470,7 +469,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
                         }
                     ]
                 }
