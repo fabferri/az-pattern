@@ -1,0 +1,151 @@
+-------------------------------------
+10/29/2023 15:52:59 - location: eastus
+10/29/2023 15:52:59 - Origin VM size: Standard_B2s
+10/29/2023 15:52:59 - removing public IP from the Origin VM: vm1
+10/29/2023 15:52:59 - runtime...: 01:00 (M:S)
+10/29/2023 15:52:59 - start time: 10/29/2023 15:51:59
+10/29/2023 15:52:59 - end time..: 10/29/2023 15:52:59
+
+10/29/2023 15:54:00 - location: eastus
+10/29/2023 15:54:00 - Origin VM size: Standard_B2s
+10/29/2023 15:54:00 - assign public IP from the Destination VM: vm2
+10/29/2023 15:54:00 - runtime...: 01:00 (M:S)
+10/29/2023 15:54:00 - start time: 10/29/2023 15:52:59
+10/29/2023 15:54:00 - end time..: 10/29/2023 15:54:00
+-------------------------------------
+-------------------------------------
+10/29/2023 16:20:41 - location: eastus
+10/29/2023 16:20:41 - Origin VM size: Standard_B2s
+10/29/2023 16:20:41 - removing public IP from the Origin VM: vm1
+10/29/2023 16:20:41 - runtime...: 00:07 (M:S)
+10/29/2023 16:20:41 - start time: 10/29/2023 16:20:33
+10/29/2023 16:20:41 - end time..: 10/29/2023 16:20:41
+
+10/29/2023 16:21:41 - location: eastus
+10/29/2023 16:21:41 - Origin VM size: Standard_B2s
+10/29/2023 16:21:41 - assign public IP from the Destination VM: vm2
+10/29/2023 16:21:41 - runtime...: 01:00 (M:S)
+10/29/2023 16:21:41 - start time: 10/29/2023 16:20:41
+10/29/2023 16:21:41 - end time..: 10/29/2023 16:21:41
+-------------------------------------
+-------------------------------------
+10/29/2023 16:22:20 - location: eastus
+10/29/2023 16:22:20 - Origin VM size: Standard_B2s
+10/29/2023 16:22:20 - removing public IP from the Origin VM: vm2
+10/29/2023 16:22:20 - runtime...: 00:19 (M:S)
+10/29/2023 16:22:20 - start time: 10/29/2023 16:22:01
+10/29/2023 16:22:20 - end time..: 10/29/2023 16:22:20
+
+10/29/2023 16:23:05 - location: eastus
+10/29/2023 16:23:05 - Origin VM size: Standard_B2s
+10/29/2023 16:23:05 - assign public IP from the Destination VM: vm1
+10/29/2023 16:23:05 - runtime...: 00:45 (M:S)
+10/29/2023 16:23:06 - start time: 10/29/2023 16:22:20
+10/29/2023 16:23:06 - end time..: 10/29/2023 16:23:05
+-------------------------------------
+-------------------------------------
+10/29/2023 16:24:35 - location: eastus
+10/29/2023 16:24:35 - Origin VM size: Standard_B2s
+10/29/2023 16:24:35 - removing public IP from the Origin VM: vm1
+10/29/2023 16:24:35 - runtime...: 00:20 (M:S)
+10/29/2023 16:24:35 - start time: 10/29/2023 16:24:14
+10/29/2023 16:24:35 - end time..: 10/29/2023 16:24:35
+
+10/29/2023 16:25:22 - location: eastus
+10/29/2023 16:25:22 - Origin VM size: Standard_B2s
+10/29/2023 16:25:22 - assign public IP from the Destination VM: vm2
+10/29/2023 16:25:22 - runtime...: 00:46 (M:S)
+10/29/2023 16:25:22 - start time: 10/29/2023 16:24:35
+10/29/2023 16:25:22 - end time..: 10/29/2023 16:25:22
+-------------------------------------
+-------------------------------------
+10/29/2023 16:26:09 - location: eastus
+10/29/2023 16:26:09 - Origin VM size: Standard_B2s
+10/29/2023 16:26:09 - removing public IP from the Origin VM: vm2
+10/29/2023 16:26:09 - runtime...: 00:10 (M:S)
+10/29/2023 16:26:09 - start time: 10/29/2023 16:25:59
+10/29/2023 16:26:09 - end time..: 10/29/2023 16:26:09
+
+10/29/2023 16:26:56 - location: eastus
+10/29/2023 16:26:56 - Origin VM size: Standard_B2s
+10/29/2023 16:26:56 - assign public IP from the Destination VM: vm1
+10/29/2023 16:26:56 - runtime...: 00:46 (M:S)
+10/29/2023 16:26:56 - start time: 10/29/2023 16:26:09
+10/29/2023 16:26:56 - end time..: 10/29/2023 16:26:56
+-------------------------------------
+-------------------------------------
+10/29/2023 16:31:56 - location: eastus
+10/29/2023 16:31:56 - Origin VM size: Standard_B2s
+10/29/2023 16:31:56 - removing public IP from the Origin VM: vm1
+10/29/2023 16:31:56 - runtime...: 00:07 (M:S)
+10/29/2023 16:31:56 - start time: 10/29/2023 16:31:48
+10/29/2023 16:31:56 - end time..: 10/29/2023 16:31:56
+
+10/29/2023 16:32:59 - location: eastus
+10/29/2023 16:32:59 - Origin VM size: Standard_B2s
+10/29/2023 16:32:59 - assign public IP from the Destination VM: vm2
+10/29/2023 16:32:59 - runtime...: 01:03 (M:S)
+10/29/2023 16:32:59 - start time: 10/29/2023 16:31:56
+10/29/2023 16:32:59 - end time..: 10/29/2023 16:32:59
+-------------------------------------
+-------------------------------------
+10/29/2023 16:35:34 - location: eastus
+10/29/2023 16:35:34 - Origin VM size: Standard_B2s
+10/29/2023 16:35:34 - removing public IP from the Origin VM: vm2
+10/29/2023 16:35:34 - runtime...: 00:10 (M:S)
+10/29/2023 16:35:34 - start time: 10/29/2023 16:35:24
+10/29/2023 16:35:34 - end time..: 10/29/2023 16:35:34
+
+10/29/2023 16:36:20 - location: eastus
+10/29/2023 16:36:20 - Origin VM size: Standard_B2s
+10/29/2023 16:36:20 - assign public IP from the Destination VM: vm1
+10/29/2023 16:36:20 - runtime...: 00:45 (M:S)
+10/29/2023 16:36:20 - start time: 10/29/2023 16:35:34
+10/29/2023 16:36:20 - end time..: 10/29/2023 16:36:20
+-------------------------------------
+-------------------------------------
+10/29/2023 16:36:43 - location: eastus
+10/29/2023 16:36:43 - Origin VM size: Standard_B2s
+10/29/2023 16:36:43 - removing public IP from the Origin VM: vm1
+10/29/2023 16:36:43 - runtime...: 00:11 (M:S)
+10/29/2023 16:36:43 - start time: 10/29/2023 16:36:32
+10/29/2023 16:36:43 - end time..: 10/29/2023 16:36:43
+
+10/29/2023 16:37:28 - location: eastus
+10/29/2023 16:37:28 - Origin VM size: Standard_B2s
+10/29/2023 16:37:28 - assign public IP from the Destination VM: vm2
+10/29/2023 16:37:28 - runtime...: 00:45 (M:S)
+10/29/2023 16:37:28 - start time: 10/29/2023 16:36:43
+10/29/2023 16:37:28 - end time..: 10/29/2023 16:37:28
+-------------------------------------
+-------------------------------------
+10/29/2023 16:39:55 - location: eastus
+10/29/2023 16:39:55 - Origin VM size: Standard_B2s
+10/29/2023 16:39:55 - removing public IP from the Origin VM: vm2
+10/29/2023 16:39:55 - runtime...: 00:08 (M:S)
+10/29/2023 16:39:55 - start time: 10/29/2023 16:39:47
+10/29/2023 16:39:56 - end time..: 10/29/2023 16:39:55
+
+10/29/2023 16:40:58 - location: eastus
+10/29/2023 16:40:58 - Origin VM size: Standard_B2s
+10/29/2023 16:40:58 - assign public IP from the Destination VM: vm1
+10/29/2023 16:40:58 - runtime...: 01:01 (M:S)
+10/29/2023 16:40:58 - start time: 10/29/2023 16:39:56
+10/29/2023 16:40:58 - end time..: 10/29/2023 16:40:57
+-------------------------------------
+-------------------------------------
+10/29/2023 16:41:48 - location: eastus
+10/29/2023 16:41:48 - Origin VM size: Standard_B2s
+10/29/2023 16:41:48 - removing public IP from the Origin VM: vm1
+10/29/2023 16:41:48 - runtime...: 00:08 (M:S)
+10/29/2023 16:41:48 - start time: 10/29/2023 16:41:39
+10/29/2023 16:41:48 - end time..: 10/29/2023 16:41:48
+
+10/29/2023 16:42:34 - location: eastus
+10/29/2023 16:42:34 - Origin VM size: Standard_B2s
+10/29/2023 16:42:34 - assign public IP from the Destination VM: vm2
+10/29/2023 16:42:34 - runtime...: 00:45 (M:S)
+10/29/2023 16:42:34 - start time: 10/29/2023 16:41:48
+10/29/2023 16:42:34 - end time..: 10/29/2023 16:42:34
+-------------------------------------
+
