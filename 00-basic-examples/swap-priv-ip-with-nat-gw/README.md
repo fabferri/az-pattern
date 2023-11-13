@@ -58,6 +58,20 @@ The powershell script **swap-priv-ip.ps1** writes the runtime operations of swap
 >
 > 
 
+## <a name="dig command"></a>2. dig commands for determining the public IP associated with vm1 and vm2
+Connect to the jump box vm and when you are login inside the **vm3**, connect in ssh to the **vm1** and **vm2**. <br>
+Use one of those commands to discover the public IP associated with the VM:
+```bash
+dig +short myip.opendns.com @resolver1.opendns.com
+
+dig TXT +short o-o.myaddr.l.google.com @ns1.google.com
+
+dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}'
+
+dig +short txt ch whoami.cloudflare @1.0.0.1
+
+host myip.opendns.com resolver1.opendns.com
+```
 
 `Tags: VNET NAT Gateway, secondary private IP, Azure VM` <br>
 `date: 13-11-2023`
