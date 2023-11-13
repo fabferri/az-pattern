@@ -1,0 +1,210 @@
+-------------------------------------
+11/13/2023 13:56:15 - location: eastus2euap
+11/13/2023 13:56:15 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:56:15 - removing public IP from the Origin VM: vm2
+11/13/2023 13:56:15 - runtime...: 00:06 (M:S)
+11/13/2023 13:56:15 - start time: 11/13/2023 13:56:09
+11/13/2023 13:56:15 - end time..: 11/13/2023 13:56:15
+
+11/13/2023 13:56:20 - location: eastus2euap
+11/13/2023 13:56:20 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:56:20 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 13:56:20 - runtime...: 00:05 (M:S)
+11/13/2023 13:56:20 - start time: 11/13/2023 13:56:15
+11/13/2023 13:56:20 - end time..: 11/13/2023 13:56:20
+-------------------------------------
+-------------------------------------
+11/13/2023 13:57:02 - location: eastus2euap
+11/13/2023 13:57:02 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:57:02 - removing public IP from the Origin VM: vm1
+11/13/2023 13:57:02 - runtime...: 00:06 (M:S)
+11/13/2023 13:57:02 - start time: 11/13/2023 13:56:55
+11/13/2023 13:57:02 - end time..: 11/13/2023 13:57:02
+
+11/13/2023 13:57:09 - location: eastus2euap
+11/13/2023 13:57:09 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:57:09 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 13:57:09 - runtime...: 00:07 (M:S)
+11/13/2023 13:57:09 - start time: 11/13/2023 13:57:02
+11/13/2023 13:57:09 - end time..: 11/13/2023 13:57:09
+-------------------------------------
+-------------------------------------
+11/13/2023 13:59:06 - location: eastus2euap
+11/13/2023 13:59:06 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:59:06 - removing public IP from the Origin VM: vm2
+11/13/2023 13:59:06 - runtime...: 00:05 (M:S)
+11/13/2023 13:59:06 - start time: 11/13/2023 13:59:01
+11/13/2023 13:59:06 - end time..: 11/13/2023 13:59:06
+
+11/13/2023 13:59:12 - location: eastus2euap
+11/13/2023 13:59:12 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:59:12 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 13:59:12 - runtime...: 00:06 (M:S)
+11/13/2023 13:59:12 - start time: 11/13/2023 13:59:06
+11/13/2023 13:59:12 - end time..: 11/13/2023 13:59:12
+-------------------------------------
+-------------------------------------
+11/13/2023 13:59:31 - location: eastus2euap
+11/13/2023 13:59:31 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:59:31 - removing public IP from the Origin VM: vm1
+11/13/2023 13:59:31 - runtime...: 00:06 (M:S)
+11/13/2023 13:59:31 - start time: 11/13/2023 13:59:24
+11/13/2023 13:59:31 - end time..: 11/13/2023 13:59:31
+
+11/13/2023 13:59:36 - location: eastus2euap
+11/13/2023 13:59:36 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:59:36 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 13:59:36 - runtime...: 00:05 (M:S)
+11/13/2023 13:59:36 - start time: 11/13/2023 13:59:31
+11/13/2023 13:59:36 - end time..: 11/13/2023 13:59:36
+-------------------------------------
+-------------------------------------
+11/13/2023 13:59:53 - location: eastus2euap
+11/13/2023 13:59:53 - Origin VM size: Standard_D2s_v5
+11/13/2023 13:59:53 - removing public IP from the Origin VM: vm2
+11/13/2023 13:59:53 - runtime...: 00:05 (M:S)
+11/13/2023 13:59:53 - start time: 11/13/2023 13:59:47
+11/13/2023 13:59:53 - end time..: 11/13/2023 13:59:53
+
+11/13/2023 14:00:00 - location: eastus2euap
+11/13/2023 14:00:00 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:00:00 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 14:00:00 - runtime...: 00:06 (M:S)
+11/13/2023 14:00:00 - start time: 11/13/2023 13:59:53
+11/13/2023 14:00:00 - end time..: 11/13/2023 14:00:00
+-------------------------------------
+-------------------------------------
+11/13/2023 14:00:19 - location: eastus2euap
+11/13/2023 14:00:19 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:00:19 - removing public IP from the Origin VM: vm1
+11/13/2023 14:00:19 - runtime...: 00:06 (M:S)
+11/13/2023 14:00:19 - start time: 11/13/2023 14:00:12
+11/13/2023 14:00:19 - end time..: 11/13/2023 14:00:19
+
+11/13/2023 14:00:24 - location: eastus2euap
+11/13/2023 14:00:24 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:00:24 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 14:00:24 - runtime...: 00:05 (M:S)
+11/13/2023 14:00:24 - start time: 11/13/2023 14:00:19
+11/13/2023 14:00:24 - end time..: 11/13/2023 14:00:24
+-------------------------------------
+-------------------------------------
+11/13/2023 14:00:40 - location: eastus2euap
+11/13/2023 14:00:40 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:00:40 - removing public IP from the Origin VM: vm2
+11/13/2023 14:00:40 - runtime...: 00:05 (M:S)
+11/13/2023 14:00:40 - start time: 11/13/2023 14:00:34
+11/13/2023 14:00:40 - end time..: 11/13/2023 14:00:40
+
+11/13/2023 14:00:47 - location: eastus2euap
+11/13/2023 14:00:47 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:00:47 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 14:00:47 - runtime...: 00:06 (M:S)
+11/13/2023 14:00:47 - start time: 11/13/2023 14:00:40
+11/13/2023 14:00:47 - end time..: 11/13/2023 14:00:47
+-------------------------------------
+-------------------------------------
+11/13/2023 14:01:05 - location: eastus2euap
+11/13/2023 14:01:06 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:01:06 - removing public IP from the Origin VM: vm1
+11/13/2023 14:01:06 - runtime...: 00:05 (M:S)
+11/13/2023 14:01:06 - start time: 11/13/2023 14:01:00
+11/13/2023 14:01:06 - end time..: 11/13/2023 14:01:05
+
+11/13/2023 14:01:12 - location: eastus2euap
+11/13/2023 14:01:12 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:01:12 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 14:01:12 - runtime...: 00:06 (M:S)
+11/13/2023 14:01:12 - start time: 11/13/2023 14:01:06
+11/13/2023 14:01:12 - end time..: 11/13/2023 14:01:12
+-------------------------------------
+-------------------------------------
+11/13/2023 14:08:00 - location: eastus2euap
+11/13/2023 14:08:00 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:08:00 - removing public IP from the Origin VM: vm2
+11/13/2023 14:08:00 - runtime...: 00:06 (M:S)
+11/13/2023 14:08:00 - start time: 11/13/2023 14:07:54
+11/13/2023 14:08:00 - end time..: 11/13/2023 14:08:00
+
+11/13/2023 14:08:07 - location: eastus2euap
+11/13/2023 14:08:07 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:08:07 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 14:08:07 - runtime...: 00:06 (M:S)
+11/13/2023 14:08:07 - start time: 11/13/2023 14:08:00
+11/13/2023 14:08:07 - end time..: 11/13/2023 14:08:07
+-------------------------------------
+-------------------------------------
+11/13/2023 14:08:39 - location: eastus2euap
+11/13/2023 14:08:39 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:08:39 - removing public IP from the Origin VM: vm1
+11/13/2023 14:08:40 - runtime...: 00:06 (M:S)
+11/13/2023 14:08:40 - start time: 11/13/2023 14:08:33
+11/13/2023 14:08:40 - end time..: 11/13/2023 14:08:39
+
+11/13/2023 14:08:46 - location: eastus2euap
+11/13/2023 14:08:46 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:08:46 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 14:08:46 - runtime...: 00:06 (M:S)
+11/13/2023 14:08:46 - start time: 11/13/2023 14:08:40
+11/13/2023 14:08:46 - end time..: 11/13/2023 14:08:46
+-------------------------------------
+-------------------------------------
+11/13/2023 14:09:03 - location: eastus2euap
+11/13/2023 14:09:03 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:09:03 - removing public IP from the Origin VM: vm2
+11/13/2023 14:09:03 - runtime...: 00:05 (M:S)
+11/13/2023 14:09:03 - start time: 11/13/2023 14:08:58
+11/13/2023 14:09:03 - end time..: 11/13/2023 14:09:03
+
+11/13/2023 14:09:08 - location: eastus2euap
+11/13/2023 14:09:08 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:09:08 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 14:09:08 - runtime...: 00:05 (M:S)
+11/13/2023 14:09:08 - start time: 11/13/2023 14:09:03
+11/13/2023 14:09:08 - end time..: 11/13/2023 14:09:08
+-------------------------------------
+-------------------------------------
+11/13/2023 14:40:30 - location: eastus2euap
+11/13/2023 14:40:30 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:40:30 - removing public IP from the Origin VM: vm1
+11/13/2023 14:40:30 - runtime...: 00:05 (M:S)
+11/13/2023 14:40:30 - start time: 11/13/2023 14:40:25
+11/13/2023 14:40:30 - end time..: 11/13/2023 14:40:30
+
+11/13/2023 14:40:37 - location: eastus2euap
+11/13/2023 14:40:37 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:40:37 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 14:40:37 - runtime...: 00:06 (M:S)
+11/13/2023 14:40:37 - start time: 11/13/2023 14:40:30
+11/13/2023 14:40:37 - end time..: 11/13/2023 14:40:37
+-------------------------------------
+-------------------------------------
+11/13/2023 14:40:58 - location: eastus2euap
+11/13/2023 14:40:58 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:40:58 - removing public IP from the Origin VM: vm2
+11/13/2023 14:40:58 - runtime...: 00:05 (M:S)
+11/13/2023 14:40:58 - start time: 11/13/2023 14:40:53
+11/13/2023 14:40:58 - end time..: 11/13/2023 14:40:58
+
+11/13/2023 14:41:05 - location: eastus2euap
+11/13/2023 14:41:05 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:41:05 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm1
+11/13/2023 14:41:05 - runtime...: 00:06 (M:S)
+11/13/2023 14:41:05 - start time: 11/13/2023 14:40:58
+11/13/2023 14:41:05 - end time..: 11/13/2023 14:41:04
+-------------------------------------
+-------------------------------------
+11/13/2023 14:41:25 - location: eastus2euap
+11/13/2023 14:41:25 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:41:25 - removing public IP from the Origin VM: vm1
+11/13/2023 14:41:25 - runtime...: 00:06 (M:S)
+11/13/2023 14:41:25 - start time: 11/13/2023 14:41:19
+11/13/2023 14:41:25 - end time..: 11/13/2023 14:41:25
+
+11/13/2023 14:41:31 - location: eastus2euap
+11/13/2023 14:41:31 - Origin VM size: Standard_D2s_v5
+11/13/2023 14:41:31 - assign secondary private IP: 10.0.1.11 to the Destination VM: vm2
+11/13/2023 14:41:31 - runtime...: 00:06 (M:S)
+11/13/2023 14:41:31 - start time: 11/13/2023 14:41:25
+11/13/2023 14:41:31 - end time..: 11/13/2023 14:41:31
+-------------------------------------
