@@ -4,5 +4,5 @@
     "subscriptionName": "AzDev1",
     "ResourceGroupName": "py1",
     "location": "uksouth",
-    "_artifactsLocation":  "https://raw.githubusercontent.com/fabferri/az-pattern/master/ubuntu-desktop-gnome/ubuntu-vm-vscode-python-dev/"
+    "_artifactsLocation":  "https://raw.githubusercontent.com/fabferri/az-pattern/master/ubuntu-vm-vscode-python-dev/"
 }
