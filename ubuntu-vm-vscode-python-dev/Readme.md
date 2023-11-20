@@ -88,7 +88,7 @@ Connect with RDP client (i.e., from windows host) to the VM; GNOME appearance is
 
 [![1]][1]
 
-## <a name="Bash script"></a>5. Considerations about the bash script dev-python.sh
+## <a name="Bash script"></a>5. Considerations about dev-python.sh
 In the bash script, the following variable is exported: 
 ```console
 export DEBIAN_FRONTEND=noninteractive
