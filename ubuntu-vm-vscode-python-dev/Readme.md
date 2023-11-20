@@ -28,19 +28,6 @@ The custom script extension installs the following components:
 - Visual Studio Code Jupyter notebook extension
 
 
-**Note:**<br>
-When you connect to the VM via RDP, the desktop looks different from local login. The GNOME dock isn't present on the home screen and in GNOME desktop setting is not present the **Appearance** option. <br>
-A way to solve the issue is to login in the VM and paste the following code in the file called **.xsessionrc** <br>
-```bash
-cat <<EOF > ~/.xsessionrc
-export GNOME_SHELL_SESSION_MODE=ubuntu
-export XDG_CURRENT_DESKTOP=ubuntu:GNOME
-export XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
-EOF
-```
-This file is a login script that will load your desktop configuration into the remote session. <br> 
-After the file is created, login back to the xRDP session and see if the desktop looks like the one you have when logged on locally.
-
 ## <a name="List of files"></a>1. List of files 
 | file                    | Description                                                                   | 
 | ----------------------- |------------------------------------------------------------------------------ |
@@ -52,8 +39,8 @@ After the file is created, login back to the xRDP session and see if the desktop
 
 
 **NOTE:** <br>
-- Before running the **01-vnet-vms.ps1** customize the value of variables in the **init.json**:
-- The deployment has been tested successful with **Standard_B2als_v2** (2 vcpus, 4 GiB memory) but a larget VM SKU would be better
+- Before running the **01-vnet-vms.ps1** customize the value of variables in the **init.json**.
+- The deployment has been tested successful with **Standard_B2als_v2** (2 vcpus, 4 GiB memory) but a larger VM SKU (i.e. **Standard_B4s_v2**) would be better.
 
 
 ## <a name="Custom script extension"></a>2. Check the correct installation
@@ -101,7 +88,7 @@ Connect with RDP client (i.e., from windows host) to the VM; GNOME appearance is
 
 [![1]][1]
 
-## <a name="Bash script"></a>5. Bash script
+## <a name="Bash script"></a>5. Considerations about the bash script dev-python.sh
 In the bash script, the following variable is exported: 
 ```console
 export DEBIAN_FRONTEND=noninteractive
@@ -137,6 +124,17 @@ code --list-extensions
 or inside the Visual Studio Code:
 
 [![2]][2]
+
+When you connect to the VM via RDP, the desktop looks different from local login. The GNOME dock isn't present on the home screen and in GNOME desktop setting is not present the **Appearance** option. <br>
+A way to solve the issue is to add in $HOME folder a file called **.xsessionrc** <br>
+```bash
+cat <<EOF > ~/.xsessionrc
+export GNOME_SHELL_SESSION_MODE=ubuntu
+export XDG_CURRENT_DESKTOP=ubuntu:GNOME
+export XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+EOF
+```
+This file is a login script that will load your desktop configuration into the remote session. <br> 
 
 ## <a name="Check Python"></a>6. Create a Python virtual environment and run a python example 
 Let's create a directory called test1:
