@@ -20,17 +20,16 @@ The ARM template deploys an Ubuntu server 22.04 and it uses custom script extens
 The custom script extension installs the following components:
 - ubuntu-desktop-minimal (minimal is a subset of all full Ubuntu desktop). GNOME is the default desktop environment for Ubuntu 20.04 Focal Fossa Linux.
 - xrdp: it is a Remote Desktop Protocol (RDP) Server
-- Visual Studio Code
-- Chrome web browser
-- Python (if not already installed in Ubuntu image from Azure markeplace)
+- Python (if not already installed in Ubuntu image from Azure marketplace)
 - Python venv (virtual environment) package
 - Visual Studio Code
+- Chrome web browser
 - Visual Studio Code Python extension
 - Visual Studio Code Jupyter notebook extension
 
 
 **Note:**<br>
-When you connect to the VM via RDP, the desktop looks different from local login. The GNOME dock isn't present on the home screen and in GNOME desktop setting is not presente the **Appearance** option. <br>
+When you connect to the VM via RDP, the desktop looks different from local login. The GNOME dock isn't present on the home screen and in GNOME desktop setting is not present the **Appearance** option. <br>
 A way to solve the issue is to login in the VM and paste the following code in the file called **.xsessionrc** <br>
 ```bash
 cat <<EOF > ~/.xsessionrc
@@ -47,7 +46,7 @@ After the file is created, login back to the xRDP session and see if the desktop
 | ----------------------- |------------------------------------------------------------------------------ | 
 | **01-vnet-vms.json**    | ARM template to deploy an ubuntu 22.04 VM and run the custom script extension |
 | **01-vnet-vms.ps1**     | powershell script to deploy **01-vnet-vms.json**                              |
-| **dev-python.sh**       | bash script to install Gnome, Python, VS Code with Python extension,Jupyter notebook extension, Chrome web browser |
+| **dev-python.sh**       | bash script to install Gnome, Python, VS Code with Python extension, Jupyter notebook extension, Chrome web browser |
 | **init.json**           | file with value of variables to set Azure subscription name, Resource Group, VM Administrator credential, URL of bash script to run the custom script extension |
 
 
@@ -115,7 +114,7 @@ In the bash script, the following variable is exported:
 export DEBIAN_FRONTEND=noninteractive
 ```
 
-**DEBIAN_FRONTEND** is an apt-get variable can be taken different settings.  **noninteractive** is a mode when you need zero interaction while installing or upgrading the system via apt. It accepts the default answer for all questions. The option installs the package totally silent and it is a good frontend for automatic installation by shell scripts, cloud-init.
+**DEBIAN_FRONTEND** is an apt-get variable can be taken different settings.  **noninteractive** is a mode when you need zero interaction while installing or upgrading the system via apt. It accepts the default answer for all questions. The option installs the package totally silent, and it is a good frontend for automatic installation by shell scripts, cloud-init.
 
 Using the folder **/etc/apt/sources.list.d/** you can easily add new repositories without the need to edit the central **/etc/apt/sources.list** repository list. The source list of repositories for visual studio code, Microsoft edge and chrome are stored in the folder **/etc/apt/sources.list.d/**:
 ```bash
@@ -129,7 +128,7 @@ root@vm1:~# cat /etc/apt/sources.list.d/google-chrome.list
 deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main
 ```
 
-Installation of Visual Studio extensions are executed by customer script extesion running the following commands:
+Installation of Visual Studio extensions are executed by customer script running with the following commands:
 ```console
 # install Visual Studio Code Extensions for Python:
 code --install-extension  ms-python.python
@@ -138,7 +137,7 @@ code --install-extension  ms-python.python
 code --install-extension  ms-toolsai.jupyter
 ```
 
-you can check the list of VS Code extensions inside Visual Studico Code or by command:
+you can check the list of VS Code extensions inside Visual Studio Code or by command:
 ```console
 code --list-extensions
 ```
@@ -187,7 +186,7 @@ To upgrade the pip package global:
  python3 -m pip install --upgrade pip
 ```
 
-To upgrade pip only in virtual enviroment, go into the test_env folder then run:
+To upgrade pip only in virtual environment, go into the test_env folder then run:
 ```
 ./python -m pip install --upgrade pip
 ```
