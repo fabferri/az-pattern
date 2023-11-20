@@ -172,7 +172,7 @@ msg="first test"
 print(msg)
 ```
 
-Run the the python file:
+Run the python file:
 ```bash
 python3 hello.py
 ```
@@ -187,12 +187,11 @@ To upgrade pip only in virtual environment, go into the test_env folder then run
 ./test_env/bin/python3 -m pip install --upgrade pip
 ```
 
+## <a name=" matplotlib"></a>7. matplotlib 
 To install the matplotlib:
 ```
 python3 -m pip install -U matplotlib
 ```
-
-<br>
 
 To plot with **matplotlib** looks like a **tkinter** package is required. The **tkinter** package ("Tk interface") is the standard Python interface to the Tcl/Tk GUI toolkit. Both Tk and tkinter are available on most Unix platforms, including macOS, as well as on Windows systems. <br>
 To install **tk** package:
@@ -201,7 +200,7 @@ sudo apt-get -y install python3-tk
 ```
 The package works because fine because you get a GUI backend, in this case the **TkAgg**.
 
-Simple python example with mathlib:
+Simple python example with matplotlib:
 ```python
 import matplotlib.pyplot as plt
 import numpy as np
