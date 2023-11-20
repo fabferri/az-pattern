@@ -133,7 +133,7 @@ logger -t devvm "Visual Studio Code Jupyter notebook extension installed: $?"
 su $admUser -c 'code --list-extensions'
 
 
-# Enable in the GNOME desktop the Appearance option
+# Enable the Appearance option in the GNOME desktop 
 su edge -c "touch /home/$admUser/.xsessionrc"
 su edge -c "echo 'export GNOME_SHELL_SESSION_MODE=ubuntu' >> /home/$admUser/.xsessionrc"
 su edge -c "echo 'export XDG_CURRENT_DESKTOP=ubuntu:GNOME' >> /home/$admUser/.xsessionrc"
