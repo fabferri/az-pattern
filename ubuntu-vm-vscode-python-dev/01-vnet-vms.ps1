@@ -1,5 +1,5 @@
 ################# Input parameters #################
-$deploymentName = 'test-pe'
+$deploymentName = 'deployment-py'
 $armTemplateFile = '01-vnet-vms.json'
 $inputParams = 'init.json'
 ####################################################
