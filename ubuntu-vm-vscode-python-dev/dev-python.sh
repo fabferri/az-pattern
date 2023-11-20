@@ -132,6 +132,13 @@ logger -t devvm "Visual Studio Code Jupyter notebook extension installed: $?"
 # List of installed Visual Studio Code Extensions
 su $admUser -c 'code --list-extensions'
 
+
+# Enable in the GNOME desktop the Appearance option
+su edge -c "touch /home/$admUser/.xsessionrc"
+su edge -c "echo 'export GNOME_SHELL_SESSION_MODE=ubuntu' >> /home/$admUser/.xsessionrc"
+su edge -c "echo 'export XDG_CURRENT_DESKTOP=ubuntu:GNOME' >> /home/$admUser/.xsessionrc"
+su edge -c "echo 'export XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg' >> /home/$admUser/.xsessionrc"
+
 # different way to reboot the VM 
 ###### nohup shutdown -r +1 &
 ###### sudo /sbin/shutdown -r +1 
