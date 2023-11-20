@@ -43,16 +43,17 @@ After the file is created, login back to the xRDP session and see if the desktop
 
 ## <a name="List of files"></a>1. List of files 
 | file                    | Description                                                                   | 
-| ----------------------- |------------------------------------------------------------------------------ | 
+| ----------------------- |------------------------------------------------------------------------------ |
+| **init.json**           | file with value of variables to set Azure subscription name, Resource Group, VM Administrator credential, URL of bash script to run the VM custom script extension |
 | **01-vnet-vms.json**    | ARM template to deploy an ubuntu 22.04 VM and run the custom script extension |
 | **01-vnet-vms.ps1**     | powershell script to deploy **01-vnet-vms.json**                              |
 | **dev-python.sh**       | bash script to install Gnome, Python, VS Code with Python extension, Jupyter notebook extension, Chrome web browser |
-| **init.json**           | file with value of variables to set Azure subscription name, Resource Group, VM Administrator credential, URL of bash script to run the custom script extension |
+
 
 
 **NOTE:** <br>
 - Before running the **01-vnet-vms.ps1** customize the value of variables in the **init.json**:
-- The deployment has been tested successful with **Standard_B2als_v2** (2 vcpus, 4 GiB memory)
+- The deployment has been tested successful with **Standard_B2als_v2** (2 vcpus, 4 GiB memory) but a larget VM SKU would be better
 
 
 ## <a name="Custom script extension"></a>2. Check the correct installation
@@ -93,20 +94,12 @@ Use the **who -b** command which displays the last system reboot date and time.
 who -b
 ```
 
-## <a name="Check the last reboot time"></a>3. Connect with RDP client to the VM
+## <a name="Check the last reboot time"></a>4. Connect with RDP client to the VM
 The NSG applied to the NIC of the VM allows access through SSH and RDP. 
 After installation is complete, you will be able to login in RDP to GNOME desktop.
-Connect with RDP client (i.e., from windows host) to the VM:
+Connect with RDP client (i.e., from windows host) to the VM; GNOME appearance is shonw below:
 
 [![1]][1]
-
-GNOME desktop:
- 
-[![2]][2]
-
-GNOME appearance:
-
-[![3]][3]
 
 ## <a name="Bash script"></a>5. Bash script
 In the bash script, the following variable is exported: 
@@ -137,13 +130,15 @@ code --install-extension  ms-python.python
 code --install-extension  ms-toolsai.jupyter
 ```
 
-you can check the list of VS Code extensions inside Visual Studio Code or by command:
+you can check the list of VS Code extensions by command:
 ```console
 code --list-extensions
 ```
+or inside the Visual Studio Code:
 
+[![2]][2]
 
-## <a name="Check Python"></a>3. Create a Python virtual environment and run a python example 
+## <a name="Check Python"></a>6. Create a Python virtual environment and run a python example 
 Let's create a directory called test1:
 ```bash
 mkdir test1
@@ -154,6 +149,7 @@ Create a virtual environment called test_env:
 ```bash
 python3 -m venv test_env
 ```
+
 The generated files configure the virtual environment to work separately from our host files. <br>
 Activation of the environment is as follows:
 ```bash
@@ -188,23 +184,50 @@ To upgrade the pip package global:
 
 To upgrade pip only in virtual environment, go into the test_env folder then run:
 ```
-./python -m pip install --upgrade pip
+./test_env/bin/python3 -m pip install --upgrade pip
 ```
 
 To install the matplotlib:
 ```
-python -m pip install -U matplotlib
+python3 -m pip install -U matplotlib
 ```
 
 <br>
+
+To plot with **matplotlib** looks like a **tkinter** package is required. The **tkinter** package ("Tk interface") is the standard Python interface to the Tcl/Tk GUI toolkit. Both Tk and tkinter are available on most Unix platforms, including macOS, as well as on Windows systems. <br>
+To install **tk** package:
+```bash
+sudo apt-get -y install python3-tk
+```
+The package works because fine because you get a GUI backend, in this case the **TkAgg**.
+
+Simple python example with mathlib:
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+ax = plt.figure().add_subplot(projection='3d')
+
+# Prepare arrays x, y, z
+theta = np.linspace(-4 * np.pi, 4 * np.pi, 100)
+z = np.linspace(0, 2, 100)
+r = z**2 + np.log10(z+2.5)
+x = r * np.sin(theta)
+y = r * np.cos(theta)
+
+ax.plot(x, y, z, label='parametric curve')
+ax.legend()
+
+plt.show()
+```
+
 
 `Tags: Ubuntu VM, GNOME, RDP, Python, Visual Studio Code` <br>
 `date: 20-11-23`
 
 <!--Image References-->
 
-[1]: ./media/remote-desktop1.png "connect in RDP to the VM"
-[2]: ./media/gnome.png "GNOME desktop"
-[3]: ./media/appearance.png "GNOME appearance"
+[1]: ./media/01.png "connect in RDP to the VM and GNOME appearance"
+[2]: ./media/02.png "Visual Studio extensions automatically installed by VM script extension"
 
 <!--Link References-->
