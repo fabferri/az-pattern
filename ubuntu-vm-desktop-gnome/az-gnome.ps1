@@ -1,12 +1,12 @@
 ###################### SET VARIABLES #################
-$subscriptionName = "AzureDemo"
-$location = "uksouth"
-$rgName = "rg-gnome"
+$adminUsername = 'ADMINISTRATOR_USERNAME'
+$adminPassword = 'ADMINISTRATOR_PASSWORD'
+$subscriptionName = 'AzureDemo'
+$location = 'uksouth'
+$rgName = 'rg-gnome'
 $armTemplateFile = "az-gnome.json"
-$adminUsername = "ADMINISTRATOR_USERNAME"
-$adminPassword = "ADMINISTRATOR_PASSWORD"
-$rgGrpDeployment = "test-gnome"
-$artifactsLocation = "https://raw.githubusercontent.com/fabferri/az-pattern/master/00-scripts/"
+$artifactsLocation = 'https://raw.githubusercontent.com/fabferri/az-pattern/master/00-scripts/'
+$deploymentName = 'test-gnome'
 #
 $parameters = @{
     "_artifactsLocation" = $artifactsLocation;
@@ -32,7 +32,7 @@ Catch { $rg = New-AzResourceGroup -Name $rgName  -Location $location }
 
 $StartTime = Get-Date
 Write-Host "$StartTime - ARM template:"$templateFile -ForegroundColor Yellow
-New-AzResourceGroupDeployment -Name $rgGrpDeployment -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose
+New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rgName -TemplateFile $templateFile -TemplateParameterObject $parameters -Verbose
 
 $EndTime = Get-Date
 $TimeDiff = New-TimeSpan $StartTime $EndTime

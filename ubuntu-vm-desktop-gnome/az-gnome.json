@@ -74,8 +74,8 @@
         "gnomeScriptURL": "[uri(parameters('_artifactsLocation'), concat(parameters('scriptFolder'), '/', variables('gnomeScriptFileName'), parameters('_artifactsLocationSasToken')))]",
         "gnomeCommand": "[format('{0} {1} ','bash', variables('gnomeScriptFileName')  )]",
         "publisher": "canonical",
-        "offer": "0001-com-ubuntu-server-focal",
-        "sku": "20_04-lts",
+        "offer": "0001-com-ubuntu-server-jammy",
+        "sku": "22_04-lts-gen2",
         "version": "latest",
         "nicName": "[concat(parameters('vmName'),'-nic')]",
         "nsgName": "[concat(parameters('vmName'),'-nsg')]",
@@ -98,7 +98,7 @@
     },
     "resources": [
         {
-            "apiVersion": "2021-08-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('publicIPAddressName')]",
             "location": "[parameters('location')]",
@@ -106,11 +106,11 @@
                 "name": "Basic"
             },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
-            "apiVersion": "2021-08-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('virtualNetworkName')]",
             "location": "[parameters('location')]",
@@ -131,7 +131,7 @@
             }
         },
         {
-            "apiVersion": "2021-08-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicName')]",
             "location": "[parameters('location')]",
@@ -162,7 +162,7 @@
         },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2021-08-01",
+            "apiVersion": "2022-11-01",
             "name": "[variables('nsgName')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -176,7 +176,7 @@
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
-                            "priority": 320,
+                            "priority": 200,
                             "direction": "Inbound"
                         }
                     },
@@ -189,7 +189,7 @@
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
-                            "priority": 500,
+                            "priority": 300,
                             "direction": "Inbound"
                         }
                     }
@@ -197,7 +197,7 @@
             }
         },
         {
-            "apiVersion": "2021-11-01",
+            "apiVersion": "2023-03-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('vmName')]",
             "location": "[parameters('location')]",
@@ -241,11 +241,11 @@
             }
         },
         {
-            
+
             "comments": "custom script extension to configure the application VMs through a bash script",
             "condition": true,
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2023-03-01",
             "name": "[concat(parameters('vmName'), '/', 'vmCustomScript')]",
             "location": "[parameters('location')]",
             "dependsOn": [
