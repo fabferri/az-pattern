@@ -18,9 +18,9 @@
 
 # Cluster of Azure VMs through ARM template
 
-Here an ARM (Azure Resource Manager) template to create a cluster of Azure VMs attached to the same Virtual Network (VNet).  
+The Azure ARM template creates a cluster of Azure VMs, attached to the same Virtual Network (VNet).  
 
-List of files:
+**List of files**:
 
 | Name                  | Description                                                  |
 |:--------------------- |:-------------------------------------------------------------|
@@ -30,7 +30,7 @@ List of files:
 | **address.json**      | simple ARM template to deploy only VNet and NICs-without VMs |
 
 
-> **NOTE**
+> [!NOTE]
 > Before running **multiple-vms.ps1** set the values of following variables:
 > ###   $adminUsername    : administrator username
 > ###   $adminPassword    : adminsitrator password
@@ -39,5 +39,8 @@ List of files:
 > ###   $rgName           : resource group name
 >
 
-## Known Issues and Limitations
-The ARM template works with max 250 VMs. Scale up at higher number of VMs requires a review of static IP assigment of private IP.
+
+
+`Tags: Azure VM, cluster VMs` <br>
+`date: 10-08-2022` <br>
+`date: 21-11-2023` <br>

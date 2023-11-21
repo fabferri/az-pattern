@@ -41,7 +41,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('virtualNetworkName')]",
-            "apiVersion": "2019-12-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location')]",
             "comments": "Azure VNet",
             "properties": {
@@ -63,7 +63,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat('nic-', string(copyIndex()) )]",
-            "apiVersion": "2019-12-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location')]",
             "comments": "NICs if Azure VM",
             "dependsOn": [
