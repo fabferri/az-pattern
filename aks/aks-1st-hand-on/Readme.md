@@ -83,12 +83,12 @@ az aks install-cli
 Command output: <br>
 The detected architecture of current device is "amd64", and the binary for "amd64" will be downloaded. If the detection is wrong, please download and install the binary corresponding to the appropriate architecture.
 No version specified, will get the latest version of kubectl from "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-Downloading client to "C:\Users\USERNAME_FOLDER\.azure-kubectl\kubectl.exe" from "https://storage.googleapis.com/kubernetes-release/release/v1.28.4/bin/windows/amd64/kubectl.exe"
-The installation directory "C:\Users\USERNAME_FOLDER\.azure-kubectl" has been successfully appended to the user path, the configuration will only take effect in the new command sessions. Please re-open the command window.
+Downloading client to "C:\Users\USERNAME_FOLDER\\.azure-kubectl\kubectl.exe" from "https://storage.googleapis.com/kubernetes-release/release/v1.28.4/bin/windows/amd64/kubectl.exe"
+The installation directory "C:\Users\USERNAME_FOLDER\\.azure-kubectl" has been successfully appended to the user path, the configuration will only take effect in the new command sessions. Please re-open the command window.
 No version specified, will get the latest version of kubelogin from "https://api.github.com/repos/Azure/kubelogin/releases/latest"
 Downloading client to "C:\Users\USERNAME_FOLDER\AppData\Local\Temp\tmprxe3487l\kubelogin.zip" from "https://github.com/Azure/kubelogin/releases/download/v0.0.34/kubelogin.zip"
-Moving binary to "C:\Users\USERNAME_FOLDER\.azure-kubelogin\kubelogin.exe" from "C:\Users\USERNAME_FOLDER\AppData\Local\Temp\tmprxe3487l\bin\windows_amd64\kubelogin.exe"
-The installation directory "C:\Users\USERNAME_FOLDER\.azure-kubelogin" has been successfully appended to the user path, the configuration will only take effect in the new command sessions. Please re-open the command window.
+Moving binary to "C:\Users\USERNAME_FOLDER\\.azure-kubelogin\kubelogin.exe" from "C:\Users\USERNAME_FOLDER\AppData\Local\Temp\tmprxe3487l\bin\windows_amd64\kubelogin.exe"
+The installation directory "C:\Users\USERNAME_FOLDER\\.azure-kubelogin" has been successfully appended to the user path, the configuration will only take effect in the new command sessions. Please re-open the command window.
 
 Check the kubectl version:
 ```bash
@@ -102,13 +102,15 @@ az aks get-credentials --resource-group $rg --name aks1
 ```
 By default, the credentials are <ins>merged</ins> into the **C:\Users\USERNAME_FOLDER\.kube\config** file so kubectl can use them.
 
-The **kubectl config file** is a configuration file that stores all the information necessary to interact with a Kubernetes cluster. It contains the following information:
+Kubectl uses "contexts" to know how to communicate with the cluster. Contexts are stored in a kubeconfig file, which can store multiple contexts. <br>
+A Kubernetes context is a group of access parameters that define which cluster you’re interacting with, which user you’re using, and which namespace you’re working in. <br>
+The **kubectl config file** is a configuration file containing the following information:
 - The name of the Kubernetes cluster
 - The location of the Kubernetes API server
 - The credentials (username and password) for authenticating with the Kubernetes API server
 - The names of all contexts defined in the cluster
 
-To view the config file,:
+To view the config file:
 ```bash
 kubectl config view
 ```
@@ -117,8 +119,6 @@ Filter the list ony for cluster name:
 ```bash
 kubectl config view -o jsonpath='{range .contexts[*]}{.name}{''\n''}{end}'
 ```
-
-A Kubernetes context is a group of access parameters that define which cluster you’re interacting with, which user you’re using, and which namespace you’re working in. <br>
 
 To get all contexts in the file ~\.kube\config
 ```bash
@@ -274,3 +274,26 @@ Delete the resource group:
 ```bash
 az group delete --name $rg --yes --no-wait
 ```
+
+### <a name="delete deployment and resource group"></a> STEP12: Spin up an AKS cluster with ARM template
+To spin up the ARM template **k8s.json** run the script: **k8s.ps1**
+When completed, run the command to see the cluster:
+```bash
+az aks list -o table
+```
+
+To communicate with the specific new cluster:
+```bash
+az aks get-credentials -g $rg -n $aksName
+kubectl cluster-info
+kubectl get nodes -o wide
+```
+
+
+NOTE
+**kubectl get** can fetch information about all Kubernetes objects, as well as nodes in the Kubernetes data plane.
+The most common Kubernetes objects you are likely to query are pods, services, deployments, stateful sets, and secrets.
+- **-o wide** just adds more information (which is dependent on the type of objects being queried).
+- **-o yaml** and **-o json** output the complete current state of the object (and thus usually includes more information than the original manifest files).
+- **-o jsonpath** allows you to select the information you want out of the full JSON of the -o json option using the jsonpath notation.
+- **-o go-template** allows you to apply Go templates for more advanced features.
