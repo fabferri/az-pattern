@@ -275,7 +275,7 @@ Delete the resource group:
 az group delete --name $rg --yes --no-wait
 ```
 
-### <a name="delete deployment and resource group"></a> STEP12: Spin up an AKS cluster with ARM template
+### <a name="AKS cluster with ARM template"></a> STEP12: Spin up an AKS cluster with ARM template
 To spin up the ARM template **k8s.json** run the script: **k8s.ps1**
 When completed, run the command to see the cluster:
 ```bash
@@ -290,7 +290,7 @@ kubectl get nodes -o wide
 ```
 
 
-NOTE
+> [!NOTE]
 **kubectl get** can fetch information about all Kubernetes objects, as well as nodes in the Kubernetes data plane.
 The most common Kubernetes objects you are likely to query are pods, services, deployments, stateful sets, and secrets.
 - **-o wide** just adds more information (which is dependent on the type of objects being queried).
