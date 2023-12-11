@@ -1,7 +1,7 @@
 
 <properties
-pageTitle= 'AKS: your first basic hand-on'
-description= "AKS: your first basic hand-on"
+pageTitle= 'AKS: your first hand-on'
+description= "AKS: your first hand-on"
 services="AKS"
 documentationCenter="https://github.com/fabferri/"
 authors="fabferri"
@@ -16,7 +16,7 @@ editor=""/>
    ms.date="11/12/2023"
    ms.author="fabferri" />
 
-# Azure Kubernetes Service (AKS): your first basic hand-on
+# Azure Kubernetes Service (AKS): your first hand-on
 The following setup has been verified in Windows host with Azure CLI installed.
 
 ### <a name="login in azure subscription"></a> STEP1: login and connect to the target Azure subscription
@@ -62,7 +62,7 @@ az aks create -g $rg -n aks1 --enable-managed-identity --node-count 1 --generate
 
 > [!NOTE] 
 > Running the command shows:
-> SSH key files 'C:\Users\USERNAME_FOLDER\.ssh\id_rsa' and 'C:\Users\USERNAME_FOLDER\.ssh\id_rsa.pub' have been generated under ~/.ssh to allow SSH access to the VM. 
+> SSH key files **'C:\Users\USERNAME_FOLDER\.ssh\id_rsa'** and **'C:\Users\USERNAME_FOLDER\.ssh\id_rsa.pub'** have been generated under ~/.ssh to allow SSH access to the VM. 
 > If using machines without permanent storage like Azure Cloud Shell without an attached file share, back up your keys to a safe location
 
 If the files 'C:\Users\USERNAME_FOLDER\.ssh\id_rsa' and 'C:\Users\USERNAME_FOLDER\.ssh\id_rsa.pub' are already present, you can use the command:
