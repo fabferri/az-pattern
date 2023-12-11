@@ -276,7 +276,7 @@ az group delete --name $rg --yes --no-wait
 ```
 
 ### <a name="AKS cluster with ARM template"></a> STEP12: Spin up an AKS cluster with ARM template
-To spin up the ARM template **k8s.json** run the script: **k8s.ps1**
+To spin up the ARM template **k8s.json** run the script: **k8s.ps1** <br>
 When completed, run the command to see the cluster:
 ```bash
 az aks list -o table
