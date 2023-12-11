@@ -65,7 +65,7 @@ az aks create -g $rg -n aks1 --enable-managed-identity --node-count 1 --generate
 > SSH key files **'C:\Users\USERNAME_FOLDER\\.ssh\id_rsa'** and **'C:\Users\USERNAME_FOLDER\\.ssh\id_rsa.pub'** have been generated under ~/.ssh to allow SSH access to the VM. 
 > If using machines without permanent storage like Azure Cloud Shell without an attached file share, back up your keys to a safe location
 
-If the files 'C:\Users\USERNAME_FOLDER\\.ssh\id_rsa' and 'C:\Users\USERNAME_FOLDER\\.ssh\id_rsa.pub' are already present, you can use the command:
+If the files **'C:\Users\USERNAME_FOLDER\\.ssh\id_rsa'** and **'C:\Users\USERNAME_FOLDER\\.ssh\id_rsa.pub'** are already present, you can use the command:
 ```bash
 $SSH=(Get-Content ~\.ssh\id_rsa.pub)
 az aks create -g $rg -n aks1 --enable-managed-identity --node-count 1 --ssh-key-value $SSH
