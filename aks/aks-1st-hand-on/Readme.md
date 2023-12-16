@@ -32,6 +32,7 @@ In Kubernetes manifest file, the **Deployment** makes the following tasks:
 - ensures the correct number of pods is always running in the cluster, 
 - handles scalability,
 - takes care of updates to the pods.
+
 A Deployment describes a desired state. All these activities can be configured through fields in the Deployment YAML.
 
 <br> <br>
