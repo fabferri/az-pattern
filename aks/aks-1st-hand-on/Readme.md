@@ -26,8 +26,6 @@ Basic objects include:
 - **Volume**. An abstraction that lets us persist data. (This is necessary because containers are ephemeral—meaning data is deleted when the container is deleted.)
 - **Namespace**. Namespaces provides a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces. Namespace-based scoping is applicable only for namespaced objects. Namespaces are a way to divide cluster resources between multiple users (via resource quota).
 
-<br>
-
 In Kubernetes manifest file, the **Deployment** makes the following tasks: 
 - creates the pods,
 - create and update a set of identical pods,
@@ -48,8 +46,6 @@ A Deployment describes a desired state. All these activities can be configured t
 - `az account list --query "[?isDefault]" `   - Get the current default subscription <br>
 - `az account set --subscription "AzureDemo"` - Change the active subscription using the subscription name 
 - `az account list --query "[?name=='AzureDemo'].id" --output tsv` - Get the Azure subscription ID
-<br>
-
 - Using powershell, change the active subscription:
 ```bash
 $SubId="$(az account list --query "[?name=='AzureDemo'].id" --output tsv)"
