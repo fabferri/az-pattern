@@ -33,9 +33,7 @@ In Kubernetes manifest file, the **Deployment** makes the following tasks:
 - handles scalability,
 - takes care of updates to the pods.
 
-A Deployment describes a desired state. All these activities can be configured through fields in the Deployment YAML.
-
-<br> <br>
+A Deployment describes a desired state. All these activities can be configured through fields in the Deployment YAML. <br> 
 
 **The following setup has been verified in Windows host with Azure CLI locally installed.**
 
