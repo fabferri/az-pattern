@@ -35,6 +35,10 @@ In Kubernetes manifest file, the **Deployment** makes the following tasks:
 
 A Deployment describes a desired state. All these activities can be configured through fields in the Deployment YAML. <br> 
 
+A container image represents binary data that encapsulates an application and all its software dependencies.<br>
+You typically create a container image of your application and push it to a registry before referring to it in a Pod.<br>
+If you don't specify a registry hostname, Kubernetes assumes that you reference the container image from the Docker public registry: https://hub.docker.com/ 
+
 **The following setup has been verified in Windows host with Azure CLI locally installed.**
 
 ### <a name="login in azure subscription"></a> STEP1: login and connect to the target Azure subscription
