@@ -17,36 +17,44 @@ editor=""/>
    ms.author="fabferri" />
 
 # Azure Kubernetes Service (AKS): your first hand-on
-The following setup has been verified in Windows host with Azure CLI installed.
+Kubernetes objects are persistent entities in the Kubernetes system. A Kubernetes object is a <ins>"record of intent"</ins>--once you create the object, the Kubernetes system will constantly work to ensure that object exists. <br>
+By creating  objects, you're effectively telling the Kubernetes system what is your cluster's desired state. In Kubernetes the YAML manifest file defines the desire state. <br>
+
+Basic objects include:
+- **Pod**. A group of one or more containers.
+- **Service**. An abstraction that defines a logical set of pods as well as the policy for accessing them.
+- **Volume**. An abstraction that lets us persist data. (This is necessary because containers are ephemeral—meaning data is deleted when the container is deleted.)
+- **Namespace**. Namespaces provides a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces. Namespace-based scoping is applicable only for namespaced objects. Namespaces are a way to divide cluster resources between multiple users (via resource quota).
+
+<br>
+
+In Kubernetes manifest file, the **Deployment** makes the following tasks: 
+- creates the pods,
+- create and update a set of identical pods,
+- ensures the correct number of pods is always running in the cluster, 
+- handles scalability,
+- takes care of updates to the pods.
+A Deployment describes a desired state. All these activities can be configured through fields in the Deployment YAML.
+
+<br> <br>
+
+**The following setup has been verified in Windows host with Azure CLI locally installed.**
 
 ### <a name="login in azure subscription"></a> STEP1: login and connect to the target Azure subscription
-- Get a list of available subscriptions:
-```bash
-az account list --output table
-```
-
-- See what subscription you are currently using:
-```bash
-az account show
-az account show --output table
-```
-
-- Get the current default subscription using "list" command:
-```bash
-az account list --query "[?isDefault]"
-```
-
-- Change the active subscription using the subscription name:
-```bash
-az account set --subscription "AzureDemo"
-```
+- `az login --use-device-code`      - login in Azure with the device authentication code in the web browser
+- `az account list --output table`  - Get a list of available subscriptions <br>
+- `az account show`                 - Show the subscription you are currently using <br>
+- `az account show --output table`  - Show the subscription you are currently using by tabular format <br>
+- `az account list --query "[?isDefault]" `   - Get the current default subscription <br>
+- `az account set --subscription "AzureDemo"` - Change the active subscription using the subscription name 
+- `az account list --query "[?name=='AzureDemo'].id" --output tsv` - Get the Azure subscription ID
+<br>
 
 - Using powershell, change the active subscription:
 ```bash
 $SubId="$(az account list --query "[?name=='AzureDemo'].id" --output tsv)"
 az account set --subscription $SubId
 ```
-
 
 ### <a name="create a resource group"></a> STEP2: set variables and create a resource group
 ```bash
