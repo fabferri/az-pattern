@@ -116,35 +116,15 @@ The **kubectl config file** is a configuration file containing the following inf
 - The location of the Kubernetes API server
 - The credentials (username and password) for authenticating with the Kubernetes API server
 - The names of all contexts defined in the cluster
+<br>
 
-To view the config file:
-```bash
-kubectl config view
-```
+- `kubectl config view` - View the config file
+- `kubectl config view -o jsonpath='{range .contexts[*]}{.name}{''\n''}{end}'` - Filter the list ony for cluster name
+- `kubectl config get-contexts` - Get all contexts in the file ~\.kube\config
+- `kubectl config current-context` - Find the current context
+- `kubectl config use-context <CONTEXT_NAME>` - Switch between contexts
+- `kubectl config delete-context <CLUSTER_NAME>` - Delete a context
 
-Filter the list ony for cluster name:
-```bash
-kubectl config view -o jsonpath='{range .contexts[*]}{.name}{''\n''}{end}'
-```
-
-To get all contexts in the file ~\.kube\config
-```bash
-kubectl config get-contexts
-```
-To find the current context:
-```bash
-kubectl config current-context
-```
-
-You can switch between these contexts by using: 
-```bash
-kubectl config use-context <CONTEXT_NAME>
-```
-
-To delete a context:
-```bash
-kubectl config delete-context <CLUSTER_NAME>
-```
 
 ### <a name="connecto to th AKS cluster"></a> STEP6: Verify the connection to your cluster 
 This command returns a list of the cluster nodes:
