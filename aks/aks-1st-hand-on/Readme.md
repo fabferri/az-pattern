@@ -26,6 +26,7 @@ Basic objects include:
 - **Volume**. An abstraction that lets us persist data. (This is necessary because containers are ephemeral—meaning data is deleted when the container is deleted.)
 - **Namespace**. Namespaces provides a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces. Namespace-based scoping is applicable only for namespaced objects. Namespaces are a way to divide cluster resources between multiple users (via resource quota).
 
+A **deployment** is an abstraction to the **pod**. It allows you to have extra functionality and control on top of the pod to say how many instances of a pod you want to run across nodes or if you want to define your rolling update strategy. This allows you to control your deployments based on your requirements in order to have zero downtime as you bring up a new process and deprecate old ones. <br>
 In Kubernetes manifest file, the **Deployment** makes the following tasks: 
 - creates the pods,
 - create and update a set of identical pods,
