@@ -21,7 +21,7 @@ Kubernetes objects are persistent entities in the Kubernetes system. A Kubernete
 By creating  objects, you're effectively telling the Kubernetes system what is your cluster's desired state. In Kubernetes the YAML manifest file defines the desire state. <br>
 
 Basic objects include:
-- **Pod**. A group of one or more containers.
+- **Pod**. A group of one or more containers. Kubernetes uses pods to run an instance of your application. A pod represents a single instance of your application. Pods typically have a 1:1 mapping with a container. In advanced scenarios, a pod may contain multiple containers. Multi-container pods are scheduled together on the same node, and allow containers to share related resources. A pod is a logical resource, but application workloads run on the containers. Pods are typically ephemeral, disposable resources.
 - **Service**. An abstraction that defines a logical set of pods as well as the policy for accessing them.
 - **Volume**. An abstraction that lets us persist data. (This is necessary because containers are ephemeral—meaning data is deleted when the container is deleted.)
 - **Namespace**. Namespaces provides a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces. Namespace-based scoping is applicable only for namespaced objects. Namespaces are a way to divide cluster resources between multiple users (via resource quota).
