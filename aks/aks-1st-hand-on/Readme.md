@@ -28,7 +28,7 @@ Basic objects include:
 
 A **deployment** is an abstraction to the **pod**. It allows you to have extra functionality and control on top of the pod to say how many instances of a pod you want to run across nodes or if you want to define your rolling update strategy. This allows you to control your deployments based on your requirements in order to have zero downtime as you bring up a new process and deprecate old ones. <br>
 In Kubernetes manifest file, the **Deployment** makes the following tasks: 
-- creates the pods,
+- creates the pods (defines the number of pod replicas to create),
 - create and update a set of identical pods,
 - ensures the correct number of pods is always running in the cluster, 
 - handles scalability,
@@ -170,8 +170,25 @@ spec:
     port: 80
     targetPort: 80
 ```
-In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.
-
+In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster. <br>
+A description of the deployment in the YAML manifest file is shown below:
+	
+| Specification                   | Description                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------- | 
+|`.apiVersion`                    |	Specifies the API group and API resource you want to use when creating the resource.  |
+|`.kind`                          |	Specifies the type of resource you want to create.                                    |
+|`.metadata.name`                 |	Specifies the name of the deployment. This file runs the nginx image from Docker Hub. |
+|`.spec.replicas`                 |	Specifies how many pods to create. This file will create two duplicate pods.          |
+|`.spec.selector`                 |	Specifies which pods will be affected by this deployment.                             |
+|`.spec.selector.matchLabels`     |	Contains a map of {key, value} pairs that allow the deployment to find and manage the created pods. |
+|`.spec.selector.matchLabels.app` |	Has to match `.spec.template.metadata.labels.`                |
+|`.spec.template.labels`          |	Specifies the {key, value} pairs attached to the object.      |
+|`.spec.template.app`             |	Has to match `.spec.selector.matchLabels.`                    |
+|`.spec.spec.containers`          |	Specifies the list of containers belonging to the pod.        |
+|`.spec.spec.containers.name`     |	Specifies the name of the container specified as a DNS label. |
+|`.spec.spec.containers.image`    |	Specifies the container image name.                           |
+|`.spec.spec.containers.ports`    |	Specifies the list of ports to expose from the container.     |
+|`.spec.spec.containers.ports.containerPort` |	Specifies the number of ports to expose on the pod's IP address |
 
 **Command to deploy the application:**
 ```bash
