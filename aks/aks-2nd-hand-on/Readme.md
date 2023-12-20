@@ -55,10 +55,9 @@ The PV access mode are:
 - **ReadWriteMany** (RWX): the volume can be mounted as read-write by many nodes.
 - **ReadWriteOncePod** (RWOP): the volume can be mounted as read-write by a single Pod. Use ReadWriteOncePod access mode if you want to ensure that only one pod across the whole cluster can read that PVC or write to it.
 
-The following setup has been done in Windows host with Azure CLI installed locally.
-
 
 ### <a name="login in azure subscription"></a>1. Login in the Azure subscription and create the Kubernetes cluster
+The following setup has been done in Windows host with Azure CLI installed locally.
 
 - `az login --use-device-code` - login with the device authentication code in the web browser
 - `az account list --output table`  - Get a list of available subscriptions <br>
