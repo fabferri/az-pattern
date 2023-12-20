@@ -1,0 +1,19 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: private-azurefile-csi
+provisioner: file.csi.azure.com   # replace with "kubernetes.io/azure-file" if aks version is less than 1.21
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+ - dir_mode=0777
+ - file_mode=0777
+ - uid=0
+ - gid=0
+ - mfsymlinks
+ - cache=strict # https://linux.die.net/man/8/mount.cifs
+ - nosharesock  # reduce probability of reconnect race
+ - actimeo=30   # reduce latency for metadata-heavy workload
+parameters:
+  skuName: Standard_LRS
