@@ -67,7 +67,7 @@ The following setup has been done in Windows host with Azure CLI installed local
 - `az account set --subscription "AzureDemo"` - Change the active subscription using the subscription name 
 - `az account list --query "[?name=='AzureDemo'].id" --output tsv` - Get the Azure subscription ID
 - `$SubId="$(az account list --query "[?name=='AzureDemo'].id" --output tsv)"; az account set --subscription $SubId`  - Change the active subscription (powershell)
-- `az aks install-cli` - (<ins>>Optional</ins>) - One time operation if you do not have aks command installed 
+- `az aks install-cli` - (<ins>Optional</ins>) - One time operation if you do not have aks command installed 
 - `az aks create -g $rg -n $clusterName --enable-managed-identity --node-count 1 --ssh-key-value $SSH` - Create the Kubernetes cluster
 - `az aks get-credentials -g $rg -n $clusterName` - Configure kubectl to connect to the kubernetes cluster
 - `az aks update -g $rg -n $clusterName --enable-file-driver ` - Enable CSI storage drivers on an existing cluster
