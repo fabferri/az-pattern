@@ -13,7 +13,7 @@
     },
     "resources": [
         {
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('publicIPName')]",
             "location": "[variables('location')]",
@@ -29,7 +29,7 @@
     "outputs": {
         "pubIP": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')),'2020-11-01').ipAddress]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')),'2022-11-01').ipAddress]"
         }
     }
 }

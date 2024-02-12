@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "mngIP": {
-            "type": "string",
-            "metadata": {
-                "description": "management IP to access in SSH to the VMs"
-            }
-        },
         "prefix": {
             "type": "string",
             "defaultValue": "",
@@ -17,60 +11,26 @@
         },
         "location1": {
             "type": "string",
-            "allowedValues": [
-                "centralus",
-                "eastus",
-                "eastus2",
-                "southcentralus",
-                "westus2",
-                "westus3",
-                "canadacentral",
-                "francecentral",
-                "germanywestcentral",
-                "uksouth",
-                "northeurope",
-                "westeurope",
-                "southeastasia",
-                "australiaeast",
-                "japaneast"
-            ],
             "metadata": {
                 "description": "Azure regions with Availability Zone"
             }
         },
         "location2": {
             "type": "string",
-            "allowedValues": [
-                "centralus",
-                "eastus",
-                "eastus2",
-                "southcentralus",
-                "westus2",
-                "westus3",
-                "canadacentral",
-                "francecentral",
-                "germanywestcentral",
-                "uksouth",
-                "northeurope",
-                "westeurope",
-                "southeastasia",
-                "australiaeast",
-                "japaneast"
-            ],
             "metadata": {
                 "description": "Azure regions with Availability Zone"
             }
         },
         "vNet1Name": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vnet1')]",
+            "defaultValue": "vnet1",
             "metadata": {
                 "description": "Arbitrary name for the Azure Virtual Network 1"
             }
         },
         "vNet2Name": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vnet2')]",
+            "defaultValue": "vnet2",
             "metadata": {
                 "description": "Arbitrary name for the Azure Virtual Network 2"
             }
@@ -159,46 +119,46 @@
                 "description": "CIDR block for gateway subnet- it is a subset of vNet2AddressPrefix address space"
             }
         },
-        "gateway1PublicIP1Name": {
-            "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vpnGw1IP1')]",
-            "metadata": {
-                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
-            }
-        },
-        "gateway1PublicIP2Name": {
-            "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vpnGw1IP2')]",
-            "metadata": {
-                "description": "Arbitrary name for public IP2 resource used for the new azure gateway1"
-            }
-        },
-        "gateway2PublicIP1Name": {
-            "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vpnGw2IP1')]",
-            "metadata": {
-                "description": "Arbitrary name for public IP1 resource used for the new azure gateway2"
-            }
-        },
-        "gateway2PublicIP2Name": {
-            "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vpnGw2IP2')]",
-            "metadata": {
-                "description": "Arbitrary name for public IP2 resource used for the new azure gateway2"
-            }
-        },
         "gateway1Name": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vpnGw1')]",
+            "defaultValue": "vpnGw1",
             "metadata": {
                 "description": "Arbitrary name for the new gateway1"
             }
         },
         "gateway2Name": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'vpnGw2')]",
+            "defaultValue": "vpnGw2",
             "metadata": {
                 "description": "Arbitrary name for the new gateway2"
+            }
+        },
+        "gateway1PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('gateway1Name'),'IP1')]",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+            }
+        },
+        "gateway1PublicIP2Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('gateway1Name'),'IP2')]",
+            "metadata": {
+                "description": "Arbitrary name for public IP2 resource used for the new azure gateway1"
+            }
+        },
+        "gateway2PublicIP1Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('gateway2Name'),'IP1')]",
+            "metadata": {
+                "description": "Arbitrary name for public IP1 resource used for the new azure gateway2"
+            }
+        },
+        "gateway2PublicIP2Name": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('gateway2Name'),'IP2')]",
+            "metadata": {
+                "description": "Arbitrary name for public IP2 resource used for the new azure gateway2"
             }
         },
         "gatewaySku": {
@@ -239,63 +199,63 @@
         },
         "localGatewayName11": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'localGateway11')]",
+            "defaultValue": "localGateway11",
             "metadata": {
                 "description": "Arbitrary name for gateway resource representing VPN gateway1"
             }
         },
         "localGatewayName12": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'localGateway12')]",
+            "defaultValue": "localGateway12",
             "metadata": {
                 "description": "Arbitrary name for gateway resource representing VPN gateway1"
             }
         },
         "localGatewayName21": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'localGateway21')]",
+            "defaultValue": "localGateway21",
             "metadata": {
                 "description": "Arbitrary name for gateway resource representing VPN gateway2"
             }
         },
         "localGatewayName22": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'localGateway22')]",
+            "defaultValue": "localGateway22",
             "metadata": {
                 "description": "Arbitrary name for gateway resource representing VPN gateway2"
             }
         },
         "connectionName11-21": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'gtw1-to-gtw2-pubIP1')]",
+            "defaultValue": "[concat(parameters('gateway1PublicIP1Name'),'-to-',parameters('gateway2PublicIP1Name'))]",
             "metadata": {
                 "description": "Arbitrary name for the new connection between Azure VNet and other network"
             }
         },
         "connectionName12-22": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'gtw1-to-gtw2-pubIP2')]",
+            "defaultValue": "[concat(parameters('gateway1PublicIP2Name'),'-to-',parameters('gateway2PublicIP2Name'))]",
             "metadata": {
                 "description": "Arbitrary name for the new connection between Azure VNet and other network"
             }
         },
         "connectionName21-11": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'gtw2-to-gtw1-pubIP1')]",
+            "defaultValue": "[concat(parameters('gateway2PublicIP1Name'),'-to-', parameters('gateway1PublicIP1Name'))]",
             "metadata": {
                 "description": "Arbitrary name for the new connection between Azure VNet and other network"
             }
         },
         "connectionName22-12": {
             "type": "string",
-            "defaultValue": "[concat(parameters('prefix'),'gtw2-to-gtw1-pubIP2')]",
+            "defaultValue": "[concat(parameters('gateway2PublicIP2Name'),'-to-', parameters('gateway1PublicIP2Name'))]",
             "metadata": {
                 "description": "Arbitrary name for the new connection between Azure VNet and other network"
             }
         },
         "sharedKey": {
             "type": "string",
-            "defaultValue": "secretPSK101**",
+            "defaultValue": "[format('secr{0}', uniqueString(resourceGroup().id))]",
             "metadata": {
                 "description": "Shared key (PSK) for IPSec tunnel"
             }
@@ -352,7 +312,6 @@
         }
     },
     "variables": {
-        "mngIP": "[parameters('mngIP')]",
         "location1": "[parameters('location1')]",
         "location2": "[parameters('location2')]",
         "vNet1Name": "[parameters('vNet1Name')]",
@@ -405,8 +364,8 @@
         "nic1Name": "[concat(variables('vm1Name'), '-nic')]",
         "nic2Name": "[concat(variables('vm2Name'), '-nic')]",
         "imagePublisher": "canonical",
-        "imageOffer": "0001-com-ubuntu-server-focal",
-        "imageSKU": "20_04-lts",
+        "imageOffer": "0001-com-ubuntu-server-jammy",
+        "imageSKU": "22_04-lts-gen2",
         "vm1PublicIPName": "[concat(variables('vm1Name'), '-pubIP')]",
         "vm2PublicIPName": "[concat(variables('vm2Name'), '-pubIP')]",
         "vmSize": "[parameters('vmSize')]",
@@ -417,7 +376,7 @@
 
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsg1')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location1')]",
             "comments": "network security group for the VNet1",
             "properties": {
@@ -429,7 +388,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[variables('mngIP')]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 500,
@@ -443,7 +402,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
-                            "sourceAddressPrefix": "[variables('mngIP')]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 510,
@@ -468,10 +427,10 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[variables('mngIP')]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
-                            "priority": 500,
+                            "priority": 300,
                             "direction": "Inbound"
                         }
                     },
@@ -482,10 +441,10 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
-                            "sourceAddressPrefix": "[variables('mngIP')]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
-                            "priority": 510,
+                            "priority": 310,
                             "direction": "Inbound"
                         }
                     }
@@ -495,7 +454,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet1Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location1')]",
             "comments": "Virtual Network1",
             "dependsOn": [
@@ -531,7 +490,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet2Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location2')]",
             "comments": "Virtual Network 2",
             "dependsOn": [
@@ -567,11 +526,12 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('gateway1PublicIP1Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of the VPN Gateway1-instance 0",
             "location": "[variables('location1')]",
             "sku": {
-                "name": "Standard"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAllocationMethod": "Static"
@@ -581,11 +541,12 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('gateway1PublicIP2Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of the VPN Gateway1- instance 1",
             "location": "[variables('location1')]",
             "sku": {
-                "name": "Standard"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAllocationMethod": "Static"
@@ -595,7 +556,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('gateway2PublicIP1Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of the VPN Gateway2-instance 0",
             "location": "[variables('location2')]",
             "sku": {
@@ -609,7 +570,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('gateway2PublicIP2Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of the VPN Gateway2- instance 1",
             "location": "[variables('location2')]",
             "sku": {
@@ -623,7 +584,7 @@
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[variables('gateway1Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location1')]",
             "comments": "VPN Gateway 1- deployed in location 1",
             "dependsOn": [
@@ -675,7 +636,7 @@
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
             "name": "[variables('gateway2Name')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location2')]",
             "comments": "VPN Gateway 2- deployed in location 2",
             "dependsOn": [
@@ -727,7 +688,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName11')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [
@@ -740,7 +701,7 @@
                 "gatewayIpAddress": "[reference(variables('gateway1PublicIP1Id'),'2020-11-01').ipAddress]",
                 "bgpSettings": {
                     "asn": "[variables('asnGtw1')]",
-                    "bgpPeeringAddress": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2020-06-01').bgpSettings.bgpPeeringAddress , ','))]",
+                    "bgpPeeringAddress": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2022-11-01').bgpSettings.bgpPeeringAddress , ','))]",
                     "peerWeight": 0
                 }
             }
@@ -748,7 +709,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName12')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [
@@ -761,7 +722,7 @@
                 "gatewayIpAddress": "[reference(variables('gateway1PublicIP2Id'),'2020-11-01').ipAddress]",
                 "bgpSettings": {
                     "asn": "[variables('asnGtw1')]",
-                    "bgpPeeringAddress": "[last(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2020-06-01').bgpSettings.bgpPeeringAddress , ','))]",
+                    "bgpPeeringAddress": "[last(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2022-11-01').bgpSettings.bgpPeeringAddress , ','))]",
                     "peerWeight": 0
                 }
             }
@@ -769,7 +730,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName21')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location1')]",
             "dependsOn": [
@@ -782,7 +743,7 @@
                 "gatewayIpAddress": "[reference(variables('gateway2PublicIP1Id'),'2020-11-01').ipAddress]",
                 "bgpSettings": {
                     "asn": "[variables('asnGtw2')]",
-                    "bgpPeeringAddress": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2020-06-01').bgpSettings.bgpPeeringAddress , ','))]",
+                    "bgpPeeringAddress": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2022-11-01').bgpSettings.bgpPeeringAddress , ','))]",
                     "peerWeight": 0
                 }
             }
@@ -790,7 +751,7 @@
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName22')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location1')]",
             "dependsOn": [
@@ -803,7 +764,7 @@
                 "gatewayIpAddress": "[reference(variables('gateway2PublicIP2Id'),'2020-11-01').ipAddress]",
                 "bgpSettings": {
                     "asn": "[variables('asnGtw2')]",
-                    "bgpPeeringAddress": "[last(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2020-06-01').bgpSettings.bgpPeeringAddress , ','))]",
+                    "bgpPeeringAddress": "[last(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2022-11-01').bgpSettings.bgpPeeringAddress , ','))]",
                     "peerWeight": 0
                 }
             }
@@ -811,7 +772,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName11-21')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "VPN connection between [Gateway1] and [Gateway2-pubIP1]",
             "location": "[variables('location1')]",
             "dependsOn": [
@@ -834,7 +795,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName12-22')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "VPN connection between [Gateway1] and [Gateway2-pubIP2]",
             "location": "[variables('location1')]",
             "dependsOn": [
@@ -857,7 +818,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName21-11')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "VPN connection between [Gateway2] and [Gateway1-pubIP1]",
             "location": "[variables('location2')]",
             "dependsOn": [
@@ -880,7 +841,7 @@
         {
             "type": "Microsoft.Network/connections",
             "name": "[variables('connectionName22-12')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "comments": "VPN connection between [Gateway2] and [Gateway1-pubIP2]",
             "location": "[variables('location2')]",
             "dependsOn": [
@@ -903,21 +864,29 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('vm1PublicIPName')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location1')]",
             "comments": "public IP address of the VM1",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('vm2PublicIPName')]",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2022-11-01",
             "location": "[variables('location2')]",
             "comments": "public IP address of the VM2",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
             }
         },
         {

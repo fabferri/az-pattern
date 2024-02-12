@@ -1,4 +1,3 @@
-mngIP=YOUR_PUBLIC_IP
 subscriptionName=AzureDemo
 ResourceGroupName=test-vpn
 location1=centralus
