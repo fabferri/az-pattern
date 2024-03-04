@@ -1,3 +1,4 @@
+New-Item -Path 'C:\' -Name 'cert1' -ItemType Directory -Force
 # Create self-signed Root Certificate
 # 
 # The following example creates a self-signed root certificate named 'P2SRootCert' that is automatically installed in 'Certificates-Current User\Personal\Certificates'. 
@@ -29,7 +30,7 @@ Else {
 $mypwd = ConvertTo-SecureString -String '1234' -Force -AsPlainText
 $certRootThumbprint= (Get-ChildItem -Path "Cert:\CurrentUser\My" | where-Object  -Property Subject -eq  "CN=P2SRootCert" | Select-Object Thumbprint).Thumbprint
 $certRoot=Get-ChildItem -Path "Cert:\CurrentUser\My\$certRootThumbprint"
-Export-PfxCertificate -Cert $certRoot -FilePath C:\certRoot-with-privKey.pfx -Password $mypwd 
+Export-PfxCertificate -Cert $certRoot -FilePath C:\cert1\certRoot-with-privKey.pfx -Password $mypwd 
 
 # Generate a client certificate
 # Each client computer that connects to a VNet using Point-to-Site must have a client certificate installed. 
@@ -62,7 +63,7 @@ Else { Write-Host "$(Get-Date) - P2S Client cert exists, skipping" }
 
 # Save root certificate to file
 Write-Host "$(Get-Date) - Saving root certificate to .cert file"
-$FileCert = "C:\P2SRoot.cert"
+$FileCert = "C:\cert1\P2SRoot.cert"
 If (-not (Test-Path -Path $FileCert)) {
      # The private key is not included in the export
      Export-Certificate -Cert $certRoot -FilePath $FileCert | Out-Null
@@ -72,7 +73,7 @@ Else { Write-Host "$(Get-Date) - root certificate .cert file exists, skipping" }
 
 # Convert to Base64 cer file
 Write-Host "$(Get-Date) - Creating root certificate in .cer file"
-$FileCer = "C:\P2SRoot2.cer"
+$FileCer = "C:\cert1\P2SRoot2.cer"
 If (-not (Test-Path -Path $FileCer)) {
      certutil -encode $FileCert $FileCer | Out-Null
      Write-Host "$(Get-Date) - Created root cer file"
@@ -83,8 +84,8 @@ Else { Write-Host "$(Get-Date) - Root cer file exists, skipping" }
 ####### export user certificate in Personal Information Exchange - PKCS #12 (.PFX)
 $mypwd = ConvertTo-SecureString -String '1234' -Force -AsPlainText
 $certClient = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -eq 'CN=P2SChildCert' }
-Export-PfxCertificate -cert $certClient -FilePath C:\certClient.pfx -Password $mypwd
+Export-PfxCertificate -cert $certClient -FilePath C:\cert1\certClient.pfx -Password $mypwd
 
 ### to see the thumbprint of exported user certificate
-(Get-PfxData -FilePath C:\certClient.pfx -Password $mypwd ).EndEntityCertificates[0]
+(Get-PfxData -FilePath C:\cert1\certClient.pfx -Password $mypwd ).EndEntityCertificates[0]
 
