@@ -1,6 +1,6 @@
 New-Item -Path 'C:\' -Name 'cert1' -ItemType Directory -Force
+#
 # Create self-signed Root Certificate
-# 
 # The following example creates a self-signed root certificate named 'P2SRootCert' that is automatically installed in 'Certificates-Current User\Personal\Certificates'. 
 # You can view the certificate by opening certmgr.msc, or Manage User Certificates.
 $params = @{
