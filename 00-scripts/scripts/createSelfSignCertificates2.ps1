@@ -90,7 +90,7 @@ Export-PfxCertificate -cert $certClient -FilePath C:\cert1\certClient.pfx -Passw
 # (Get-PfxData -FilePath C:\cert1\certClient.pfx -Password $mypwd ).EndEntityCertificates[0]
 
 Install-PackageProvider -Name NuGet -Confirm:$false -Force 
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser 
+#Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser 
 Install-Module -Name Az -Repository PSGallery -Scope AllUsers -Force 
 
 $ContainerName='cert1'
