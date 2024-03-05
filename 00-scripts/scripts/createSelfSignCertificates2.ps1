@@ -89,7 +89,9 @@ Export-PfxCertificate -cert $certClient -FilePath C:\cert1\certClient.pfx -Passw
 ### to see the thumbprint of exported user certificate
 # (Get-PfxData -FilePath C:\cert1\certClient.pfx -Password $mypwd ).EndEntityCertificates[0]
 
-Install-PackageProvider -Name NuGet -Confirm:$false -Force; Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser; Install-Module -Name Az -Repository PSGallery -Force
+Install-PackageProvider -Name NuGet -Confirm:$false -Force 
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser 
+Install-Module -Name Az -Repository PSGallery -Scope AllUsers -Force 
 
 $ContainerName='cert1'
 $localFolder = 'C:\cert1'
