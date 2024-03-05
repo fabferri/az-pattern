@@ -88,4 +88,3 @@ Export-PfxCertificate -cert $certClient -FilePath C:\cert1\certClient.pfx -Passw
 
 ### to see the thumbprint of exported user certificate
 (Get-PfxData -FilePath C:\cert1\certClient.pfx -Password $mypwd ).EndEntityCertificates[0]
-
