@@ -73,7 +73,7 @@ Else { Write-Host "$(Get-Date) - root certificate .cert file exists, skipping" }
 
 # Convert to Base64 cer file
 Write-Host "$(Get-Date) - Creating root certificate in .cer file"
-$FileCer = "C:\cert1\P2SRoot2.cer"
+$FileCer = "C:\cert1\P2SRoot.cer"
 If (-not (Test-Path -Path $FileCer)) {
      certutil -encode $FileCert $FileCer | Out-Null
      Write-Host "$(Get-Date) - Created root cer file"
