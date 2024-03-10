@@ -1,26 +1,37 @@
 # Script to create the Root certificate and client certicates signed with root certificate.
+# input paramenters:
+#  $pwdCertificates: specifies the password for exported certificates
 #
-# to create more than 1 client certificate specificy the parameter -numClientCert
-# i.e. to create 4 client certificate run the following command:
+#  $numClientCert: specifies the number of client certificates 
+#      To create more than 1 client certificate specificy the parameter -numClientCert
+#      i.e. to create 4 client certificate run the following command:
+#      .\createSelfSignCertificates.ps1 -numClientCert 4
 #
-# .\createSelfSignCertificates.ps1 -numClientCert 4
+#  $cpFlag: it is boolean flag: 
+#           $true copy the digital certificate in storage account
+#           $false does no copy the digital certificate in the storage account
+# 
 #
 param(
     [Parameter(Mandatory = $false, HelpMessage = 'password certificate', ValueFromPipeline = $true)]
     [string]$pwdCertificates = '1234',
     [Parameter(Mandatory = $false, HelpMessage = 'number of client certificate', ValueFromPipeline = $true)]
-    [int]$numClientCert
+    [int]$numClientCert,
+    [Parameter(Mandatory = $false, HelpMessage = 'flag=$true to copy the value to storage account', ValueFromPipeline = $true)]
+    [bool]$cpFlag = $true
 )
 
 if ($numClientCert -le 0) { $numClientCert = 1 }
 write-host 'number client certificates: '$numClientCert
 
-# the variable specifies the local folder to store digital certificates
-$certPath='C:\cert\'
+$storageContainerName='cert1'
 
-$folderName = [string](Split-Path -Path $certPath -Leaf)
+# the variable specifies the local folder to store digital certificates
+$certPath = 'C:\cert\'
+
 $pathFolder = [string](Split-Path -Path $certPath -Parent)
-Write-Host 'folder to store digital certificates: '$pathCertFolder$folderCertName
+$folderName = [string](Split-Path -Path $certPath -Leaf)
+Write-Host 'folder to store digital certificates: '$pathFolder$folderName
 
 
 # create a directory 'C:\cert'
@@ -93,7 +104,7 @@ for ($i = 1; $i -le $numClientCert; $i++) {
 }
 
 # Save root certificate to file
-$FileCert = $certPath+'P2SRoot.cert'
+$FileCert = $certPath + 'P2SRoot.cert'
 $certRoot = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -eq 'CN=P2SRootCert' }
 If ($null -eq $certRoot) {
     Write-Host "$(Get-Date) - Root Certificate 'CN=P2SRootCert' not found "
@@ -105,10 +116,10 @@ Else {
     # The private key is not included in the export
     Export-Certificate -Cert $certRoot -FilePath $FileCert -Force | Out-Null
     Write-Host "$(Get-Date) - Create the file: $FileCert"
- }
+}
 
 # Convert to Base64 cer file
-$FileCer = $certPath+'P2SRoot.cer'
+$FileCer = $certPath + 'P2SRoot.cer'
 Write-Host "$(Get-Date) - Creating root certificate in $FileCer"
 If (-not (Test-Path -Path $FileCer)) {
     certutil -encode $FileCert $FileCer | Out-Null
@@ -119,7 +130,7 @@ Else { Write-Host "$(Get-Date) - Root cer file exists, skipping" }
 for ($i = 1; $i -le $numClientCert; $i++) {
 
     $certSubject = 'CN=P2SChildCert' + ([string]$i)
-    $certFilePath= $certPath+'certClient'+([string]$i)+'.pfx'
+    $certFilePath = $certPath + 'certClient' + ([string]$i) + '.pfx'
 
     ####### export user certificate in Personal Information Exchange - PKCS #12 (.PFX)
     $mypwd = ConvertTo-SecureString -String $pwdCertificates -Force -AsPlainText
@@ -130,7 +141,58 @@ for ($i = 1; $i -le $numClientCert; $i++) {
     # (Get-PfxData -FilePath "$certPath\certClient.pfx" -Password $mypwd ).EndEntityCertificates[0]
 }
 
-$pwdFile=$certPath+'certpwd.txt'
+$pwdFile = $certPath + 'certpwd.txt'
 Write-Host ''
 Write-Host 'write password file: '$pwdFile
 Out-File -FilePath $pwdFile -Force -InputObject $pwdCertificates
+
+
+if ($cpFlag -eq $false) { Exit}
+
+### install NuGet, Az.Account module , Az.Storage module 
+Write-Host "Installing Azurepowershell Modules"
+try {
+    Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction Stop | Out-Null
+    Write-Host "  NuGet already registered, skipping"
+}
+catch {
+    Install-PackageProvider -Name NuGet -Scope AllUsers  -Force | Out-Null
+    Write-Host "  NuGet registered"
+}
+
+if ($null -ne (Get-Module Az.Accounts -ListAvailable)) {
+    Write-Host "  Az.Account module already installed, skipping"
+}
+else {
+    Install-Module Az.Accounts -Scope AllUsers -Force | Out-Null
+    Write-Host "  Az.Account module installed"
+}
+
+if ($null -ne (Get-Module Az.Storage -ListAvailable)) {
+    Write-Host "  Az.Storage module already installed, skipping"
+}
+else {
+    Install-Module Az.Storage -Scope AllUsers -Force | Out-Null
+    Write-Host "  Az.Storage module installed"
+}
+
+# You just connected to Azure using a managed identity.
+Connect-AzAccount -Identity
+
+# get storage account name and resource group name
+$storageAccountName=(Get-AzStorageAccount).StorageAccountName
+$resourceGroupName=(Get-AzStorageAccount).ResourceGroupName
+$context=(Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $resourceGroupName).Context
+
+$localFolder=$pathFolder+ $folderName
+foreach ($fileName in (Get-ChildItem -File -Recurse -Path $localFolder).Name)
+{
+  $blob1 = @{
+    File             = "$certPath$fileName"
+    Container        = $storageContainerName
+    Blob             = $fileName
+    Context          = $Context
+    StandardBlobTier = 'Hot'
+  }
+  Set-AzStorageBlobContent @blob1 -Force
+}
