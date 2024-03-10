@@ -12,19 +12,19 @@ param(
     [int]$numClientCert
 )
 
-if ($numClientCert -le 0) { $numClientCert=1 }
+if ($numClientCert -le 0) { $numClientCert = 1 }
 write-host 'number client certificates: '$numClientCert
 
 # the variable specifies the local folder to store digital certificates
 $certPath='C:\cert\'
 
-$folderCertName = Split-Path -Path $certPath -Leaf
-$pathCertFiles = Split-Path -Path $certPath -Parent
-Write-Host 'folder to store digital certificates: '$pathCert$folderCertName
+$folderName = [string](Split-Path -Path $certPath -Leaf)
+$pathFolder = [string](Split-Path -Path $certPath -Parent)
+Write-Host 'folder to store digital certificates: '$pathCertFolder$folderCertName
 
 
 # create a directory 'C:\cert'
-New-Item -Path $pathCert -Name $folderCertName -ItemType Directory -Force
+New-Item -Path $pathFolder -Name $folderName -ItemType Directory -Force
 Write-Host '' 
 #
 # Create self-signed Root Certificate
@@ -60,7 +60,7 @@ $certRoot = Get-ChildItem -Path "Cert:\CurrentUser\My\$certRootThumbprint"
 
 # Export of the root certificate in format .pfx
 # The private key is included in the export
-Export-PfxCertificate -Cert $certRoot -FilePath "$certPath\certRoot-with-privKey.pfx" -Password $mypwd 
+Export-PfxCertificate -Cert $certRoot -FilePath $certPath'certRoot-with-privKey.pfx' -Password $mypwd 
 
 for ($i = 1; $i -le $numClientCert; $i++) {
     $certSubject = 'CN=P2SChildCert' + ([string]$i)
@@ -119,7 +119,7 @@ Else { Write-Host "$(Get-Date) - Root cer file exists, skipping" }
 for ($i = 1; $i -le $numClientCert; $i++) {
 
     $certSubject = 'CN=P2SChildCert' + ([string]$i)
-    $certFilePath= "$certPath\certClient"+([string]$i)+'.pfx'
+    $certFilePath= $certPath+'certClient'+([string]$i)+'.pfx'
 
     ####### export user certificate in Personal Information Exchange - PKCS #12 (.PFX)
     $mypwd = ConvertTo-SecureString -String $pwdCertificates -Force -AsPlainText
