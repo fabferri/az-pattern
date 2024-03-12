@@ -107,6 +107,7 @@ $certPath = 'C:\cert\'
 $pathFolder = [string](Split-Path -Path $certPath -Parent)
 $folderName = [string](Split-Path -Path $certPath -Leaf)
 $clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
+$passwordCertFile = 'certpwd.txt'
 $fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
 $fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
 $pwdCert= Get-Content -Path $fullPathPwdFile
