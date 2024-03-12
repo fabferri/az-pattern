@@ -116,7 +116,7 @@ winrm quickconfig -quiet
 Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force 
 #ConvertFrom-SecureString -SecureString $adminPassword -AsPlainText 
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
 $s = New-PSSession -Credential $cred -ComputerName $env:computername 
 Invoke-Command -Session $s -ScriptBlock { 
 param($clientCertSeq) 
