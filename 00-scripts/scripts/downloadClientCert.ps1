@@ -98,6 +98,8 @@ else { Write-Warning "$fullPathPwdFile file not found, please change to the dire
 #$pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 #Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 
+Set-Content C:\cert\administratorUsername.txt $adminUsername
+Set-Content C:\cert\administratorPassword.txt $adminPassword
 
 
 #Enable-PSRemoting -SkipNetworkProfileCheck -Force
@@ -107,7 +109,7 @@ winrm quickconfig -quiet
 Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
 #ConvertFrom-SecureString -SecureString $adminPassword -AsPlainText 
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$adminPassword 
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
 $s = New-PSSession -Credential $cred
 Invoke-Command -Session $s -ScriptBlock { 
 param($clientCertSeq) 
