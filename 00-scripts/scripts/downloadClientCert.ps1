@@ -99,8 +99,9 @@ else { Write-Warning "$fullPathPwdFile file not found, please change to the dire
 #Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 
 
-Enable-PSRemoting -SkipNetworkProfileCheck -Force
-Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
+
+#Enable-PSRemoting -SkipNetworkProfileCheck -Force
+#Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
 
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
 $cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw 
@@ -119,4 +120,4 @@ $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 } -ArgumentList $clientCertSeq
 
-Remove-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' 
+#Remove-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' 
