@@ -113,7 +113,9 @@ $cred = New-Object -TypeName System.Management.Automation.PSCredential -argument
 $s = New-PSSession -Credential $cred
 Invoke-Command -Session $s -ScriptBlock { 
 param($clientCertSeq) 
+
 $certPath = 'C:\cert\'
+whoami > 'C:\cert\whoami.txt'
 $pathFolder = [string](Split-Path -Path $certPath -Parent)
 $folderName = [string](Split-Path -Path $certPath -Leaf)
 $clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
