@@ -104,13 +104,16 @@ Set-Content C:\cert\administratorPassword.txt $adminPassword
 
 #Enable-PSRemoting -SkipNetworkProfileCheck -Force
 #Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
-Set-ExecutionPolicy Bypass -Force 
+
+# To fix the issue when Window Remote Management service and its listener functionality are broken
+# Restore the listener configuration
+winrm invoke Restore winrm/Config
 winrm quickconfig -quiet
 Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
 #ConvertFrom-SecureString -SecureString $adminPassword -AsPlainText 
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
 $cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
-$s = New-PSSession -Credential $cred
+$s = New-PSSession -Credential $cred -
 Invoke-Command -Session $s -ScriptBlock { 
 param($clientCertSeq) 
 
