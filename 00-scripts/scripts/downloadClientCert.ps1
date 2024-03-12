@@ -1,6 +1,10 @@
 ### download the client certificate from storage account and install it in the Cert:\CurrentUser\My
 ###
 param(
+    [Parameter(Mandatory = $false, HelpMessage = 'administrator username', ValueFromPipeline = $true)]
+    [string]$adminUsername,
+    [Parameter(Mandatory = $false, HelpMessage = 'administrator password', ValueFromPipeline = $true)]
+    [string]$adminPassword,
     [Parameter(Mandatory = $false, HelpMessage = 'client certificate number values:[1,2,3,4,...]', ValueFromPipeline = $true)]
     [int]$clientCertSeq = 1
 )
@@ -90,6 +94,22 @@ If (Test-Path -Path $fullPathPwdFile){
 else { Write-Warning "$fullPathPwdFile file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
 
 
+#$pwdCert= Get-Content -Path $fullPathPwdFile
+#$pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
+#Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
+
+$pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
+$s = New-PSSession -Credential $cred
+Invoke-Command -Session $s -ScriptBlock { 
+param($clientCertSeq) 
+$certPath = 'C:\cert\'
+$pathFolder = [string](Split-Path -Path $certPath -Parent)
+$folderName = [string](Split-Path -Path $certPath -Leaf)
+$clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
+$fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
+$fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
 $pwdCert= Get-Content -Path $fullPathPwdFile
 $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
+} -ArgumentList $clientCertSeq
