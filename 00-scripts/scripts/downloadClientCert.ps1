@@ -102,7 +102,9 @@ else { Write-Warning "$fullPathPwdFile file not found, please change to the dire
 
 #Enable-PSRemoting -SkipNetworkProfileCheck -Force
 #Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
-
+Set-ExecutionPolicy Bypass -Force 
+winrm quickconfig -quiet
+Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
 $cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw 
 $s = New-PSSession -Credential $cred
