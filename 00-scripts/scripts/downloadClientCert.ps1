@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = 'administrator username', ValueFromPipeline = $true)]
     [string]$adminUsername,
     [Parameter(Mandatory = $false, HelpMessage = 'administrator password', ValueFromPipeline = $true)]
-    [securestring]$adminPassword,
+    [string]$adminPassword,
     [Parameter(Mandatory = $false, HelpMessage = 'client certificate number values:[1,2,3,4,...]', ValueFromPipeline = $true)]
     [int]$clientCertSeq = 1
 )
