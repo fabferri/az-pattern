@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = 'administrator username', ValueFromPipeline = $true)]
     [string]$adminUsername,
     [Parameter(Mandatory = $false, HelpMessage = 'administrator password', ValueFromPipeline = $true)]
-    [string]$adminPassword,
+    [securestring]$adminPassword,
     [Parameter(Mandatory = $false, HelpMessage = 'client certificate number values:[1,2,3,4,...]', ValueFromPipeline = $true)]
     [int]$clientCertSeq = 1
 )
@@ -105,8 +105,9 @@ else { Write-Warning "$fullPathPwdFile file not found, please change to the dire
 Set-ExecutionPolicy Bypass -Force 
 winrm quickconfig -quiet
 Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
+#ConvertFrom-SecureString -SecureString $adminPassword -AsPlainText 
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw 
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$adminPassword 
 $s = New-PSSession -Credential $cred
 Invoke-Command -Session $s -ScriptBlock { 
 param($clientCertSeq) 
