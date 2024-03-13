@@ -110,7 +110,8 @@ $cred = New-Object System.Management.Automation.PSCredential ($adminUsername, $p
 #Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $global:pwdCertSecString -FilePath $global:fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
 #Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $pwdCertSecString","-FilePath $fullPathCertClientFile","-CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
 
-Start-Process -FilePath "C:\Windows\system32\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Verb RunAs -WorkingDirectory "$pathFolder$folderName" -Wait
+Copy-Item -Path C:\Windows\system32\certutil.exe -Destination "C:\cert\"
+Start-Process -FilePath "C:\cert\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Verb RunAs -WorkingDirectory "$pathFolder$folderName" -Wait
 
 Exit
 #Start-Process -FilePath "C:\Windows\system32\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
