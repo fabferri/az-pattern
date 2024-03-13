@@ -102,6 +102,28 @@ Set-Content C:\cert\administratorUsername.txt $adminUsername
 Set-Content C:\cert\administratorPassword.txt $adminPassword
 
 
+
+
+
+$certPath = 'C:\cert\'
+$pathFolder = [string](Split-Path -Path $certPath -Parent)
+$folderName = [string](Split-Path -Path $certPath -Leaf)
+$clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
+$passwordCertFile = 'certpwd.txt'
+$fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
+$fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
+$pwdCert= Get-Content -Path $fullPathPwdFile
+$fullPathCertClientFile > 'C:\cert\fullPathCertClientFile.txt'
+$fullPathPwdFile > 'C:\cert\fullPathPwdFile.txt'
+$pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
+
+Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $global:pwdCertSecString -FilePath $global:fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -Wait
+Exit
+#=======================
+
+
+
 #Enable-PSRemoting -SkipNetworkProfileCheck -Force
 #Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
 
@@ -121,6 +143,7 @@ $s = New-PSSession -Credential $cred -ComputerName $env:computername
 Invoke-Command -Session $s -ScriptBlock { 
 param($clientCertSeq) 
 
+Set-ExecutionPolicy Unrestricted -Force
 $certPath = 'C:\cert\'
 whoami > 'C:\cert\whoami.txt'
 $pathFolder = [string](Split-Path -Path $certPath -Parent)
@@ -130,6 +153,8 @@ $passwordCertFile = 'certpwd.txt'
 $fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
 $fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
 $pwdCert= Get-Content -Path $fullPathPwdFile
+$fullPathCertClientFile > 'C:\cert\fullPathCertClientFile.txt'
+$fullPathPwdFile > 'C:\cert\fullPathPwdFile.txt'
 $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 } -ArgumentList $clientCertSeq
