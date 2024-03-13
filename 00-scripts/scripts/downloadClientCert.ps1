@@ -94,31 +94,23 @@ If (Test-Path -Path $fullPathPwdFile){
 else { Write-Warning "$fullPathPwdFile file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
 
 
-#$pwdCert= Get-Content -Path $fullPathPwdFile
-#$pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
+$pwdCert= Get-Content -Path $fullPathPwdFile
+$pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 #Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 
-Set-Content C:\cert\administratorUsername.txt $adminUsername
-Set-Content C:\cert\administratorPassword.txt $adminPassword
+# write username and password of the administrator in text files
+# Set-Content C:\cert\administratorUsername.txt $adminUsername
+# Set-Content C:\cert\administratorPassword.txt $adminPassword
 
 
-
-
-
-$certPath = 'C:\cert\'
-$pathFolder = [string](Split-Path -Path $certPath -Parent)
-$folderName = [string](Split-Path -Path $certPath -Leaf)
-$clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
-$passwordCertFile = 'certpwd.txt'
-$fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
-$fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
-$pwdCert= Get-Content -Path $fullPathPwdFile
-$fullPathCertClientFile > 'C:\cert\fullPathCertClientFile.txt'
-$fullPathPwdFile > 'C:\cert\fullPathPwdFile.txt'
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
+#$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
+#$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
+$cred = New-Object System.Management.Automation.PSCredential ($adminUsername, $pw)
+#Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $global:pwdCertSecString -FilePath $global:fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
+#Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $pwdCertSecString","-FilePath $fullPathCertClientFile","-CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
 
-Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $global:pwdCertSecString -FilePath $global:fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -Wait
+Start-Process -FilePath "certutil.exe" -ArgumentList "-user","-p $global:pwdCert","-importPFX $global:fullPathCertClientFile" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
 Exit
 #=======================
 
@@ -153,8 +145,7 @@ $passwordCertFile = 'certpwd.txt'
 $fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
 $fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
 $pwdCert= Get-Content -Path $fullPathPwdFile
-$fullPathCertClientFile > 'C:\cert\fullPathCertClientFile.txt'
-$fullPathPwdFile > 'C:\cert\fullPathPwdFile.txt'
+
 $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 } -ArgumentList $clientCertSeq
