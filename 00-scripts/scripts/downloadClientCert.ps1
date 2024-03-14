@@ -96,13 +96,38 @@ else { Write-Warning "$fullPathPwdFile file not found, please change to the dire
 
 $pwdCert= Get-Content -Path $fullPathPwdFile
 $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
+
+
+$pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
+Invoke-Command -ComputerName localhost -Credential $cred -ScriptBlock { 
+param($clientCertSeq) 
+
+Set-ExecutionPolicy Unrestricted -Force
+$certPath = 'C:\cert\'
+whoami > 'C:\cert\whoami.txt'
+$pathFolder = [string](Split-Path -Path $certPath -Parent)
+$folderName = [string](Split-Path -Path $certPath -Leaf)
+$clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
+$passwordCertFile = 'certpwd.txt'
+$fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
+$fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
+$pwdCert= Get-Content -Path $fullPathPwdFile
+
+$pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
+Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
+} -ArgumentList $clientCertSeq
+
+
+
+
 #Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 
 # write username and password of the administrator in text files
 # Set-Content C:\cert\administratorUsername.txt $adminUsername
 # Set-Content C:\cert\administratorPassword.txt $adminPassword
 
-
+<#
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
 #$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
 #$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
@@ -111,7 +136,9 @@ $cred = New-Object System.Management.Automation.PSCredential ($adminUsername, $p
 #Start-Process -FilePath Import-PfxCertificate -ArgumentList "-Password $pwdCertSecString","-FilePath $fullPathCertClientFile","-CertStoreLocation Cert:\CurrentUser\My" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
 
 Copy-Item -Path C:\Windows\system32\certutil.exe -Destination "C:\cert\"
-Start-Process -FilePath "C:\cert\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Verb RunAs -WorkingDirectory "$pathFolder$folderName" -Wait
+Start-Process -FilePath "C:\cert\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
+Exit
+#Start-Process -FilePath "C:\cert\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Verb RunAs -WorkingDirectory "$pathFolder$folderName" -Wait
 
 Exit
 #Start-Process -FilePath "C:\Windows\system32\certutil.exe" -ArgumentList "-user","-p $local:pwdCert","-importPFX $local:fullPathCertClientFile","noRoot" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
@@ -122,7 +149,7 @@ Exit
 #Start-Process -FilePath "C:\Windows\system32\certutil.exe" -ArgumentList "-user","-p $global:pwdCert","-importPFX $global:fullPathCertClientFile","noRoot" -Credential $cred -WorkingDirectory "$pathFolder$folderName" -Wait
 
 #=======================
-
+#>
 
 
 #Enable-PSRemoting -SkipNetworkProfileCheck -Force
