@@ -119,7 +119,7 @@ Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientF
 } -ArgumentList $clientCertSeq
 
 
-
+Exit
 
 #Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
 
