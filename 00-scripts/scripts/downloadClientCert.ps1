@@ -59,48 +59,31 @@ $storageContext = (Get-AzStorageAccount -Name $storageAccountName -ResourceGroup
 $containerName = (Get-AzStorageContainer -Context $storageContext).Name
 
 
-try {
-    $clientCert = @{
-        Blob        = $clientCertFile
-        Container   = $containerName
-        Destination = "$pathFolder$folderName"
-        Context     = $storageContext
-    }
-    Get-AzStorageBlobContent @clientCert -Force -Verbose
+$clientCert = @{
+    Blob        = $clientCertFile
+    Container   = $containerName
+    Destination = "$pathFolder$folderName"
+    Context     = $storageContext
 }
-catch { 
-    # the blob doesn't exist...
-    Write-Host "Blob $clientCertFile Not Found"
+Get-AzStorageBlobContent @clientCert -Force -Verbose
+
+$passwordCert = @{
+    Blob        = $passwordCertFile
+    Container   = $containerName
+    Destination = "$pathFolder$folderName"
+    Context     = $storageContext
 }
+Get-AzStorageBlobContent @passwordCert -Force -Verbose
 
 
-try {
-    $passwordCert = @{
-        Blob        = $passwordCertFile
-        Container   = $containerName
-        Destination = "$pathFolder$folderName"
-        Context     = $storageContext
-    }
-    Get-AzStorageBlobContent $passwordCert -Force -Verbose
+$vpnProfile = @{
+    Blob        = $vpnProfileFile
+    Container   = $containerName
+    Destination = "$pathFolder$folderName"
+    Context     = $storageContext
 }
-catch { 
-    # the blob doesn't exist...
-    Write-Host "Blob $passwordCertFile Not Found"
-}
+Get-AzStorageBlobContent @vpnProfile -Force -Verbose
 
-try {
-    $vpnProfile = @{
-        Blob        = $vpnProfileFile
-        Container   = $containerName
-        Destination = "$pathFolder$folderName"
-        Context     = $storageContext
-    }
-    Get-AzStorageBlobContent $vpnProfile -Force -Verbose
-}
-catch { 
-    # the blob doesn't exist...
-    Write-Host "Blob: $vpnProfileFile Not Found"
-}
 
 
 
