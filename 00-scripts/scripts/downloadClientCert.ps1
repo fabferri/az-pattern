@@ -93,52 +93,39 @@ If (Test-Path -Path $fullPathPwdFile){
    }
 else { Write-Warning "$fullPathPwdFile file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
 
+# create a powershell scriptt add the client digital certificate 
+$scriptLoadCert = @'
+param(
+    [Parameter(Mandatory = $false, HelpMessage = 'client certificate number values:[1,2,3,4,...]', ValueFromPipeline = $true)]
+    [int]$clientCertSeq = 1
+)
 
-$pwdCert= Get-Content -Path $fullPathPwdFile
-$pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
+if ($clientCertSeq -le 0) { $clientCertSeq = 1 }
+write-host 'number client certificates: '$clientCertSeq
 
-
-
-
-#Enable-PSRemoting -SkipNetworkProfileCheck -Force
-#Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
-
-Set-NetConnectionProfile -NetworkCategory Private
-#Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
-netsh advfirewall firewall add rule name="WinRM-HTTP" dir=in localport=5985 protocol=TCP action=allow
-netsh advfirewall firewall add rule name="WinRM-HTTPS" dir=in localport=5986 protocol=TCP action=allow
-#Enable-PSRemoting -SkipNetworkProfileCheck -Force
-
-winrm quickconfig -quiet
-#  To fix the issue when Window Remote Management service and its listener functionality are broken
-#  Restore the listener configuration
-#winrm invoke Restore winrm/Config
-winrm set winrm/config/client/auth '@{Basic="true"}'
-winrm set winrm/config/service/auth '@{Basic="true"}'
-winrm set winrm/config/service '@{AllowUnencrypted="true"}'
-winrm create winrm/config/Listener?Address=*+Transport=HTTP
-
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force 
-#ConvertFrom-SecureString -SecureString $adminPassword -AsPlainText 
-$pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
-#$s = New-PSSession -Credential $cred -ComputerName $env:computername 
-Invoke-Command -ComputerName localhost -Credential $cred -ScriptBlock { 
-param($clientCertSeq) 
-
-Set-ExecutionPolicy Unrestricted -Force
-$certPath = 'C:\cert\'
-whoami > 'C:\cert\whoami.txt'
-$pathFolder = [string](Split-Path -Path $certPath -Parent)
-$folderName = [string](Split-Path -Path $certPath -Leaf)
 $clientCertFile = 'certClient'+ ([string]$clientCertSeq)+'.pfx'
 $passwordCertFile = 'certpwd.txt'
-$fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
-$fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile" 
-$pwdCert= Get-Content -Path $fullPathPwdFile
+$certPath =  "C:\cert"
 
+$pathFolder = [string](Split-Path -Path $certPath -Parent)
+$folderName = [string](Split-Path -Path $certPath -Leaf)
+$fullPathCertClientFile = "$pathFolder$folderName\$clientCertFile"
+$fullPathPwdFile = "$pathFolder$folderName\$passwordCertFile"
+
+If (Test-Path -Path $fullPathCertClientFile){
+     write-host 'client certificate file: '$fullPathCertClientFile' found'
+   }
+else { Write-Warning "$fullPathCertClientFile file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
+
+If (Test-Path -Path $fullPathPwdFile){
+     write-host 'certificate password file: '$fullPathPwdFile' found'
+   }
+else { Write-Warning "$fullPathPwdFile file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present."; Return }
+
+
+$pwdCert= Get-Content -Path $fullPathPwdFile
 $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 Import-PfxCertificate -Password $pwdCertSecString -FilePath $fullPathCertClientFile -CertStoreLocation Cert:\CurrentUser\My
-} -ArgumentList $clientCertSeq
+'@
+Set-Content  "$pathFolder$folderName\loadClientCert.ps1" $scriptLoadCert
 
-#Remove-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' 
