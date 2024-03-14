@@ -104,17 +104,24 @@ $pwdCertSecString = ConvertTo-SecureString $pwdCert -AsPlainText -Force
 #Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any
 
 Set-NetConnectionProfile -NetworkCategory Private
-Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
+#Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP' -RemoteAddress Any -Profile Any
+netsh advfirewall firewall add rule name="WinRM-HTTP" dir=in localport=5985 protocol=TCP action=allow
+netsh advfirewall firewall add rule name="WinRM-HTTPS" dir=in localport=5986 protocol=TCP action=allow
 #Enable-PSRemoting -SkipNetworkProfileCheck -Force
 
-# To fix the issue when Window Remote Management service and its listener functionality are broken
-# Restore the listener configuration
-winrm invoke Restore winrm/Config
 winrm quickconfig -quiet
+#  To fix the issue when Window Remote Management service and its listener functionality are broken
+#  Restore the listener configuration
+#winrm invoke Restore winrm/Config
+winrm set winrm/config/client/auth '@{Basic="true"}'
+winrm set winrm/config/service/auth '@{Basic="true"}'
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+winrm create winrm/config/Listener?Address=*+Transport=HTTP
+
 Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*" -Force 
 #ConvertFrom-SecureString -SecureString $adminPassword -AsPlainText 
 $pw = ConvertTo-SecureString -String $adminPassword -AsPlainText -Force
-$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $adminUsername,$pw
+$cred = New-Object -TypeName System.Management.Automation.PSCredential -argumentlist $env:computername\$adminUsername,$pw
 #$s = New-PSSession -Credential $cred -ComputerName $env:computername 
 Invoke-Command -ComputerName localhost -Credential $cred -ScriptBlock { 
 param($clientCertSeq) 
