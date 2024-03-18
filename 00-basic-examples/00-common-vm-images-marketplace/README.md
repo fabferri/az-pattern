@@ -22,16 +22,18 @@ List of few common images from Azure marketple to run Azure VMs.
 
 `Ubuntu 20.04`
 ```Console
-"imagePublisher": "canonical",
-"imageOffer": "0001-com-ubuntu-server-focal",
+"publisher": "canonical",
+"offer": "0001-com-ubuntu-server-focal",
 "sku": "20_04-lts",
+"version": "latest"
 ```
 
 `Ubuntu 22.04`
 ```Console
-"imagePublisher": "canonical",
-"imageOffer": "0001-com-ubuntu-server-jammy",
-"imageSKU": "22_04-lts-gen2",
+"publisher": "canonical",
+"offer": "0001-com-ubuntu-server-jammy",
+"sku": "22_04-lts-gen2",
+"version": "latest"
 ```
 
 `Windows Server 2022`
@@ -44,13 +46,16 @@ List of few common images from Azure marketple to run Azure VMs.
 ```
 
 `Windows 11`
+```Console
 "publisher": "microsoftwindowsdesktop",
 "offer": "windows-11",
 "sku": "win11-23h2-ent",
 "license": "Windows_Client"
+"version": "latest"
+```
 
 `Debian`
-```console
+```Console
 "publisher": "debian",
 "offer": "debian-12",
 "sku": "12-gen2",
