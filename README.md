@@ -18,11 +18,11 @@
 
 # Fab's Azure repository
 
-Azure KeyVault
+- Azure KeyVault
   - [Azure ARM template to create a Key Vault with list of secrets](https://github.com/fabferri/az-pattern/tree/master/key-vault/key-vault-write-list-secrets) [update: 28-08-23]
   - [Azure ARM template to create multiple Key Vaults in different resouce groups](https://github.com/fabferri/az-pattern/tree/master/key-vault/key-vaults-in-resource-groups)
 
-Azure Load balancer
+- Azure Load balancer
   - [Load Balancer in HA ports](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-1vnet)
   - [Load Balancer in HA ports with two NVA pools](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-2backendpools-nva)
   - [Load Balancer in HA ports with two frontend IPs and two backend pools](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-2frontend-2backendpools)
@@ -45,4 +45,4 @@ Azure Load balancer
   - [Configuration with Azure DNS private resolver](https://github.com/fabferri/az-pattern/tree/master/dns-private-resolver)
 
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [updated: 24-05-23]
-- [System-assigned managed identity to access to Azure Storage] (https://github.com/fabferri/az-pattern/tree/master/vm-msi)
+- [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi)
