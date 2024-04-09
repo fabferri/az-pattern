@@ -19,7 +19,7 @@
 # Fab's Azure repository
 
 - Azure KeyVault
-  - [Azure ARM template to create a Key Vault with list of secrets](https://github.com/fabferri/az-pattern/tree/master/key-vault/key-vault-write-list-secrets) [update: 28-08-23]
+  - [Azure ARM template to create a Key Vault with list of secrets](https://github.com/fabferri/az-pattern/tree/master/key-vault/key-vault-write-list-secrets) [date: 28-08-23]
   - [Azure ARM template to create multiple Key Vaults in different resouce groups](https://github.com/fabferri/az-pattern/tree/master/key-vault/key-vaults-in-resource-groups)
 
 - Azure Load balancer
@@ -32,7 +32,7 @@
   - [External Load Balancer](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/lb)
 
 - Azure S2S VPN
-  - [Single ARM template to create Site-to-Site VPN between two VPN Gateways](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip) [updated: 11-02-2024]
+  - [Single ARM template to create Site-to-Site VPN between two VPN Gateways](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip) [date: 11-02-2024]
   - [Connection between two VNets through site-to-site VPN with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-NAT)
   - [Azure ARM templates to create site-to-site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
   
@@ -43,7 +43,7 @@
   - [Configuration with Azure DNS private resolver](https://github.com/fabferri/az-pattern/tree/master/dns-private-resolver)
 
 - Ubuntu VM with UX
-  - [Ubuntu VM with GNOME desktop, Visual Studio Code and dotnet SDK](https://github.com/fabferri/az-pattern/tree/master/ubuntu-vm-desktop-gnome)
+  - [Ubuntu VM with GNOME desktop, Visual Studio Code and dotnet SDK](https://github.com/fabferri/az-pattern/tree/master/ubuntu-vm-desktop-gnome) [date: 21-11-23]
   - [Ubuntu VM with GNOME desktop, Python and Visual Studio Code](https://github.com/fabferri/az-pattern/tree/master/ubuntu-vm-vscode-python-dev)
 
 - Private endpoint and private link service
@@ -52,5 +52,5 @@
   - [Private Link service in HA configuration through Azure Application Gateway](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-balancing)
   - [Azure Private Link service in HA configuration through Azure functions](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-hot-standby)
 
-- [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [updated: 24-05-23]
+- [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
 - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi)
