@@ -37,7 +37,7 @@
   - [Azure ARM templates to create site-to-site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
   
 - ExpressRoute 
-  - [Expressroute configurations](https://github.com/fabferri/az-pattern/tree/master/expressroute)
+  - [ExpressRoute configurations](https://github.com/fabferri/az-pattern/tree/master/expressroute)
 
 - Azure DNS
   - [Configuration with Azure DNS private resolver](https://github.com/fabferri/az-pattern/tree/master/dns-private-resolver)
@@ -59,7 +59,9 @@
   - [Hub-spoke vnets with Azure firewalls and Route Servers - config2](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-azfw-rs-er-2) [date: 02-07-23]
   - [Network policies for Private Endpoints with UDR and NSG](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-netw-policies-pe) [date: 28-08-23]
   - [Hub-spoke vnets with site-to-site VPN tunnels between the hubs](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-s2s-vpn) [date: 03-07-23]
-
+- NAT
+  - [Traffic between two subnets through Linux nva controlled by iptables](https://github.com/fabferri/az-pattern/tree/master/nat/nat-iptables-1)
+  - [iptables to control traffic inbound and outbound Azure VMs](https://github.com/fabferri/az-pattern/tree/master/nat/nat-iptables-2) [date: 30-10-22]
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
 - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi) [date: 29-05-2022]
 - [Azure NetApp Files service](https://github.com/fabferri/az-pattern/tree/master/anf) [date: 22-09-2022]
