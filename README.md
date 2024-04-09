@@ -53,6 +53,6 @@
   - [Azure Private Link service in HA configuration through Azure functions](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-hot-standby)
 
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
-- [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi)
+- [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi) [date: 29-05-2022]
 - [Azure NetApp Files service](https://github.com/fabferri/az-pattern/tree/master/anf) [date: 22-09-2022]
 - [MongoDB in Azure VM](https://github.com/fabferri/az-pattern/tree/master/no-sql-db/mongodb-in-az-vm) [date: 28-12-22]

@@ -83,6 +83,9 @@ Before running the bash script you need:
 
 **NOTE: access with MSI token to the storage blob works only in Azure VM**
 
+`Tags: System-assigned managed identity` <br>
+`date: 29-05-2022` <br>
+
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram" 
