@@ -1,5 +1,5 @@
 <properties
-pageTitle= 'Azure standard internal load balancer with multiple frontend IPs and backend address pools'
+pageTitle= 'Azure standard internal load balancer with multiple frontend IPs and multiple backend address pools'
 description= "ARM template to deploy an Azure standard load balancer with multiple frontend IPs and backend address pools"
 documentationcenter: na
 services=""
@@ -17,7 +17,7 @@ editor=""/>
    ms.date="15/04/2020"
    ms.author="fabferri" />
 
-# Azure standard internal load balancer with multiple frontend IPs and backend address pools
+# Azure standard internal load balancer with multiple frontend IPs and multiple backend address pools
 The ARM template aims to create one VNet with multiple subnets and an internal standard load balancer with multiple frontend IPs and multiple backend address pools.
 The network diagram is reported below:
 
