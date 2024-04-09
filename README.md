@@ -23,7 +23,7 @@
   - [Azure ARM template to create multiple Key Vaults in different resouce groups](https://github.com/fabferri/az-pattern/tree/master/key-vault/key-vaults-in-resource-groups)
 
 - Azure Load balancer
-  - [Load Balancer in HA ports](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-1vnet)
+  - [Load Balancer in HA ports - basic config](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-1vnet)
   - [Load Balancer in HA ports with VNet peering](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-vnetpeering)
   - [load Balancer in HA ports with transit through VNet peering](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-multiple-fe-be-benchmark)
   - [Load Balancer in HA ports with two backend pools](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/ilb-ha-ports-2backendpools-nva)
@@ -49,8 +49,8 @@
 - Private endpoint and private link service
   - [Private endpoints with Azure SQL and Azure storage account](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-endpoint-sql-storage)
   - [configuration with private service link and ExpressRoute](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-1)
-  - [Private Link service in HA configuration through Azure Application Gateway](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-balancing)
-  - [Azure Private Link service in HA configuration through Azure functions](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-hot-standby)
+  - [Private Link service in HA configuration through Azure Application Gateway](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-balancing) [date: 05-04-23]
+  - [Azure Private Link service in HA configuration through Azure functions](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-hot-standby) [date: 31-03-23]
 
 - hub-spoke vnet configurations
   - [How to create two hub-spoke VNets interconnected by VNet peering (basic config)](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/vnet-peering-2hubspoke)
