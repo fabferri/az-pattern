@@ -1,5 +1,5 @@
 <properties
-pageTitle= 'ARM template to create a standard load balancer in HA ports with two NVA pools'
+pageTitle= 'ARM template to create a standard load balancer in HA ports with two backend pools'
 description= "ARM template to create a standard load balancer in HA ports with two frontend IPs and two backend pools and two NVA pools"
 documentationcenter: na
 services=""
@@ -17,7 +17,7 @@ editor=""/>
    ms.date="20/02/2019"
    ms.author="fabferri" />
 
-# Standard load balancer in HA ports with two NVA pools
+# Standard load balancer in HA ports with two backend pools
 Here's an Azure ARM template to create a VNet with an internal standard load balancer (ILB) in HA ports to create a configuration with NVAs in high avaiability.
 For resiliency, the Azure VMs associated with every backend pool have an assigned availability set.
 
