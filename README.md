@@ -53,9 +53,12 @@
   - [Azure Private Link service in HA configuration through Azure functions](https://github.com/fabferri/az-pattern/tree/master/private-link-and-private-endpoint/private-link-high-availability-hot-standby)
 
 - hub-spoke vnet configurations
+  - [How to create two hub-spoke VNets interconnected by VNet peering (basic config)](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/vnet-peering-2hubspoke)
   - [Simple hub-spoke vnet with Route Server and ExpressRoute Gateway](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-er-rs-101) [date: 25-08-23]
   - [Hub-spoke vnets with Azure firewalls and Route Servers - config1](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-azfw-rs-er-1) [date: 27-06-23]
   - [Hub-spoke vnets with Azure firewalls and Route Servers - config2](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-azfw-rs-er-2) [date: 02-07-23]
+  - [Network policies for Private Endpoints with UDR and NSG](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-netw-policies-pe) [date: 28-08-23]
+  - [Hub-spoke vnets with site-to-site VPN tunnels between the hubs](https://github.com/fabferri/az-pattern/tree/master/hub-spoke-vnets/hub-spoke-s2s-vpn) [date: 03-07-23]
 
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
 - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi) [date: 29-05-2022]
