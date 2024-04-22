@@ -1,0 +1,175 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "gateway1Name": {
+      "type": "string",
+      "defaultValue": "vpnGw1",
+      "metadata": {
+        "description": "Arbitrary name for the new gateway"
+      }
+    },
+    "gatewaySku": {
+      "type": "string",
+      "defaultValue": "VpnGw2",
+      "allowedValues": [
+        "VpnGw2",
+        "VpnGw2AZ",
+        "VpnGw3",
+        "VpnGw3AZ",
+        "VpnGw4",
+        "VpnGw4AZ",
+        "VpnGw5",
+        "VpnGw5AZ"
+      ],
+      "metadata": {
+        "description": "VPN Gateway SKU"
+      }
+    },
+    "vpnRootCert": {
+      "type": "string"
+    },
+    "vpnClientAddressPool": {
+      "type": "string",
+      "metadata": {
+        "description": "IP Address and mask to use to assign client addresses in the form <ip>/<mask>"
+      },
+      "defaultValue": "172.16.0.0/24"  
+    }
+  },
+  "variables": {
+    "location1": "[parameters('location1')]",
+    "vnet1": {
+      "location": "[parameters('location1')]",
+      "name": "vnet-gtw",
+      "addressSpace1Prefix": "10.0.0.0/24",
+      "subnet1Name": "subnet1",
+      "subnet1Prefix": "10.0.0.0/27",
+      "subnet2Name": "subnet2",
+      "subnet2Prefix": "10.0.0.32/27",
+      "subnet3Name": "subnet3",
+      "subnet3Prefix": "10.0.0.64/27",
+      "GatewaySubnetName": "GatewaySubnet",
+      "GatewaySubnetPrefix": "10.0.0.192/26"
+    },
+    "gateway1subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnet1').name,'GatewaySubnet') ]",
+    "gateway1Name": "[parameters('gateway1Name')]",
+    "gateway1PublicIP1Name": "[format('{0}IP1', parameters('gateway1Name'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnet1').name]",
+      "apiVersion": "2022-11-01",
+      "location": "[variables('vnet1').location]",
+      "dependsOn": [],
+      "comments": "create vnet1",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnet1').addressSpace1Prefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnet1').subnet1Name]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').subnet1Prefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet1').subnet2Name]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').subnet2Prefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet1').subnet3Name]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').subnet3Prefix]"
+            }
+          },
+          {
+            "name": "[variables('vnet1').GatewaySubnetName]",
+            "properties": {
+              "addressPrefix": "[variables('vnet1').GatewaySubnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('gateway1PublicIP1Name')]",
+      "apiVersion": "2022-11-01",
+      "comments": "public IP of the VPN Gateway1-instance 0",
+      "location": "[variables('location1')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworkGateways",
+      "name": "[variables('gateway1Name')]",
+      "apiVersion": "2022-11-01",
+      "location": "[variables('location1')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway1PublicIP1Name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('gateway1SubnetRef')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('gateway1PublicIP1Name'))]"
+              }
+            },
+            "name": "vnetGateway1Config1"
+          }
+        ],
+        "sku": {
+          "name": "[parameters('gatewaySku')]",
+          "tier": "[parameters('gatewaySku')]"
+        },
+        "gatewayType": "Vpn",
+        "vpnType": "RouteBased",
+        "enableBgp": false,
+        "activeActive": false,
+        "vpnGatewayGeneration": "Generation2",
+        "vpnClientConfiguration": {
+          "vpnClientAddressPool": {
+            "addressPrefixes": [
+              "[parameters('vpnClientAddressPool')]"
+            ]
+          },
+          "vpnAuthenticationTypes": ["Certificate"],
+          "vpnClientProtocols": ["IkeV2", "OpenVPN"],
+          "vpnClientRootCertificates": [
+            {
+              "name": "vpnRootCertificate",
+              "properties": {
+                "publicCertData": "[parameters('vpnRootCert')]"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

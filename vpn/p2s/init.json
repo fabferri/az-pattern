@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "AzDev1",
+    "rgNameCert": "cert-1",
+    "rgNameVPN": "vpn-gr1",
+    "vpnGtwName": "vpnGw1",
+    "rgNameClient": "client-1",
+    "location": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "vmNameCert" : "certVM",
+    "vmNameClient": "client1VM"
+}

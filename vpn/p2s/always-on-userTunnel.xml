@@ -1,0 +1,51 @@
+<VPNProfile>  
+   <NativeProfile>  
+      <Servers>azuregateway-GUID_ID.vpn.azure.com</Servers>  
+      <NativeProtocolType>IKEv2</NativeProtocolType>  
+      <Authentication>  
+        <UserMethod>Eap</UserMethod>
+        <Eap>
+          <Configuration>
+            <EapHostConfig xmlns="http://www.microsoft.com/provisioning/EapHostConfig">
+              <EapMethod>
+                <Type xmlns="http://www.microsoft.com/provisioning/EapCommon">13</Type>
+                <VendorId xmlns="http://www.microsoft.com/provisioning/EapCommon">0</VendorId>
+always-on-userTunnel                <VendorType xmlns="http://www.microsoft.com/provisioning/EapCommon">0</VendorType>
+                <AuthorId xmlns="http://www.microsoft.com/provisioning/EapCommon">0</AuthorId>
+              </EapMethod>
+              <Config xmlns="http://www.microsoft.com/provisioning/EapHostConfig">
+                <Eap xmlns="http://www.microsoft.com/provisioning/BaseEapConnectionPropertiesV1">
+                  <Type>13</Type>
+                  <EapType xmlns="http://www.microsoft.com/provisioning/EapTlsConnectionPropertiesV1">
+                      <CredentialsSource><CertificateStore>
+                      <SimpleCertSelection>true</SimpleCertSelection>
+                      </CertificateStore></CredentialsSource>
+                      <ServerValidation>
+                        <DisableUserPromptForServerValidation>false</DisableUserPromptForServerValidation>
+                        <ServerNames></ServerNames>
+                      </ServerValidation>
+                      <DifferentUsername>false</DifferentUsername>
+                      <PerformServerValidation xmlns="http://www.microsoft.com/provisioning/EapTlsConnectionPropertiesV2">false</PerformServerValidation>
+                      <AcceptServerName xmlns="http://www.microsoft.com/provisioning/EapTlsConnectionPropertiesV2">false</AcceptServerName>
+                  </EapType>
+                </Eap>
+              </Config>
+            </EapHostConfig>
+          </Configuration>
+        </Eap>
+      </Authentication>  
+      <RoutingPolicyType>SplitTunnel</RoutingPolicyType>  
+      <!-- disable the addition of a class based route for the assigned IP address on the VPN interface -->
+     <DisableClassBasedDefaultRoute>true</DisableClassBasedDefaultRoute>  
+   </NativeProfile> 
+   <!-- use host routes(/32) to prevent routing conflicts -->  
+   <Route>  
+     <Address>10.0.0.0</Address>  
+     <PrefixSize>24</PrefixSize>  
+   </Route>  
+   <!-- need to specify always on = true --> 
+   <AlwaysOn>true</AlwaysOn>
+   <RememberCredentials>true</RememberCredentials>
+   <!--new node to register client IP address in DNS to enable manage out -->
+   <RegisterDNS>true</RegisterDNS>
+</VPNProfile>
