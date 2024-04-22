@@ -39,7 +39,8 @@ The setup to have a full working environment is organized in a sequence of steps
 | **04-az-clientVM.json**  | ARM template to create a new vnet (client vnet) a Windows 11 VM. This VM will be used to connect in P2S to the VPN Gateway |
 | **04-az-clientVM.json**  | powershell to script to run **04-az-clientVM.json**                  |
 | **createSelfSignCertificates.ps1** | powershell script to create self-signed root certificate and client certificate. <br> It is used in ARM template with powershell script extension|
-| **downloadClientCert.ps1** | script to download from the storage account the client certificate and P2S user profile |
+| **downloadClientCert.ps1**   | script to download from the storage account the client certificate and P2S user profile |
+| **always-on-userTunnel.xml** | XML file to create always-on P2S user tunnel                                            |
 
 Download all the project files in you local host (desktop/laptop) to change the values of variables and run the full deployment.  
 
