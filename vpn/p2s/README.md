@@ -18,12 +18,12 @@ editor="fabferri"/>
 
 # Workshop: Point-to-Site VPN configuration
 This post contains ARM templates and scripts to create Point-to-Site VPN connection between an Azure VPN client and the Azure VPN  gateway. <br>
-The materials reported in this post can be used in a workshop for a fast deployment, miminzing the manual steps. <br>
+The materials reported in this post can be used in a workshop for a fast deployment, minimizing the manual steps. <br>
 The final network configuration is reported in the diagram:
 
 [![1]][1]
 
-The setup to have a full working enviroment is organized in a sequence of steps. <br> 
+The setup to have a full working environment is organized in a sequence of steps. <br> 
 
 
 ### <a name="File list"></a>2. File list
@@ -39,7 +39,9 @@ The setup to have a full working enviroment is organized in a sequence of steps.
 | **04-az-clientVM.json**  | ARM template to create a new vnet (client vnet) a Windows 11 VM. This VM will be used to connect in P2S to the VPN Gateway |
 | **04-az-clientVM.json**  | powershell to script to run **04-az-clientVM.json**                  |
 | **createSelfSignCertificates.ps1** | powershell script to create self-signed root certificate and client certificate. <br> It is used in ARM template with powershell script extension|
-| **downloadClientCert.ps1** | script to download from the storage account the client certicate and P2S user profile |
+| **downloadClientCert.ps1** | script to download from the storage account the client certificate and P2S user profile |
+
+Download all the project files in you local host (desktop/laptop) to change the values of variables and run the full deployment.  
 
 `NOTE` <br>
 Before deploying the ARM template you should customize the value of variables in the **init.json** file. Below the meaning of the variables in the **init.json**:
@@ -91,9 +93,9 @@ The 2nd step is executed by ARM template **02-vpn.json** <br>
 [![5]][5]
 
 The ARM template **02-vpn.json** makes the following actions:
-- dowload from the storage account the root certificate **P2SRoot.cer** to the local host (laptop/desktop) in **cert** folder
+- download from the storage account the root certificate **P2SRoot.cer** to the local host (laptop/desktop) in **cert** folder
 - create a new vnet and deploy the Azure VPN Gateway in the **GatewaySubnet** in configuration active-passive
-- set the P2S tunnel type **IKEv2 and OpenVPN (SSL)** and authetication type **Azure Certificate**
+- set the P2S tunnel type **IKEv2 and OpenVPN (SSL)** and authentication type **Azure Certificate**
 - adding in the Azure VPN Gateway the P2S client address pool and the root certificate (with public key) 
 
 At the end of step2, the VPN gateway is configured as shown below:
@@ -116,7 +118,7 @@ The 4th step is executed by ARM template **04-az-clientVM.json**
 
 The script **04-az-clientVM.json** makes the following actions:
 - create a new vnet and spin up a Windows 11 VM. This VM is used as client to connect in P2S VPN to the VPN Gateway
-- create a system management identity with contribotor role on the the storage account
+- create a system management identity with ontributor role on the storage account
 - run a powershell script extension **downloadClientCert.ps1** to download the client certificate from the storage account to the Windows 11 VM. 
    - The digital client certificate for P2S VPN is stored to the local folder **C:\cert** of Windows 11 Azure VM.
    - the P2S user profile **azurevpnconfig.xml** is downloaded from the Azure storage account to the local folder **C:\cert** of Windows 11 Azure VM
@@ -161,8 +163,8 @@ By curl, run a query to the nginx server installed in the vm 10.0.0.10 in vnet-g
 [![13]][13]
 
 ### <a name="7th step"></a>STEP7: setup P2S always-on user tunnel
-The alway-on P2S connection is based on [VPNv2 CSP](https://learn.microsoft.com/en-us/windows/client-management/mdm/vpnv2-csp) <br>
-The VPNv2 configuration service provider allows the Mobile Device Management (MDM) server to configure the VPN profile. <br>
+The always-on P2S connection is based on [VPNv2 CSP](https://learn.microsoft.com/en-us/windows/client-management/mdm/vpnv2-csp) <br>
+The **VPNv2** configuration service provider allows the Mobile Device Management (MDM) server to configure the VPN profile. <br>
 Install in the Windows 11 client the powershell module:
 
 ```powershell
@@ -170,7 +172,7 @@ Install-Module -Name AOVPNTools
 Get-command -Module AOVPNTools
 ```
 
-From the VPN client profile with authetication with digital certificate, grab the URL of the P2S VPN Gateway. <br>
+From the VPN client profile with authentication with digital certificate, grab the URL of the P2S VPN Gateway. <br>
 The URL to access to the P2S VPN Gateway has the following structure:
 ```console
 azuregateway-<GUID>.vpn.azure.com
@@ -237,7 +239,7 @@ To create an aways-on P2S VPN connection run the command:
 ```powershell
 New-AovpnConnection -xmlFilePath .\always-on-userTunnel.xml
 ```
-A default name of profile is assigned to connection naned: **Alway On VPN**
+A default name of profile is assigned to connection called: **Always On VPN**
 
 ```powershell
 Get-VpnConnection -Name "Always On VPN"
@@ -268,7 +270,7 @@ Remove-AovpnConnection -ProfileName "Always on VPN"
 ```
 
 
-`Tag: Point-to-Site VPN`
+`Tag: Point-to-Site VPN` <br>
 `date: 15-04-2024`
 
 <!--Image References-->
