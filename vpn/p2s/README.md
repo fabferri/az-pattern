@@ -158,7 +158,7 @@ systemctl check nginx
 
 
 ### <a name="6th step"></a>STEP6: verification of P2S VPN
-Connect in RDP to the client VM, veryfing that P2S VPN tunnel is up.
+Connect in RDP to the client VM, and verify that P2S VPN tunnel is up.
 By curl, run a query to the nginx server installed in the vm 10.0.0.10 in vnet-gtw 
 
 [![13]][13]
