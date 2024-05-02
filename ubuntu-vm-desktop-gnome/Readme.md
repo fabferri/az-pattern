@@ -146,8 +146,8 @@ deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main
 <br>
 
 `Tags: Ubuntu VM, GNOME, RDP` <br>
-`date: 15-09-22` <br>
-`date: 21-11-23` <br>
+`date: 15-09-2022` <br>
+`date: 21-11-2023` <br>
 
 <!--Image References-->
 

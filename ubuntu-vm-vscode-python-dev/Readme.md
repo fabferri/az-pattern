@@ -220,7 +220,7 @@ plt.show()
 
 
 `Tags: Ubuntu VM, GNOME, RDP, Python, Visual Studio Code` <br>
-`date: 20-11-23`
+`date: 20-11-2023`
 
 <!--Image References-->
 
