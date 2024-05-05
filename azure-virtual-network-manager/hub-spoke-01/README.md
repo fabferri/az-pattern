@@ -1,6 +1,6 @@
 <properties
-pageTitle= 'Create a simple hub-spoke network topology with Azure Virtual Network Manager with static membership'
-description= "Create a simple hub-spoke network topology with Azure Virtual Network Manager with static membership"
+pageTitle= 'Create Azure Virtual Network Manager with Static Membership in a Hub-Spoke Network Topology'
+description= "Create Azure Virtual Network Manager with Static Membership in a Hub-Spoke Network Topology"
 documentationcenter: na
 services="Azure Virtual Network Manager"
 documentationCenter="na"
@@ -17,7 +17,7 @@ editor=""/>
    ms.date="30/08/2021"
    ms.author="fabferri" />
 
-# Simple hub-spoke network topology with Azure Virtual Network Manager with static membership
+# Azure Virtual Network Manager with Static Membership in a Hub-Spoke Network Topology
 The network diagram is shown below:
 
 [![1]][1]
