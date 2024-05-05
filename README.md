@@ -66,7 +66,7 @@
   - [iptables to control traffic inbound and outbound Azure VMs](https://github.com/fabferri/az-pattern/tree/master/nat/nat-iptables-2) [date: 30-10-22]
 
 - Azure Virtual Network Manager
-  - [AVNM with hub-spoke-static membership](https://github.com/fabferri/az-pattern/tree/master/nat/nat-iptables-2) [date: 05-05-2024]
+  - [AVNM with hub-spoke-static membership](https://github.com/fabferri/az-pattern/tree/master/azure-virtual-network-manager/hub-spoke-01) [date: 05-05-2024]
 
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
 - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi) [date: 29-05-2022]
