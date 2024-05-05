@@ -144,7 +144,7 @@
         {
             "name": "[parameters('networkManagerName')]",
             "type": "Microsoft.Network/networkManagers",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "location": "[parameters('location')]",
             "properties": {
                 "displayName": "[parameters('networkManagerName')]",
@@ -160,19 +160,18 @@
         {
             "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup1Name'))]",
             "type": "Microsoft.Network/networkManagers/networkGroups",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
             ],
             "properties": {
-                "description": "network group1",
-                "memberType": "StaticMember"
+                "description": "network group1"
             }
         },
         {
             "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup1Name'), '/',variables('vnet1').name)]",
             "type": "Microsoft.Network/networkManagers/networkGroups/staticMembers",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]"
             ],
@@ -183,7 +182,7 @@
         {
             "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup1Name'), '/',variables('vnet2').name)]",
             "type": "Microsoft.Network/networkManagers/networkGroups/staticMembers",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]"
             ],
@@ -194,19 +193,18 @@
         {
             "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup2Name'))]",
             "type": "Microsoft.Network/networkManagers/networkGroups",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
             ],
             "properties": {
-                "description": "network group2",
-                "memberType": "StaticMember"
+                "description": "network group2"
             }
         },
         {
             "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup2Name'), '/',variables('vnet3').name)]",
             "type": "Microsoft.Network/networkManagers/networkGroups/staticMembers",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
             ],
@@ -217,7 +215,7 @@
         {
             "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup2Name'), '/',variables('vnet4').name)]",
             "type": "Microsoft.Network/networkManagers/networkGroups/staticMembers",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]"
             ],
@@ -228,7 +226,7 @@
         {
             "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
             "name": "[concat(parameters('networkManagerName'), '/', parameters('connectivityConfigName'))]",
-            "apiVersion": "2022-04-01-preview",
+            "apiVersion": "2023-02-01",
             "dependsOn": [
                 "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
                 "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
@@ -237,14 +235,14 @@
                 "displayName": "myConnectivityConfig",
                 "description": "Sample of configuration hub-and-spoke",
                 "connectivityTopology": "HubAndSpoke",
+                "deleteExistingPeering": "True",
+                "isGlobal": "True",
                 "hubs": [
                     {
                         "resourceId": "[resourceId(subscription().subscriptionId, variables('hubvnet').resourceGroupName,'Microsoft.Network/virtualNetworks',variables('hubvnet').name)]",
                         "resourceType": "Microsoft.Network/virtualNetworks"
                     }
                 ],
-                "isGlobal": "True",
-                "deleteExistingPeering": "True",
                 "appliesToGroups": [
                     {
                         "networkGroupId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",

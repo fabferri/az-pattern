@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "mngIP": {
-            "type": "string",
-            "metadata": {
-                "description": "management IP"
-            }
-        },
         "adminUsername": {
             "type": "string",
             "metadata": {
@@ -114,9 +108,9 @@
                 "location": "[variables('vNethub').location]",
                 "vmName": "vmhub",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "canonical",
-                "imageOffer": "0001-com-ubuntu-server-focal",
-                "OSVersion": "20_04-lts",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
                 "vNetName": "[variables('vNethub').name]",
                 "subnetName": "[variables('vNethub').subnet1Name]",
                 "pipObject": {
@@ -132,9 +126,9 @@
                 "location": "[variables('vNet1').location]",
                 "vmName": "vm1",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "canonical",
-                "imageOffer": "0001-com-ubuntu-server-focal",
-                "OSVersion": "20_04-lts",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
                 "vNetName": "[variables('vNet1').name]",
                 "subnetName": "[variables('vNet1').subnet1Name]",
                 "pipObject": {
@@ -150,9 +144,9 @@
                 "location": "[variables('vNet2').location]",
                 "vmName": "vm2",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "canonical",
-                "imageOffer": "0001-com-ubuntu-server-focal",
-                "OSVersion": "20_04-lts",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
                 "vNetName": "[variables('vNet2').name]",
                 "subnetName": "[variables('vNet2').subnet1Name]",
                 "pipObject": {
@@ -168,9 +162,9 @@
                 "location": "[variables('vNet3').location]",
                 "vmName": "vm3",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "canonical",
-                "imageOffer": "0001-com-ubuntu-server-focal",
-                "OSVersion": "20_04-lts",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
                 "vNetName": "[variables('vNet3').name]",
                 "subnetName": "[variables('vNet3').subnet1Name]",
                 "pipObject": {
@@ -186,9 +180,9 @@
                 "location": "[variables('vNet4').location]",
                 "vmName": "vm4",
                 "vmSize": "[variables('vmSize')]",
-                "imagePublisher": "canonical",
-                "imageOffer": "0001-com-ubuntu-server-focal",
-                "OSVersion": "20_04-lts",
+                "publisher": "canonical",
+                "offer": "0001-com-ubuntu-server-jammy",
+                "sku": "22_04-lts-gen2",
                 "vNetName": "[variables('vNet4').name]",
                 "subnetName": "[variables('vNet4').subnet1Name]",
                 "pipObject": {
@@ -207,7 +201,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[concat(variables('vmArray')[copyIndex()].nsgName)]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[concat(variables('vmArray')[copyIndex()].location)]",
             "properties": {
                 "securityRules": [
@@ -218,7 +212,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "[if(equals(parameters('mngIP'), ''), '*', parameters('mngIP'))]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 500,
@@ -235,7 +229,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNethub').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[variables('vNethub').location]",
             "comments": "This is the first vNet",
             "tags": {},
@@ -264,7 +258,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet1').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[variables('vNet1').location]",
             "comments": "This is the first vNet",
             "properties": {
@@ -292,7 +286,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet2').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[variables('vNet2').location]",
             "comments": "This is the second vNet",
             "tags": {},
@@ -321,7 +315,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet3').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[variables('vNet3').location]",
             "comments": "This is the second vNet",
             "tags": {},
@@ -350,7 +344,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('vNet4').name]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[variables('vNet4').location]",
             "comments": "This is the second vNet",
             "tags": {},
@@ -379,14 +373,16 @@
         {
             "condition": "[and(variables('vmArray')[copyIndex()].deployment, greater(length(variables('vmArray')[copyIndex()].pipObject), 0))]",
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "sku": {
-                "name": "Basic"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
             },
             "copy": {
                 "name": "publicIpCopy",
@@ -397,7 +393,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
-            "apiVersion": "2021-05-01",
+            "apiVersion": "2023-04-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].vNetName )]",
@@ -433,7 +429,7 @@
             "condition": "[variables('vmArray')[copyIndex()].deployment]",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
-            "apiVersion": "2021-07-01",
+            "apiVersion": "2023-03-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
@@ -449,9 +445,9 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
-                        "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
-                        "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -476,7 +472,7 @@
             "condition": "[not( empty(variables('vmArray')[copyIndex()].commandToExecute) )]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/', 'installcustomscript')]",
-            "apiVersion": "2021-11-01",
+            "apiVersion": "2023-03-01",
             "comments": "custom script extension for ubuntu",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "copy": {
@@ -495,6 +491,6 @@
                     "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
                 }
             }
-        },
+        }
     ]
 }

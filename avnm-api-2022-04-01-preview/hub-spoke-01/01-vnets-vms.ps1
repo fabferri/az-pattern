@@ -46,7 +46,7 @@ if (!$location3) { Write-Host 'variable $location3 is null' ; Exit }            
 if (!$location4) { Write-Host 'variable $location4 is null' ; Exit }                          else { Write-Host '   location4.............: '$location4 -ForegroundColor Yellow }
 if (!$adminUsername) { Write-Host 'variable $adminUsername is null' ; Exit }                  else { Write-Host '   administrator username: '$adminUsername -ForegroundColor Green }
 if (!$adminPassword) { Write-Host 'variable $adminPassword is null' ; Exit }                  else { Write-Host '   administrator password: '$adminPassword -ForegroundColor Green }
-if (!$mngIP) { Write-Host 'variable $mngIP is null' }                                         else { Write-Host '   mngIP.................: '$mngIP -ForegroundColor Yellow }
+
 
 $rgName = $ResourceGroupName
 
@@ -78,7 +78,6 @@ Catch {
 }
 
 $parameters = @{ 
-    "mngIP"         = $mngIP;
     "locationhub"   = $location;
     "location1"     = $location;
     "location2"     = $location;

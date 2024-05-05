@@ -10,6 +10,5 @@
     "location3" : "westus2",
     "location4" : "westus2",
     "adminUsername": "ADMINISTRATOR_USERNAME",
-    "adminPassword": "ADMINISTRATOR_PASSWORD",
-    "mngIP": ""
+    "adminPassword": "ADMINISTRATOR_PASSWORD"
 }

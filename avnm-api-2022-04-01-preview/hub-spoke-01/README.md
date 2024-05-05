@@ -70,8 +70,7 @@ The structure of **init.json** file is shown below:
     "location3" : "westus2",
     "location4" : "westus2",
     "adminUsername": "ADMINISTRATOR_USERNAME",
-    "adminPassword": "ADMINISTRATOR_PASSWORD",
-    "mngIP": "MANAGEMENT_PUBLIC_IP_ADDRESS_TO_CONNECT_IN_SSH_TO_THE_VMs"
+    "adminPassword": "ADMINISTRATOR_PASSWORD"
 }
 ```
 <br>
@@ -89,10 +88,11 @@ Deployment requires to run the scripts in sequence:
 
 NOTE: 
 - to keep simple the configuration, all the vnets are deployed in the same Azure resource group
-- deployment uses the API ver: **2022-04-01-preview**
+- deployment uses the API ver: **2023-02-01**
 
 `Tags: Azure Virtual Network Manager` <br>
-`date: 13-08-22`
+`date: 13-08-2022` <br>
+`date: 05-05-2024` <br>
 
 <!--Image References-->
 
