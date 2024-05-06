@@ -1,0 +1,435 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managementGroupScopes": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Management groups that the network manager has access to."
+            }
+        },
+        "subscriptionId": {
+            "type": "string",
+            "defaultValue": "[subscription().id]",
+            "metadata": {
+                "description": "subscription ID to deploy the hub vnet"
+            }
+        },
+        "resourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group where is deployed the AVNM"
+            }
+        },
+        "resourceGroupNameHubVNet": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "resourceGroupNameVNet1": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet1"
+            }
+        },
+        "resourceGroupNameVNet2": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet2"
+            }
+        },
+        "resourceGroupNameVNet3": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet3"
+            }
+        },
+        "resourceGroupNameVNet4": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "name of the resource group with deployment of vnet4"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all Network Manager."
+            }
+        },
+        "networkManagerName": {
+            "type": "string",
+            "defaultValue": "ntw-mgr1",
+            "metadata": {
+                "description": "The name for Network Manager"
+            }
+        },
+        "networkConnenctivtyConfigurationName": {
+            "type": "string",
+            "defaultValue": "netcfg1",
+            "metadata": {
+                "description": "network connectivty configuration"
+            }
+        },
+        "hubvnetName": {
+            "type": "string",
+            "defaultValue": "hub",
+            "metadata": {
+                "description": "name of the  hub vnet"
+            }
+        },
+        "networkGroup1Name": {
+            "type": "string",
+            "defaultValue": "grp1",
+            "metadata": {
+                "description": "The name for Network Manager"
+            }
+        },
+        "networkGroup2Name": {
+            "type": "string",
+            "defaultValue": "grp2",
+            "metadata": {
+                "description": "The name for Network Manager"
+            }
+        }
+    },
+    "variables": {
+        "policyNameProd": "[concat( 'PROD-policy-', uniqueString(resourceGroup().id) )]",
+        "policyNameDev": "[concat( 'DEV-policy-', uniqueString(resourceGroup().id) )]",
+        "empty": []
+    },
+    "resources": [
+        {
+            "name": "[parameters('networkManagerName')]",
+            "type": "Microsoft.Network/networkManagers",
+            "apiVersion": "2023-04-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "displayName": "[parameters('networkManagerName')]",
+                "description": "Network Manager manages multiple subscriptions",
+                "networkManagerScopes": {
+                    "managementGroups": "[parameters('managementGroupScopes')]",
+                    "subscriptions": [
+                        "[if(not(empty(parameters('subscriptionId'))), parameters('subscriptionId'), variables('empty'))]"
+                    ]
+                },
+                "networkManagerScopeAccesses": [
+                    "Connectivity"
+                ]
+            }
+        },
+        {
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup1Name'))]",
+            "type": "Microsoft.Network/networkManagers/networkGroups",
+            "apiVersion": "2023-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+            ],
+            "properties": {
+                "description": "[parameters('networkGroup1Name')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkGroup2Name'))]",
+            "type": "Microsoft.Network/networkManagers/networkGroups",
+            "apiVersion": "2023-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+            ],
+            "properties": {
+                "description": "[parameters('networkGroup2Name')]"
+            }
+        },      
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "policy-prod",
+            "subscriptionId": "[subscription().subscriptionId]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "networkGroupId": {
+                        "value": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]"
+                    },
+                    "resourceGroupName": {
+                        "value": "[parameters('resourceGroupName')]"
+                    },
+                    "networkManagerName": {
+                        "value": "[parameters('networkManagerName')]"
+                    },
+                    "networkGroup1Name": {
+                        "value": "[parameters('networkGroup1Name')]"
+                    },
+                    "policyNameProd": {
+                        "value": "[variables('policyNameProd')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {},
+
+                    "parameters": {
+                        "networkGroupId": {
+                            "type": "string"
+                        },
+                        "resourceGroupName": {
+                            "type": "string"
+                        },
+                        "networkManagerName": {
+                            "type": "string"
+                        },
+                        "networkGroup1Name": {
+                            "type": "string"
+                        },
+                        "policyNameProd": {
+                            "type": "string"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/policyDefinitions",
+                            "apiVersion": "2021-06-01",
+                            "name": "[parameters('policyNameProd')]",
+                            "properties": {
+                                "description": "AVNM-PROD-DynamicGroup MembershipPolicy",
+                                "displayName": "AVNM-PROD-DynamicGroup MembershipPolicy",
+                                "mode": "Microsoft.Network.Data",
+                                "policyRule": {
+                                    "if": {
+                                        "allof": [
+                                            {
+                                                "field": "type",
+                                                "equals": "Microsoft.Network/virtualNetworks"
+                                            },
+                                            {
+                                                "field": "tags[Environment]",
+                                                "contains": "PROD"
+                                            },
+                                            {
+                                                "field": "Name",
+                                                "contains": "PROD"
+                                            }
+                                        ]
+                                    },
+                                    "then": {
+                                        "effect": "addToNetworkGroup",
+                                        "details": {
+                                         //   "networkGroupId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]"
+                                            "networkGroupId": "[parameters('networkGroupId')]"
+                                        }
+                                    }
+                                }
+                            },
+                            "metadata": {
+                                "description": "This is a Policy definition PROD for dyanamic group membership"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/policyAssignments",
+                            "apiVersion": "2022-06-01",
+                            "name": "[parameters('policyNameProd')]",
+                            "properties": {
+                                "description": "AVNM quickstart dynamic group membership Policy",
+                                "displayName": "AVNM quickstart dynamic group membership Policy",
+                                "enforcementMode": "Default",
+                                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyNameProd'))]"
+                            },
+                            "dependsOn": [
+                                "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyNameProd'))]"
+                            ],
+                            "metadata": {
+                                "description": "Assigns above policy for dynamic group membership"
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "policyDefinitionId": {
+                            "type": "string",
+                            "value": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyNameProd'))]"
+                        },
+                        "policyAssignmentId": {
+                            "type": "string",
+                            "value": "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', parameters('policyNameProd'))]"
+                        }
+                    }
+                }
+            }
+        },
+            {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "policy-dev",
+            "subscriptionId": "[subscription().subscriptionId]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "networkGroupId": {
+                        "value":  "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
+                    },
+                    "resourceGroupName": {
+                        "value": "[parameters('resourceGroupName')]"
+                    },
+                    "networkManagerName": {
+                        "value": "[parameters('networkManagerName')]"
+                    },
+                    "networkGroup2Name": {
+                        "value": "[parameters('networkGroup2Name')]"
+                    },
+                    "policyNameDev": {
+                        "value": "[variables('policyNameDev')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "metadata": {},
+
+                    "parameters": {
+                        "networkGroupId": {
+                            "type": "string"
+                        },
+                        "resourceGroupName": {
+                            "type": "string"
+                        },
+                        "networkManagerName": {
+                            "type": "string"
+                        },
+                        "networkGroup2Name": {
+                            "type": "string"
+                        },
+                        "policyNameDev": {
+                            "type": "string"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/policyDefinitions",
+                            "apiVersion": "2021-06-01",
+                            "name": "[parameters('policyNameDev')]",
+                            "properties": {
+                                "description": "AVNM-DEV-DynamicGroup MembershipPolicy",
+                                "displayName": "AVNM-DEV-DynamicGroup MembershipPolicy",
+                                "mode": "Microsoft.Network.Data",
+                                "policyRule": {
+                                    "if": {
+                                        "allof": [
+                                            {
+                                                "field": "type",
+                                                "equals": "Microsoft.Network/virtualNetworks"
+                                            },
+                                            {
+                                                "field": "tags[Environment]",
+                                                "contains": "DEV"
+                                            },
+                                            {
+                                                "field": "Name",
+                                                "contains": "DEV"
+                                            }
+                                        ]
+                                    },
+                                    "then": {
+                                        "effect": "addToNetworkGroup",
+                                        "details": {
+                                        //    "networkGroupId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
+                                            "networkGroupId": "[parameters('networkGroupId')]"
+                                        }
+                                    }
+                                }
+                            },
+                            "metadata": {
+                                "description": "This is a Policy definition PROD for dyanamic group membership"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Authorization/policyAssignments",
+                            "apiVersion": "2022-06-01",
+                            "name": "[parameters('policyNameDev')]",
+                            "properties": {
+                                "description": "AVNM quickstart dynamic group membership Policy",
+                                "displayName": "AVNM quickstart dynamic group membership Policy",
+                                "enforcementMode": "Default",
+                                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyNameDev'))]"
+                            },
+                            "dependsOn": [
+                                "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyNameDev'))]"
+                            ],
+                            "metadata": {
+                                "description": "Assigns above policy for dynamic group membership"
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "policyDefinitionId": {
+                            "type": "string",
+                            "value": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyNameDev'))]"
+                        },
+                        "policyAssignmentId": {
+                            "type": "string",
+                            "value": "[subscriptionResourceId('Microsoft.Authorization/policyAssignments', parameters('policyNameDev'))]"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+            "name": "[concat(parameters('networkManagerName'), '/', parameters('networkConnenctivtyConfigurationName'))]",
+            "apiVersion": "2023-04-01",
+            "dependsOn": [
+                "[resourceId(resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
+                "[resourceId(resourceGroup().name, 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]"
+            ],
+            "properties": {
+                "displayName": "myConnectivityConfig",
+                "description": "AVNM in hub-and-spoke",
+                "connectivityTopology": "HubAndSpoke",
+                "hubs": [
+                    {
+                        "resourceId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupNameHubVNet'),'Microsoft.Network/virtualNetworks',parameters('hubvnetName'))]",
+                        "resourceType": "Microsoft.Network/virtualNetworks"
+                    }
+                ],
+                "isGlobal": "True",
+                "deleteExistingPeering": "True",
+                "appliesToGroups": [
+                    {
+                        "networkGroupId": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup1Name'))]",
+                        "useHubGateway": "False",
+                        "groupConnectivity": "DirectlyConnected",
+                        "isGlobal": "True"
+                    },
+                    {
+                        
+                        "networkGroupId": "[resourceId( 'Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'),parameters('networkGroup2Name'))]",
+                        "useHubGateway": "False",
+                        "groupConnectivity": "DirectlyConnected",
+                        "isGlobal": "True"
+                    }
+                ]
+            }
+        }
+    ]
+}

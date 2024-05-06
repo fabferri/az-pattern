@@ -1,0 +1,18 @@
+{
+    "subscriptionName": "AzDev",
+    "resourceGroupName": "anm",
+    "resourceGroupNameHubVNet": "anm-hub",
+    "resourceGroupNameVNet1": "anm1",
+    "resourceGroupNameVNet2": "anm2",
+    "resourceGroupNameVNet3": "anm3",
+    "resourceGroupNameVNet4": "anm4",
+    "location": "westus2",
+    "locationhub": "westus2",
+    "location1": "westeurope",
+    "location2": "westeurope",
+    "location3": "uksouth",
+    "location4": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "authenticationType": "password",
+    "adminPasswordOrKey": "ADMINISTRATOR_PASSWORD"
+}
