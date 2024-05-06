@@ -164,7 +164,7 @@ Deployment requires to run the scripts in sequence (respect the order of executi
 - step 1: edit the **init.json** file to customize the values of variables  
 - step 2: run the powershell script **01-vnets.ps1**; this creates the resource groups and VNets 
 - step 3: run the powershell script **02-anm.ps1** 
-- step 4: deployment of the network connectivity configuration you have created in a specific Azure region through Azure management portal or through the powershell ***deployment.ps1**
+- step 4: deployment of the network connectivity configuration you have created in a specific Azure region through Azure management portal or through the powershell **deployment.ps1**
 
 
 `Tags: Azure Virtual Network Manager` <br>
