@@ -37,10 +37,12 @@ List of few common images from Azure marketple to run Azure VMs.
 ```
 
 `Ubuntu 24.04 LTS`
+```Console
 "publisher": "canonical",
 "offer": "ubuntu-24_04-lts",
 "sku": "server",
 "version": "latest"
+```
 
 `Windows Server 2022`
 ```Console
