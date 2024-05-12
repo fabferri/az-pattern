@@ -20,7 +20,7 @@ editor=""/>
 ## Common Azure VM images from the Azure marketplace
 List of few common images from Azure marketple to run Azure VMs.
 
-`Ubuntu 20.04`
+`Ubuntu 20.04 LTS`
 ```Console
 "publisher": "canonical",
 "offer": "0001-com-ubuntu-server-focal",
@@ -28,13 +28,19 @@ List of few common images from Azure marketple to run Azure VMs.
 "version": "latest"
 ```
 
-`Ubuntu 22.04`
+`Ubuntu 22.04 LTS`
 ```Console
 "publisher": "canonical",
 "offer": "0001-com-ubuntu-server-jammy",
 "sku": "22_04-lts-gen2",
 "version": "latest"
 ```
+
+`Ubuntu 24.04 LTS`
+"publisher": "canonical",
+"offer": "ubuntu-24_04-lts",
+"sku": "server",
+"version": "latest"
 
 `Windows Server 2022`
 ```Console
