@@ -3,6 +3,7 @@
 # install Azure CLI in Ubuntu Azure VM. 
 # Script verified with Ubuntu 22.04
 #
+#
 # Get packages needed for the installation process:
 sudo apt-get update
 sudo apt-get -y install apt-transport-https ca-certificates curl gnupg lsb-release
