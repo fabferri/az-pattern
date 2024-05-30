@@ -68,7 +68,9 @@
 - Azure Virtual Network Manager
   - [AVNM with hub-spoke-static membership](https://github.com/fabferri/az-pattern/tree/master/azure-virtual-network-manager/hub-spoke-static-membership-01) [date: 05-05-2024]
   - [AVNM with hub-spoke-dynamic membership](https://github.com/fabferri/az-pattern/tree/master/azure-virtual-network-manager/hub-spoke-dynamic-membership-01) [date: 06-05-2024]
-
+- Managed Service Identity
+  - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/managed-identity/system-identity-access-to-storage) [date: 29-05-2022]
+  - [User-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/managed-identity/user-identity-access-to-storage) [date: 28-05-2024]
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
 - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi) [date: 29-05-2022]
 - [Azure NetApp Files service](https://github.com/fabferri/az-pattern/tree/master/anf) [date: 22-09-2022]
