@@ -61,7 +61,7 @@ In **"Microsoft.Authorization/roleAssignments"** the **principalId** of the user
 
 
 
-## <a name="Access to the KeyVault"></a>1. Access to theKeyVault from the Azure VM
+## <a name="Access to the KeyVault"></a>1. Access to the KeyVault from the Azure VM
 On resources configured for managed identities for Azure resources, you can sign in using the managed identity. Managed identities eliminate the need for manual credential management. <br>
 
 After deployment login in Ubuntu Azure VM and run the following Azure CLI commands:
