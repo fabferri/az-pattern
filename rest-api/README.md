@@ -21,7 +21,7 @@ editor=""/>
 REST APIs can be invoked with different ways:
 * [rest-api-curl](./rest-api-curl): examples of REST APIs invoked by curl
 * [rest-api-powershell](./rest-api-powershell): examples of REST APIs invoked by powershell (**Invoke-RestMethod**, **Invoke-WebRequest**)
-
+* [rest-hub-spoke](./rest-hub-spoke): examples of REST APIs to deploy an hub-spoke configuration
 
 <!--Image References-->
 
