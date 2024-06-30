@@ -7,30 +7,8 @@
 #  - create a NIC
 #  - create an ubuntu VM
 #
-# input variables:
 #
-#   $subscriptionName = AZURe_SUBSCRIPTION NAME
-#   $location = AZURE_REGION_NAME
-#   $ResourceGroup = RESOURCE_GROUP_NAME
-#   $vnetName = VNET_NAME
-#   $vnetAddressSpace = ADDRESS_SPACE_VNET
-#   $subnet1Name = NAME_SUBNET1
-#   $subnet2Name = NAME_SUBNET2
-#   $subnet1AddressPrefix = ADDRESS_PREFIX_SUBNET1
-#   $subnet2AddressPrefix = ADDRESS_PREFIX_SUBNET2
-#   $vmName = AZURE_VIRTUAL_MACHINE_NAME 
-#   $pubIPName = PUBLIC_IP_NAME_AZURE_VM
-#   $nsgName = NETWORK_SECURITY_GROUP_NAME_APPIED_TO_THE_NIC
-#   $nicName = NIC_NAME_AZURE_VM
-#   $administratorUsername = ADMINISTRATOR_USERNAME
-#   $administratorPassword = AMINISTRATOR_PASSWORD
-#   $vmOSDiskName = OS_DISK_NAME
-#   $publisher = NAME_PUBLISHER_IMAGE
-#   $offer = NAME_OFFER_IMAGE
-#   $sku = VERSION_IMAGE
-# ------------------------------------------
-#
-# read the value of variable through the script read-jsonfile.ps1
+# read the values of input variable through the script read-jsonfile.ps1
 & $PSScriptRoot/read-jsonfile.ps1
 #
 ########################### CONNECT TO AZURE
