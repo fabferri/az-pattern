@@ -7,6 +7,13 @@
 #  - create a NIC
 #  - create an ubuntu VM
 #
+$hub1vm1Name = 'hub1vm1'
+$spoke1vm1Name = 'spoke1vm1'
+$spoke2vm1Name = 'spoke2vm1'
+$vmSize = 'Standard_B1s'
+$publisher = 'canonical'
+$offer = '0001-com-ubuntu-server-jammy'
+$sku = '22_04-lts-gen2'
 #
 # read the values of input variable through the script read-jsonfile.ps1
 & $PSScriptRoot/read-jsonfile.ps1
