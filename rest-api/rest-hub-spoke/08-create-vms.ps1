@@ -29,24 +29,6 @@
 #   $offer = NAME_OFFER_IMAGE
 #   $sku = VERSION_IMAGE
 # ------------------------------------------
-# these Az modules required
-# https://docs.microsoft.com/powershell/azure/install-az-ps
-# Import-Module Az.Accounts 
-# ------------------------------------------
-# $subscriptionName = 'AzDev'
-# $location = 'uksouth'
-# $ResourceGroup = 'test-vnet'
-# $hub1Name = 'hub1'
-# $hub1subnet1Name = 'subnet1'
-# $administratorUsername = 'edge'
-# $administratorPassword = 'Verdicchio**2016'
-$hub1vm1Name = 'hub1vm1'
-$spoke1vm1Name = 'spoke1vm1'
-$spoke2vm1Name = 'spoke2vm1'
-$vmSize = 'Standard_B1s'
-$publisher = 'canonical'
-$offer = '0001-com-ubuntu-server-jammy'
-$sku = '22_04-lts-gen2'
 #
 # read the value of variable through the script read-jsonfile.ps1
 & $PSScriptRoot/read-jsonfile.ps1
