@@ -33,9 +33,9 @@ The network configuration is reported in the diagram:
 
 [![1]][1]
 
-Each Azure VPN Gateway is configured in active-active.
+Each Azure VPN Gateway is configured in active-active and BGP routing.
 
-> [NOTE]
+> [!NOTE]
 >
 > **The ARM templates require as mandatory Azure region with availability zone** 
 
