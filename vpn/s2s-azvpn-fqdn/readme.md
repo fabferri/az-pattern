@@ -35,7 +35,7 @@ The network configuration is reported in the diagram:
 
 Each Azure VPN Gateway is configured in active-active.
 
-> **NOTE**
+> [NOTE]
 >
 > **The ARM templates require as mandatory Azure region with availability zone** 
 
@@ -50,18 +50,16 @@ Each connection use the FQDN of public IP of the remote VPN Gateway.
 > Before deploying the ARM template, you should:
 > 1. set the name of your Azure subscription in the files **vpn1.ps1** and **vpn2.ps1**
 > 2. in **vpn1.ps1**:  
->     * the administrator username is specified in variable 
-> **$adminUsername** 
->     * the administrator password is specified in variable 
-> **$adminPassword**
+>     * the administrator username is specified in variable **$adminUsername** 
+>     * the administrator password is specified in variable **$adminPassword**
 > 3. The text file **init.txt** set the name of the resource group and the Azure regions of two VNets
 > 4. the powershell scripts **vpn1.ps1** and **vpn2.ps1** needs to run in sequence: 
->    * first step: run the **vpn1.ps1**   
->    * second step: run the **vpn2.ps1**
+>    * 1st step: run the script **vpn1.ps1**   
+>    * 2nd step: run the script **vpn2.ps1**
 >
 
 `Tag: Site-to-Site VPN` <br>
-`date testing s2s-vpn-2vpngtw-fqdn-full/vpn.json: 13-09-2024`
+`date: 05-09-2024`
 
 <!--Image References-->
 

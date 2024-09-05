@@ -11,7 +11,7 @@ param (
 
 ################# Input parameters #################
 $subscriptionName  = "AzDev1"     
-$location          = "eastus"
+$location          = "northeurope"
 $deploymentName    = "vpn-1"
 $armTemplateFile   = "vpn.json"
 ####################################################
@@ -31,9 +31,9 @@ If (Test-Path -Path $pathFiles\init.txt) {
 }
 Else {Write-Warning "init.txt file not found, please change to the directory where these scripts reside ($pathFiles) and ensure this file is present.";Return}
 
-if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit }
-if (!$location1) { Write-Host 'variable $location1 is null' ; Exit }
-if (!$location2) { Write-Host 'variable $location2 is null' ; Exit }
+if (!$ResourceGroupName) { Write-Host 'variable $ResourceGroupName is null' ; Exit } else { Write-Host $ResourceGroupName}
+if (!$location1) { Write-Host 'variable $location1 is null' ; Exit } else { Write-Host $location1}
+if (!$location2) { Write-Host 'variable $location2 is null' ; Exit } else { Write-Host $location2}
 $rgName=$ResourceGroupName
 
 $parameters=@{
@@ -43,10 +43,10 @@ $parameters=@{
               "location2"= $location2
               }
 
-write-host "reading resource group name $ResourceGroupName from the file init.txt " -ForegroundColor Green
-write-host "reading location1 name $location1 from the file init.txt " -ForegroundColor Green
-write-host "reading location2 name $location2 from the file init.txt " -ForegroundColor Green
-write-host "parameters variable:" $parameters.Values -ForegroundColor Yellow
+write-host "reading resource group name: $ResourceGroupName from the file init.txt " -ForegroundColor Green
+write-host "reading location1 name: $location1 from the file init.txt " -ForegroundColor Green
+write-host "reading location2 name: $location2 from the file init.txt " -ForegroundColor Green
+write-host "parameters variable: {" $parameters.Values "}" -ForegroundColor Yellow
 
 
 $subscr=Get-AzSubscription -SubscriptionName $subscriptionName
