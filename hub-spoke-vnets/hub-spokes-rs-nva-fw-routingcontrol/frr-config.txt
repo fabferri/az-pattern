@@ -1,0 +1,87 @@
+nva1# show run
+Building configuration...
+
+Current configuration:
+!
+frr version 8.4.4
+frr defaults traditional
+hostname nva1
+log syslog informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+ip route 0.0.0.0/0 10.50.0.1
+ip route 10.50.0.0/24 10.50.0.1
+ip route 10.100.0.0/24 10.50.0.1
+ip route 10.101.0.0/24 10.50.0.1
+!
+router bgp 65001
+ bgp router-id 10.50.0.10
+ neighbor 10.50.0.68 remote-as 65515
+ neighbor 10.50.0.68 ebgp-multihop 3
+ neighbor 10.50.0.68 timers 60 180
+ neighbor 10.50.0.69 remote-as 65515
+ neighbor 10.50.0.69 ebgp-multihop 3
+ neighbor 10.50.0.69 timers 60 180
+ neighbor 10.100.0.4 remote-as 65515
+ neighbor 10.100.0.4 ebgp-multihop 3
+ neighbor 10.100.0.4 timers 60 180
+ neighbor 10.100.0.5 remote-as 65515
+ neighbor 10.100.0.5 ebgp-multihop 3
+ neighbor 10.100.0.5 timers 60 180
+ !
+ address-family ipv4 unicast
+  network 10.101.0.0/24
+  neighbor 10.50.0.68 soft-reconfiguration inbound
+  neighbor 10.50.0.68 route-map FILTER-IN in
+  neighbor 10.50.0.68 route-map TO-RS-HUB out
+  neighbor 10.50.0.69 soft-reconfiguration inbound
+  neighbor 10.50.0.69 route-map FILTER-IN in
+  neighbor 10.50.0.69 route-map TO-RS-HUB out
+  neighbor 10.100.0.4 soft-reconfiguration inbound
+  neighbor 10.100.0.4 route-map FILTER-IN in
+  neighbor 10.100.0.4 route-map TO-RS-FW out
+  neighbor 10.100.0.5 soft-reconfiguration inbound
+  neighbor 10.100.0.5 route-map FILTER-IN in
+  neighbor 10.100.0.5 route-map TO-RS-FW out
+ exit-address-family
+exit
+!
+ip prefix-list DEFAULT seq 10 permit 0.0.0.0/0
+ip prefix-list FW-VNET seq 10 permit 10.100.0.0/24
+ip prefix-list HUB-VNET seq 10 permit 10.50.0.0/24
+ip prefix-list ON-PREM seq 10 permit 10.1.35.0/25
+ip prefix-list SPOKE1-VNET seq 10 permit 10.101.0.0/24
+!
+route-map FILTER-IN permit 20
+exit
+!
+route-map TO-RS-FW deny 10
+ match ip address prefix-list SPOKE1-VNET
+exit
+!
+route-map TO-RS-FW deny 20
+ match ip address prefix-list FW-VNET
+exit
+!
+route-map TO-RS-FW permit 30
+ match ip address prefix-list ON-PREM
+ set as-path replace 65515
+ set ip next-hop unchanged
+exit
+!
+route-map TO-RS-HUB deny 10
+ match ip address prefix-list FW-VNET
+exit
+!
+route-map TO-RS-HUB deny 20
+ match ip address prefix-list ON-PREM
+exit
+!
+route-map TO-RS-HUB permit 30
+ match ip address prefix-list SPOKE1-VNET
+ set ip next-hop 10.100.0.196
+exit
+!
+end
+nva1#

@@ -1,0 +1,185 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "azure region where is deployed the vnet1"
+            }
+        }
+    },
+    "variables": {
+        "hub": {
+            "location": "[parameters('location')]",
+            "name": "hub-vnet",
+            "addressSpace1Prefix": "10.50.0.0/24",
+            "nvaSubnetName": "nvaSubnet",
+            "nvaSubnetPrefix": "10.50.0.0/28",
+            "tenantSubnetName": "workloadSubnet",
+            "tenantSubnetPrefix": "10.50.0.16/28",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.50.0.64/26",
+            "gatewaySubnetName": "GatewaySubnet",
+            "gatewaySubnetPrefix": "10.50.0.192/26"
+        },
+        "fwvnet": {
+            "location": "[parameters('location')]",
+            "name": "fw-vnet",
+            "addressSpace1Prefix": "10.100.0.0/24",
+            "tenantSubnetName": "workloadSubnet",
+            "tenantSubnetPrefix": "10.100.0.64/26",
+            "azurefirewallSubnetName": "AzureFirewallSubnet",
+            "azurefirewallSubnetPrefix": "10.100.0.192/26",
+            "routeServerSubnetName": "RouteServerSubnet",
+            "routeServerSubnetPrefix": "10.100.0.0/26"
+        },
+        "spoke1": {
+            "location": "[parameters('location')]",
+            "name": "spoke1",
+            "addressSpace1Prefix": "10.101.0.0/24",
+            "tenantSubnetName": "spoke1Subnet",
+            "tenantSubnetPrefix": "10.101.0.0/25"
+        },
+        "nva1hubName": "nva1",
+        "nva1hubprivIP": "10.50.0.10",
+
+        "rshubName": "hub-rs1",
+        "rshubPubIPName": "[concat(variables('rshubName'),'-pubIP')]",
+        "rshubpeering1IP": "[variables('nva1hubprivIP')]",
+        "rshubpeering1ASN": 65001,
+        "rshubBGPconnection1Name": "bgp-conn1",
+        "rshubSubnetId": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets',variables('hub').name,'RouteServerSubnet' )]",
+        "vHubIPconfigName": "vhubipconfig1",
+
+        "rsfwvnetName": "fw-rs1",
+        "rsfwvnetPubIPName": "[concat(variables('rsfwvnetName'),'-pubIP')]",
+        "rsfwvnetpeering1IP": "[variables('nva1hubprivIP')]",
+        "rsfwvnetpeering1ASN": 65001,
+        "rsfwvnetBGPconnection1Name": "bgp-conn1",
+        "rsfwvnetSubnetId": "[resourceId( 'Microsoft.Network/virtualNetworks/subnets',variables('fwvnet').name,'RouteServerSubnet' )]",
+        "vHubfwvnetIPconfigName": "vhubfwvnetipconfig1"
+
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "name": "[variables('rshubName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('hub').location]",
+            "comments": "create a virtual hub object - Note: the ARM template run successful only if the main vnet with already exists",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rshubPubIPName')]",
+            "apiVersion": "2021-05-01",
+            "location": "[variables('hub').location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "apiVersion": "2021-05-01",
+            "name": "[concat(variables('rshubName'), '/',variables('vHubIPconfigName'))]",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rshubName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rshubPubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rshubSubnetId')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rshubPubIPName') )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[format('{0}/{1}', variables('rshubName'), variables('rshubBGPconnection1Name'))]",
+            "apiVersion": "2023-11-01",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rshubName'), variables('vHubIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rshubpeering1IP')]",
+                "peerAsn": "[variables('rshubpeering1ASN')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs",
+            "name": "[variables('rsfwvnetName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('fwvnet').location]",
+            "comments": "create a virtual hub object - Note: the ARM template run successful only if the main vnet with already exists",
+            "dependsOn": [],
+            "properties": {
+                "sku": "Standard",
+                "allowBranchToBranchTraffic": true
+            },
+            "resources": []
+        },
+        {
+            "comments": "public IP of the route server",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('rsfwvnetPubIPName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('fwvnet').location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/ipConfigurations",
+            "name": "[concat(variables('rsfwvnetName'), '/',variables('vHubfwvnetIPconfigName'))]",
+             "apiVersion": "2023-11-01",
+            "comments": "create the route server and attach it to the RouteServerSubnet subnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs', variables('rsfwvnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsfwvnetPubIPName') )]"
+            ],
+            "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "subnet": {
+                    "id": "[variables('rsfwvnetSubnetId')]"
+                },
+                "publicIPAddress": {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rsfwvnetPubIPName') )]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualHubs/bgpConnections",
+            "name": "[format('{0}/{1}', variables('rsfwvnetName'), variables('rsfwvnetBGPconnection1Name'))]",
+            "apiVersion": "2023-11-01",
+            "comments": "name of the BGP connection configured on the route server- BGP connection can be created at end of Microsoft.Network/virtualHubs/ipConfigurations",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualHubs/ipConfigurations', variables('rsfwvnetName'), variables('vHubfwvnetIPconfigName'))]"
+            ],
+            "properties": {
+                "peerIp": "[variables('rsfwvnetpeering1IP')]",
+                "peerAsn": "[variables('rsfwvnetpeering1ASN')]"
+            }
+        }
+    ]
+}
