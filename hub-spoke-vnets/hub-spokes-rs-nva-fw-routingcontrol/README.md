@@ -44,8 +44,8 @@ Let's go through the configuration:
    - **"allowGatewayTransit": false,**   
    - **"useRemoteGateways": false,**    
 - In present setting, the address space of spoke1 vnet is not sent to the ExpressRoute Gateway. A different mechanism is used to advertise the address space of spoke1 vnet to on-premises. 
-- the spoke1 vnet has a UDR with default route <br> 
-  Destination network: **0.0.0.0/0**, type: **Virtual network appliance**, next-hop IP: **PrivateIPAzureFirewall**
+- the spoke1 vnet has a UDR with default route: <br> 
+  Destination network: **0.0.0.0/0**, type: **Virtual Network Appliance**, next-hop IP: **PrivateIPAzureFirewall**
 - each Route Server has a fix ASN: 655515 that it can't be changed. 
 - two eBGP sessions are established between **nva1** and the route server **fw-rs1** deployed in firewall vnet
 - two eBGP sessions are established between **nva1** and the route server **hub-rs1** deployed in hub vnet
