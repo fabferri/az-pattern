@@ -88,11 +88,11 @@ Before deploying the **01-vnet-vms.json** adjust the correct variables value.
 > [!NOTE]
 > `Route Server behaviour` <br>
 > Shutdown one of BGP peering between nva1 and route server breaks the routing between the on-premises network and the spoke1 vnet. <br>
-> Each route server pretends to have with the **nva1** both of BGP peering up. <br>
+> Each route server pretends to have with the **nva1** both BGP peering up. <br>
 > i.e. one of following command in nva1 breakes the communication between the on-premises network and the spoke1 vnet: <br>
-> neighbor 10.50.0.68 shutdown <br>
+> **neighbor 10.50.0.68 shutdown** <br>
 > OR <br>
-> neighbor 10.50.0.69 shutdown <br>
+> **neighbor 10.50.0.69 shutdown** <br>
 
 ## <a name="route-map in nva"></a>2. Filtering BGP advertisement by route-map
 
@@ -143,143 +143,92 @@ service integrated-vtysh-config
 ```
 FFR configuration:
 ```console
-SEA-Cust33-nva1# show run
+nva1# show run
 Building configuration...
 
 Current configuration:
 !
-frr version 8.4.2
+frr version 8.4.4
 frr defaults traditional
-hostname SEA-Cust33-nva1
+hostname nva1
 log syslog informational
 no ipv6 forwarding
 service integrated-vtysh-config
 !
-ip route 0.0.0.0/0 10.17.33.1
-ip route 10.0.4.4/32 10.17.33.1
-ip route 10.0.4.5/32 10.17.33.1
-ip route 10.0.5.4/32 10.17.33.1
-ip route 10.0.5.5/32 10.17.33.1
-ip route 10.0.6.4/32 10.17.33.1
-ip route 10.0.6.5/32 10.17.33.1
-ip route 10.17.33.68/32 10.17.33.1
-ip route 10.17.33.69/32 10.17.33.1
+ip route 0.0.0.0/0 10.50.0.1
+ip route 10.50.0.0/24 10.50.0.1
+ip route 10.100.0.0/24 10.50.0.1
+ip route 10.101.0.0/24 10.50.0.1
 !
 router bgp 65001
- bgp router-id 10.17.33.10
- neighbor 10.0.4.4 remote-as 65515
- neighbor 10.0.4.4 ebgp-multihop 3
- neighbor 10.0.4.4 timers 60 180
- neighbor 10.0.4.5 remote-as 65515
- neighbor 10.0.4.5 ebgp-multihop 3
- neighbor 10.0.4.5 timers 60 180
- neighbor 10.0.5.4 remote-as 65515
- neighbor 10.0.5.4 ebgp-multihop 3
- neighbor 10.0.5.4 timers 60 180
- neighbor 10.0.5.5 remote-as 65515
- neighbor 10.0.5.5 ebgp-multihop 3
- neighbor 10.0.5.5 timers 60 180
- neighbor 10.0.6.4 remote-as 65515
- neighbor 10.0.6.4 ebgp-multihop 3
- neighbor 10.0.6.4 timers 60 180
- neighbor 10.0.6.5 remote-as 65515
- neighbor 10.0.6.5 ebgp-multihop 3
- neighbor 10.0.6.5 timers 60 180
- neighbor 10.17.33.68 remote-as 65515
- neighbor 10.17.33.68 ebgp-multihop 3
- neighbor 10.17.33.68 timers 60 180
- neighbor 10.17.33.69 remote-as 65515
- neighbor 10.17.33.69 ebgp-multihop 3
- neighbor 10.17.33.69 timers 60 180
+ bgp router-id 10.50.0.10
+ neighbor 10.50.0.68 remote-as 65515
+ neighbor 10.50.0.68 ebgp-multihop 3
+ neighbor 10.50.0.68 timers 60 180
+ neighbor 10.50.0.69 remote-as 65515
+ neighbor 10.50.0.69 ebgp-multihop 3
+ neighbor 10.50.0.69 timers 60 180
+ neighbor 10.100.0.4 remote-as 65515
+ neighbor 10.100.0.4 ebgp-multihop 3
+ neighbor 10.100.0.4 timers 60 180
+ neighbor 10.100.0.5 remote-as 65515
+ neighbor 10.100.0.5 ebgp-multihop 3
+ neighbor 10.100.0.5 timers 60 180
  !
  address-family ipv4 unicast
-  network 0.0.0.0/0
-  aggregate-address 10.0.4.0/22
-  neighbor 10.0.4.4 as-override
-  neighbor 10.0.4.4 soft-reconfiguration inbound
-  neighbor 10.0.4.4 route-map SPIN in
-  neighbor 10.0.4.4 route-map SPOUT out
-  neighbor 10.0.4.5 as-override
-  neighbor 10.0.4.5 soft-reconfiguration inbound
-  neighbor 10.0.4.5 route-map SPIN in
-  neighbor 10.0.4.5 route-map SPOUT out
-  neighbor 10.0.5.4 as-override
-  neighbor 10.0.5.4 soft-reconfiguration inbound
-  neighbor 10.0.5.4 route-map SPIN in
-  neighbor 10.0.5.4 route-map SPOUT out
-  neighbor 10.0.5.5 as-override
-  neighbor 10.0.5.5 soft-reconfiguration inbound
-  neighbor 10.0.5.5 route-map SPIN in
-  neighbor 10.0.5.5 route-map SPOUT out
-  neighbor 10.0.6.4 as-override
-  neighbor 10.0.6.4 soft-reconfiguration inbound
-  neighbor 10.0.6.4 route-map SPIN in
-  neighbor 10.0.6.4 route-map SPOUT out
-  neighbor 10.0.6.5 as-override
-  neighbor 10.0.6.5 soft-reconfiguration inbound
-  neighbor 10.0.6.5 route-map SPIN in
-  neighbor 10.0.6.5 route-map SPOUT out
-  neighbor 10.17.33.68 as-override
-  neighbor 10.17.33.68 soft-reconfiguration inbound
-  neighbor 10.17.33.68 route-map RSIN in
-  neighbor 10.17.33.68 route-map RSOUT out
-  neighbor 10.17.33.69 as-override
-  neighbor 10.17.33.69 soft-reconfiguration inbound
-  neighbor 10.17.33.69 route-map RSIN in
-  neighbor 10.17.33.69 route-map RSOUT out
+  network 10.101.0.0/24
+  neighbor 10.50.0.68 soft-reconfiguration inbound
+  neighbor 10.50.0.68 route-map FILTER-IN in
+  neighbor 10.50.0.68 route-map TO-RS-HUB out
+  neighbor 10.50.0.69 soft-reconfiguration inbound
+  neighbor 10.50.0.69 route-map FILTER-IN in
+  neighbor 10.50.0.69 route-map TO-RS-HUB out
+  neighbor 10.100.0.4 soft-reconfiguration inbound
+  neighbor 10.100.0.4 route-map FILTER-IN in
+  neighbor 10.100.0.4 route-map TO-RS-FW out
+  neighbor 10.100.0.5 soft-reconfiguration inbound
+  neighbor 10.100.0.5 route-map FILTER-IN in
+  neighbor 10.100.0.5 route-map TO-RS-FW out
  exit-address-family
 exit
 !
-ip prefix-list DEFFW seq 10 permit 0.0.0.0/0
-ip prefix-list HUB-VNET seq 10 deny 10.17.33.0/24
-ip prefix-list ONPREM seq 10 permit 10.0.0.0/8
-ip prefix-list SPMAJOR seq 10 permit 10.0.4.0/22
-ip prefix-list SPOKE-VNET seq 10 deny 10.0.4.0/24
-ip prefix-list SPOKE-VNET seq 20 deny 10.0.5.0/24
-ip prefix-list SPOKE-VNET seq 30 deny 10.0.6.0/24
-ip prefix-list SPOKE-VNET seq 50 permit 10.0.0.0/8
+ip prefix-list DEFAULT seq 10 permit 0.0.0.0/0
+ip prefix-list FW-VNET seq 10 permit 10.100.0.0/24
+ip prefix-list HUB-VNET seq 10 permit 10.50.0.0/24
+ip prefix-list ON-PREM seq 10 permit 10.1.35.0/25
+ip prefix-list SPOKE1-VNET seq 10 permit 10.101.0.0/24
 !
-route-map SPIN permit 20
+route-map FILTER-IN permit 20
 exit
 !
-route-map RSIN permit 20
- match ip address prefix-list ONPREM
+route-map TO-RS-FW deny 10
+ match ip address prefix-list SPOKE1-VNET
 exit
 !
-route-map FW permit 10
- match ip address prefix-list DEFFW
- set ip next-hop 10.100.0.10
+route-map TO-RS-FW deny 20
+ match ip address prefix-list FW-VNET
 exit
 !
-route-map SPOUT permit 20
- match ip address prefix-list SPOKE-VNET
+route-map TO-RS-FW permit 30
+ match ip address prefix-list ON-PREM
+ set as-path replace 65515
  set ip next-hop unchanged
 exit
 !
-route-map SPOUT permit 30
- match ip address prefix-list DEFFW
- set ip next-hop 10.100.0.10
+route-map TO-RS-HUB deny 10
+ match ip address prefix-list FW-VNET
 exit
 !
-route-map SPOUT permit 40
- match ip address prefix-list SPMAJOR
- set ip next-hop 10.17.33.254
+route-map TO-RS-HUB deny 20
+ match ip address prefix-list ON-PREM
 exit
 !
-route-map RSOUT deny 5
- match ip address prefix-list DEFFW
-exit
-!
-route-map RSOUT deny 6
- match ip address prefix-list SPMAJOR
-exit
-!
-route-map RSOUT permit 10
- set ip next-hop unchanged
+route-map TO-RS-HUB permit 30
+ match ip address prefix-list SPOKE1-VNET
+ set ip next-hop 10.100.0.196
 exit
 !
 end
-SEA-Cust33-nva1#
 ```
 
 
