@@ -66,7 +66,7 @@ Let's go through the configuration:
 | **03-azfw.ps1**           | powershell script to run **03-azfw.json**  |
 | **frr-config.txt**        | FRR configuration       |
 
-`NOTE` <br>
+
 Before running the powershell scripts, customize the values of input variables:
 ```powershell
 $adminUsername = 'ADMINISTRATOR_USERNAME'
@@ -81,6 +81,7 @@ The ARM template **01-vnet-vms.json** uses an existing ExpressRoute circuit and 
 - `"erResourceGroup"` : <ins>Resource Group name</ins> where is deployed the ExpressRoute circuit
 - `"erCircuitName"` : <ins>name of the ExpressRoute circuit</ins>
 - `"erCircuitAuthorizationKey"`: <ins>authorization code</ins> to establish a connection with the ExpressRoute circuit
+Before deploying the **01-vnet-vms.json** adjust the correct variables value.
 
 <br>
 
