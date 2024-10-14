@@ -86,7 +86,7 @@ Before deploying the **01-vnet-vms.json** adjust the correct variables value.
 <br>
 
 > [!NOTE]
-> `Route Server behviour` <br>
+> `Route Server behaviour` <br>
 > Shutdown one of BGP peering between nva1 and route server breaks the routing between on-premises network and spoke1 vnet. 
 > Each route server pretends to have with the nva1 both of BGP peering up. 
 > i.e. one of following command in nva1 breakes the communication between the on-premises network and the spoke1 vnet:
