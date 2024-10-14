@@ -28,7 +28,6 @@ The article describes a scenario with hub-spoke vnets in peering and a connectio
 
 The configuration is designed to enable communication between the Spoke1 VNet and on-premises network via the ExpressRoute circuit.
 <br>
-
 The full diagram inclusive of IP address space is shown below:
 
 [![2]][2]
@@ -37,13 +36,12 @@ The full diagram inclusive of IP address space is shown below:
 
 Let's go through the configuration:
 - the customer's edge routers advertise to the ExpressRoute circuit the major network 10.1.35.0/25
-- the traffic between spoke1 vnet to on-premises does <ins>not</ins> transit through the nva1 in the hub
+- the traffic between the spoke1 vnet and the on-premises network does <ins>not</ins> transit through the nva1
 - all the vnet peering are created with the following attributes: <br>
    - "allowVirtualNetworkAccess": true, 
    - "allowForwardedTraffic": true,     
    - **"allowGatewayTransit": false,**   
    - **"useRemoteGateways": false,**    
-- In present setting, the address space of spoke1 vnet is not sent to the ExpressRoute Gateway. A different mechanism is used to advertise the address space of spoke1 vnet to on-premises. 
 - the spoke1 vnet has a UDR with default route: <br> 
   Destination network: **0.0.0.0/0**, type: **Virtual Network Appliance**, next-hop IP: **PrivateIPAzureFirewall**
 - each Route Server has a fix ASN: 655515 that it can't be changed. 
@@ -51,7 +49,7 @@ Let's go through the configuration:
 - two eBGP sessions are established between **nva1** and the route server **hub-rs1** deployed in hub vnet
 - the **nva1** in hub vnet requires the following BGP configuration:
    - **nva1** applies filtering in BGP advertisements inbound and outbound by route-map. 
-   - the on-premises network 10.1.35.0/25 is advertised from the route server **hub-rs1** to the **nva1** and then re-advertised to the route server **fw-rs1**. When **nva1** advertises the on-premises network to the **fw-rs1**, it applies next-hop unchanged and AS PATH replace.  AS PATH replace is required to avoid discard of IP network prefixes in the Route Servers. _[In eBGP session, AS loop detection is done by scanning the full AS path (as specified in the AS_PATH attribute), and checking that the autonomous system number of the local system does not appear in the AS path]_
+   - when **nva1** advertises on-premises network 10.1.35.0/25 to the **fw-rs1**, it applies next-hop unchanged and AS PATH replace. <br> AS PATH replace is required to avoid discard of IP network prefixes in the Route Servers. <br> _[ this is expected becasue in eBGP session, AS loop detection is done by scanning the full AS path (as specified in the AS_PATH attribute), and checking that the autonomous system number of the local system does not appear in the AS path]_
    - the **nva1** advertises the address space of the spoke1 vnet to the **hub-rs** with next-hop the IP of the Azure firewall
 
 
