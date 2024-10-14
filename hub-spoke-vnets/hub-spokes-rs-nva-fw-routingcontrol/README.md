@@ -20,7 +20,7 @@ editor=""/>
 
 # Hub-spoke vnets with Route Server in hub and in the firewall vnet
 
-## NOTE: the configuration described in this article is for testing ONLY. In a production environment, it is recommended to implement a hub-spoke topology with azure firewall located in the hub vnet.
+## NOTE: the configuration described in this article is for testing ONLY. In a production environment, it is recommended a hub-spoke topology with azure firewall located in the hub vnet.
 
 The article describes a scenario with hub-spoke vnets in peering and a connection with on-premises through ExpressRoute circuit. The high-level network diagram is shown below:
 
