@@ -119,7 +119,7 @@ sysctl net.ipv4.ip_forward
 ```
 
 
-In nva1 can be installed and check the FRR: 
+In nva1 install and check the FRR: 
 ```bash
 sudo apt update 
 sudo apt install frr 
