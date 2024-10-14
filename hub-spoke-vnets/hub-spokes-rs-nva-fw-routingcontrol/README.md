@@ -91,7 +91,10 @@ The ARM template **01-vnet-vms.json** uses an existing ExpressRoute circuit and 
 >
 > Shutdown one of BGP peering between nva1 and route server breaks the routing between on-premises network and spoke1 vnet. 
 > Each route server pretends to have with the nva1 both of BGP peering up. 
->
+> i.e. one of following command in nva1 breakes the communication between the on-premises network and the spoke1 vnet:
+> neighbor 10.50.0.68 shutdown
+> OR
+> neighbor 10.50.0.69 shutdown
 
 ## <a name="route-map in nva"></a>2. Filtering BGP advertisement by route-map
 
