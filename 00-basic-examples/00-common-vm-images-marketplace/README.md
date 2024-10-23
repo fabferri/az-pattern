@@ -53,13 +53,21 @@ List of few common images from Azure marketple to run Azure VMs.
 "license": "Windows_Server"
 ```
 
-`Windows 11`
+`Windows 11 23H2`
 ```Console
 "publisher": "microsoftwindowsdesktop",
 "offer": "windows-11",
 "sku": "win11-23h2-ent",
 "version": "latest"
 "license": "Windows_Client"
+```
+
+`Windows 11 24H2`
+```console
+"publisher": "microsoftwindowsdesktop",
+"offer": "windows-11",
+"sku": "win11-24h2-ent",
+"version": "latest"
 ```
 
 `Debian`
