@@ -87,12 +87,16 @@ Before deploying the **01-vnet-vms.json** adjust the correct variables value.
 
 > [!NOTE]
 > `Route Server behaviour` <br>
+>
+> **If the NVA is only peered with one of Route Server's instances instead of both, it can lead to non-deterministic routing and connectivity disruption. As a result, it is required to peer each NVA instance with both instances of Route Server.**
+>
 > Shutdown one of BGP peering between nva1 and route server breaks the routing between the on-premises network and the spoke1 vnet. <br>
 > Each route server pretends to have with the **nva1** both BGP peering up. <br>
 > i.e. one of following command in nva1 breakes the communication between the on-premises network and the spoke1 vnet: <br>
 > **neighbor 10.50.0.68 shutdown** <br>
 > OR <br>
 > **neighbor 10.50.0.69 shutdown** <br>
+
 
 ## <a name="route-map in nva"></a>2. Filtering BGP advertisement by route-map
 
