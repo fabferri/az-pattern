@@ -129,7 +129,7 @@ VPN private IPs and BGP IPs are both required to define the local network gatewa
 }
 ```
 
-To enable the transit of Site-to-Site tunnels through the private peering is required the enablement in the Connections (resource type: **Microsoft.Network/connections**):
+To enable the transit of Site-to-Site tunnels through the private peering in the Connections (resource type: **Microsoft.Network/connections**) is required the property:
 ```json
 "useLocalAzureIpAddress": true
 ``` 
