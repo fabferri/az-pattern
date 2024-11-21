@@ -1,0 +1,213 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location1": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Azure region"
+      }
+    },
+    "vNet1Name": {
+      "type": "string",
+      "defaultValue": "vnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet2Name": {
+      "type": "string",
+      "defaultValue": "vnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Virtual Network"
+      }
+    },
+    "vNet1AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.10.0/24",
+      "metadata": {
+        "description": "CIDR block representing the address space of the Azure VNet"
+      }
+    },
+    "vNet2AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.20.0/24",
+      "metadata": {
+        "description": "CIDR block representing the address space of the Azure VNet"
+      }
+    },
+    "subnet1Name": {
+      "type": "string",
+      "defaultValue": "subnet1",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "subnet2Name": {
+      "type": "string",
+      "defaultValue": "subnet2",
+      "metadata": {
+        "description": "Arbitrary name for the Azure Subnet"
+      }
+    },
+    "subnet1Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.10.0/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "subnet2Prefix": {
+      "type": "string",
+      "defaultValue": "10.0.20.0/27",
+      "metadata": {
+        "description": "CIDR block for VM subnet, subset of vNet2AddressPrefix address space"
+      }
+    },
+    "gateway1subnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.10.224/27",
+      "metadata": {
+        "description": "CIDR block for gateway subnet, subset of vNet1AddressPrefix address space"
+      }
+    },
+    "gateway2subnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.20.224/27",
+      "metadata": {
+        "description": "CIDR block for gateway subnet, subset of vNet2AddressPrefix address space"
+      }
+    },
+    "gateway1PublicIP1Name": {
+      "type": "string",
+      "defaultValue": "vpnGw1IP1",
+      "metadata": {
+        "description": "Arbitrary name for public IP1 resource used for the new azure gateway1"
+      }
+    },
+    "gateway1PublicIP2Name": {
+      "type": "string",
+      "defaultValue": "vpnGw1IP2",
+      "metadata": {
+        "description": "Arbitrary name for public IP2 resource used for the new azure gateway1"
+      }
+    },
+    "gateway2PublicIP1Name": {
+      "type": "string",
+      "defaultValue": "vpnGw2IP1",
+      "metadata": {
+        "description": "Arbitrary name for public IP1 resource used for the new azure gateway2"
+      }
+    },
+    "gateway2PublicIP2Name": {
+      "type": "string",
+      "defaultValue": "vpnGw2IP2",
+      "metadata": {
+        "description": "Arbitrary name for public IP2 resource used for the new azure gateway2"
+      }
+    },
+    "gateway1Name": {
+      "type": "string",
+      "defaultValue": "vpnGw1",
+      "metadata": {
+        "description": "Arbitrary name for the new gateway"
+      }
+    },
+    "gateway2Name": {
+      "type": "string",
+      "defaultValue": "vpnGw2",
+      "metadata": {
+        "description": "Arbitrary name for the new gateway"
+      }
+    },
+    "gatewaySku": {
+      "type": "string",
+      "defaultValue": "VpnGw2AZ",
+      "metadata": {
+        "description": "The Sku of the Gateway"
+      }
+    },
+    "asnGtw1": {
+      "type": "int",
+      "defaultValue": 65010,
+      "metadata": {
+        "description": "BGP Autonomous System Number of the VNet"
+      }
+    },
+    "asnGtw2": {
+      "type": "int",
+      "defaultValue": 65020,
+      "metadata": {
+        "description": "BGP Autonomous System Number of the remote VNet"
+      }
+    }
+  },
+  "variables": {
+    "location1": "[parameters('location1')]",
+    "location2": "[parameters('location2')]",
+    "vNet1Name": "[parameters('vNet1Name')]",
+    "vNet2Name": "[parameters('vNet2Name')]",
+    "subnet1Name": "[parameters('subnet1Name')]",
+    "subnet2Name": "[parameters('subnet2Name')]",
+    "vNet1AddressPrefix": "[parameters('vNet1AddressPrefix')]",
+    "vNet2AddressPrefix": "[parameters('vNet2AddressPrefix')]",
+    "subnet1Prefix": "[parameters('subnet1Prefix')]",
+    "subnet2Prefix": "[parameters('subnet2Prefix')]",
+    "gateway1SubnetPrefix": "[parameters('gateway1SubnetPrefix')]",
+    "gateway2SubnetPrefix": "[parameters('gateway2SubnetPrefix')]",
+    "gateway1subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet1Name'),'GatewaySubnet') ]",
+    "gateway2subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet2Name'),'GatewaySubnet') ]",
+    "gateway1Name": "[parameters('gateway1Name')]",
+    "gateway2Name": "[parameters('gateway2Name')]",
+    "gateway1PublicIP1Name": "[parameters('gateway1PublicIP1Name')]",
+    "gateway1PublicIP2Name": "[parameters('gateway1PublicIP2Name')]",
+    "gateway2PublicIP1Name": "[parameters('gateway2PublicIP1Name')]",
+    "gateway2PublicIP2Name": "[parameters('gateway2PublicIP2Name')]",
+    "asnGtw1": "[parameters('asnGtw1')]",
+    "asnGtw2": "[parameters('asnGtw2')]",
+    
+  },
+  "resources": [],
+  "outputs": {
+    "gw1bgpIP1": {
+      "type": "string",
+      "value": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2023-11-01').bgpSettings.bgpPeeringAddress , ','))]",
+    },
+    "gw1bgpIP2": {
+      "type": "string",
+      "value": "[last(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2023-11-01').bgpSettings.bgpPeeringAddress , ','))]"
+    },
+    "gw1privIP1": {
+      "type": "string",
+      "value": "[ reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2023-11-01').ipConfigurations[0].properties.privateIPAddress ]"
+    },
+    "gw1privIP2": {
+      "type": "string",
+      "value": "[ reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2023-11-01').ipConfigurations[1].properties.privateIPAddress ]"
+    },
+    "gw2bgpIP1": {
+      "type": "string",
+      "value": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2023-11-01').bgpSettings.bgpPeeringAddress , ','))]",
+    },
+    "gw2bgpIP2": {
+      "type": "string",
+      "value": "[last(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2023-11-01').bgpSettings.bgpPeeringAddress , ','))]"
+    },
+    "gw2privIP1": {
+      "type": "string",
+      "value": "[ reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2023-11-01').ipConfigurations[0].properties.privateIPAddress ]"
+    },
+    "gw2privIP2": {
+      "type": "string",
+      "value": "[ reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway2Name')),'2023-11-01').ipConfigurations[1].properties.privateIPAddress ]"
+    }
+  }
+}

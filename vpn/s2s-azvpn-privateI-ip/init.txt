@@ -1,0 +1,9 @@
+subscriptionName = AzDev
+ResourceGroupName = vpn-s2s-0000
+location1 = uksouth
+location2 = uksouth
+location99 = uksouth
+adminUsername = ADMINISTRATOR_USERNAME
+adminPassword = ADMINISTRATOR_PASSWORD
+
+

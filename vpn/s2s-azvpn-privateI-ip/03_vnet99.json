@@ -1,0 +1,382 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "location99": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "vNet99Name": {
+            "type": "string",
+            "defaultValue": "vnet99",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet99AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.99.0/24",
+            "metadata": {
+                "description": "CIDR block representing the address space of the Azure VNet"
+            }
+        },
+        "subnet99Name": {
+            "type": "string",
+            "defaultValue": "subnet99",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Subnet"
+            }
+        },
+        "subnet99Prefix": {
+            "type": "string",
+            "defaultValue": "10.0.99.0/25",
+            "metadata": {
+                "description": "CIDR block for VM subnet, subset of vNet1AddressPrefix address space"
+            }
+        },
+        "vNet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet2Name": {
+            "type": "string",
+            "defaultValue": "vnet2",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vm99Name": {
+            "type": "string",
+            "defaultValue": "vm99",
+            "metadata": {
+                "description": "Name of the sample VM to create"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for sample VM"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "User password for sample VM"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VM"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B2s",
+            "metadata": {
+                "description": "Size of the Virtual Machine."
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "location99": "[parameters('location99')]",
+        "vNet99Name": "[parameters('vNet99Name')]",
+        "vNet99AddressPrefix": "[parameters('vNet99AddressPrefix')]",
+        "subnet99Name": "[parameters('subnet99Name')]",
+        "subnet99Prefix": "[parameters('subnet99Prefix')]",
+        "vNet1Name": "[parameters('vNet1Name')]",
+        "vNet2Name": "[parameters('vNet2Name')]",
+        "vnetPeeringArray": [
+            {
+                "vnet1Name": "[variables('vNet1Name')]",
+                "vnet1Location": "[variables('location1')]",
+                "vnet2Name": "[variables('vNet99Name')]",
+                "vnet2Location": "[variables('location99')]",
+                "peeringName1": "[concat(variables('vNet1Name'),'To',variables('vNet99Name'))]",
+                "peeringName2": "[concat(variables('vNet99Name'),'To',variables('vNet1Name'))]",
+                "vnet1allowVirtualNetworkAccess": true,
+                "vnet1allowForwardedTraffic": true,
+                "vnet1allowGatewayTransit": true,
+                "vnet1useRemoteGateways": false,
+                "vnet2allowVirtualNetworkAccess": true,
+                "vnet2allowForwardedTraffic": true,
+                "vnet2allowGatewayTransit": false,
+                "vnet2useRemoteGateways": false
+            },
+            {
+                "vnet1Name": "[variables('vNet2Name')]",
+                "vnet1Location": "[variables('location2')]",
+                "vnet2Name": "[variables('vNet99Name')]",
+                "vnet2Location": "[variables('location99')]",
+                "peeringName1": "[concat(variables('vNet2Name'),'To',variables('vNet99Name'))]",
+                "peeringName2": "[concat(variables('vNet99Name'),'To',variables('vNet2Name'))]",
+                "vnet1allowVirtualNetworkAccess": true,
+                "vnet1allowForwardedTraffic": true,
+                "vnet1allowGatewayTransit": true,
+                "vnet1useRemoteGateways": false,
+                "vnet2allowVirtualNetworkAccess": true,
+                "vnet2allowForwardedTraffic": true,
+                "vnet2allowGatewayTransit": false,
+                "vnet2useRemoteGateways": false
+            }
+        ],
+        "vnetPeeringCount": "[length(variables('vnetPeeringArray'))]",
+
+        "vm99Name": "[parameters('vm99Name')]",
+        "vm99nsg": "[concat(variables('vm99Name'),'-nsg')]",
+        "nic99Name": "[concat(variables('vm99Name'), '-nic')]",
+        "vm99PublicIPName": "[concat(variables('vm99Name'), '-pubIP')]",
+        "vm99PrivIP": "10.0.99.99",
+        "publisher": "canonical",
+        "offer": "ubuntu-24_04-lts",
+        "sku": "server",
+        "version": "latest",
+        "vmSize": "[parameters('vmSize')]",
+        "storageAccountType": "[parameters('storageAccountType')]",
+        "linuxUpdate": "sudo apt update",
+        "linuxIPForwarding": "sed -i -e '$a\\net.ipv4.ip_forward = 1' /etc/sysctl.conf && sysctl -p ",
+        "linuxCommandToExecute": "[concat( 'sleep 1m', ' &&', variables('linuxUpdate'), ' && ', variables('linuxIPForwarding') )]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vNet99Name')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location99')]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vNet99AddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet99Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet99Prefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetPeeringArray')[copyIndex()].vnet1Name,'/',variables('vnetPeeringArray')[copyIndex()].peeringName1)]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vnetPeeringArray')[copyIndex()].vnet1Location]",
+            "comments": "This is the peering from vnet1 to vnet2",
+            "copy": {
+                "name": "vnetPeeringCopy1",
+                "count": "[variables('vnetPeeringCount')]"
+            },
+            "dependsOn": [
+                // "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet1Name)]",
+                //  "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet2Name)]"
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet99Name'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": "[variables('vnetPeeringArray')[copyIndex()].vnet1allowVirtualNetworkAccess]",
+                "allowForwardedTraffic": "[variables('vnetPeeringArray')[copyIndex()].vnet1allowForwardedTraffic]",
+                "allowGatewayTransit": "[variables('vnetPeeringArray')[copyIndex()].vnet1allowGatewayTransit]",
+                "useRemoteGateways": "[variables('vnetPeeringArray')[copyIndex()].vnet1useRemoteGateways]",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnetPeeringArray')[copyIndex()].vnet2Name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetPeeringArray')[copyIndex()].vnet2Name,'/',variables('vnetPeeringArray')[copyIndex()].peeringName2)]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vnetPeeringArray')[copyIndex()].vnet2Location]",
+            "comments": "This is the peering from vnet2 to vnet1",
+            "copy": {
+                "name": "vnetPeeringCopy2",
+                "count": "[variables('vnetPeeringCount')]"
+            },
+            "dependsOn": [
+                // "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet1Name)]",
+                // "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetPeeringArray')[copyIndex()].vnet2Name)]"
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('vNet99Name'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": "[variables('vnetPeeringArray')[copyIndex()].vnet2allowVirtualNetworkAccess]",
+                "allowForwardedTraffic": "[variables('vnetPeeringArray')[copyIndex()].vnet2allowForwardedTraffic]",
+                "allowGatewayTransit": "[variables('vnetPeeringArray')[copyIndex()].vnet2allowGatewayTransit]",
+                "useRemoteGateways": "[variables('vnetPeeringArray')[copyIndex()].vnet2useRemoteGateways]",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId( 'Microsoft.Network/virtualNetworks', variables('vnetPeeringArray')[copyIndex()].vnet1Name)]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vm99PublicIPName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location99')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "apiVersion": "2023-11-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('vm99nsg')]",
+            "location": "[variables('location99')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "RDP-rule",
+                        "properties": {
+                            "description": "allow RDP",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 510,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nic99Name')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location99')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vm99PublicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet99Name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vm99PrivIP')]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vm99PublicIPName'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vNet99Name'), variables('subnet99Name') )]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vm99Name')]",
+            "apiVersion": "2023-03-01",
+            "location": "[variables('location99')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nic99Name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vm99Name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('publisher')]",
+                        "offer": "[variables('offer')]",
+                        "sku": "[variables('SKU')]",
+                        "version": "[variables('version')]"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vm99Name'),'-OSdisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nic99Name'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vm99Name'), '/', 'installcustomscript')]",
+            "apiVersion": "2024-03-01",
+            "comments": "custom script extension for ubuntu",
+            "location": "[variables('location99')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vm99Name') )]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('linuxCommandToExecute')]"
+                }
+            }
+        }
+    ]
+}
