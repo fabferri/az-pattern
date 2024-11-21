@@ -35,6 +35,8 @@
   - [Single ARM template to create Site-to-Site VPN between two VPN Gateways](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip) [date: 11-02-2024]
   - [Connection between two VNets through site-to-site VPN with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-NAT)
   - [Azure ARM templates to create site-to-site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
+  - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-privateI-ip) [date: 21-11-2024]
+
 - Azure P2S VPN
   - [P2S VPN - authetication with digital certificates](https://github.com/fabferri/az-pattern/tree/master/vpn/p2s) [date: 15-04-2024]
 - ExpressRoute 
