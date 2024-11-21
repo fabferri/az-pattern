@@ -12,7 +12,7 @@ editor="fabferri"/>
    ms.topic="article"
    ms.tgt_pltfrm="Azure networking"
    ms.workload="VPN Gateway"
-   ms.date="21/11/2023"
+   ms.date="21/11/2024"
    ms.author="fabferri" />
 
 # Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses
@@ -42,7 +42,7 @@ To enable Site-to-Site tunnels through the private IPs of the VPN Gateway, the f
 - `03_vnet99.json`: ARM template to create vnet99 and the two vnet peering: vnet1-vnet99 and vnet2-vnet99
 - `03_vnet99.ps1`: powershell script to run the ARM template **03_vnet99.json** 
 - `collect-priv-ip.json`: ARM template to collect private IP addresses and BGP IP addresses of the vpngw1 and vpngw2. the ARM template do not make any deployment
-* `collect-priv-ip.ps1`: powershell script to run the ARM template **collect-priv-ip.json**
+- `collect-priv-ip.ps1`: powershell script to run the ARM template **collect-priv-ip.json**
 
 > [!NOTE]
 >
@@ -68,7 +68,7 @@ This property is also shown in the Azure portal:
 [![2]][2]
 
 > [!NOTE]
-> When setting up the Site-to-Site tunnels between **vpnGw1** and **vpnGw2**, the private IPs of the VPN Gateways are used. However, Azure VPN Gateways require the association of public IPs to communicate with the VPN control plane.<br>
+> When setting up the Site-to-Site tunnels between **vpnGw1** and **vpnGw2**, the private IPs of the VPN Gateways are used. However, Azure VPN Gateways require as mandatory the definition of public IPs to communicate with the VPN control plane.<br>
 >
 
 
@@ -163,7 +163,7 @@ root@vm99:~# tcpdump -i eth0 net 10.0.10.0/24 or net 10.0.20.0/24
 ```
 
 `Tags: Azure VPN, Site-to-Site VPN` <br>
-`date: 21-11-2023` <br>
+`date: 21-11-2024` <br>
 
 <!--Image References-->
 
