@@ -1,0 +1,251 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "defaultValue": "eastus",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "vNet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "vNet2Name": {
+            "type": "string",
+            "defaultValue": "vnet2",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network"
+            }
+        },
+        "erGateway1Name": {
+            "type": "string",
+            "defaultValue": "SEA-Cust35-ergw1",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway"
+            }
+        },
+        "erGateway2Name": {
+            "type": "string",
+            "defaultValue": "SEA-Cust35-ergw2",
+            "metadata": {
+                "description": "name of the ExpressRoute Gateway"
+            }
+        },
+        "erGatewaySku": {
+            "type": "string",
+            "defaultValue": "ErGw1AZ",
+            "allowedValues": [
+                "ErGw1AZ",
+                "ErGw2AZ",
+                "ErGw3AZ"
+            ],
+            "metadata": {
+                "description": "ExpressRoute Gateway SKU"
+            }
+        },
+        "erSubscriptionId": {
+            "type": "string",
+            "defaultValue": "SUBSCRIPTION_ID_EXPRESSROUTE_CIRCUIT",
+            "metadata": {
+                "description": "subscription Id where is deployed the ExpressRoute circuit"
+            }
+        },
+        "erResourceGroup": {
+            "type": "string",
+            "defaultValue": "SEA-Cust35",
+            "metadata": {
+                "description": "Resource Group where is deployed the ExpressRoute circuit"
+            }
+        },
+        "erCircuitName": {
+            "type": "string",
+            "defaultValue": "SEA-Cust35-ER",
+            "metadata": {
+                "description": "ExpressRoute circuit name"
+            }
+        },
+        "erCircuitAuthorizationKey1": {
+            "type": "string",
+            "defaultValue": "AUTHROIZATION_CODE_EXPRESSROUTE_CIRCUIT",
+            "metadata": {
+                "description": "ExpressRoute circuit authorization code"
+            }
+        },
+         "erCircuitAuthorizationKey2": {
+            "type": "string",
+            "defaultValue": "AUTHROIZATION_CODE_EXPRESSROUTE_CIRCUIT",
+            "metadata": {
+                "description": "ExpressRoute circuit authorization code"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "vNet1Name": "[parameters('vNet1Name')]",
+        "vNet2Name": "[parameters('vNet2Name')]",
+        "erGatewaySku": "[parameters('erGatewaySku')]",
+        "erGateway1Name": "[parameters('erGateway1Name')]",
+        "erGateway1PublicIPName": "[concat(parameters('erGateway1Name'),'-pubIP')]",
+        "erConnection1Name": "[concat(parameters('erCircuitName'),'-', variables('vnet1Name'),'-erconn')]",
+        "erGateway2Name": "[parameters('erGateway2Name')]",
+        "erGateway2PublicIPName": "[concat(parameters('erGateway2Name'),'-pubIP')]",
+        "erConnection2Name": "[concat(parameters('erCircuitName'),'-', variables('vnet2Name'),'-erconn')]",
+        "erCircuitId": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('erSubscriptionId'), parameters('erResourceGroup')), 'Microsoft.Network/expressRouteCircuits', parameters('erCircuitName')))]"
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('erGateway1PublicIPName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location1')]",
+            "comments": "Public IP address VMs",
+            "zones": [ "1", "2", "3" ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "ExpressRoute Gateway in the GatewaySubnet",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2023-11-01",
+            "name": "[variables('ergateway1Name')]",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('ergateway1PublicIPName'))]"
+                //    "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1Name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet1Name'), 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ergateway1PublicIPName'))]"
+                            }
+                        },
+                        "name": "ergw1IPconf"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "vpnType": "RouteBased",
+                "allowRemoteVnetTraffic": true,
+                "sku": {
+                    "name": "[variables('ergatewaySku')]",
+                    "tier": "[variables('ergatewaySku')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2023-11-01",
+            "name": "[variables('erConnection1Name')]",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('ergateway1Name')  )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('ergateway1Name')  )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[parameters('erCircuitAuthorizationKey1')]",
+                "peer": {
+                    "id": "[variables('erCircuitId')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('erGateway2PublicIPName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "comments": "Public IP address VMs",
+            "zones": [ "1", "2", "3" ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "ExpressRoute Gateway in the GatewaySubnet",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "apiVersion": "2023-11-01",
+            "name": "[variables('ergateway2Name')]",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('ergateway2PublicIPName'))]"
+                //    "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet1Name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet2Name'), 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ergateway2PublicIPName'))]"
+                            }
+                        },
+                        "name": "ergw1IPconf"
+                    }
+                ],
+                "gatewayType": "ExpressRoute",
+                "vpnType": "RouteBased",
+                "allowRemoteVnetTraffic": true,
+                "sku": {
+                    "name": "[variables('ergatewaySku')]",
+                    "tier": "[variables('ergatewaySku')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "apiVersion": "2023-11-01",
+            "name": "[variables('erConnection2Name')]",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('ergateway2Name')  )]",
+                "[resourceId('Microsoft.Network/connections', variables('erConnection1Name')  )]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('ergateway2Name')  )]"
+                },
+                "connectionType": "ExpressRoute",
+                "routingWeight": 0,
+                "authorizationKey": "[parameters('erCircuitAuthorizationKey2')]",
+                "peer": {
+                    "id": "[variables('erCircuitId')]"
+                }
+            }
+        }
+    ]
+}

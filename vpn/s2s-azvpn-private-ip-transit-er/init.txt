@@ -1,0 +1,15 @@
+subscriptionName = AzDev
+ResourceGroupName = s2s-vpn-priv-ip
+location1 = uksouth
+location2 = uksouth
+adminUsername = ADMINISTRATOR_USERNAME
+adminPassword = ADMINISTRATOR_PASSWORD
+erGateway1Name = ergw1
+erGateway2Name = ergw2
+erSubscriptionId = AZURE_SUBSCFIPTION_ID_OF_THE_EXPRESSROUTE_CIRCUIT
+erResourceGroup = SEA-Cust35
+erCircuitName = SEA-Cust35-ER
+erCircuitAuthorizationKey1 = AUTHORIZATION_KEY1_EXPRESSROUTE_CIRCUIT
+erCircuitAuthorizationKey2 = AUTHORIZATION_KEY2_EXPRESSROUTE_CIRCUIT
+
+
