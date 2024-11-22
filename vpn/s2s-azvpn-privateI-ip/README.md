@@ -161,6 +161,25 @@ The communication between the two Azure VPN Gateways can be verified by tcpdump 
 ```bash
 root@vm99:~# tcpdump -i eth0 net 10.0.10.0/24 or net 10.0.20.0/24
 ```
+A snippet of the tcpdump output:
+```console
+09:44:37.749790 IP 10.0.10.133 > 10.0.20.133: ESP(spi=0x2ecc8088,seq=0x36), length 120
+09:44:37.749815 IP 10.0.10.133 > 10.0.20.133: ESP(spi=0x2ecc8088,seq=0x36), length 120
+09:44:37.751618 IP 10.0.20.132 > 10.0.10.133: ESP(spi=0x01f9e3f2,seq=0x30), length 120
+09:44:37.751632 IP 10.0.20.132 > 10.0.10.133: ESP(spi=0x01f9e3f2,seq=0x30), length 120
+09:44:38.750750 IP 10.0.10.133 > 10.0.20.133: ESP(spi=0x2ecc8088,seq=0x37), length 120
+09:44:38.750777 IP 10.0.10.133 > 10.0.20.133: ESP(spi=0x2ecc8088,seq=0x37), length 120
+09:44:38.752817 IP 10.0.20.132 > 10.0.10.133: ESP(spi=0x01f9e3f2,seq=0x31), length 120
+09:44:38.752838 IP 10.0.20.132 > 10.0.10.133: ESP(spi=0x01f9e3f2,seq=0x31), length 120
+09:44:39.282707 IP 10.0.20.132.isakmp > 10.0.10.133.isakmp: isakmp: child_sa  inf2
+09:44:39.282741 IP 10.0.20.132.isakmp > 10.0.10.133.isakmp: isakmp: child_sa  inf2
+09:44:39.283466 IP 10.0.10.133.isakmp > 10.0.20.132.isakmp: isakmp: child_sa  inf2[IR]
+09:44:39.283485 IP 10.0.10.133.isakmp > 10.0.20.132.isakmp: isakmp: child_sa  inf2[IR]
+09:44:39.751668 IP 10.0.10.133 > 10.0.20.133: ESP(spi=0x2ecc8088,seq=0x38), length 120
+09:44:39.751702 IP 10.0.10.133 > 10.0.20.133: ESP(spi=0x2ecc8088,seq=0x38), length 120
+```
+
+
 
 `Tags: Azure VPN, Site-to-Site VPN` <br>
 `date: 21-11-2024` <br>
