@@ -37,9 +37,11 @@
   - [Azure ARM templates to create site-to-site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
   - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-vnetpeering) [date: 21-11-2024]
   - [Site-to-Site VPN between Azure VPN Gateways with transit through ExpressRoute private peering](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-er) [date: 22-11-2024]
+  - [Multiple VNet-to-VNet connections with VPN Gateways in a Partial Mesh configuration](https://github.com/fabferri/az-pattern/tree/master/vpn/vpn-vnet-2-vnet) [date: 25-11-2024]
 
 - Azure P2S VPN
   - [P2S VPN - authetication with digital certificates](https://github.com/fabferri/az-pattern/tree/master/vpn/p2s) [date: 15-04-2024]
+
 - ExpressRoute 
   - [ExpressRoute configurations](https://github.com/fabferri/az-pattern/tree/master/expressroute)
 
@@ -71,9 +73,11 @@
 - Azure Virtual Network Manager
   - [AVNM with hub-spoke-static membership](https://github.com/fabferri/az-pattern/tree/master/azure-virtual-network-manager/hub-spoke-static-membership-01) [date: 05-05-2024]
   - [AVNM with hub-spoke-dynamic membership](https://github.com/fabferri/az-pattern/tree/master/azure-virtual-network-manager/hub-spoke-dynamic-membership-01) [date: 06-05-2024]
+
 - Managed Service Identity
   - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/managed-identity/system-identity-access-to-storage) [date: 29-05-2022]
   - [User-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/managed-identity/user-identity-access-to-storage) [date: 28-05-2024]
+
 - [Azure Virtual Datacenter deployment through ARM templates](https://github.com/fabferri/az-pattern/tree/master/virtual-datacenter) [date: 24-05-23]
 - [System-assigned managed identity to access to Azure Storage](https://github.com/fabferri/az-pattern/tree/master/vm-msi) [date: 29-05-2022]
 - [Azure NetApp Files service](https://github.com/fabferri/az-pattern/tree/master/anf) [date: 22-09-2022]
