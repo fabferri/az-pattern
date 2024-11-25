@@ -1,0 +1,13 @@
+subscriptionName = "AzDev"
+ResourceGroupName = "s2s-partialmesh"
+location1 = "uksouth"
+location2 = "uksouth"
+location3 = "uksouth"
+location4 = "uksouth"
+location5 = "uksouth"
+location6 = "uksouth"
+location7 = "uksouth"
+adminUsername = "ADMINISTRATOR_USERNAME"
+adminPassword = "ADMINISTRATOR_PASSWORD"
+
+

@@ -2,49 +2,49 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "azureRegion1": {
+        "location1": {
             "type": "string",
             "defaultValue": "eastus",
             "metadata": {
                 "description": "azure region 1"
             }
         },
-        "azureRegion2": {
+        "location2": {
             "type": "string",
             "defaultValue": "eastus2",
             "metadata": {
                 "description": "azure region 2"
             }
         },
-        "azureRegion3": {
+        "location3": {
             "type": "string",
             "defaultValue": "northeurope",
             "metadata": {
                 "description": "azure region 3"
             }
         },
-        "azureRegion4": {
+        "location4": {
             "type": "string",
             "defaultValue": "westeurope",
             "metadata": {
                 "description": "azure region 4"
             }
         },
-        "azureRegion5": {
+        "location5": {
             "type": "string",
             "defaultValue": "centralus",
             "metadata": {
                 "description": "azure region 5"
             }
         },
-        "azureRegion6": {
+        "location6": {
             "type": "string",
             "defaultValue": "southcentralus",
             "metadata": {
                 "description": "azure region6"
             }
         },
-        "azureRegion7": {
+        "location7": {
             "type": "string",
             "defaultValue": "northcentralus",
             "metadata": {
@@ -53,11 +53,12 @@
         },
         "gatewaySku": {
             "type": "string",
-            "defaultValue": "VpnGw1",
+            "defaultValue": "VpnGw2AZ",
             "allowedValues": [
-                "VpnGw1",
-                "VpnGw2",
-                "VpnGw3"
+                "VpnGw2AZ",
+                "VpnGw3AZ",
+                "VpnGw4AZ",
+                "VpnGw5AZ"
             ],
             "metadata": {
                 "description": "SKU VPN Gateway"
@@ -65,21 +66,19 @@
         },
         "sharedKey": {
             "type": "string",
-            "defaultValue": "myvpn00001",
+            "defaultValue": "[format('secr{0}', uniqueString(resourceGroup().id))]",
             "metadata": {
                 "description": "sharedkey VPN Gateway"
             }
         },
-        "adminUsername": 
-        {   "type": "string",
-            "defaultValue":"YOUR_VM_ADMIN_USERNAME",
+        "adminUsername": {
+            "type": "string",
             "metadata": {
                 "description": "admin username"
             }
         },
-        "adminPassword": 
-        {   "type": "securestring",
-            "defaultValue":"YOUR_VM_ADMIN_PASSWORD",
+        "adminPassword": {
+            "type": "securestring",
             "metadata": {
                 "description": "admin password"
             }
@@ -93,431 +92,512 @@
         }
     },
     "variables": {
-        "vNetArray": [
+        "vnetArray": [
             {
-                "location": "[parameters('azureRegion1')]",
-                "name": "vnet1",
-                "addressSpacePrefix": "10.0.1.0/24",
+                "vnetName": "vnet1",
+                "location": "[parameters('location1')]",
+                "addressPrefix": "10.0.1.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.1.0/25",
                 "gatewaySubnetPrefix": "10.0.1.224/27",
                 "gatewayName": "gtw-vnet1",
-                "gatewayPublicIPName": "gtw-vnet1-pip",
+                "gatewayPublicIP1Name": "gtw-vnet1-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet1-pip2",
                 "asn": 65001,
                 "gatewaySku": "[parameters('gatewaySku')]"
             },
             {
-                "location": "[parameters('azureRegion2')]",
-                "name": "vnet2",
-                "addressSpacePrefix": "10.0.2.0/24",
+                "vnetName": "vnet2",
+                "location": "[parameters('location2')]",
+                "addressPrefix": "10.0.2.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.2.0/25",
                 "gatewaySubnetPrefix": "10.0.2.224/27",
                 "gatewayName": "gtw-vnet2",
-                "gatewayPublicIPName": "gtw-vnet2-pip",
+                "gatewayPublicIP1Name": "gtw-vnet2-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet2-pip2",
                 "asn": 65002,
                 "gatewaySku": "[parameters('gatewaySku')]"
             },
             {
-                "location": "[parameters('azureRegion3')]",
-                "name": "vnet3",
-                "addressSpacePrefix": "10.0.3.0/24",
+                "vnetName": "vnet3",
+                "location": "[parameters('location3')]",
+                "addressPrefix": "10.0.3.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.3.0/25",
                 "gatewaySubnetPrefix": "10.0.3.224/27",
                 "gatewayName": "gtw-vnet3",
-                "gatewayPublicIPName": "gtw-vnet3-pip",
+                "gatewayPublicIP1Name": "gtw-vnet3-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet3-pip2",
                 "asn": 65003,
                 "gatewaySku": "[parameters('gatewaySku')]"
             },
             {
-                "location": "[parameters('azureRegion4')]",
-                "name": "vnet4",
-                "addressSpacePrefix": "10.0.4.0/24",
+                "vnetName": "vnet4",
+                "location": "[parameters('location4')]",
+                "addressPrefix": "10.0.4.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.4.0/25",
                 "gatewaySubnetPrefix": "10.0.4.224/27",
                 "gatewayName": "gtw-vnet4",
-                "gatewayPublicIPName": "gtw-vnet4-pip",
+                "gatewayPublicIP1Name": "gtw-vnet4-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet4-pip2",
                 "asn": 65004,
                 "gatewaySku": "[parameters('gatewaySku')]"
             },
             {
-                "location": "[parameters('azureRegion5')]",
-                "name": "vnet5",
-                "addressSpacePrefix": "10.0.5.0/24",
+                "vnetName": "vnet5",
+                "location": "[parameters('location5')]",
+                "addressPrefix": "10.0.5.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.5.0/25",
                 "gatewaySubnetPrefix": "10.0.5.224/27",
                 "gatewayName": "gtw-vnet5",
-                "gatewayPublicIPName": "gtw-vnet5-pip",
+                "gatewayPublicIP1Name": "gtw-vnet5-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet5-pip2",
                 "asn": 65005,
                 "gatewaySku": "[parameters('gatewaySku')]"
             },
             {
-                "location": "[parameters('azureRegion6')]",
-                "name": "vnet6",
-                "addressSpacePrefix": "10.0.6.0/24",
+                "vnetName": "vnet6",
+                "location": "[parameters('location6')]",
+                "addressPrefix": "10.0.6.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.6.0/25",
                 "gatewaySubnetPrefix": "10.0.6.224/27",
                 "gatewayName": "gtw-vnet6",
-                "gatewayPublicIPName": "gtw-vnet6-pip",
+                "gatewayPublicIP1Name": "gtw-vnet6-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet6-pip2",
                 "asn": 65006,
                 "gatewaySku": "[parameters('gatewaySku')]"
             },
             {
-                "location": "[parameters('azureRegion7')]",
-                "name": "vnet7",
-                "addressSpacePrefix": "10.0.7.0/24",
+                "vnetName": "vnet7",
+                "location": "[parameters('location7')]",
+                "addressPrefix": "10.0.7.0/24",
                 "subnetName": "subnet1",
                 "subnetPrefix": "10.0.7.0/25",
                 "gatewaySubnetPrefix": "10.0.7.224/27",
                 "gatewayName": "gtw-vnet7",
-                "gatewayPublicIPName": "gtw-vnet7-pip",
+                "gatewayPublicIP1Name": "gtw-vnet7-pip1",
+                "gatewayPublicIP2Name": "gtw-vnet7-pip2",
                 "asn": 65007,
                 "gatewaySku": "[parameters('gatewaySku')]"
             }
         ],
-        "vpnConnectionArray":[
+        "vpnConnectionArray": [
             {
-                "gatewayName1":"[variables('vNetArray')[0].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[1].gatewayName]",
-                "location": "[variables('vNetArray')[0].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[0].name,'-',variables('vNetArray')[1].name)]"
+                "gatewayName1": "[variables('vnetArray')[0].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[1].gatewayName]",
+                "location": "[variables('vnetArray')[0].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[0].vnetName,'-',variables('vnetArray')[1].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[1].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[0].gatewayName]",
-                "location": "[variables('vNetArray')[1].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[1].name,'-',variables('vNetArray')[0].name)]"
-            },
-            
-            {
-                "gatewayName1":"[variables('vNetArray')[0].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[2].gatewayName]",
-                "location": "[variables('vNetArray')[0].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[0].name,'-',variables('vNetArray')[2].name)]"
-            },
-            {
-                "gatewayName1":"[variables('vNetArray')[2].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[0].gatewayName]",
-                "location": "[variables('vNetArray')[2].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[2].name,'-',variables('vNetArray')[0].name)]"
+                "gatewayName1": "[variables('vnetArray')[1].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[0].gatewayName]",
+                "location": "[variables('vnetArray')[1].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[1].vnetName,'-',variables('vnetArray')[0].vnetName)]"
             },
 
             {
-                "gatewayName1":"[variables('vNetArray')[1].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[2].gatewayName]",
-                "location": "[variables('vNetArray')[1].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[1].name,'-',variables('vNetArray')[2].name)]"
+                "gatewayName1": "[variables('vnetArray')[0].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[2].gatewayName]",
+                "location": "[variables('vnetArray')[0].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[0].vnetName,'-',variables('vnetArray')[2].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[2].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[1].gatewayName]",
-                "location": "[variables('vNetArray')[2].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[2].name,'-',variables('vNetArray')[1].name)]"
+                "gatewayName1": "[variables('vnetArray')[2].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[0].gatewayName]",
+                "location": "[variables('vnetArray')[2].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[2].vnetName,'-',variables('vnetArray')[0].vnetName)]"
             },
-            
+
             {
-                "gatewayName1":"[variables('vNetArray')[0].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[3].gatewayName]",
-                "location": "[variables('vNetArray')[0].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[0].name,'-',variables('vNetArray')[3].name)]"
-            },
-            {
-                "gatewayName1":"[variables('vNetArray')[3].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[0].gatewayName]",
-                "location": "[variables('vNetArray')[3].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[3].name,'-',variables('vNetArray')[0].name)]"
+                "gatewayName1": "[variables('vnetArray')[1].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[2].gatewayName]",
+                "location": "[variables('vnetArray')[1].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[1].vnetName,'-',variables('vnetArray')[2].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[1].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[3].gatewayName]",
-                "location": "[variables('vNetArray')[1].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[1].name,'-',variables('vNetArray')[3].name)]"
+                "gatewayName1": "[variables('vnetArray')[2].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[1].gatewayName]",
+                "location": "[variables('vnetArray')[2].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[2].vnetName,'-',variables('vnetArray')[1].vnetName)]"
+            },
+
+            {
+                "gatewayName1": "[variables('vnetArray')[0].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[3].gatewayName]",
+                "location": "[variables('vnetArray')[0].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[0].vnetName,'-',variables('vnetArray')[3].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[3].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[1].gatewayName]",
-                "location": "[variables('vNetArray')[3].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[3].name,'-',variables('vNetArray')[1].name)]"
-            },
-             
-            {
-                "gatewayName1":"[variables('vNetArray')[0].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[4].gatewayName]",
-                "location": "[variables('vNetArray')[0].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[0].name,'-',variables('vNetArray')[4].name)]"
+                "gatewayName1": "[variables('vnetArray')[3].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[0].gatewayName]",
+                "location": "[variables('vnetArray')[3].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[3].vnetName,'-',variables('vnetArray')[0].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[4].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[0].gatewayName]",
-                "location": "[variables('vNetArray')[4].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[4].name,'-',variables('vNetArray')[0].name)]"
+                "gatewayName1": "[variables('vnetArray')[1].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[3].gatewayName]",
+                "location": "[variables('vnetArray')[1].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[1].vnetName,'-',variables('vnetArray')[3].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[1].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[4].gatewayName]",
-                "location": "[variables('vNetArray')[1].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[1].name,'-',variables('vNetArray')[4].name)]"
+                "gatewayName1": "[variables('vnetArray')[3].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[1].gatewayName]",
+                "location": "[variables('vnetArray')[3].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[3].vnetName,'-',variables('vnetArray')[1].vnetName)]"
+            },
+
+            {
+                "gatewayName1": "[variables('vnetArray')[0].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[4].gatewayName]",
+                "location": "[variables('vnetArray')[0].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[0].vnetName,'-',variables('vnetArray')[4].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[4].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[1].gatewayName]",
-                "location": "[variables('vNetArray')[4].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[4].name,'-',variables('vNetArray')[1].name)]"
-            },
-            
-            {
-                "gatewayName1":"[variables('vNetArray')[0].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[5].gatewayName]",
-                "location": "[variables('vNetArray')[0].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[0].name,'-',variables('vNetArray')[5].name)]"
+                "gatewayName1": "[variables('vnetArray')[4].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[0].gatewayName]",
+                "location": "[variables('vnetArray')[4].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[4].vnetName,'-',variables('vnetArray')[0].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[5].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[0].gatewayName]",
-                "location": "[variables('vNetArray')[5].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[5].name,'-',variables('vNetArray')[0].name)]"
+                "gatewayName1": "[variables('vnetArray')[1].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[4].gatewayName]",
+                "location": "[variables('vnetArray')[1].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[1].vnetName,'-',variables('vnetArray')[4].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[1].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[5].gatewayName]",
-                "location": "[variables('vNetArray')[1].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[1].name,'-',variables('vNetArray')[5].name)]"
+                "gatewayName1": "[variables('vnetArray')[4].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[1].gatewayName]",
+                "location": "[variables('vnetArray')[4].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[4].vnetName,'-',variables('vnetArray')[1].vnetName)]"
+            },
+
+            {
+                "gatewayName1": "[variables('vnetArray')[0].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[5].gatewayName]",
+                "location": "[variables('vnetArray')[0].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[0].vnetName,'-',variables('vnetArray')[5].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[5].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[1].gatewayName]",
-                "location": "[variables('vNetArray')[5].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[5].name,'-',variables('vNetArray')[1].name)]"
-            },
-            
-            {
-                "gatewayName1":"[variables('vNetArray')[0].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[6].gatewayName]",
-                "location": "[variables('vNetArray')[0].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[0].name,'-',variables('vNetArray')[6].name)]"
+                "gatewayName1": "[variables('vnetArray')[5].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[0].gatewayName]",
+                "location": "[variables('vnetArray')[5].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[5].vnetName,'-',variables('vnetArray')[0].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[6].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[0].gatewayName]",
-                "location": "[variables('vNetArray')[6].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[6].name,'-',variables('vNetArray')[0].name)]"
+                "gatewayName1": "[variables('vnetArray')[1].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[5].gatewayName]",
+                "location": "[variables('vnetArray')[1].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[1].vnetName,'-',variables('vnetArray')[5].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[1].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[6].gatewayName]",
-                "location": "[variables('vNetArray')[1].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[1].name,'-',variables('vNetArray')[6].name)]"
+                "gatewayName1": "[variables('vnetArray')[5].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[1].gatewayName]",
+                "location": "[variables('vnetArray')[5].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[5].vnetName,'-',variables('vnetArray')[1].vnetName)]"
+            },
+
+            {
+                "gatewayName1": "[variables('vnetArray')[0].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[6].gatewayName]",
+                "location": "[variables('vnetArray')[0].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[0].vnetName,'-',variables('vnetArray')[6].vnetName)]"
             },
             {
-                "gatewayName1":"[variables('vNetArray')[6].gatewayName]",
-                "gatewayName2":"[variables('vNetArray')[1].gatewayName]",
-                "location": "[variables('vNetArray')[6].location]",
-                "vpnConnectionName": "[concat('conn-',variables('vNetArray')[6].name,'-',variables('vNetArray')[1].name)]"
+                "gatewayName1": "[variables('vnetArray')[6].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[0].gatewayName]",
+                "location": "[variables('vnetArray')[6].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[6].vnetName,'-',variables('vnetArray')[0].vnetName)]"
+            },
+            {
+                "gatewayName1": "[variables('vnetArray')[1].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[6].gatewayName]",
+                "location": "[variables('vnetArray')[1].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[1].vnetName,'-',variables('vnetArray')[6].vnetName)]"
+            },
+            {
+                "gatewayName1": "[variables('vnetArray')[6].gatewayName]",
+                "gatewayName2": "[variables('vnetArray')[1].gatewayName]",
+                "location": "[variables('vnetArray')[6].location]",
+                "vpnConnectionName": "[concat('conn-',variables('vnetArray')[6].vnetName,'-',variables('vnetArray')[1].vnetName)]"
             }
         ],
-
+        "ubuntu": {
+            "publisher": "canonical",
+            "offer": "ubuntu-24_04-lts",
+            "sku": "server",
+            "version": "latest"
+        },
         "adminUsername": "[parameters('adminUsername')]",
         "adminPassword": "[parameters('adminPassword')]",
+        "vm1Name": "vm1",
+        "vm2Name": "vm2",
+        "vm3Name": "vm3",
+        "vm4Name": "vm4",
+        "vm5Name": "vm5",
+        "vm6Name": "vm6",
+        "vm7Name": "vm7",
+        "vm1PrivIP": "10.0.1.10",
+        "vm2PrivIP": "10.0.2.10",
+        "vm3PrivIP": "10.0.3.10",
+        "vm4PrivIP": "10.0.4.10",
+        "vm5PrivIP": "10.0.5.10",
+        "vm6PrivIP": "10.0.6.10",
+        "vm7PrivIP": "10.0.7.10",
+
         "vmarray": [
             {
-                "location": "[variables('vNetArray')[0].location]", 
-                "vmName": "vm1",
+                "location": "[variables('vnetArray')[0].location]",
+                "vmName": "[variables('vm1Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[0].name]",
-                "SubnetName": "[variables('vNetArray')[0].subnetName]",
-                "privateIP": "10.0.1.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[0].vnetName]",
+                "subnetName": "[variables('vnetArray')[0].subnetName]",
+                "nicName": "[concat(variables('vm1Name'),'-NIC')]",
+                "privateIP": "[variables('vm1PrivIP')]",
+                "publicIPName": "[concat(variables('vm1Name'),'-pubIP')]",
                 "ipforwarding": true
             },
             {
-                "location": "[variables('vNetArray')[1].location]",
-                "vmName": "vm2",
+                "location": "[variables('vnetArray')[1].location]",
+                "vmName": "[variables('vm2Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[1].name]",
-                "SubnetName": "[variables('vNetArray')[1].subnetName]",
-                "privateIP": "10.0.2.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[1].vnetName]",
+                "subnetName": "[variables('vnetArray')[1].subnetName]",
+                "nicName": "[concat(variables('vm2Name'),'-NIC')]",
+                "privateIP": "[variables('vm2PrivIP')]",
+                "publicIPName": "[concat(variables('vm2Name'),'-pubIP')]",
                 "ipforwarding": true
             },
             {
-                "location": "[variables('vNetArray')[2].location]",
-                "vmName": "vm3",
+                "location": "[variables('vnetArray')[2].location]",
+                "vmName": "[variables('vm3Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[2].name]",
-                "SubnetName": "[variables('vNetArray')[2].subnetName]",
-                "privateIP": "10.0.3.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[2].vnetName]",
+                "subnetName": "[variables('vnetArray')[2].subnetName]",
+                "nicName": "[concat(variables('vm3Name'),'-NIC')]",
+                "privateIP": "[variables('vm3PrivIP')]",
+                "publicIPName": "[concat(variables('vm3Name'),'-pubIP')]",
                 "ipforwarding": false
             },
             {
-                "location": "[variables('vNetArray')[3].location]",
-                "vmName": "vm4",
+                "location": "[variables('vnetArray')[3].location]",
+                "vmName": "[variables('vm4Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[3].name]",
-                "SubnetName": "[variables('vNetArray')[3].subnetName]",
-                "privateIP": "10.0.4.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[3].vnetName]",
+                "subnetName": "[variables('vnetArray')[3].subnetName]",
+                "nicName": "[concat(variables('vm4Name'),'-NIC')]",
+                "privateIP": "[variables('vm4PrivIP')]",
+                "publicIPName": "[concat(variables('vm4Name'),'-pubIP')]",
                 "ipforwarding": false
             },
             {
-                "location": "[variables('vNetArray')[4].location]",
-                "vmName": "vm5",
+                "location": "[variables('vnetArray')[4].location]",
+                "vmName": "[variables('vm5Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[4].name]",
-                "SubnetName": "[variables('vNetArray')[4].subnetName]",
-                "privateIP": "10.0.5.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[4].vnetName]",
+                "subnetName": "[variables('vnetArray')[4].subnetName]",
+                "nicName": "[concat(variables('vm5Name'),'-NIC')]",
+                "privateIP": "[variables('vm5PrivIP')]",
+                "publicIPName": "[concat(variables('vm5Name'),'-pubIP')]",
                 "ipforwarding": false
             },
             {
-                "location": "[variables('vNetArray')[5].location]",
-                "vmName": "vm6",
+                "location": "[variables('vnetArray')[5].location]",
+                "vmName": "[variables('vm6Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[5].name]",
-                "SubnetName": "[variables('vNetArray')[5].subnetName]",
-                "privateIP": "10.0.6.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[5].vnetName]",
+                "subnetName": "[variables('vnetArray')[5].subnetName]",
+                "nicName": "[concat(variables('vm6Name'),'-NIC')]",
+                "privateIP": "[variables('vm6PrivIP')]",
+                "publicIPName": "[concat(variables('vm6Name'),'-pubIP')]",
                 "ipforwarding": false
             },
             {
-                "location": "[variables('vNetArray')[6].location]",
-                "vmName": "vm7",
+                "location": "[variables('vnetArray')[6].location]",
+                "vmName": "[variables('vm7Name')]",
                 "vmSize": "[parameters('vmSize')]",
-                "imagePublisher": "openlogic",
-                "imageOffer": "CentOS",
-                "OSVersion": "7.4",
-                "VNetName": "[variables('vNetArray')[6].name]",
-                "SubnetName": "[variables('vNetArray')[6].subnetName]",
-                "privateIP": "10.0.7.10",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnetArray')[6].vnetName]",
+                "subnetName": "[variables('vnetArray')[6].subnetName]",
+                "nicName": "[concat(variables('vm7Name'),'-NIC')]",
+                "privateIP": "[variables('vm7PrivIP')]",
+                "publicIPName": "[concat(variables('vm7Name'),'-pubIP')]",
                 "ipforwarding": false
             }
         ],
-        "vNetArrayCount": "[length(variables('vNetArray'))]",
-        "vpnConnectionArrayCount" :"[length(variables('vpnConnectionArray'))]",
-        "vmCount": "[length(variables('vmArray'))]"
+        "vnetArrayCount": "[length(variables('vnetArray'))]",
+        "vpnConnectionArrayCount": "[length(variables('vpnConnectionArray'))]",
+        "vmArrayCount": "[length(variables('vmArray'))]"
     },
     "resources": [
         {
-            "apiVersion": "2018-01-01",
+            "comments": "Create Virtual Network",
             "type": "Microsoft.Network/virtualNetworks",
-            "name": "[variables('vNetArray')[copyIndex()].name]",
-            "location": "[variables('vNetArray')[copyIndex()].location]",
+            "name": "[variables('vnetArray')[copyIndex()].vnetName]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vnetArray')[copyIndex()].location]",
             "dependsOn": [],
-            "comments": "create VNets",
+
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[variables('vNetArray')[copyIndex()].addressSpacePrefix]"
+                        "[variables('vnetArray')[copyIndex()].addressPrefix]"
                     ]
                 },
                 "subnets": [
                     {
-                        "name": "[variables('vNetArray')[copyIndex()].subnetName]",
+                        "name": "[variables('vnetArray')[copyIndex()].subnetName]",
                         "properties": {
-                            "addressPrefix": "[variables('vNetArray')[copyIndex()].subnetPrefix]"
+                            "addressPrefix": "[variables('vnetArray')[copyIndex()].subnetPrefix]"
                         }
                     },
                     {
                         "name": "GatewaySubnet",
                         "properties": {
-                            "addressPrefix": "[variables('vNetArray')[copyIndex()].gatewaySubnetPrefix]"
+                            "addressPrefix": "[variables('vnetArray')[copyIndex()].gatewaySubnetPrefix]"
                         }
                     }
                 ]
             },
             "copy": {
                 "name": "vnetCopy",
-                "count": "[variables('vNetArrayCount')]"
+                "count": "[variables('vnetArrayCount')]"
             }
         },
-        //////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////
-        // public IP VPN Gateway
         {
-            "apiVersion": "2018-02-01",
+            "comments": "public IP1 for VPN Gateway",
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('vNetArray')[copyIndex()].gatewayPublicIPName]",  
-            "location":  "[variables('vNetArray')[copyIndex()].location]",
-            "comments": "This is the public IP for vNet Gateway",
+            "name": "[variables('vnetArray')[copyIndex()].gatewayPublicIP1Name]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vnetArray')[copyIndex()].location]",
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
             },
             "copy": {
-                "name": "vnetCopy",
-                "count": "[variables('vNetArrayCount')]"
+                "name": "pubIPCopy",
+                "count": "[variables('vnetArrayCount')]"
             }
         },
-
-        // VPN Gateway
         {
-            "apiVersion": "2018-02-01",
+            "comments": "public IP2 for VPN Gateway",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vnetArray')[copyIndex()].gatewayPublicIP2Name]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vnetArray')[copyIndex()].location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('vnetArrayCount')]"
+            }
+        },
+        {
+            "comments": "VPN Gateway",
             "type": "Microsoft.Network/virtualNetworkGateways",
-            "name": "[variables('vNetArray')[copyIndex()].gatewayName]", 
-            "location": "[variables('vNetArray')[copyIndex()].location]", 
+            "name": "[variables('vnetArray')[copyIndex()].gatewayName]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vnetArray')[copyIndex()].location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('vNetArray')[copyIndex()].gatewayPublicIPName)]", 
-                "[concat('Microsoft.Network/virtualNetworks/', variables('vNetArray')[copyIndex()].name)]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vnetArray')[copyIndex()].gatewayPublicIP1Name)]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vnetArray')[copyIndex()].gatewayPublicIP2Name)]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetArray')[copyIndex()].vnetName)]"
             ],
-            "comments": "This is the VPN Gateway for vNet",
             "properties": {
                 "ipConfigurations": [
                     {
+                        "name": "[concat('gtwConf1-', copyIndex())]",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNetArray')[copyIndex()].name, 'GatewaySubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetArray')[copyIndex()].vnetName, 'GatewaySubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vNetArray')[copyIndex()].gatewayPublicIPName)]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vnetArray')[copyIndex()].gatewayPublicIP1Name)]"
                             }
-                        },
-                        "name": "[concat('gtwConfig-', copyIndex())]"
+                        }
+                    },
+                    {
+                        "name": "[concat('gtwConf2-', copyIndex())]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetArray')[copyIndex()].vnetName, 'GatewaySubnet')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vnetArray')[copyIndex()].gatewayPublicIP2Name)]"
+                            }
+                        }
                     }
                 ],
                 "gatewayType": "Vpn",
                 "sku": {
-                    "name": "[variables('vNetArray')[copyIndex()].gatewaySku]",
-                    "tier": "[variables('vNetArray')[copyIndex()].gatewaySku]"
+                    "name": "[variables('vnetArray')[copyIndex()].gatewaySku]",
+                    "tier": "[variables('vnetArray')[copyIndex()].gatewaySku]"
                 },
                 "vpnType": "RouteBased",
-                "enableBgp": "true",
+                "enableBgp": true,
                 "bgpSettings": {
-                    "asn": "[variables('vNetArray')[copyIndex()].asn]"
-                }
+                    "asn": "[variables('vnetArray')[copyIndex()].asn]"
+                },
+                "activeActive": true,
+                "allowRemoteVnetTraffic": true
             },
             "copy": {
                 "name": "gtwCopy",
-                "count": "[variables('vNetArrayCount')]"
+                "count": "[variables('vnetArrayCount')]"
             }
         },
-
-        // Connections
         {
-            "apiVersion": "2018-02-01",
+            "comments": "VPN Connection between Gateway1 to Gateway2",
             "type": "Microsoft.Network/connections",
             "name": "[variables('vpnConnectionArray')[copyIndex()].vpnConnectionName]",
+            "apiVersion": "2023-11-01",
             "location": "[variables('vpnConnectionArray')[copyIndex()].location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vpnConnectionArray')[copyIndex()].gatewayName1)]",
-                "[concat('Microsoft.Network/virtualNetworkGateways/', variables('vpnConnectionArray')[copyIndex()].gatewayName2)]"
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vpnConnectionArray')[copyIndex()].gatewayName1)]",
+                "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vpnConnectionArray')[copyIndex()].gatewayName2)]"
             ],
-            "comments": "This is the VPN connection from Gateway 1 to Gateway 2",
             "properties": {
                 "virtualNetworkGateway1": {
                     "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('vpnConnectionArray')[copyIndex()].gatewayName1)]"
@@ -528,36 +608,41 @@
                 "connectionType": "Vnet2Vnet",
                 "routingWeight": 3,
                 "sharedKey": "[parameters('sharedKey')]",
-                "enableBGP": "true"
+                "enableBGP": true
             },
             "copy": {
-                "name": "gtwCopy",
+                "name": "gtwConn",
                 "count": "[variables('vpnConnectionArrayCount')]"
             }
         },
-        ///////////////////////////
-        // Public IP addresses VMs
         {
-            "apiVersion": "2016-03-30",
+            "comments": "public IP address VM",
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "apiVersion": "2023-11-01",
+            "name": "[variables('vmArray')[copyIndex()].publicIPName]",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "properties": {
-                "publicIPAllocationMethod": "Dynamic"
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
             },
             "copy": {
-                "name": "publicIpCopy",
-                "count": "[variables('vmCount')]"
+                "name": "VMpublicIpCopy",
+                "count": "[variables('vmArrayCount')]"
             }
         },
         {
-            "apiVersion": "2016-03-30",
+            "comments": "VM network interface",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )]",
+            "name": "[ variables('vmArray')[copyIndex()].nicName ]",
+            "apiVersion": "2023-11-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('vmArray')[copyIndex()].vmName,'-pubIP' )]",
-                "[concat(resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].VNetName))]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].publicIPName )]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName )]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -567,10 +652,10 @@
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmArray')[copyIndex()].publicIPName )]"
                             },
                             "subnet": {
-                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks',variables('vmArray')[copyIndex()].VNetName),'/subnets/', variables('vmArray')[copyIndex()].SubnetName)]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
                             }
                         }
                     }
@@ -579,16 +664,17 @@
             },
             "copy": {
                 "name": "nicCopy",
-                "count": "[variables('vmCount')]"
+                "count": "[variables('vmArrayCount')]"
             }
         },
         {
-            "apiVersion": "2017-03-30",
+            "comments": "Create VMs",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2023-03-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName,'-NIC')  )]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -601,26 +687,27 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "[variables('vmArray')[copyIndex()].imagePublisher]",
-                        "offer": "[variables('vmArray')[copyIndex()].imageOffer]",
-                        "sku": "[variables('vmArray')[copyIndex()].OSVersion]",
-                        "version": "latest"
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
                     },
                     "osDisk": {
-                        "createOption": "FromImage"
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite"
                     }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat( variables('vmArray')[copyIndex()].vmName,'-NIC' )  )]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
                         }
                     ]
                 }
             },
             "copy": {
-                "name": "nodeCopy",
-                "count": "[variables('vmCount')]"
+                "name": "vmCopy",
+                "count": "[variables('vmArrayCount')]"
             }
         }
     ]
