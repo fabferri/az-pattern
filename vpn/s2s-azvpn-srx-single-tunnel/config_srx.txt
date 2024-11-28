@@ -1,0 +1,93 @@
+# Set the IP addresses for vSRX Virtual Firewall interfaces.
+set interfaces ge-0/0/0 unit 0 family inet address 10.200.0.5/27
+set interfaces ge-0/0/1 unit 0 family inet address 10.200.0.50/27
+set interfaces st0 unit 0 family inet address 172.16.0.1/32
+
+# define the security zone a association of interfaces to security zones.
+set security zones security-zone untrust interfaces ge-0/0/0.0 host-inbound-traffic system-services ike
+set security zones security-zone untrust interfaces ge-0/0/0.0 host-inbound-traffic protocols bgp
+set security zones security-zone untrust interfaces st0.0 host-inbound-traffic system-services ping
+set security zones security-zone untrust interfaces st0.0 host-inbound-traffic protocols bgp
+
+# Set up the trust security zone.
+set security zones security-zone trust interfaces ge-0/0/1.0 host-inbound-traffic system-services all
+set security zones security-zone trust interfaces ge-0/0/1.0 host-inbound-traffic protocols all
+
+# Set security policy
+set security policies from-zone trust to-zone trust policy default-permit match source-address any
+set security policies from-zone trust to-zone trust policy default-permit match destination-address any
+set security policies from-zone trust to-zone trust policy default-permit match application any
+set security policies from-zone trust to-zone trust policy default-permit then permit
+
+set security policies from-zone trust to-zone untrust policy default-permit match source-address any
+set security policies from-zone trust to-zone untrust policy default-permit match destination-address any
+set security policies from-zone trust to-zone untrust policy default-permit match application any
+set security policies from-zone trust to-zone untrust policy default-permit then permit
+
+set security policies from-zone untrust to-zone trust policy default-permit match source-address any
+set security policies from-zone untrust to-zone trust policy default-permit match destination-address any
+set security policies from-zone untrust to-zone trust policy default-permit match application any
+set security policies from-zone untrust to-zone trust policy default-permit then permit
+
+
+#PHASE 1
+set security ike proposal VPN_AZURE_IKE_PROPOSAL authentication-method pre-shared-keys
+set security ike proposal VPN_AZURE_IKE_PROPOSAL dh-group group2
+set security ike proposal VPN_AZURE_IKE_PROPOSAL encryption-algorithm aes-256-cbc
+set security ike proposal VPN_AZURE_IKE_PROPOSAL authentication-algorithm sha-256
+set security ike proposal VPN_AZURE_IKE_PROPOSAL lifetime-seconds 28800
+set security ike policy VPN_AZURE_IKE_POLICY mode main
+set security ike policy VPN_AZURE_IKE_POLICY proposals VPN_AZURE_IKE_PROPOSAL
+set security ike policy VPN_AZURE_IKE_POLICY pre-shared-key ascii-text <SHARED_SECRET>
+set security ike gateway VPN_AZURE_IKE_GW ike-policy VPN_AZURE_IKE_POLICY
+set security ike gateway VPN_AZURE_IKE_GW address <AZURE_VPN_GATEWAY_PUBLIC_IP>
+set security ike gateway VPN_AZURE_IKE_GW dead-peer-detection
+set security ike gateway VPN_AZURE_IKE_GW local-identity inet <SRX_PUBLIC_IP_UNTRUSTED_INTERFACE>
+set security ike gateway VPN_AZURE_IKE_GW remote-identity inet <AZURE_VPN_GATEWAY_PUBLIC_IP>
+set security ike gateway VPN_AZURE_IKE_GW external-interface ge-0/0/0.0
+set security ike gateway VPN_AZURE_IKE_GW version v2-only
+
+#PHASE 2
+set security ipsec proposal VPN_AZURE_IPSEC_PROPOSAL protocol esp
+set security ipsec proposal VPN_AZURE_IPSEC_PROPOSAL authentication-algorithm hmac-sha1-96
+set security ipsec proposal VPN_AZURE_IPSEC_PROPOSAL encryption-algorithm aes-256-cbc
+set security ipsec proposal VPN_AZURE_IPSEC_PROPOSAL lifetime-seconds 28800
+set security ipsec policy VPN_AZURE_IPSEC_POLICY proposals VPN_AZURE_IPSEC_PROPOSAL
+set security ipsec vpn VPN_AZURE bind-interface st0.0
+set security ipsec vpn VPN_AZURE ike gateway VPN_AZURE_IKE_GW
+set security ipsec vpn VPN_AZURE ike ipsec-policy VPN_AZURE_IPSEC_POLICY
+set security ipsec vpn VPN_AZURE establish-tunnels immediately
+
+
+# Configure routing
+set routing-instances siteA-vr1 instance-type virtual-router
+set routing-instances siteA-vr1 interface ge-0/0/0.0
+set routing-instances siteA-vr1 interface ge-0/0/1.0
+set routing-instances siteA-vr1 interface st0.0
+
+#Routing Configurations to Reach remote BGP/tunnel ip
+set routing-instances siteA-vr1 routing-options static route 10.100.0.126/32 next-hop st0.0
+set routing-instances siteA-vr1 routing-options static route 10.200.0.96/27 next-hop 10.200.0.33
+set routing-instances siteA-vr1 routing-options static route 0.0.0.0/0 next-hop 10.200.0.1
+
+
+# Configure routing policy to redistribute direct connect networks and static routes. 
+# The name of routing policy in case is "send-direct" 
+set policy-options policy-statement send-direct term 1 from protocol direct
+set policy-options policy-statement send-direct term 1 then accept
+set policy-options policy-statement send-direct term 2 from protocol static
+set policy-options policy-statement send-direct term 2 from route-filter 10.200.0.96/27 orlonger
+set policy-options policy-statement send-direct term 2 then accept
+
+
+# BGP Configurations
+set routing-instances siteA-vr1 routing-options autonomous-system 65002
+set routing-instances siteA-vr1 routing-options router-id 172.16.0.1
+set routing-instances siteA-vr1 protocols bgp group azure type external
+set routing-instances siteA-vr1 protocols bgp group azure multihop ttl 50
+set routing-instances siteA-vr1 protocols bgp group azure export send-direct
+
+set routing-instances siteA-vr1 protocols bgp group azure peer-as 65001
+set routing-instances siteA-vr1 protocols bgp group azure neighbor 10.100.0.126
+set routing-instances siteA-vr1 protocols bgp local-address 172.16.0.1
+

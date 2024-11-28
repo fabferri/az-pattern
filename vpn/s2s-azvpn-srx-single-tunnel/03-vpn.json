@@ -1,0 +1,117 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "gw1",
+            "metadata": {
+                "description": "Name of the VPN Gateway"
+            }
+        },
+        "localGatewayName": {
+            "type": "string",
+            "defaultValue": "localNetGw",
+            "metadata": {
+                "description": "Arbitrary name for gateway resource representing VPN gateway1"
+            }
+        },
+        "connectionName": {
+            "type": "string",
+            "defaultValue": "[concat(parameters('gatewayName'),'-to-',parameters('srxName'))]",
+            "metadata": {
+                "description": "Arbitrary name for the new connection between Azure VNet and other network"
+            }
+        },
+        "sharedKey": {
+            "type": "string",
+            "defaultValue": "[format('secr{0}', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Shared key (PSK) for IPSec tunnel"
+            }
+        },
+        "srxName": {
+            "type": "string",
+            "defaultValue": "srx"
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "gatewayName": "[parameters('gatewayName')]",
+        "gatewayPublicIP1Name": "[concat(variables('gatewayName'), '-IP1')]",
+        "sharedKey": "[parameters('sharedKey')]",
+        "localGatewayName": "[parameters('localGatewayName')]",
+        "connectionName": "[parameters('connectionName')]",
+        "asnGtw1": 65001,
+        "asnGtw2": 65002,
+        "srxName": "[parameters('srxName')]",
+        "srx-addr-ge000": "[concat(variables('srxName'), '-ge-0-0-0')]",
+        "pipNameGe000": "[variables('srx-addr-ge000')]",
+        "srx_vti": "172.16.0.1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/localNetworkGateways",
+            "name": "[variables('localGatewayName')]",
+            "apiVersion": "2023-11-01",
+            "comments": "public IP of remote IPSec peer",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+             //   "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gatewayName'))]"
+            ],
+            "properties": {
+                "localNetworkAddressSpace": {
+                    "addressPrefixes": []
+                },
+                "gatewayIpAddress": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('pipNameGe000')),'2023-11-01').ipAddress]",
+                "bgpSettings": {
+                    "asn": "[variables('asnGtw2')]",
+                    "bgpPeeringAddress": "[variables('srx_vti')]",
+                    "peerWeight": 0
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/connections",
+            "name": "[variables('connectionName')]",
+            "apiVersion": "2023-11-01",
+            "comments": "VPN connection between VPN Gateway and SRX",
+            "location": "[variables('location1')]",
+            "dependsOn": [
+            //    "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('gatewayName'))]",
+                "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName'))]"
+            ],
+            "properties": {
+                "virtualNetworkGateway1": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworkGateways',variables('gatewayName'))]"
+                },
+                "localNetworkGateway2": {
+                    "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('localGatewayName'))]"
+                },
+                "connectionType": "IPsec",
+                "routingWeight": 0,
+                "sharedKey": "[variables('sharedKey')]",
+                "enableBGP": true
+            }
+        }
+    ],
+    "outputs": {
+        "sharedKey": {
+            "value": "[parameters('sharedKey')]",
+            "type": "string"
+        }
+    }
+}
