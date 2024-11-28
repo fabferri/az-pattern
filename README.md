@@ -38,6 +38,7 @@
   - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-vnetpeering) [date: 21-11-2024]
   - [Site-to-Site VPN between Azure VPN Gateways with transit through ExpressRoute private peering](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-er) [date: 22-11-2024]
   - [Multiple VNet-to-VNet connections with VPN Gateways in a Partial Mesh configuration](https://github.com/fabferri/az-pattern/tree/master/vpn/vpn-vnet-2-vnet) [date: 25-11-2024]
+  - [Single Site-to-Site IPsec tunnel between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-srx-single-tunnel) [date: 26-11-2024]
 
 - Azure P2S VPN
   - [P2S VPN - authetication with digital certificates](https://github.com/fabferri/az-pattern/tree/master/vpn/p2s) [date: 15-04-2024]
