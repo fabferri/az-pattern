@@ -1,0 +1,292 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "vnet1Name": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network 1"
+            }
+        },
+        "vnet2Name": {
+            "type": "string",
+            "defaultValue": "vnet2",
+            "metadata": {
+                "description": "Arbitrary name for the Azure Virtual Network 2"
+            }
+        },
+        "vm1Name": {
+            "type": "string",
+            "defaultValue": "vm1",
+            "metadata": {
+                "description": "name of the VM in subnet1 in vnet1"
+            }
+        },
+        "vm2Name": {
+            "type": "string",
+            "defaultValue": "vm2",
+            "metadata": {
+                "description": "name of the VM in subnet1 in vnet2"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of the Virtual Machine. Select a VM SKU with Premium Storage support."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "administrator username of the VMs"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "administrator password of the VMs"
+            }
+        }
+    },
+    "variables": {
+        "location1": "[parameters('location1')]",
+        "location2": "[parameters('location2')]",
+        "vnet1Name": "[parameters('vnet1Name')]",
+        "vnet2Name": "[parameters('vnet2Name')]",
+
+        "vnet1AddressPrefix": "10.100.0.0/24",
+        "subnet11Name": "subnet11",
+        "subnet11Prefix": "10.100.0.128/25",
+        "gateway1SubnetPrefix": "10.100.0.0/25",
+
+        "vnet2AddressPrefix": "10.200.0.0/24",
+        "subnet21Name": "subnet21",
+        "subnet21AddresPrefix": "10.200.0.96/27",
+
+        "srx-mgt-subnetName": "srx-mgt-subnet",
+        "srx-mgt-subnetPrefix": "10.200.0.64/27",
+        "srx-untrust-subnetName": "srx-untrust-subnet",
+        "srx-untrust-subnetPrefix": "10.200.0.0/27",
+        "srx-trust-subnetName": "srx-trust1-subnet",
+        "srx-trust-subnetPrefix": "10.200.0.32/27",
+
+        "ubuntu": {
+            "publisher": "canonical",
+            "offer": "ubuntu-24_04-lts",
+            "sku": "server",
+            "version": "latest"
+        },
+        "Windows": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2022-datacenter-smalldisk-g2",
+            "version": "latest"
+        },
+        "vm1Name": "[parameters('vm1Name')]",
+        "vm2Name": "[parameters('vm2Name')]",
+        "vm1privIPAddress": "10.100.0.150",
+        "vm2privIPAddress": "10.200.0.100",
+        "vmSize": "[parameters('vmSize')]",
+        "vmArray": [
+            {
+                "deployment": true,
+                "vmName": "[variables('vm1Name')]",
+                "location": "[variables('location1')]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnet1Name')]",
+                "subnetName": "[variables('subnet11Name')]",
+                "privateIP": "[variables('vm1privIPAddress')]",
+                "nicName": "[concat( variables('vm1Name'),'-nic' )]",
+                "pipObject": {
+                    "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vm1Name'),'-pubIP' )  )]"
+                },
+                "nsgName": "[concat(variables('vm1Name'),'-nsg')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "commandToExecute": ""
+            },
+            {
+                "deployment": true,
+                "vmName": "[variables('vm2Name')]",
+                "location": "[variables('location2')]",
+                "vmSize": "[variables('vmSize')]",
+                "publisher": "[variables('ubuntu').publisher]",
+                "offer": "[variables('ubuntu').offer]",
+                "sku": "[variables('ubuntu').sku]",
+                "version": "[variables('ubuntu').version]",
+                "vnetName": "[variables('vnet2Name')]",
+                "subnetName": "[variables('subnet21Name')]",
+                "privateIP": "[variables('vm2privIPAddress')]",
+                "nicName": "[concat( variables('vm2Name'),'-nic' )]",
+                "pipObject": {
+                    "id": "[resourceId( 'Microsoft.Network/publicIPAddresses',concat( variables('vm2Name'),'-pubIP' )  )]"
+                },
+                "nsgName": "[concat(variables('vm2Name'),'-nsg')]",
+                "enableIPForwarding": false,
+                "acceleratedNetworking": false,
+                "commandToExecute": ""
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]",
+        "adminUsername": "[parameters('adminUsername')]",
+        "adminPassword": "[parameters('adminPassword')]"
+    },
+    "resources": [
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('vmArray')[copyIndex()].nsgName)]",
+            "apiVersion": "2023-11-01",
+            "location": "[concat(variables('vmArray')[copyIndex()].location)]",
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH inbound",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "condition": "[and(variables('vmArray')[copyIndex()].deployment, greater(length(variables('vmArray')[copyIndex()].pipObject), 0))]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-11-01",
+            "name": "[concat( variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "sku": {
+                "tier": "Regional",
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmArray')[copyIndex()].nicName]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('vmArray')[copyIndex()].vmName,'-pubIP') )]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+            ],
+            "properties": {
+                "primary": true,
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].enableIPForwarding]",
+                "enableAcceleratedNetworking": "[variables('vmArray')[copyIndex()].acceleratedNetworking]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privateIP]",
+                            "publicIPAddress": "[if( greater(length(variables('vmArray')[copyIndex()].pipObject), 0), variables('vmArray')[copyIndex()].pipObject, json('null') )]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName )]"
+                }
+            }
+        },
+        {
+            "condition": "[variables('vmArray')[copyIndex()].deployment]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "apiVersion": "2023-03-01",
+            "location": "[variables('vmArray')[copyIndex()].location]",
+            "copy": {
+                "name": "vmCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmArray')[copyIndex()].vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[variables('adminUsername')]",
+                    "adminPassword": "[variables('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-OsDisk')]",
+                        "caching": "ReadWrite",
+                        "deleteOption": "Delete",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId( 'Microsoft.Network/networkInterfaces', variables('vmArray')[copyIndex()].nicName  )]"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "value": "[parameters('adminUsername')]",
+            "type": "string"
+        }
+    }
+}

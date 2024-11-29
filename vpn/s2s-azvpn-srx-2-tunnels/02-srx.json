@@ -1,0 +1,419 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "vSRX administrator username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "vSRX administrator password"
+            }
+        },
+        "location1": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "location2": {
+            "type": "string",
+            "metadata": {
+                "description": "select an Azure region with Availability Zone"
+            }
+        },
+        "srxName": {
+            "type": "string",
+            "defaultValue": "srx"
+        },
+        "srxSize": {
+            "type": "string",
+            "defaultValue": "Standard_DS3_v2" //"Standard_DS3_v2" "Standard_D8ds_v5" 
+        },
+        "publisher": {
+            "type": "string",
+            "defaultValue": "juniper-networks"
+        },
+        "offer": {
+            "type": "string",
+            "defaultValue": "vsrx-next-generation-firewall-payg"
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "vsrx-azure-image-byol"
+        },
+        "version": {
+            "type": "string",
+            "defaultValue": "latest"
+        },
+        "osDiskType": {
+            "type": "string",
+            "defaultValue": "Premium_LRS"
+        }
+    },
+    "variables": {
+        "remoteNetworkName": "vnet1",
+        "remoteNetworkAddressSpace": "10.100.0.0/24",
+        "location2": "[parameters('location2')]",
+        "srx-username": "[parameters('adminUsername')]",
+        "srx-password": "[parameters('adminPassword')]",
+        "srxName": "[parameters('srxName')]",
+        "srx-addr-fxp0": "[concat(variables('srxName'), '-fxp0')]",
+        "srx-addr-ge000": "[concat(variables('srxName'), '-ge-0-0-0')]",
+        "vnetName": "vnet2",
+        "vnet-prefix": [
+            "10.200.0.0/24"
+        ],
+        "subnet21Name": "subnet21",
+        "subnet21AddresPrefix": "10.200.0.96/27",
+        "srx-mgt-subnetName": "srx-mgt-subnet",
+        "srx-mgt-subnetPrefix": "10.200.0.64/27",
+        "srx-untrust-subnetName": "srx-untrust-subnet",
+        "srx-untrust-subnetPrefix": "10.200.0.0/27",
+        "srx-trust-subnetName": "srx-trust-subnet",
+        "srx-trust-subnetPrefix": "10.200.0.32/27",
+
+        "rt-subnet21": "[concat('rt-', variables('subnet21Name'))]",
+        "srxVM": {
+            "publisher": "[parameters('publisher')]",
+            "offer": "[parameters('offer')]",
+            "sku": "[parameters('sku')]",
+            "version": "[parameters('version')]",
+            "vmSize": "[parameters('srxSize')]",
+            "vmName": "[variables('srxName')]",
+            "pipNameFxp0": "[variables('srx-addr-fxp0')]",
+            "pipNameGe000": "[variables('srx-addr-ge000')]",
+            "mgtNicName": "[concat(variables('srxName'), '-fxp0')]",
+            "untrustNicName": "[concat(variables('srxName'), '-ge-0-0-0')]",
+            "untrustPrivateIP": "10.200.0.5",
+            "trustNicName": "[concat(variables('srxName'), '-ge-0-0-1')]",
+            "trustPrivateIP": "10.200.0.50"
+        },
+        "srx-untrust-subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('srx-untrust-subnetName'))]",
+        "srx-trust-subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('srx-trust-subnetName'))]",
+        "srx-mgt-subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('srx-mgt-subnetName'))]",
+        "srx-pip-fxp0-id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('srxVM').pipNameFxp0)]",
+        "srx-pip-ge000-id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('srxVM').pipNameGe000)]",
+        "srx-nsgName-untrust": "[concat(variables('srxName'),'-untrust-nsg')]",
+        "srx-nsgName-mgt": "[concat(variables('srxName'),'-mgt-nsg')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "name": "[variables('rt-subnet21')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "[concat('route-to-', variables('remoteNetworkName'))]",
+                        "properties": {
+                            "addressPrefix": "[variables('remoteNetworkAddressSpace')]",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('srxVM').trustPrivateIP]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnetName')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', variables('rt-subnet21'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[variables('vnet-prefix')]"
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet21Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet21AddresPrefix')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('rt-subnet21'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('srx-mgt-subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('srx-mgt-subnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('srx-untrust-subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('srx-untrust-subnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('srx-trust-subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('srx-trust-subnetPrefix')]"
+                        }
+
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('srx-nsgName-untrust')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "UDP-Rule1-IKE",
+                        "properties": {
+                            "description": "Allow UDP for IKE",
+                            "protocol": "Udp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "500",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "UDP-Rule2-IKE",
+                        "properties": {
+                            "description": "Allow UDP for IKE",
+                            "protocol": "Udp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "4500",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('srx-nsgName-mgt')]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 500,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('srxVM').pipNameFxp0]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('srxVM').pipNameGe000]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            },
+            "zones": [ "1", "2", "3" ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('srxVM').mgtNicName]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('srxVM').pipNameFxp0)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('srx-nsgName-mgt'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[variables('srx-pip-fxp0-id')]"
+                            },
+                            "subnet": {
+                                "id": "[variables('srx-mgt-subnetId')]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('srx-nsgName-mgt'))]"
+                }
+            }
+        },
+        {
+
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('srxVM').untrustNicName]",
+            "apiVersion": "2023-11-01",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('srxVM').pipNameGe000)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('srx-nsgName-untrust'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('srxVM').untrustPrivateIP]",
+                            "publicIPAddress": {
+                                "id": "[variables('srx-pip-ge000-id')]"
+                            },
+                            "subnet": {
+                                "id": "[variables('srx-untrust-subnetId')]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true,
+                "enableAcceleratedNetworking": true,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('srx-nsgName-untrust'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('srxVM').trustNicName]",
+            "apiVersion": "2022-11-01",
+            "location": "[variables('location2')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig2",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('srxVM').trustPrivateIP]",
+                            "subnet": {
+                                "id": "[variables('srx-trust-subnetId')]"
+                            }
+                        }
+                    }
+                ],
+                "enableIPForwarding": true,
+                "enableAcceleratedNetworking": true
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('srxVM').vmName]",
+            "apiVersion": "2023-03-01",
+            "location": "[variables('location2')]",
+            "plan": {
+                "name": "[variables('srxVM').sku]",
+                "publisher": "[variables('srxVM').publisher]",
+                "product": "[variables('srxVM').offer]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('srxVM').mgtNicName)]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('srxVM').untrustNicName)]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('srxVM').trustNicName)]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('srxVM').vmSize]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('srxVM').vmName]",
+                    "adminUsername": "[variables('srx-username')]",
+                    "adminPassword": "[variables('srx-password')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false
+                    }
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('osDiskType')]"
+                        },
+                        "deleteOption": "Delete",
+                        "name": "[concat(variables('srxVM').vmName, '-Disk')]",
+                        "caching": "ReadWrite"
+                    },
+                    "imageReference": {
+                        "publisher": "[variables('srxVM').publisher]",
+                        "offer": "[variables('srxVM').offer]",
+                        "sku": "[variables('srxVM').sku]",
+                        "version": "[variables('srxVM').version]"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('srxVM').mgtNicName)]",
+                            "properties": {
+                                "primary": true
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('srxVM').untrustNicName)]",
+                            "properties": {
+                                "primary": false
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('srxVM').trustNicName)]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+        
+    }
+}

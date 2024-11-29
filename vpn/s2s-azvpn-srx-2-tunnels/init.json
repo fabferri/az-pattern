@@ -1,0 +1,11 @@
+{
+    "subscriptionName": "AzDev",
+    "resourceGroupName": "s2s-102",
+    "location": "uksouth",
+    "location1": "uksouth",
+    "location2": "uksouth",
+    "gatewayName": "gw",
+    "srxName": "srx",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD"
+}
