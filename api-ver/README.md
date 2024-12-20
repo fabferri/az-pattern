@@ -43,6 +43,31 @@ List of network resources name:
 ((Get-AzResourceProvider -ProviderNamespace Microsoft.Network ).ResourceTypes).ResourceTypeName
 ```
 
+List of API versions supported in **northeurope** azure region to create Virtual Networks:
+```powershell
+((Get-AzResourceProvider -ProviderNamespace Microsoft.Network -Location northeurope).ResourceTypes | Where-Object ResourceTypeName -eq VirtualNetworks).ApiVersions
+
+```
+
+List of API versions supported in **northeurope** azure region to create Virtual Machines:
+```powershell
+((Get-AzResourceProvider -ProviderNamespace Microsoft.Compute -Location northeurope).ResourceTypes | Where-Object ResourceTypeName -eq VirtualMachines).ApiVersions
+```
+
+List of API versions supported in **northeurope** azure region to create Storage Accounts:
+```powershell
+((Get-AzResourceProvider -ProviderNamespace Microsoft.Storage -Location northeurope).ResourceTypes | Where-Object ResourceTypeName -eq StorageAccounts).ApiVersions
+```
+
+List of API versions supported in **uksouth** azure region to create Log Analytics workspaces:
+```powershell
+((Get-AzResourceProvider -ProviderNamespace "Microsoft.OperationalInsights" -Location uksouth).ResourceTypes | Where-Object ResourceTypeName -eq workspaces).ApiVersions
+```
+
+List of API versions supported in **westus2** Microsoft Container Service:
+```
+((Get-AzResourceProvider -ProviderNamespace Microsoft.ContainerService -Location westus2).ResourceTypes | Where-Object ResourceTypeName -eq managedClusters).apiversions
+```
 <!--Image References-->
 
 <!--Link References-->
