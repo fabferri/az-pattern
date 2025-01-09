@@ -42,7 +42,7 @@ Commands to execute the deployment:
 `az account set -s $subscriptionName`  : set the context <br>
 `az account show`                      : show context information <br>
 
-Go to the folder 1:
+Go to the folder 1: <br>
 `terraform init -upgrade` <br>
 `terraform plan -out main.tfplan` <br>
 `terraform apply main.tfplan` <br>
