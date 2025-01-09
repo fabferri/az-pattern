@@ -113,7 +113,7 @@ Add the path: **C:\terraform**
 
 
 
-`Tags: Site-to-site VPN, Terraform` <br>
+`Tags: Site-to-Site VPN, Terraform` <br>
 `date: 09-01-2025` <br>
 
 <!--Image References-->
