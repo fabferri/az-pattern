@@ -32,9 +32,10 @@
   - [External Load Balancer](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/lb)
 
 - Azure S2S VPN
-  - [Single ARM template to create Site-to-Site VPN between two VPN Gateways](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip) [date: 11-02-2024]
-  - [Connection between two VNets through site-to-site VPN with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-NAT)
-  - [Azure ARM templates to create site-to-site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
+  - [Site-to-Site VPN between two VPN Gateways by ARM template](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip) [date: 11-02-2024]
+  - [Site-to-Site VPN between two Azure VPN Gateways deployed through Terraform](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip-terraform) [date: 09-01-2025]
+  - [Connection between two VNets through Site-to-Site VPN with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-NAT)
+  - [Azure ARM templates to create Site-to-Site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
   - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-vnetpeering) [date: 21-11-2024]
   - [Site-to-Site VPN between Azure VPN Gateways with transit through ExpressRoute private peering](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-er) [date: 22-11-2024]
   - [Multiple VNet-to-VNet connections with VPN Gateways in a Partial Mesh configuration](https://github.com/fabferri/az-pattern/tree/master/vpn/vpn-vnet-2-vnet) [date: 25-11-2024]
