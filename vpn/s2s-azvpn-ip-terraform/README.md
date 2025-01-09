@@ -29,7 +29,8 @@ Deployment must be executed in sequence:
 - <ins>first step</ins>: run the deployment in folder 1
 - <ins>second step</ins>: once deployment in folder 1 is completed, proceeds with the deployment in folder 2
 
-> [!NOTE] Running the deployment in folder 2 first will fail because the VNets and VPN Gateways will not yet exist.
+> [!NOTE] 
+> Running the deployment in folder 2 first will fail because the VNets and VPN Gateways will not yet exist.
 
 Inside the folder get-vals there are the scripts to fetch the BP peering IP address of the VPN Gateway1 and VPN Gateway2.
 
