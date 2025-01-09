@@ -37,20 +37,20 @@ Inside the folder get-vals there are the scripts to fetch the BP peering IP addr
 ![2][2]
 
 Commands to execute the deployment: <br>
-   `az login --scope https://graph.microsoft.com/.default`  <br>
-   `az account set -s $subscriptionName`  : set the context <br>
-   `az account show`                      : show context information <br>
+`az login --scope https://graph.microsoft.com/.default`  <br>
+`az account set -s $subscriptionName`  : set the context <br>
+`az account show`                      : show context information <br>
 
 Go to the folder 1: <br>
-   `terraform init -upgrade` <br>
-   `terraform plan -out main.tfplan` <br>
-   `terraform apply main.tfplan` <br>
+`terraform init -upgrade` <br>
+`terraform plan -out main.tfplan` <br>
+`terraform apply main.tfplan` <br>
 
 
 When the deployment is successfuly completed move to the folder 2 and repeat the same commands: <br>
-   `terraform init -upgrade` <br>
-   `terraform plan -out main.tfplan` <br>
-   `terraform apply main.tfplan` <br>
+`terraform init -upgrade` <br>
+`terraform plan -out main.tfplan` <br>
+`terraform apply main.tfplan` <br>
 
 <br>
 Powershell commands to fetch information on Site-to-Site VPN tunnels:  
