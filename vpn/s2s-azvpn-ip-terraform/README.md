@@ -48,7 +48,7 @@ Go to the folder 1:
 `terraform apply main.tfplan` <br>
 
 
-When the deployment is successfuly completed move to the folder 2 and repeat the same commands:
+When the deployment is successfuly completed move to the folder 2 and repeat the same commands: <br>
 `terraform init -upgrade` <br>
 `terraform plan -out main.tfplan` <br>
 `terraform apply main.tfplan` <br>
