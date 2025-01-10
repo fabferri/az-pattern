@@ -110,9 +110,5 @@ variable "gw2_conn2_name" {
   description = "The name of the Connection2 in VPN Gateway2 to connect to the remote VPN Gateway1-public IP2"
   default     = "gwconn22"
 }
-variable "shared_key" {
-  type        = string
-  description = "The shared key for the VPN connections"
-  default     = "$*test---$$%Cf+a;0"
-}
+
 

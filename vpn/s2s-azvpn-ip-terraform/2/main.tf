@@ -1,3 +1,4 @@
+
 # create a resource group
 data "azurerm_resource_group" "rg" {
   name     = var.rg_name
@@ -50,6 +51,22 @@ data "azurerm_virtual_network_gateway" "gw1" {
 data "azurerm_virtual_network_gateway" "gw2" {
   name                = var.gw2_name
   resource_group_name = data.azurerm_resource_group.rg.name
+}
+
+# generate a random password for the shared key
+resource "random_password" "psk" {
+  length           = 16
+  min_lower        = 4
+  min_upper        = 4
+  min_numeric      = 4
+  min_special      = 4
+  special          = true
+}
+
+# create a local file to store the shared key
+resource "local_file" "shared_secret" {
+    content  = random_password.psk.result
+    filename = "psk.txt"
 }
 
 # create the first local network gateway
@@ -117,7 +134,7 @@ resource "azurerm_virtual_network_gateway_connection" "gw1conn1" {
   virtual_network_gateway_id         = data.azurerm_virtual_network_gateway.gw1.id
   local_network_gateway_id           = azurerm_local_network_gateway.localnetgw21.id
   connection_protocol                = "IKEv2"
-  shared_key                         = var.shared_key
+  shared_key                         = random_password.psk.result
   enable_bgp                         = true
   use_policy_based_traffic_selectors = false
 
@@ -135,7 +152,7 @@ resource "azurerm_virtual_network_gateway_connection" "gw1conn2" {
   virtual_network_gateway_id         = data.azurerm_virtual_network_gateway.gw1.id
   local_network_gateway_id           = azurerm_local_network_gateway.localnetgw22.id
   connection_protocol                = "IKEv2"
-  shared_key                         = var.shared_key
+  shared_key                         = random_password.psk.result
   enable_bgp                         = true
   use_policy_based_traffic_selectors = false
 
@@ -154,7 +171,7 @@ resource "azurerm_virtual_network_gateway_connection" "gw2conn1" {
   virtual_network_gateway_id         = data.azurerm_virtual_network_gateway.gw2.id
   local_network_gateway_id           = azurerm_local_network_gateway.localnetgw11.id
   connection_protocol                = "IKEv2"
-  shared_key                         = var.shared_key
+  shared_key                         = random_password.psk.result
   enable_bgp                         = true
   use_policy_based_traffic_selectors = false
 
@@ -172,7 +189,7 @@ resource "azurerm_virtual_network_gateway_connection" "gw2conn2" {
   virtual_network_gateway_id         = data.azurerm_virtual_network_gateway.gw2.id
   local_network_gateway_id           = azurerm_local_network_gateway.localnetgw12.id
   connection_protocol                = "IKEv2"
-  shared_key                         = var.shared_key
+  shared_key                         = random_password.psk.result
   enable_bgp                         = true
   use_policy_based_traffic_selectors = false
 

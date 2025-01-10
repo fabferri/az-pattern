@@ -23,7 +23,7 @@ Two IPsec tunnels are established between the Azure VPN gateways, which are depl
 
 The Terraform scripts are organized into two folders:
 - folder 1: it contains the files to create vnet1, vnet2, the Gateway subnet, and the VPN Gateways gw1 and gw2.
-- folder 2: it contains the files to create local network gateways and VPN connections.
+- folder 2: it contains the files to create local network gateways and VPN connections. The deployment generated automatically a shared secret for the VPN connections. The shared secret is copied in local file named **psk.txt** 
 
 Deployment must be executed in sequence:
 - <ins>first step</ins>: run the deployment in folder 1
@@ -31,6 +31,8 @@ Deployment must be executed in sequence:
 
 > [!NOTE] 
 > Running the deployment in folder 2 first will fail because the VNets and VPN Gateways will not yet exist.
+
+The shared secret for the VPN connections is generate automatically through the deployment in folder 2
 
 Inside the folder get-vals there are the scripts to fetch the BP peering IP address of the VPN Gateway1 and VPN Gateway2.
 
@@ -69,6 +71,9 @@ Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName
 (Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName $rgName).ConnectionStatus
 (Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName $rgName).EgressBytesTransferred
 (Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName $rgName).IngressBytesTransferred
+
+# shared key associated with the VPN connection
+Get-AzVirtualNetworkGatewayConnectionSharedKey -Name $connectionName11 -ResourceGroupName $rgName
 ```
 
 Az CLI commands to fetch information on Site-to-Site VPN tunnels:  
@@ -85,6 +90,9 @@ az network vnet-gateway list --query "[?name=='gw1'].[name,bgpSettings.bgpPeerin
 az network vnet-gateway list --query "[?name=='gGw1'].{Name:name,BGPlocalIP:bgpSettings.bgpPeeringAddress,ASN:bgpSettings.asn}" -o table -g $rgName
 az network vnet-gateway list-advertised-routes -n $vpnName -g $rgName --peer $peer1
 az network vnet-gateway list-learned-routes -n $vpnName -g $rgName  -o table
+
+# shared key associated with the VPN connection
+az network vpn-connection shared-key show --connection-name $connectionName11 --resource-group $rgName
 ```
 
 ## ANNEX: how to start
