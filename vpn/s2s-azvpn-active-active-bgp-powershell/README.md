@@ -17,7 +17,7 @@ editor=""/>
    ms.review=""
    ms.author="fabferri" />
 
-# Site to site VPN between two Azure VPN Gateways
+# Site to Site VPN between two Azure VPN Gateways in active-active mode with BGP routing
 The article describes a scenario with two vnets, vnet1 and vnet2, connected through site-to-site VPN. The network diagram is reported below:
 
 [![1]][1]
