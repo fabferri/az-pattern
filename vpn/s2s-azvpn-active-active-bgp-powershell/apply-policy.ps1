@@ -250,14 +250,24 @@ try {
     # Enables the policy-based traffic selectors option, and set the new IPsec/IKE policy
     Write-Host "$(Get-Date) - setting IKE/IPsec policy on Azure VPN Connections" -ForegroundColor Cyan
     Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $conn11  -IpsecPolicies $ipsecpolicy -Force
-    Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $conn12  -IpsecPolicies $ipsecpolicy -Force
     Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $conn21  -IpsecPolicies $ipsecpolicy -Force
+}
+catch {
+    Write-Host "$(Get-Date) - Error in setting IKE policy!" -ForegroundColor Yellow
+    Exit
+}
+
+try {
+    # Enables the policy-based traffic selectors option, and set the new IPsec/IKE policy
+    Write-Host "$(Get-Date) - setting IKE/IPsec policy on Azure VPN Connections" -ForegroundColor Cyan
+    Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $conn12  -IpsecPolicies $ipsecpolicy -Force
     Set-AzVirtualNetworkGatewayConnection -VirtualNetworkGatewayConnection $conn22  -IpsecPolicies $ipsecpolicy -Force
 }
 catch {
     Write-Host "$(Get-Date) - Error in setting IKE policy!" -ForegroundColor Yellow
     Exit
 }
+
 
 try {
     #Reset a Virtual Network Gateway Connection

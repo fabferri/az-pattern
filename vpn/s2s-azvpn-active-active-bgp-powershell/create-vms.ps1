@@ -71,7 +71,8 @@ Function CreateVM() {
     Write-Host "$(Get-Date) - Public IP: $vmPubIP exists, skipping"
   }
   Catch {
-    $vmPublicIP = New-AzPublicIpAddress -Name $vmPubIP -ResourceGroupName  $rgName -Location $location -Sku 'Standard' -AllocationMethod 'Static'
+    $vmPublicIP = 
+    New-AzPublicIpAddress -Name $vmPubIP -ResourceGroupName  $rgName -Location $location -AllocationMethod Static -Sku Standard -Tier Regional -Zone 1,2,3
   }
 
   Try {

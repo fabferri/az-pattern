@@ -107,8 +107,8 @@ Try {
      Write-Host "$(Get-Date) - VPN Gateway2-Public IP: $gw2IP1Name exists, skipping"
 }
 Catch {
-     # Request a public IP address
-     $gw2IP1 = New-AzPublicIpAddress -Name $gw2IP1Name -ResourceGroupName $rgName -Location $location2 -AllocationMethod Static -Sku Standard
+     # create a public IP1 address for gw2
+     $gw2IP1 = New-AzPublicIpAddress -Name $gw2IP1Name -ResourceGroupName $rgName -Location $location2 -AllocationMethod Static -Sku Standard -Tier Regional -Zone 1,2,3
      Write-Host "$(Get-Date) - VPN Gateway2-Public IP: $gw2IP1Name created" -ForegroundColor Green
 }
 Try {
@@ -117,8 +117,8 @@ Try {
      Write-Host "$(Get-Date) - VPN Gateway2-Public IP: $gw2IP2Name exists, skipping"
 }
 Catch {
-     # Request a public IP address
-     $gw2IP2 = New-AzPublicIpAddress -Name $gw2IP2Name -ResourceGroupName $rgName -Location $location2 -AllocationMethod Static -Sku Standard
+     # create a public IP2 address for gw2
+     $gw2IP2 = New-AzPublicIpAddress -Name $gw2IP2Name -ResourceGroupName $rgName -Location $location2 -AllocationMethod Static -Sku Standard -Tier Regional -Zone 1,2,3
      Write-Host "$(Get-Date) - VPN Gateway2-Public IP: $gw2IP2Name created" -ForegroundColor Green
 }
 
