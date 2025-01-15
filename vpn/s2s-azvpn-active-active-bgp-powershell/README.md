@@ -60,15 +60,15 @@ The meaning of input variables in **init.json** are shown below:
     "app2SubnetPrefix": "10.2.0.0/27",
     "gw2SubnetPrefix": "10.2.0.224/27",
     "gw2Name": "NAME_AZURE_VPN_GATEWAY2",
-    "vpnSku": "VpnGw2",
+    "vpnSku": "VpnGw2AZ",
     "asn1": "BGP_AUTONOMOUS_SYSTEM_NUMBER_VPN_GATEWAY1",
     "asn2": "BGP_AUTONOMOUS_SYSTEM_NUMBER_VPN_GATEWAY2",
     "sharedKey": "AZURE_VPN_SHARED_SECRET",
     "adminUsername": "ADMINISTRATOR_USERNAME",
     "adminPassword": "ADMINISTRATOR_PASSWORD",
     "vmPublisher" : "canonical",
-    "vmOffer": "0001-com-ubuntu-server-focal",
-    "vmSKU": "20_04-lts",
+    "vmOffer": "ubuntu-24_04-lts",
+    "vmSKU": "server",
     "vmVersion": "latest",
     "vmSize": "VM_SIZE_SKU"
 }
@@ -85,7 +85,7 @@ Dependencies:
 - **create-vpn-gtw1.ps1** and **create-vpn-gtw2.ps1** are independent and they can run in parallel
 - **create-vms.ps1** requires the presence of vnet1 and vnet2. **create-vms.ps1** has dependency from **create-vpn-gtw1.ps1** and **create-vpn-gtw2.ps1**
 - **connection.ps1** can run only after completion of **create-vpn-gtw1.ps1** and **create-vpn-gtw2.ps1**. The script **connection.ps1** will fail if the VPN Gateways are not deployed
-- **apply-policy.ps1** is not mandatory and it can be deployed only after running **connection.ps1**. The script **apply-policy.ps1** will fail if the Azure VPN Connections are not created. Inside the file **apply-policy.ps1** are specified two type of policies:
+- **apply-policy.ps1** is not mandatory and it can be deployed only after running **connection.ps1**. The script **apply-policy.ps1** will fail if the Azure VPN Connections are not created. Inside the file **apply-policy.ps1** can be selected two type of policies:
 
 `$ipsecpolicy1`: 
 - IKE Encryption: AES256
@@ -103,8 +103,8 @@ Dependencies:
 * Ipsec Encryption: GCMAES256 
 * Ipsec Integrity: GCMAES256 
 
-Set the variable `$ipsecpolicy` equal to `$ipsecpolicy1` OR equal to `$ipsecpolicy2`.
-
+In **apply-policy.ps1** set the variable `$ipsecpolicy` equal to `$ipsecpolicy1` OR equal to `$ipsecpolicy2`. <br>
+The IKE/IPsec policy is applied to all VPN connections.
 
 `Tags: Azure VPN, Site-to-Site VPN` <br>
 `date: 16-10-22` <br>
