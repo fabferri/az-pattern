@@ -31,7 +31,7 @@
 - Azure S2S VPN
   - [Site-to-Site VPN between two VPN Gateways by ARM template](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-active-active-bgp-arm-template) [date: 11-02-2024]
   - [Site-to-Site VPN between two VPN Gateways by powershell](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-active-active-bgp-powershell) [date: 15-01-2025]
-  - [Site-to-Site VPN between two VPN Gateways by Terraform](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-ip-terraform) [date: 09-01-2025]
+  - [Site-to-Site VPN between two VPN Gateways by Terraform](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-active-active-bgp-terraform) [date: 09-01-2025]
   - [Connection between two VNets through Site-to-Site VPN with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-NAT)
   - [Azure ARM templates to create Site-to-Site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
   - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-vnetpeering) [date: 21-11-2024]
