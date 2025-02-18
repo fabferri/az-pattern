@@ -45,7 +45,7 @@ After setting the variables in **init.json**, you can start the deployment throu
 
 > [!NOTE]
 >
-> if you want to add a comment to the public key you can use the command: <br>
+> if you want to add a comment to the public key you can use the command: <br> <br>
 > <b>ssh-keygen -m PEM -t rsa -b 4096 -C "by-gitcommand" -f ./vmkey.pem</b> <br>
 >
 > -b flag determines the key length <br> 
