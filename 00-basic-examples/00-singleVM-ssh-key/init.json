@@ -1,0 +1,7 @@
+{
+    "subscriptionName": "AzureDemo",
+    "resourceGroupName": "test-vm",
+    "location": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPublicKey": "PUBLIC_SSH_KEY"
+}
