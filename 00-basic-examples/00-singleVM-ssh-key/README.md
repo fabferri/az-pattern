@@ -43,7 +43,7 @@ Open the public key **vmkey.pem.pub** and paste the content in the variable **ad
 After setting the variables in **init.json**, you can start the deployment through the script **vmsshkey.ps1**
 
 
-> [NOTE]
+> [!NOTE]
 >
 > if you want to add a comment to the public key you can use the command: <br>
 > <b>ssh-keygen -m PEM -t rsa -b 4096 -C "by-gitcommand" -f ./vmkey.pem</b> <br>
