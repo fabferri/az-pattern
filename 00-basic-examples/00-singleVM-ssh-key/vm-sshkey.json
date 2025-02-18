@@ -27,6 +27,17 @@
       "metadata": {
         "description": "description"
       }
+    },
+    "deploybastion": {
+      "type": "bool",
+      "defaultValue": true,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "flag to deploy/not deploy Azure Bastion"
+      }
     }
   },
   "variables": {
@@ -39,7 +50,7 @@
     "publicIPAddressName": "[concat(variables('vmName'), '-pip')]",
     "networkInterfaceName": "[concat(variables('vmName'), '-nic')]",
     "networkSecurityGroupName": "[concat(variables('vmName'), '-nsg')]",
-    "deploybastion": false,
+    "deploybastion": "[parameters('deploybastion')]",
     "bastionName": "bastion1",
     "bastionSubnetName": "AzureBastionSubnet",
     "bastionSubnetPrefix": "10.0.0.128/25",
