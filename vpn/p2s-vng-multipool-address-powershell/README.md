@@ -17,11 +17,11 @@ editor="fabferri"/>
 
 # Multipool address for P2S connection in Azure VPN Gateway by powershell
 This post contains a powershell script to configure multipool address for Point-to-Site (P2S) connections in Azure VPN  gateway. <br>
-As authetication methods of P2S connections is used only digital certificate.
+As authetication methods of P2S connections is used only digital certificates.
 The network diagram is shown below:
 [![1]][1]
 
-### <a name="generate digital certificates"></a>1. Powershell script to generate digical certificates 
+### <a name="generate digital certificates"></a>1. Powershell script to generate digital certificates 
 The powershell script **create-root-and-clients-certificates.ps1** can be run in windows host or VM to generate a root certificate and client certificates signed by root certificate.<br>
 **All the generated client certificates are signed with the same root certificate.** <br>
 
