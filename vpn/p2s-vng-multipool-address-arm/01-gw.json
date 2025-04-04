@@ -1,0 +1,346 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Azure region"
+            }
+        },
+        "gatewayName": {
+            "type": "string",
+            "defaultValue": "gw1",
+            "metadata": {
+                "description": "Arbitrary name for the new gateway"
+            }
+        },
+        "gatewaySku": {
+            "type": "string",
+            "defaultValue": "VpnGw2AZ",
+            "allowedValues": [
+                "VpnGw2AZ",
+                "VpnGw3AZ",
+                "VpnGw4AZ",
+                "VpnGw5AZ"
+            ],
+            "metadata": {
+                "description": "VPN Gateway SKU"
+            }
+        },
+        "vpnRootCertificateName": {
+            "type": "string"
+        },
+        "vpnRootCertificatePublicKey": {
+            "type": "string"
+        },
+        "vpnClientAddressPool": {
+            "type": "string",
+            "metadata": {
+                "description": "IP Address and mask to use to assign client addresses in the form <ip>/<mask>"
+            },
+            "defaultValue": "172.16.0.0/24"
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnet1": {
+            "location": "[parameters('location')]",
+            "name": "vnet1",
+            "addressSpace1Prefix": "10.0.0.0/24",
+            "subnet1Name": "subnet1",
+            "subnet1Prefix": "10.0.0.0/27",
+            "subnet2Name": "subnet2",
+            "subnet2Prefix": "10.0.0.32/27",
+            "subnet3Name": "subnet3",
+            "subnet3Prefix": "10.0.0.64/27",
+            "GatewaySubnetName": "GatewaySubnet",
+            "GatewaySubnetPrefix": "10.0.0.192/26"
+        },
+        "gateway1subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnet1').name,'GatewaySubnet') ]",
+        "gatewayName": "[parameters('gatewayName')]",
+        "gateway1PublicIP1Name": "[format('{0}IP1', parameters('gatewayName'))]",
+        "vpnRootCertificateName": "[parameters('vpnRootCertificateName')]",
+        "vpnRootCertificatePublicKey": "[parameters('vpnRootCertificatePublicKey')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet1').name]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('vnet1').location]",
+            "dependsOn": [],
+            "comments": "create vnet1",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet1').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet1').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet1Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet2Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet2Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').subnet3Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').subnet3Prefix]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vnet1').GatewaySubnetName]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet1').GatewaySubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('gateway1PublicIP1Name')]",
+            "apiVersion": "2024-05-01",
+            "comments": "public IP of the VPN Gateway1-instance 0",
+            "location": "[variables('location')]",
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('gatewayName')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('gateway1PublicIP1Name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet1').name)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "vnetGateway1Config1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('gateway1SubnetRef')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('gateway1PublicIP1Name'))]"
+                            }
+                        }
+                    }
+                ],
+                "virtualNetworkGatewayPolicyGroups": [
+                    {
+                        "name": "policyGroup1",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "isDefault": true,
+                            "priority": 0,
+                            "policyMembers": [
+                                {
+                                    "name": "member1",
+                                    "attributeType": "CertificateGroupId",
+                                    "attributeValue": "engineering.contoso.com"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "policyGroup2",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "isDefault": false,
+                            "priority": 10,
+                            "policyMembers": [
+                                {
+                                    "name": "member2",
+                                    "attributeType": "CertificateGroupId",
+                                    "attributeValue": "sale.contoso.com"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "sku": {
+                    "name": "[parameters('gatewaySku')]",
+                    "tier": "[parameters('gatewaySku')]"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": false,
+                "activeActive": false,
+                "vpnGatewayGeneration": "Generation2",
+                "vpnClientConfiguration": {
+                    "vpnClientAddressPool": {
+                        "addressPrefixes": [
+                            "[parameters('vpnClientAddressPool')]"
+                        ]
+                    },
+                    "vpnAuthenticationTypes": [ "Certificate" ],
+                    "vpnClientProtocols": [ "IkeV2", "OpenVPN" ],
+                    "vpnClientRootCertificates": [
+                        {
+                            "name": "[variables('vpnRootCertificateName')]",
+                            "properties": {
+                                "publicCertData": "[variables('vpnRootCertificatePublicKey')]"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-11-01",
+            "name": "vpnClientConfig",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworkGateways',  variables('gatewayName') ) ]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworkGateways",
+                            "name": "[variables('gatewayName')]",
+                            "apiVersion": "2024-05-01",
+                            "location": "[variables('location')]",
+                            "properties": {
+                                "ipConfigurations": [
+                                    {
+                                        "name": "vnetGateway1Config1",
+                                        "properties": {
+                                            "privateIPAllocationMethod": "Dynamic",
+                                            "subnet": {
+                                                "id": "[variables('gateway1SubnetRef')]"
+                                            },
+                                            "publicIPAddress": {
+                                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('gateway1PublicIP1Name'))]"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "virtualNetworkGatewayPolicyGroups": [
+                                    {
+                                        "name": "policyGroup1",
+                                        "properties": {
+                                            "provisioningState": "Succeeded",
+                                            "isDefault": true,
+                                            "priority": 0,
+                                            "policyMembers": [
+                                                {
+                                                    "name": "member1",
+                                                    "attributeType": "CertificateGroupId",
+                                                    "attributeValue": "engineering.contoso.com"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "policyGroup2",
+                                        "properties": {
+                                            "provisioningState": "Succeeded",
+                                            "isDefault": false,
+                                            "priority": 10,
+                                            "policyMembers": [
+                                                {
+                                                    "name": "member2",
+                                                    "attributeType": "CertificateGroupId",
+                                                    "attributeValue": "sale.contoso.com"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "sku": {
+                                    "name": "[parameters('gatewaySku')]",
+                                    "tier": "[parameters('gatewaySku')]"
+                                },
+                                "gatewayType": "Vpn",
+                                "vpnType": "RouteBased",
+                                "enableBgp": false,
+                                "activeActive": false,
+                                "vpnGatewayGeneration": "Generation2",
+                                "vpnClientConfiguration": {
+                                    "vpnClientAddressPool": {
+                                        "addressPrefixes": [
+                                            "[parameters('vpnClientAddressPool')]"
+                                        ]
+                                    },
+                                    "vpnAuthenticationTypes": [ "Certificate" ],
+                                    "vpnClientProtocols": [ "IkeV2", "OpenVPN" ],
+                                    "vpnClientRootCertificates": [
+                                        {
+                                            "name": "[variables('vpnRootCertificateName')]",
+                                            "properties": {
+                                                "publicCertData": "[variables('vpnRootCertificatePublicKey')]"
+                                            }
+                                        }
+                                    ],
+                                    "vngClientConnectionConfigurations": [
+                                        {
+                                            "name": "config1",
+                                            "properties": {
+                                                "vpnClientAddressPool": {
+                                                    "addressPrefixes": [
+                                                        "192.168.1.0/24"
+                                                    ]
+                                                },
+                                                "virtualNetworkGatewayPolicyGroups": [
+                                                    {
+                                                        "id": "[resourceId('Microsoft.Network/virtualNetworkGateways/virtualNetworkGatewayPolicyGroups',variables('gatewayName'),'policyGroup1')]"
+
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "name": "config2",
+                                            "properties": {
+                                                "vpnClientAddressPool": {
+                                                    "addressPrefixes": [
+                                                        "192.168.2.0/24"
+                                                    ]
+                                                },
+                                                "virtualNetworkGatewayPolicyGroups": [
+                                                    {
+                                                        "id": "[resourceId('Microsoft.Network/virtualNetworkGateways/virtualNetworkGatewayPolicyGroups',variables('gatewayName'),'policyGroup2')]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Azure region"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "vnet2": {
+            "location": "[variables('location')]",
+            "name": "vnet2",
+            "addressSpace1Prefix": "10.99.0.0/24",
+            "subnet1Name": "subnet1",
+            "subnet1Prefix": "10.99.0.0/26"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnet2').name]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('vnet2').location]",
+            "dependsOn": [],
+            "comments": "create vnet1",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnet2').addressSpace1Prefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('vnet2').subnet1Name]",
+                        "properties": {
+                            "addressPrefix": "[variables('vnet2').subnet1Prefix]"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
