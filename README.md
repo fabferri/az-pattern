@@ -29,16 +29,16 @@
   - [External Load Balancer](https://github.com/fabferri/az-pattern/tree/master/loadbalancer/lb)
 
 - Azure S2S VPN
-  - [Site-to-Site VPN between two VPN Gateways by ARM template](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-active-active-bgp-arm-template) [date: 11-02-2024]
-  - [Site-to-Site VPN between two VPN Gateways by powershell](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-active-active-bgp-powershell) [date: 15-01-2025]
-  - [Site-to-Site VPN between two VPN Gateways by Terraform](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-active-active-bgp-terraform) [date: 09-01-2025]
-  - [Site-to-Site VPN between two VPN Gateways with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-NAT)
-  - [Azure ARM templates to create Site-to-Site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-fqdn)
-  - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-vnetpeering) [date: 21-11-2024]
-  - [Site-to-Site VPN between Azure VPN Gateways with transit through ExpressRoute private peering](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-private-ip-transit-er) [date: 22-11-2024]
+  - [Site-to-Site VPN between two VPN Gateways by ARM template](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-active-active-bgp-arm-template) [date: 11-02-2024]
+  - [Site-to-Site VPN between two VPN Gateways by powershell](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-active-active-bgp-powershell) [date: 15-01-2025]
+  - [Site-to-Site VPN between two VPN Gateways by Terraform](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-active-active-bgp-terraform) [date: 09-01-2025]
+  - [Site-to-Site VPN between two VPN Gateways with NAT](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-NAT)
+  - [Azure ARM templates to create Site-to-Site VPN by FQDN](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-fqdn)
+  - [Site-to-Site VPN connection over vnet peering using VPN Gateway private IP addresses](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-private-ip-transit-vnetpeering) [date: 21-11-2024]
+  - [Site-to-Site VPN between Azure VPN Gateways with transit through ExpressRoute private peering](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-private-ip-transit-er) [date: 22-11-2024]
   - [Multiple VNet-to-VNet connections with VPN Gateways in a Partial Mesh configuration](https://github.com/fabferri/az-pattern/tree/master/vpn/vpn-vnet-2-vnet) [date: 25-11-2024]
-  - [Single Site-to-Site IPsec tunnel between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-srx-1-tunnel) [date: 26-11-2024]
-  - [Two Site-to-Site IPsec tunnels between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-azvpn-srx-2-tunnels) [date: 28-11-2024]
+  - [Single Site-to-Site IPsec tunnel between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-srx-1-tunnel) [date: 26-11-2024]
+  - [Two Site-to-Site IPsec tunnels between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-srx-2-tunnels) [date: 28-11-2024]
 
 - Azure P2S VPN
   - [P2S VPN - authetication with digital certificates](https://github.com/fabferri/az-pattern/tree/master/vpn/p2s) [date: 15-04-2024]
