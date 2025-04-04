@@ -53,8 +53,8 @@ For this specific case, we will consider only the client certificates with CNs *
 The deployment requires few steps executed in sequence:
 1. generate the digital certificates (root and clients) by **00_create-root-and-clients-certificates.ps1**. Without the root certificate data, the deployment of the VPN Gateway will fail.
 [![2]][2]
-1. copy the public data of the root certificate (P2SRoot.cer) in the variable **"vpnRootCertificatePublicKey"** of the file **init.json**. Do <ins>not</ins> include the header (-----BEGIN CERTIFICATE-----) and trailer ()
-[![3]][3]-----END CERTIFICATE-----
+1. copy the public data of the root certificate (P2SRoot.cer) in the variable **"vpnRootCertificatePublicKey"** of the file **init.json**. Do <ins>not</ins> include the header (-----BEGIN CERTIFICATE-----) and trailer (-----END CERTIFICATE-----)
+[![3]][3]
 1. Run **01-gw.ps1** to create VNet1 and the VPN Gateway. The ARM template 01-gw.json deploys the VPN Gateway with P2S configuration:
    - Tunnel type: IKE
    - Authentication: digital certificates
