@@ -1,0 +1,8 @@
+{
+    "subscriptionName": "AzDev",
+    "resourceGroupName": "vwan1",
+    "vwanName": "vwan1",
+    "hub1location": "northeurope",
+    "hub1Name": "hub1",
+    "hub1_PublicCertificate1DataForP2S": "MIIDDzCCAfegAwIBAgIQ.........."
+}
