@@ -1,18 +1,18 @@
 <properties
-pageTitle= 'Azure ARM templates to create site-to-site VPN with digital certificate authentication'
-description= "Azure ARM templates to create site-to-site VPN with digital certificate authentication"
-documentationcenter: "github.com/fabferri"
-services="Azure VPN Gateway"
-documentationCenter="github"
-authors="fabferri" />
+   pageTitle= 'Azure ARM templates to create site-to-site VPN with digital certificate authentication'
+   description= "Azure ARM templates to create site-to-site VPN with digital certificate authentication"
+   documentationcenter: "github.com/fabferri"
+   services="Azure VPN Gateway"
+   documentationCenter="github"
+   authors="fabferri" />
 
 <tags
    ms.service="configuration-Example-Azure"
    ms.devlang="na"
    ms.topic="article"
-   ms.tgt_pltfrm="Azure VPN Gateway"
-   ms.workload="na"
-   ms.date="24/06/2025"
+   ms.tgt_pltfrm="Azure"
+   ms.workload="Azure VPN Gateway"
+   ms.date="30/06/2025"
    ms.author="fabferri" />
 
 # Azure ARM templates to create site-to-site VPN with digital certificate authentication
