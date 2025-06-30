@@ -86,7 +86,7 @@ In this example two self-signed root certificates  are created and used to sign 
 
 [![3]][3]
 
-The powershell script creates a subfolder **certs** under the powershell script directory and store all the the certificates in this folder.
+The powershell script **s2s-gen-cert.ps1** can run on Windows VM or Windows host. it creates a subfolder **certs** under the powershell script directory and store all the the certificates in this folder.
 
 The leaf certificates **s2s-client1** and **s2s-client2** can be stored in keyvault:
 
