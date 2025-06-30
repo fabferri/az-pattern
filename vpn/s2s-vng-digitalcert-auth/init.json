@@ -1,0 +1,18 @@
+{
+    "subscriptionName": "Hybrid-PM-Test-1",
+    "rgName": "test-s2s-cert101",
+    "location1": "uksouth",
+    "location2": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "gateway1Name": "gw1",
+    "gateway2Name": "gw2",
+    "outboundCertificateFileNamePFX1": "s2s-cert1.pfx",
+    "outboundCertificatePasswordPFX1": "12345",
+    "inboundCertificateFileNameCER1": "VPNRootCA1.cer",
+    "inboundCertificateSubjectName1" : "s2s-cert1",
+    "outboundCertificateFileNamePFX2": "s2s-cert2.pfx",
+    "outboundCertificatePasswordPFX2": "12345",
+    "inboundCertificateFileNameCER2": "VPNRootCA2.cer",
+    "inboundCertificateSubjectName2" : "s2s-cert2"
+}
