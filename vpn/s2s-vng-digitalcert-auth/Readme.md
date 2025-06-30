@@ -1,9 +1,9 @@
 <properties
 pageTitle= 'Azure ARM templates to create site-to-site VPN with digital certificate authentication'
 description= "Azure ARM templates to create site-to-site VPN with digital certificate authentication"
-documentationcenter: [github](https://github.com/fabferri/az-pattern/)
+documentationcenter: github.com/fabferri
 services="Azure VPN Gateway"
-documentationCenter="na"
+documentationCenter="github"
 authors="fabferri"
 />
 
