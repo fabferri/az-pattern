@@ -241,8 +241,6 @@ User    Active {10.1.0.0/24}    VirtualAppliance {10.2.0.50}
 ```
 
 
-
-
 ## <a name="Annex"></a>6. Annex
 
 ### <a name="Catalyst commands to verify the IPsec tunnels"></a>6.1 Check IKEv2 and IPsec in Catalyst
@@ -254,6 +252,7 @@ cat2# show crypto ikev2 sa
 cat2# show crypto ikev2 session
 cat2# show crypto ipsec sa
 ```
+
 ### <a name="Catalyst commands"></a>6.2 Catalyst capture traffic commands
 
 ```console
@@ -302,6 +301,8 @@ no monitor capture CAP
 ```
 
 ### <a name="Catalyst commands"></a>6.3 Catalyst debug commands
+
+```console
 ! enable the output of debug/messages in the SSH session
 terminal monitor
 !
@@ -327,8 +328,5 @@ terminal no monitor
 [1]: ./media/network-diagram.png "network diagram"
 [2]: ./media/tunnels.png "Site-to-Site IPsec tunnels"
 [3]: ./media/connection1-config.png "Connection1 with custom IPSec/IKE policies"
-[4]: ./media/vpn-gw-local-network2.png "Local Network Gateway2 in Azure VPN Gateway"
-[5]: ./media/vpn-gw-bgp.png "BGP peers in Azure VPN Gateway"
-[6]: ./media/vpn-gw-lerned-routes.png "BGP learnt routes in Azure VPN Gateway"
 
 <!--Link References-->
