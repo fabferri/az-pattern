@@ -12,7 +12,7 @@ editor="fabferri"/>
    ms.topic="article"
    ms.tgt_pltfrm="Azure"
    ms.workload="Azure VPN Gateway"
-   ms.date="28/11/2024"
+   ms.date="02/07/2025"
    ms.review=""
    ms.author="fabferri" />
 
