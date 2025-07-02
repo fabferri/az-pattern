@@ -39,6 +39,7 @@
   - [Multiple VNet-to-VNet connections with VPN Gateways in a Partial Mesh configuration](https://github.com/fabferri/az-pattern/tree/master/vpn/vpn-vnet-2-vnet) [date: 25-11-2024]
   - [Single Site-to-Site IPsec tunnel between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-srx-1-tunnel) [date: 26-11-2024]
   - [Two Site-to-Site IPsec tunnels between Azure VPN Gateway and Juniper vSRX](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-srx-2-tunnels) [date: 28-11-2024]
+  - [Site-to-Site IPsec tunnels between Azure VPN Gateway and Cisco Catalyst 8000v](https://github.com/fabferri/az-pattern/tree/master/vpn/s2s-vng-catalyst-ipv4) [date: 02-07-2025]
 
 - Azure P2S VPN
   - [P2S VPN - authetication with digital certificates](https://github.com/fabferri/az-pattern/tree/master/vpn/p2s) [date: 15-04-2024]
