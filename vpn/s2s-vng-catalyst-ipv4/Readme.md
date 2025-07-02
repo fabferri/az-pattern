@@ -26,8 +26,8 @@ The Catalyst NIC **cat-nic-untrust** has two IP configurations, each with public
 
 | Name          | IP version | Type     | Private IP address | Public IP address |       
 | ------------- |:---------- |:-------- |:------------------ |:----------------- |
-| ipconfig-v4   | IPv4       | Primary  | 10.2.0.90 (Static) |  <cat2-pubIP3>    |
-| ipconfig-v4-2 | IPv4       | Secondary| 10.2.0.90 (Static) |  <cat2-pubIP4>    |
+| ipconfig-v4   | IPv4       | Primary  | 10.2.0.90 (Static) |  cat2-pubIP3      |
+| ipconfig-v4-2 | IPv4       | Secondary| 10.2.0.91 (Static) |  cat2-pubIP4      |
 
 The diagram shows the IPsec tunnel through the **cat-nic-untrust** and the configuration of VPN Gateway with the two Local Network Gateway **localNetGaw1** and **localNetGw2**:
 
