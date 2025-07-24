@@ -127,7 +127,7 @@ The script **03-catalyst-gen-config.ps1** automatically generates  the site-to-s
 Variables VPN Gateway:
 
 - `$pubIP_RemoteGtw0`: VPN GTW-public IPv4 address assigned to the VPN Gateway-instance_0
-- `$pubIP_RemoteGtw1`: VPN GTW-public IPv4 address assigned to the VPN Gateway-instance_1 
+- `$pubIP_RemoteGtw1`: VPN GTW-public IPv4 address assigned to the VPN Gateway-instance_1
 - `$remoteVnetAddressSpaceIPv4`: IPv4 address space of the remote vnet1
 - `$remoteVnetAddressSpaceIPv6`: IPv6 address space of the remote vnet1
 - `$ip_Tunnel0`: Catalyst-IPv4 address of the tunnel0 interface
@@ -432,7 +432,7 @@ vm1:~# tcpdump -i eth0 -n -qq ip6 net 2001:db8:2::/48
 vm2:~# ping -6 2001:db8:1:1::4
 ```
 
-To check the web site with looback interface: `curl -6 [::1]`
+To check the web site with looback interface: `curl -6 [::1]` <br>
 Generate IPv6 HTTP traffic from vm2 to vm1:
 
 ```text
@@ -440,7 +440,7 @@ vm1:~# curl -6 http://[2001:db8:2:4::4]
 vm2:~# curl -6 http://[2001:db8:1:1::4]
 ```
 
-## 4. Effective route tables in Azure VMs
+## 8. Effective route tables in Azure VMs
 
 Effective route table in **vm1-NIC**:
 ```powershell
@@ -470,8 +470,7 @@ Default Active {::/0}            Internet         {}
 User    Active {2001:db8:1::/48} VirtualAppliance {2001:db8:2:1::4}
 ```
 
-
-## 6. IPv6 link-local
+## 9. IPv6 link-local
 
 IPv6 generates a link-local address for each interface. These link-local addresses are also used by routing protocols like RIPng, EIGRP, OSPFv3, etc, as the next-hop addresses. To change a Cisco router's IPv6 link-local address, you can use the ipv6 address link-local-address link-local command within the interface configuration mode. This allows you to manually specify a link-local address, rather than relying on the automatically generated EUI-64 based address.
 
@@ -482,7 +481,7 @@ router(config-if)# ipv6 address 2001:db8:2:5::4 link-local
 Specifies a link-local address on the interface to be used instead of the link-local address that is automatically configured when IPv6 is enabled on the interface. This command enables IPv6 processing on the interface.
 Automatically configures an IPv6 link-local address on the interface, and enables the interface for IPv6 processing. The link-local address can only be used to communicate with nodes on the same link.
 
-## 7. Reference
+## 10. Reference
 
 [Security for VPNs with IPsec Configuration Guide](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_conn_vpnips/configuration/xe-16-11/sec-sec-for-vpns-w-ipsec-xe-16-11-book/sec-ipsec-virt-tunnl.html)
 
