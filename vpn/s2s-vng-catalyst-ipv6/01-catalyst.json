@@ -1,0 +1,746 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "uksouth",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "VM administrator username"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "VM administrator password"
+            }
+        },
+        "catalystName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the VM"
+            }
+        },
+        "cat_vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_D8_v3",
+            "metadata": {
+                "description": "Size of the Catalyst VM. Standard_D4s_v3 supports 2 NICs, Standard_D8_v3 supports 4 NICs"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "defaultValue": "vm2",
+            "metadata": {
+                "description": "Name of the VM"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of the VM"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "The storage account type for the disks of the VM"
+            }
+        }
+    },
+    "variables": {
+        "location": "[parameters('location')]",
+        "remotevNetPrefixv4": "10.1.0.0/24",
+        "remotevNetPrefixv6": "2001:db8:1:0::0/48",
+        "cat_imagePublisher": "cisco",
+        "cat_imageOffer": "cisco-c8000v-byol",
+        "cat_imageSKU": "17_16_01a-byol",
+        "cat_vmName": "[parameters('catalystName')]",
+        "cat_vmSize": "[parameters('cat_vmSize')]",
+        "cat_nic0_pubIPAddressName": "[concat(variables('cat_vmName'),'-eth1-pip' )]",
+        "cat_nic1_pubIPAddressName": "[concat(variables('cat_vmName'),'-eth2-pip' )]",
+        "cat_nic2_pubIPAddressName": "[concat(variables('cat_vmName'),'-eth3-pip' )]",
+        "cat_nic0": "[concat(variables('cat_vmName'), '-eth1-nic')]",
+        "cat_nic1": "[concat(variables('cat_vmName'), '-eth2-nic')]",
+        "cat_nic2": "[concat(variables('cat_vmName'), '-eth3-nic')]",
+        "routeTableNameSubnet4": "[concat('RT-',variables('subnet4Name'))]",
+        "routeTableNameSubnet1": "[concat('RT-',variables('subnet1Name'))]",
+        "vnetName": "cat-net",
+        "subnet1Name": "cat-eth1",
+        "subnet2Name": "cat-eth2",
+        "subnet3Name": "cat-eth3",
+        "subnet4Name": "app-subnet",
+        "addressPrefixv4": "10.2.0.0/24",
+        "subnet1Prefixv4": "10.2.0.0/27",
+        "subnet2Prefixv4": "10.2.0.32/27",
+        "subnet3Prefixv4": "10.2.0.64/27",
+        "subnet4Prefixv4": "10.2.0.96/27",
+
+        "addressPrefixv6": "2001:db8:2:0::0/48",
+        "subnet1Prefixv6": "2001:db8:2:1::0/64",
+        "subnet2Prefixv6": "2001:db8:2:2::0/64",
+        "subnet3Prefixv6": "2001:db8:2:3::0/64",
+        "subnet4Prefixv6": "2001:db8:2:4::0/64",
+
+        "nsgName": "[concat(variables('cat_vmName'),'-nsg')]",
+
+        "vmName": "[parameters('vmName')]",
+        "vmNicName": "[concat(variables('vmName'), '-nic')]",
+        "publisher": "canonical",
+        "offer": "ubuntu-24_04-lts",
+        "sku": "server",
+        "version": "latest",
+        "vmPublicIPName": "[concat(variables('vmName'), '-pubIP')]",
+        "vmSize": "[parameters('vmSize')]",
+        "storageAccountType": "[parameters('storageAccountType')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnetName')]",
+            "apiVersion": "2024-05-01",
+            "comments": "virtual network",
+            "location": "[variables('location')]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefixv4')]",
+                        "[variables('addressPrefixv6')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnet1Name')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "[variables('subnet1Prefixv4')]",
+                                "[variables('subnet1Prefixv6')]"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet2Name')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "[variables('subnet2Prefixv4')]",
+                                "[variables('subnet2Prefixv6')]"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet3Name')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "[variables('subnet3Prefixv4')]",
+                                "[variables('subnet3Prefixv6')]"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[variables('subnet4Name')]",
+                        "properties": {
+                            "addressPrefixes": [
+                                "[variables('subnet4Prefixv4')]",
+                                "[variables('subnet4Prefixv6')]"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsgName')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-Rule",
+                        "properties": {
+                            "description": "Allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationaddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "allow-inboud-netw10",
+                        "properties": {
+                            "description": "Allow 10.0.0.0/8",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceaddressPrefix": "10.0.0.0/8",
+                            "destinationaddressPrefix": "10.0.0.0/8",
+                            "access": "Allow",
+                            "priority": 105,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "UDP-Rule1-IKE",
+                        "properties": {
+                            "description": "Allow UDP for IKE",
+                            "protocol": "Udp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "500",
+                            "sourceaddressPrefix": "*",
+                            "destinationaddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "UDP-Rule2-IKE",
+                        "properties": {
+                            "description": "Allow UDP for IKE",
+                            "protocol": "Udp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "4500",
+                            "sourceaddressPrefix": "*",
+                            "destinationaddressPrefiX": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('cat_nic0_pubIPAddressName')]",
+            "apiVersion": "2024-05-01",
+            "comments": "public IP assigned to the catalyst",
+            "location": "[variables('location')]",
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 10
+            }
+
+        },
+        {
+            "comments": "Catalyst- eth1. Public IP is associated with the NIC to connect via SSH",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('cat_nic0')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('cat_nic0_pubIPAddressName'))]"
+            ],
+            "properties": {
+                "enableIPForwarding": true,
+                "enableAcceleratedNetworking": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig-v4",
+                        "properties": {
+                            "primary": true,
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv4",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('cat_nic0_pubIPAddressName')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet1Name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ipconfig-v6",
+                        "properties": {
+                            "primary": false,
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv6",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet1Name'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                }
+
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('cat_nic1_pubIPAddressName')]",
+            "apiVersion": "2024-05-01",
+            "comments": "public IP assigned to the catalyst",
+            "location": "[variables('location')]",
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 10
+            }
+
+        },
+        {
+            "comments": "Catalyst- eth2. it is an internal interface without public IP address",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('cat_nic1')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('cat_nic1_pubIPAddressName'))]"
+            ],
+            "properties": {
+                "enableIPForwarding": true,
+                "enableAcceleratedNetworking": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig-v4",
+                        "properties": {
+                            "primary": true,
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv4",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('cat_nic1_pubIPAddressName')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet2Name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ipconfig-v6",
+                        "properties": {
+                            "primary": false,
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv6",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet2Name'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                }
+            }
+        },
+        {
+
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('cat_nic2_pubIPAddressName')]",
+            "apiVersion": "2024-05-01",
+            "comments": "public IP assigned to the catalyst",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "comments": "Catalyst- eth3. Public IP is associated with the NIC",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('cat_nic2')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('cat_nic2_pubIPAddressName'))]"
+            ],
+            "properties": {
+                "enableIPForwarding": true,
+                "enableAcceleratedNetworking": true,
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig-v4",
+                        "properties": {
+                            "primary": true,
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv4",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('cat_nic2_pubIPAddressName')  )]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet3Name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ipconfig-v6",
+                        "properties": {
+                            "primary": false,
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv6",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet3Name'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('cat_vmName')]",
+            "apiVersion": "2024-07-01",
+            "location": "[variables('location')]",
+            "plan": {
+                "name": "[variables('cat_imageSKU')]",
+                "publisher": "[variables('cat_imagePublisher')]",
+                "product": "[variables('cat_imageOffer')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic0'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic1'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic2'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('cat_vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('cat_vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('cat_imagePublisher')]",
+                        "offer": "[variables('cat_imageOffer')]",
+                        "sku": "[variables('cat_imageSKU')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('cat_vmName'),'-OSDisk')]",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "properties": {
+                                "primary": true
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic0'))]"
+                        },
+                        {
+                            "properties": {
+                                "primary": false
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic1'))]"
+                        },
+                        {
+                            "properties": {
+                                "primary": false
+                            },
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic2'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vmPublicIPName')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vmNicName')]",
+            "apiVersion": "2024-05-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmPublicIPName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig-v4",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv4",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('vmPublicIPName'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet4Name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ipconfig-v6",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv6",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('Subnet4Name'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName')]",
+            "apiVersion": "2024-07-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vmNicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('publisher')]",
+                        "offer": "[variables('offer')]",
+                        "sku": "[variables('SKU')]",
+                        "version": "[variables('version')]"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vmName'),'-OSdisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('storageAccountType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('vmNicName'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "RT-vnet2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines',  variables('cat_vmName'))  ]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/routeTables",
+                            "name": "[variables('routeTableNameSubnet4')]",
+                            "apiVersion": "2024-05-01",
+                            "location": "[variables('location')]",
+                            "comments": "UDR applied to the subnet subnet4",
+                            "properties": {
+                                "disableBgpRoutePropagation": false,
+                                "routes": [
+                                    {
+                                        "name": "to-remote-network-v4",
+                                        "properties": {
+                                            "addressPrefix": "[variables('remotevNetPrefixv4')]",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic0')), '2024-05-01').ipConfigurations[0].properties.privateIPAddress]"
+                                        }
+                                    },
+                                    {
+                                        "name": "to-remote-network-v6",
+                                        "properties": {
+                                            "addressPrefix": "[variables('remotevNetPrefixv6')]",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic0')), '2024-05-01').ipConfigurations[1].properties.privateIPAddress]"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/routeTables",
+                            "name": "[variables('routeTableNameSubnet1')]",
+                            "apiVersion": "2024-05-01",
+                            "location": "[variables('location')]",
+                            "comments": "UDR applied to the subnet subnet1",
+                            "properties": {
+                                "disableBgpRoutePropagation": false,
+                                "routes": [
+                                    {
+                                        "name": "to-remote-network-v4",
+                                        "properties": {
+                                            "addressPrefix": "[variables('remotevNetPrefixv4')]",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic0')), '2024-05-01').ipConfigurations[0].properties.privateIPAddress]"
+                                        }
+                                    },
+                                    {
+                                        "name": "to-remote-network-v6",
+                                        "properties": {
+                                            "addressPrefix": "[variables('remotevNetPrefixv6')]",
+                                            "nextHopType": "VirtualAppliance",
+                                            "nextHopIpAddress": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('cat_nic0')), '2024-05-01').ipConfigurations[1].properties.privateIPAddress]"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "update-vnet2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments',  'RT-vnet2')  ]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "name": "[variables('vnetName')]",
+                            "apiVersion": "2024-05-01",
+                            "comments": "virtual network",
+                            "location": "[variables('location')]",
+                            "dependsOn": [],
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[variables('addressPrefixv4')]",
+                                        "[variables('addressPrefixv6')]"
+                                    ]
+                                },
+                                "subnets": [
+                                    {
+                                        "name": "[variables('subnet1Name')]",
+                                        "properties": {
+                                            "addressPrefixes": [
+                                                "[variables('subnet1Prefixv4')]",
+                                                "[variables('subnet1Prefixv6')]"
+                                            ],
+                                            "routeTable": {
+                                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableNameSubnet1'))]"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "[variables('subnet2Name')]",
+                                        "properties": {
+                                            "addressPrefixes": [
+                                                "[variables('subnet2Prefixv4')]",
+                                                "[variables('subnet2Prefixv6')]"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "[variables('subnet3Name')]",
+                                        "properties": {
+                                            "addressPrefixes": [
+                                                "[variables('subnet3Prefixv4')]",
+                                                "[variables('subnet3Prefixv6')]"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "[variables('subnet4Name')]",
+                                        "properties": {
+                                            "addressPrefixes": [
+                                                "[variables('subnet4Prefixv4')]",
+                                                "[variables('subnet4Prefixv6')]"
+                                            ],
+                                            "routeTable": {
+                                                "id": "[resourceId('Microsoft.Network/routeTables', variables('routeTableNameSubnet4'))]"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

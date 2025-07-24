@@ -1,0 +1,113 @@
+!
+ipv6 unicast-routing
+!
+interface GigabitEthernet1
+ ip address dhcp
+ ip nat outside
+ negotiation auto
+ ipv6 address dhcp
+ ipv6 enable
+ ipv6 nd autoconfig default-route
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ ip address dhcp
+ negotiation auto
+ ipv6 address dhcp
+ ipv6 enable
+ ipv6 nd autoconfig default-route
+ no mop enabled
+ no mop sysid
+ no shut
+!
+interface GigabitEthernet3
+ ip address dhcp
+ negotiation auto
+ ipv6 address dhcp
+ ipv6 enable
+ ipv6 nd autoconfig default-route
+ no mop enabled
+ no mop sysid
+ no shut
+!
+!
+crypto ikev2 proposal az-PROPOSAL
+ encryption aes-gcm-256 aes-gcm-128
+ prf sha384 sha256
+ group 14
+!
+crypto ikev2 policy az-POLICY
+ proposal az-PROPOSAL
+!
+crypto ikev2 keyring az-KEYRING1
+ peer az-gw-instance0
+  address <PUBLIC_IP_GTW_INSTANCE_0>
+  pre-shared-key <SHARED_SECRET_IPsecTunnels>
+!
+!
+crypto ikev2 keyring az-KEYRING2
+ peer az-gw-instance1
+  address <PUBLIC_IP_GTW_INSTANCE_1>
+  pre-shared-key <SHARED_SECRET_IPsecTunnels>
+ !
+crypto ikev2 profile az-PROFILE1
+ match address local 10.2.0.36
+ match identity remote address <PUBLIC_IP_GTW_INSTANCE_0> 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local az-KEYRING1
+ dpd 40 2 on-demand
+!
+crypto ikev2 profile az-PROFILE2
+ match address local 10.2.0.68
+ match identity remote address <PUBLIC_IP_GTW_INSTANCE_1> 255.255.255.255
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local az-KEYRING2
+ dpd 40 2 on-demand
+!
+crypto ipsec transform-set az-TRANSFORMSET esp-gcm 256
+ mode tunnel
+!
+crypto ipsec profile az-IPSEC-PROFILE1
+ set transform-set az-TRANSFORMSET
+ set ikev2-profile az-PROFILE1
+!
+crypto ipsec profile az-IPSEC-PROFILE2
+ set transform-set az-TRANSFORMSET
+ set ikev2-profile az-PROFILE2
+!
+interface Tunnel0
+ ip address 172.168.0.1 255.255.255.255
+ ipv6 enable
+ ip tcp adjust-mss 1350
+ tunnel source 10.2.0.36
+ tunnel mode ipsec dual-overlay
+ tunnel destination <PUBLIC_IP_GTW_INSTANCE_0>
+ tunnel protection ipsec profile az-IPSEC-PROFILE1
+!
+interface Tunnel1
+ ip address 172.168.0.2 255.255.255.255
+ ipv6 enable
+ ip tcp adjust-mss 1350
+ tunnel source 10.2.0.68
+ tunnel mode ipsec dual-overlay
+ tunnel destination <PUBLIC_IP_GTW_INSTANCE_1>
+ tunnel protection ipsec profile az-IPSEC-PROFILE2
+!
+!
+ip route 10.1.0.0 255.255.255.0 Tunnel0
+ip route 10.1.0.0 255.255.255.0 Tunnel1
+ip route <PUBLIC_IP_GTW_INSTANCE_0> 255.255.255.255 10.2.0.33
+ip route <PUBLIC_IP_GTW_INSTANCE_1> 255.255.255.255 10.2.0.65
+ip route 10.2.0.96 255.255.255.224 10.2.0.1
+ipv6 route 2001:db8:2:4::/64 2001:db8:2:1::1
+ipv6 route 2001:db8:1::/48 Tunnel0
+ipv6 route 2001:db8:1::/48 Tunnel1
+!
+!
+line vty 0 4
+ exec-timeout 10 0
+exit
+

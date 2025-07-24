@@ -1,0 +1,10 @@
+{
+    "subscriptionName": "Hybrid-PM-Demo-1",
+    "rgName": "cata-ipv6-1",
+    "location": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD",
+    "catalystName": "cat",
+    "sharedKey": "SHARED_SECRET_IPsecTunnels",
+    "gatewayName": "gw"
+}
