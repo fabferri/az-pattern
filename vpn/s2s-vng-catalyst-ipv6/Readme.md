@@ -116,7 +116,7 @@ catalyst# write
 catalyst# reload
 ```
 
-## 4. Cisco Catalyst configuration tro trasport IPv6 inner traffic
+## 4. Cisco Catalyst configuration to trasport IPv6 inner traffic
 
 The interfaces of the Catalyst are configured in DHCP. In IPv6, the default gateway is not assigned via DHCPv6. Instead, it is learned through Router Advertisements (RA) sent by routers on the local link. This is by design and aligns with the IPv6 protocol standards. <br>
 The current setup of the Catalyst runs **Cisco IOS XE Software, Version 17.16.01a** <br>
