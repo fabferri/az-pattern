@@ -118,7 +118,7 @@ catalyst# reload
 
 ## 4. Cisco Catalyst configuration to trasport IPv6 inner traffic
 
-The interfaces of the Catalyst are configured in DHCP. In IPv6, the default gateway is not assigned via DHCPv6. Instead, it is learned through Router Advertisements (RA) sent by routers on the local link. This is by design and aligns with the IPv6 protocol standards. <br>
+The interfaces IPv6 address of the Catalyst are configured through DHCP. In IPv6, the default gateway is not assigned via DHCPv6. Instead, it is learned through Router Advertisements (RA) sent by routers on the local link. This is by design and aligns with the IPv6 protocol standards. <br>
 The current setup of the Catalyst runs **Cisco IOS XE Software, Version 17.16.01a** <br>
 The documentation [Security for VPNs with IPsec Configuration Guide](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_conn_vpnips/configuration/xe-16-11/sec-sec-for-vpns-w-ipsec-xe-16-11-book/sec-ipsec-virt-tunnl.html) outlines support for a configuration in which an IPsec tunnel is established over a Virtual Tunnel Interface (VTI) using a <ins>dual-overlay network</ins>. The command **tunnel mode ipsec dual-overlay** enables the transport of IPv6 inner traffic across the tunnel interface.
 
