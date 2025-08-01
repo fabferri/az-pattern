@@ -65,6 +65,11 @@ Effective route table in **spoke1vm1**:
 Effective route table in **spoke2vm1**:
 [![4]][4]
 
+<br>
+
+`Tags: Azure subnet peering, REST API` <br>
+`date: 01-08-2025` <br>
+
 <!--Image References-->
 
 [1]: ./media/network-diagram.png "network diagram"
@@ -73,3 +78,4 @@ Effective route table in **spoke2vm1**:
 [4]: ./media/effetive-route-spoke2vm1.png "effective route table in spoke1vm1"
 
 <!--Link References-->
+
