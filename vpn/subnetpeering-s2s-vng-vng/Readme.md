@@ -47,9 +47,9 @@ az network vnet peering create --name $peeringNamevnet2tovnet1 `
     --remote-subnet-names $vnet1Subnet1Name $vnet1GatewaySubnetName
 ```
 
-`--allow-gateway-transit true`: the "allow gateway transit" is required to advertise the subnets in peering to the remote site **vnet10**
-`--local-subnet-names $vnet1Subnet1Name $vnet1GatewaySubnetName`: GatewaySubnet is required in the subnet peering if you want to advertise the networks of subnet in peering to the remote site **vnet10**
-`--use-remote-gateways true`: it is required to allow to the subnets in peering in vnet2 to be advertised to the remote site **vnet10**
+`--allow-gateway-transit true`: the "allow gateway transit" is required to advertise the subnets in peering to the remote site **vnet10** <br>
+`--local-subnet-names $vnet1Subnet1Name $vnet1GatewaySubnetName`: GatewaySubnet is required in the subnet peering if you want to advertise the networks of subnet in peering to the remote site **vnet10** <br>
+`--use-remote-gateways true`: it is required to allow to the subnets in peering in vnet2 to be advertised to the remote site **vnet10** <br>
 
 
 
