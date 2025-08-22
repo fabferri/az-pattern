@@ -96,6 +96,9 @@ az network vnet subnet show `
 ```
 
 The command shows the following change:
+
+```json
+
 {
   "addressPrefixes": [
     "10.0.1.224/27",
@@ -121,7 +124,7 @@ The command shows the following change:
   "resourceGroup": "test-GatewaySubnet-extension",
   "type": "Microsoft.Network/virtualNetworks/subnets"
 }
-
+```
 
 Adding the new address 10.0.1.192/27 to the Gateway subnet does not produce a distruption in site-to-site tunnels.
 
@@ -144,7 +147,9 @@ az network vnet subnet show `
     --resource-group $rg 
 ```
 
-The command shows the address prefix in the GatewaySubnet is only **"10.0.1.224/27"** :
+The command shows the address prefix in the GatewaySubnet is only **"10.0.1.224/27"**:
+
+```json
 {
   "addressPrefix": "10.0.1.224/27",
   "delegations": [],
@@ -167,7 +172,8 @@ The command shows the address prefix in the GatewaySubnet is only **"10.0.1.224/
   "resourceGroup": "test-GatewaySubnet-extension",
   "type": "Microsoft.Network/virtualNetworks/subnets"
 }
- 
+```
+
 `Tags: Azure VPN, Site-to-Site VPN, Gatewaysubnet` <br>
 `date: 18-08-2025` <br>
 
