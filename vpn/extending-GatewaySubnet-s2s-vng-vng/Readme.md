@@ -57,7 +57,7 @@ The site-to-site tunnels details are shown in the diagram:
 [![2]][2]
 
 
-## <a name="adding a new address to the GatwaySubnet"></a>3. Adding a new IP address prefix to the GatewaySubnet in vnet1
+## <a name="adding a new IP address prefix to the GatwaySubnet"></a>3. Adding a new IP address prefix to the GatewaySubnet in vnet1
 
 The network **10.0.1.192/27** is added to the **GatewaySubnet** of the **vnet1**:
 
@@ -76,7 +76,7 @@ az feature show --namespace Microsoft.Network --name AllowMultipleAddressPrefixe
 az feature show --namespace Microsoft.Network --name AllowDeletionOfIpPrefixFromSubnet
 ```
 
-update the existing GatewaySubnet with the new prefix:
+Update the existing GatewaySubnet with the new prefix:
 
 ```azurecli
 az network vnet subnet update `
@@ -126,7 +126,9 @@ The command shows the following change:
 
 Adding the new address 10.0.1.192/27 to the Gateway subnet does not produce a distruption in site-to-site tunnels.
 
-Removing the 10.0.1.192/27 from the Gateway subnet:
+## <a name="deleting an address prefix in the GatwaySubnet"></a>4. Deleting the IP address prefix in the GatewaySubnet in vnet1
+
+Removing the 10.0.1.192/27 from the Gateway subnet and keeing the network 10.0.1.224/27 in use to the VPN gateway:
 
 ```azcli
 az network vnet subnet update `
