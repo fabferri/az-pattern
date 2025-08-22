@@ -27,10 +27,8 @@ The deployment creates:
 - a **GatewaySubnet** 10.0.1.224/27 in **vnet1**,
 - a **GatewaySubnet** 10.0.2.224/27 in **vnet2**.
 
-When the deployment of site-to-site IPsec tunnels is completed:
+When the deployment of site-to-site IPsec tunnels is completed, the network 10.0.1.192/27 is added to the  GatewaySubnet of **vnet1**,
 
-- the network 10.0.1.192/27 is added to the  GatewaySubnet of **vnet1**,
-- the network 10.0.2.192/27 is added to the  GatewaySubnet of **vnet2**.
 
 ### <a name="file list"></a>1. File list
 
