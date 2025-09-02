@@ -262,6 +262,9 @@ The .zip file contains <ins>LICENSE.txt</ins> and <ins>**terraform.exe**</ins>
    `terraform plan -out main.tfplan` <br>
    `terraform apply main.tfplan` <br>
 
+if you want to replace a specific reosurce after a deployment, i.e. a connection: <br>
+`terraform apply -replace="azurerm_virtual_hub_connection.hubconnection12"`
+
 if you should issue with azure authetication, run: <br> 
 `az login --scope https://graph.microsoft.com/.default` <br> <br>
 
