@@ -55,13 +55,15 @@ resource "azurerm_virtual_hub_connection" "hubconnection11" {
   name                      = var.hub_connection11
   virtual_hub_id            = azurerm_virtual_hub.hub1.id
   remote_virtual_network_id = azurerm_virtual_network.vnet1.id
+  internet_security_enabled = true
 }
 
 resource "azurerm_virtual_hub_connection" "hubconnection12" {
   name                      = var.hub_connection12
   virtual_hub_id            = azurerm_virtual_hub.hub1.id
   remote_virtual_network_id = azurerm_virtual_network.vnet2.id
-
+  internet_security_enabled = true
+  
   depends_on = [azurerm_virtual_hub_connection.hubconnection11]
 }
 
