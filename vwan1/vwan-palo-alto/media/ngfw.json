@@ -1,0 +1,74 @@
+{
+    "id": "/subscriptions/ee430ef2-e4f5-45df-a4fd-5da90bb82b2e/resourceGroups/rg1/providers/PaloAltoNetworks.Cloudngfw/firewalls/ngfw1",
+    "name": "ngfw1",
+    "type": "paloaltonetworks.cloudngfw/firewalls",
+    "location": "uksouth",
+    "tags": {},
+    "systemData": {
+        "createdBy": "fabferri@microsoft.com",
+        "createdByType": "User",
+        "createdAt": "2025-08-28T13:30:40.5736802Z",
+        "lastModifiedBy": "54a2195e-8365-444c-8f50-4a5de4be1e2b",
+        "lastModifiedByType": "Application",
+        "lastModifiedAt": "2025-08-28T13:46:50.7053657Z"
+    },
+    "properties": {
+        "networkProfile": {
+            "vwanConfiguration": {
+                "networkVirtualApplianceId": "/subscriptions/ee430ef2-e4f5-45df-a4fd-5da90bb82b2e/resourceGroups/rg1/providers/Microsoft.Network/networkvirtualappliances/ngfw1-nva",
+                "vHub": {
+                    "resourceId": "/subscriptions/ee430ef2-e4f5-45df-a4fd-5da90bb82b2e/resourceGroups/rg1/providers/Microsoft.Network/virtualHubs/hub1"
+                },
+                "trustSubnet": {
+                    "resourceId": "/subscriptions/9054225d-8b2c-4b1a-b06a-2bfb496f5ab1/resourceGroups/RG_hub1_5477796f-d534-48e4-a6f6-29292fad4608/providers/Microsoft.Network/virtualNetworks/HV_hub1_d9ca6bc2-408e-42fd-92fc-a759a1c988f7/subnets/NetworkVirtualApplianceSubnet"
+                },
+                "unTrustSubnet": {
+                    "resourceId": "/subscriptions/9054225d-8b2c-4b1a-b06a-2bfb496f5ab1/resourceGroups/RG_hub1_5477796f-d534-48e4-a6f6-29292fad4608/providers/Microsoft.Network/virtualNetworks/HV_hub1_d9ca6bc2-408e-42fd-92fc-a759a1c988f7/subnets/NetworkVirtualApplianceManagementSubnet"
+                },
+                "ipOfTrustSubnetForUdr": {
+                    "address": "10.250.0.228"
+                }
+            },
+            "networkType": "VWAN",
+            "publicIps": [
+                {
+                    "resourceId": "/subscriptions/ee430ef2-e4f5-45df-a4fd-5da90bb82b2e/resourceGroups/rg1/providers/Microsoft.Network/publicIPAddresses/ngfw1-pip",
+                    "address": "172.166.104.5"
+                }
+            ],
+            "enableEgressNat": "ENABLED",
+            "egressNatIp": [
+                {
+                    "resourceId": "/subscriptions/ee430ef2-e4f5-45df-a4fd-5da90bb82b2e/resourceGroups/rg1/providers/Microsoft.Network/publicIPAddresses/ngfw1-nat-pip",
+                    "address": "20.162.230.182"
+                }
+            ]
+        },
+        "associatedRulestack": {
+            "resourceId": "/subscriptions/ee430ef2-e4f5-45df-a4fd-5da90bb82b2e/resourceGroups/rg1/providers/PaloAltoNetworks.Cloudngfw/localRulestacks/ngfw1-lrs",
+            "location": "uksouth",
+            "rulestackId": "SUBSCRIPTION~ee430ef2-e4f5-45df-a4fd-5da90bb82b2e~RG~rg1~STACK~ngfw1-lrs"
+        },
+        "dnsSettings": {
+            "enableDnsProxy": "DISABLED",
+            "enabledDnsType": "CUSTOM"
+        },
+        "isPanoramaManaged": "FALSE",
+        "isStrataCloudManaged": "FALSE",
+        "provisioningState": "Succeeded",
+        "planData": {
+            "usageType": "PAYG",
+            "billingCycle": "MONTHLY",
+            "planId": "panw-cngfw-payg",
+            "effectiveDate": "0001-01-01T00:00:00Z"
+        },
+        "marketplaceDetails": {
+            "offerId": "pan_swfw_cloud_ngfw",
+            "publisherId": "paloaltonetworks",
+            "marketplaceSubscriptionStatus": "Subscribed",
+            "marketplaceSubscriptionId": "fde9d294-f496-4d98-ce85-2aa2289a73d6"
+        },
+        "panEtag": "43712dc6-8413-11f0-9b70-3e5d7bd15d48"
+    },
+    "apiVersion": "2024-02-07-preview"
+}

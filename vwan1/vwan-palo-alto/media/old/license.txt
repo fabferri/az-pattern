@@ -1,0 +1,18 @@
+https://portal.azure.com/?feature.customportal=false#create/paloaltonetworks.cloud-ngfw-private-offer
+
+
+Product + plan details 
+Private Offers for Cloud NGFW Credits - Cloud Next-Generation Firewall by Palo Alto Networks - an Azure Native ISV Service - Upfront payment Public Plan for Cloud NGFW credits 
+by Palo Alto Networks, Inc.
+
+Basics
+Subscription BAMI_e9cd6773-9e86-4a90-b9bf-ad7bf9fa3363
+Resource Group rg1
+Name ngw-test
+Plan Upfront payment Public Plan for Cloud NGFW credits
+Billing term 1-year subscription
+Price/billing frequency US$0.00/year
+Subtotal US$0.00 for 1 year
+Auto-renew Off
+
+After subscribing, remember to configure your SaaS account on the publisher’s website.
