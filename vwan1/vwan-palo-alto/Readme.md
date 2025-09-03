@@ -234,13 +234,21 @@ vm2-1:~$ cat /etc/hostname > /var/www/html/index.nginx-debian.html
 
 ### <a name="enable firewall logging"></a>10. Validate Traffic Flow and Logging
 
+Checking the effective routing table in **vm1-1** **vm2-1**:
+
+![22][22]
+
+![23][23]
+
 Generate HTTP traffic between the VMs in the spoke vnets:
 
 ```bash
 while true; sleep 0.2s; do curl http://10.101.1.4; done
 ```
 
-![22][22]
+Checking the firewall logs:
+
+![24][24]
 
 
 ## ANNEX: how to get ready with terraform
@@ -299,6 +307,8 @@ if you your Azure subscription is in different Entra tenant use the command: <br
 [19]: ./media/log-analytics01.png "log analytics creation"
 [20]: ./media/log-analytics01.png "log analytics creation"
 [21]: ./media/fw-log-settings01.png "reference log Analytics in Palo Alto cloud NGFW"
-[22]: ./media/firewall-logs-in-log-analytics01.png "logging traffic"
+[22]: ./media/vm1-1-effective-routing-table.png "vm1-1 effective routing table"
+[23]: ./media/vm2-1-effective-routing-table.png "vm1-1 effective routing table"
+[24]: ./media/firewall-logs-in-log-analytics01.png "logging traffic"
 
 <!--Link References-->
