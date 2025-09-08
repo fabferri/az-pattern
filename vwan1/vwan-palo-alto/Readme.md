@@ -51,7 +51,7 @@ Deployment and configuration of Palo Alto cloud Next Generation firewall and rou
    - Set up simple workloads in:
       - vm1-1
       - vm2-1
-1. Validate Traffic Flow and Logging
+1. Validate Traffic Flows and Logging
    - Generate traffic between **vm1-1** and **vm2-1**.
    - Verify that logs are correctly captured in Log Analytics.
 
@@ -232,7 +232,7 @@ vm1-1:~$ cat /etc/hostname > /var/www/html/index.nginx-debian.html
 vm2-1:~$ cat /etc/hostname > /var/www/html/index.nginx-debian.html
 ```
 
-### <a name="enable firewall logging"></a>10. Validate Traffic Flow and Logging
+### <a name="validate traffic flows"></a>10. Validate Traffic Flows and Logging
 
 Checking the effective routing table in **vm1-1** **vm2-1**:
 
