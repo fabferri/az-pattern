@@ -53,7 +53,7 @@ Sequence of steps to make the deployment:
 > [!NOTE]
 >
 > To run the codes create a python virtual enviroment <br>
-> in windows the code can be executed by **py** command, i.e. **py create-gw1.py**
+> In windows the code can be executed by **py** command, i.e. **py create-gw1.py**
 >
 > Run  **connections.py** only after creating VPN Gateway through **create-gw1.py** and **create-gw2.py**
 >
