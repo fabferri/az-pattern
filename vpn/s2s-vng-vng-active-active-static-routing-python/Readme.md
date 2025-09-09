@@ -25,12 +25,12 @@ The network diagram is shown below:
 
 The deployment creates:
 
-- a **GatewaySubnet** 10.0.1.192/27 in **vnet1**,
-- a **GatewaySubnet** 10.0.2.192/27 in **vnet2**.
+- a **GatewaySubnet** 10.0.1.192/27 in **vnet1**
+- a **GatewaySubnet** 10.0.2.192/27 in **vnet2**
 - two local network gateways **localNetGw11**,**localNetGw12**, to define static routing to reach out the **vnet1**
 - two local network gateways **localNetGw21**,**localNetGw22**, to define static routing to reach out the **vnet2**
-- two connections **conn11** **conn12** in **gw1**,
-- two connections **conn21** **conn22** in **gw2**,
+- two connections **conn11** **conn12** associated to **gw1**
+- two connections **conn21** **conn22** associated to **gw2**
 
 [![2]][2]
 
@@ -52,8 +52,12 @@ Sequence of steps to make the deployment:
 
 > [!NOTE]
 >
+> To run the codes create a python virtual enviroment <br>
+> in windows the code can be executed by **py** command, i.e. **py create-gw1.py**
+>
 > Run  **connections.py** only after creating VPN Gateway through **create-gw1.py** and **create-gw2.py**
 >
+
 
 <br>
 
