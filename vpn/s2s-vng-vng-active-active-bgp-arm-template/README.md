@@ -1,8 +1,8 @@
 <properties
-pageTitle= 'Single ARM template to create Site-to-Site VPN between two Azure VPN Gateways'
-description= "Single ARM template to create Site-to-Site VPN between two Azure VPN Gateways"
+pageTitle= 'ARM template to create Site-to-Site VPN between two Azure VPN Gateways'
+description= "ARM template to create Site-to-Site VPN between two Azure VPN Gateways"
 documentationcenter: na
-services=""
+services="Azure VPN Gateway"
 documentationCenter="na"
 authors="fabferri"
 manager=""
@@ -17,42 +17,38 @@ editor=""/>
    ms.date="11/08/2021"
    ms.author="fabferri" />
 
-## Single ARM template to create Site-to-Site VPN between two VPN Gateways
+## ARM template to create Site-to-Site VPN between two VPN Gateways
 
-This article contains an ARM template to create to vnets, vnet1 and vnet2, connected through site-to-site VPN. 
-<br>
-
-Two IPsec tunnels are established between the Azure VPN gateways deployed with zonal gateways (SKU: **"VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"**).
-<br>
+This article contains an ARM template to create to vnets, vnet1 and vnet2, connected through site-to-site VPN. <br>
+Two IPsec tunnels are established between the Azure VPN gateways deployed with zonal gateways (SKU: **"VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"**). <br>
 
 Zonal VPN Gateways require public IP with Standard SKU and static assigment.
 
 [![1]][1]
 
-
-| file                | description                                                               |       
+| file                | description                                                               |
 | ------------------- |:------------------------------------------------------------------------- |
 | **vpn.json**        | ARM template to create two VNets interconnected through site-to-site VPN  |
 | **vpn.ps1**         | powershell script to deploy the ARM template **vpn1.json**                |
 | **public-ip.json**  | basic ARM template to create a public IP with standard SKU                |
 | **public-ip.ps1**   | powershell script to deploy the ARM template **public-ip.json**           |
 
-
 As reported in the **public-ip.json**, the value of the public IP can be retrieved by the function:
 
 ```json
-"[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')),'2022-11-01').ipAddress]"
+"[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')),'2024-05-01').ipAddress]"
 ```
 
 The same function is used in the **vpn.json** to carve out the values of public IPs assigned to each VPN Gateway.
 <br>
 
 Below a snippet of **vpn.json** showing how to collect the public IP of the remote vpn gateway and private IP of the remote BGP peer:
+
 ```json
         {
             "type": "Microsoft.Network/localNetworkGateways",
             "name": "[variables('localGatewayName11')]",
-            "apiVersion": "2022-11-01",
+            "apiVersion": "2024-05-01",
             "comments": "public IP of remote IPSec peer",
             "location": "[variables('location2')]",
             "dependsOn": [
@@ -62,7 +58,7 @@ Below a snippet of **vpn.json** showing how to collect the public IP of the remo
                 "localNetworkAddressSpace": {
                     "addressPrefixes": []
                 },
-                "gatewayIpAddress": "[reference(variables('gateway1PublicIP1Id'),'2022-11-01').ipAddress]",
+                "gatewayIpAddress": "[reference(variables('gateway1PublicIP1Id'),'22024-05-01').ipAddress]",
                 "bgpSettings": {
                     "asn": "[variables('asnGtw1')]",
                     "bgpPeeringAddress": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2020-06-01').bgpSettings.bgpPeeringAddress , ','))]",
@@ -74,10 +70,9 @@ Below a snippet of **vpn.json** showing how to collect the public IP of the remo
 
 [![2][2]
 
-
-
 > [!NOTE]
 > Before spinning up the ARM template you should:
+>
 > 1. edit the file **vms.ps1** and set the administrator _username_ and _password_ of the Azure VMs in the variables **$adminUsername**, **$adminPassword**
 >
 > 2. customize the values of variables stored in the **init.txt** file. REplace the value of **YOUR_PUBLIC_IP** with your public manageent IP. This IP is used to access in SSH to the Azure VMs.
@@ -88,7 +83,7 @@ Some powershell commands to fetch information on site-to-site VPN tunnels:
 
 ```powershell
 $rgName='test-vpn'
-$connectionName11='vpnGw1IP1-to-vpnGw2IP1'
+$connectionName11='conn11'
 Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName $rgName
 (Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName $rgName).ConnectionStatus
 (Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName $rgName).EgressBytesTransferred
@@ -97,7 +92,7 @@ Get-AzVirtualNetworkGatewayConnection -Name $connectionName11 -ResourceGroupName
 
 ```powershell
 $rgName='test-vpn'
-$connectionName11='vpnGw1IP1-to-vpnGw2IP1'
+$connectionName11='conn11'
 az network vpn-connection show --name $connectionName11 --resource-group $rgName
 az network vpn-connection show --name $connectionName11 --resource-group $rgName --query tunnelConnectionStatus
 ```
@@ -105,25 +100,25 @@ az network vpn-connection show --name $connectionName11 --resource-group $rgName
 
 ```powershell
 $rgName='test-vpn'
-$vpnName='vpnGw1'
+$vpnName='gw1'
 Get-AzVirtualNetworkGatewayLearnedRoute -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName
 ```
 
 ```powershell
 $rgName='test-vpn'
-$vpnName='vpnGw1'
+$vpnName='gw1'
 az network vnet-gateway list-learned-routes -n $vpnName -g $rgName  -o table
 ```
 
 ```powershell
 $rgName='test-vpn'
-$vpnName='vpnGw1'
+$vpnName='gw1'
 Get-AzVirtualNetworkGatewayBGPPeerStatus -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName |ft
 ```
 
 ```powershell
 $rgName='test-vpn'
-$vpnName='vpnGw1'
+$vpnName='gw1'
 $peer1=(Get-AzVirtualNetworkGatewayBGPPeerStatus -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName).LocalAddress[0]
 $peer2=(Get-AzVirtualNetworkGatewayBGPPeerStatus -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName).LocalAddress[1]
 Get-AzVirtualNetworkGatewayAdvertisedRoute -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName -Peer $peer1 | ft
@@ -134,9 +129,10 @@ LocalAddress Network         NextHop    SourcePeer Origin AsPath Weight
 10.100.3.4   10.200.0.0/24   10.100.3.4            Igp    65002       0
 
 ```
+
 ```powershell
 $rgName='test-vpn'
-$vpnName='vpnGw1'
+$vpnName='gw1'
 az network vnet-gateway list --query [].[name,bgpSettings.asn,bgpSettings.bgpPeeringAddress] -o table -g $rgName
 az network vnet-gateway list --query "[?name=='vpnGw1'].[name,bgpSettings.bgpPeeringAddress,bgpSettings.asn]" -o table -g $rgName
 az network vnet-gateway list --query "[?name=='vpnGw1'].{Name:name,BGPlocalIP:bgpSettings.bgpPeeringAddress,ASN:bgpSettings.asn}" -o table -g $rgName
@@ -144,13 +140,14 @@ az network vnet-gateway list --query "[?name=='vpnGw1'].{Name:name,BGPlocalIP:bg
 
 ```bash
 $rgName='test-vpn'
-$vpnName='vpnGw1'
+$vpnName='gw1'
 az network vnet-gateway list-advertised-routes -n $vpnName -g $rgName --peer $peer1
 ```
 
-`Tags: public IP, Azure VM` <br>
+`Tags: Azure VPN Gateway, site-to-site VPN` <br>
 `date: 11-08-2021` <br>
 `date: 11-02-2024` <br>
+`date: 09-09-2025` <br>
 
 <!--Image References-->
 
