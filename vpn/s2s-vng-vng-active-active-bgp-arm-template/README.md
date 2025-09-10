@@ -122,11 +122,11 @@ $vpnName='gw1'
 $peer1=(Get-AzVirtualNetworkGatewayBGPPeerStatus -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName).LocalAddress[0]
 $peer2=(Get-AzVirtualNetworkGatewayBGPPeerStatus -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName).LocalAddress[1]
 Get-AzVirtualNetworkGatewayAdvertisedRoute -VirtualNetworkGatewayName $vpnName -ResourceGroupName $rgName -Peer $peer1 | ft
-LocalAddress Network         NextHop    SourcePeer Origin AsPath Weight
------------- -------         -------    ---------- ------ ------ ------
-10.100.3.4   10.200.0.228/32 10.100.3.4            Igp                0
-10.100.3.4   10.200.0.229/32 10.100.3.4            Igp                0
-10.100.3.4   10.200.0.0/24   10.100.3.4            Igp    65002       0
+LocalAddress Network       NextHop    SourcePeer Origin AsPath Weight
+------------ -------       -------    ---------- ------ ------ ------
+10.0.1.197   10.0.2.197/32 10.0.1.197            Igp           0
+10.0.1.197   10.0.2.0/24   10.0.1.197            Igp    65002  0
+10.0.1.197   10.0.2.196/32 10.0.1.197            Igp           0
 
 ```
 
