@@ -73,9 +73,13 @@ Below a snippet of **vpn.json** showing how to collect the public IP of the remo
 > [!NOTE]
 > Before spinning up the ARM template you should:
 >
-> 1. edit the file **vms.ps1** and set the administrator _username_ and _password_ of the Azure VMs in the variables **$adminUsername**, **$adminPassword**
+> 1. edit the file **vpn.ps1** and set the correct values to the variables **$adminUsername**, **$adminPassword**
 >
-> 2. customize the values of variables stored in the **init.txt** file. REplace the value of **YOUR_PUBLIC_IP** with your public manageent IP. This IP is used to access in SSH to the Azure VMs.
+> 2. customize the values of variables in the **init.txt** file:
+>    subscriptionName=AZURE_SUBSCRIPTION_NAME
+>    ResourceGroupName=RESOURCE_GROUP_NAME
+>    location1=NAME_AZURE_REGION_1
+>    location2=NAME_AZURE_REGION_2
 >
 
 <br>
