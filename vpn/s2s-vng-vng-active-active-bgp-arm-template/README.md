@@ -75,11 +75,11 @@ Below a snippet of **vpn.json** showing how to collect the public IP of the remo
 >
 > 1. edit the file **vpn.ps1** and set the correct values to the variables **$adminUsername**, **$adminPassword**
 >
-> 2. customize the values of variables in the **init.txt** file:
->    subscriptionName=AZURE_SUBSCRIPTION_NAME
->    ResourceGroupName=RESOURCE_GROUP_NAME
->    location1=NAME_AZURE_REGION_1
->    location2=NAME_AZURE_REGION_2
+> 2. customize the values of variables in the **init.txt** file: <br>
+>    subscriptionName=AZURE_SUBSCRIPTION_NAME <br>
+>    ResourceGroupName=RESOURCE_GROUP_NAME <br>
+>    location1=NAME_AZURE_REGION_1 <br>
+>    location2=NAME_AZURE_REGION_2 <br>
 >
 
 <br>
