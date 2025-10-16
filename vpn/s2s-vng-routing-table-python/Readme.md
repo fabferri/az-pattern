@@ -120,8 +120,8 @@ This version introduces significantly improved tabular displays:
 ```
 Connection Name          Type           Status         Remote Gateway IP   Provisioning    Shared Key     
 --------------------------------------------------------------------------------------------------------
-conn-to-onprem          IPsec          Connected      203.0.113.10        Succeeded       Configured     
-conn-to-branch          IPsec          NotConnected   203.0.113.20        Succeeded       Set           
+conn-to-onprem          IPsec          Connected      100.0.113.10        Succeeded       Configured     
+conn-to-branch          IPsec          NotConnected   100.0.113.20        Succeeded       Set           
 ```
 
 **BGP Peer Status Table:**
