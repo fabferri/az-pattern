@@ -91,6 +91,8 @@ As an alternative, a Python virtual environment can be set up through Visual Stu
 
    ```bash
    az login
+   az account set --subscription "your-subscription-name"
+   az account show
    ```
 
 ## how to run the script to collect VPN Gateway information
