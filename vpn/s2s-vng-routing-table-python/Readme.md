@@ -221,8 +221,8 @@ python-dotenv>=1.1.1        # Environment variable management
 
 ---
 
-**Tags:** Azure VPN, Site-to-Site VPN Gateway, Python, Network Analysis  
-**Updated:** October 16, 2025
+**Tags:** Azure VPN, Site-to-Site VPN, Python
+**Updated:** 16-10-2025
 
 <!--Image References-->
 
