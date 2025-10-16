@@ -118,19 +118,29 @@ This version introduces significantly improved tabular displays:
 
 **VPN Connections Table:**
 ```
-Connection Name          Type           Status         Remote Gateway IP   Provisioning    Shared Key     
---------------------------------------------------------------------------------------------------------
-conn-to-onprem          IPsec          Connected      100.0.113.10        Succeeded       Configured     
-conn-to-branch          IPsec          NotConnected   100.0.113.20        Succeeded       Set           
+========================================================================================================================      
+Connection Name           Type            Status          Remote Gateway IP    Provisioning    Shared Key
+------------------------------------------------------------------------------------------------------------------------      
+conn-12-22                IPsec           Connected       100.158.92.134       Succeeded       Configured     
+conn-11-21                IPsec           Connected       100.210.82.204       Succeeded       Configured     
+conn-11-31                IPsec           Connected       100.165.151.97       Succeeded       Configured     
+conn-12-32                IPsec           Connected       100.162.137.43       Succeeded       Configured     
+
+Total connections: 4
 ```
 
 **BGP Peer Status Table:**
 ```
-Peer IP        State       Status      Messages Sent  Messages Recv  Duration       Routes Recv
-------------------------------------------------------------------------------------------------------------
-192.168.1.1    Connected   CONNECTED   450            425            2d 14h 32.15s  25           
-192.168.1.2    Unknown     UNKNOWN     0              0              -              0            
-192.168.1.3    Connected   CONNECTED   123            98             1:23:45.67     12
+BGP Peer Status
+========================================================================================================================      
+Peer IP         State        Status       Messages Sent   Messages Recv   Duration        Routes Recv
+------------------------------------------------------------------------------------------------------------------------      
+10.3.0.229      Connected    CONNECTED    37548           37524           22.19:02:18.64  2
+10.2.0.228      Connected    CONNECTED    38600           38596           23.10:30:1.47   6
+10.2.0.229      Connected    CONNECTED    38623           38611           23.10:44:50.90  6
+10.3.0.228      Connected    CONNECTED    37539           37517           22.19:17:45.23  2
+10.1.0.228      Connected    CONNECTED    38636           38625           23.10:59:54.19  12
+10.1.0.229      Connected    CONNECTED    38621           38637           23.10:59:54.15  12
 ```
 
 **Enhanced Summary Section:**
