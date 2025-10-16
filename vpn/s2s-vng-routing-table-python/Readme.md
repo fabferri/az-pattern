@@ -21,24 +21,15 @@ editor="fabferri"/>
 A comprehensive Python tool for analyzing Azure Virtual Network Gateway (VPN Gateway) routing information, connections, and BGP peer status. This tool provides detailed information on connection health, BGP peer status, and route exchange in clean, readable tabular format. <br>
 This tool is built using the Azure SDK for Python and provides professional-grade network analysis capabilities.
 
-## Quick Overview
+ ## Quick Overview
 
-This tool provides **professional-grade network analysis** for Azure VPN Gateways with:
-
-- **Clean Tabular Output** - All data displayed in easy-to-read tables
-- **Comprehensive Statistics** - Connection counts, BGP peer metrics, and health summaries  
-- **Intelligent Troubleshooting** - Contextual tips for common issues
-- **Secure Operations** - Respects Azure security policies, no sensitive data exposure
-
-## Features
-
-This tool connects to Azure Virtual Network Gateways and provides comprehensive analysis including:
+This code collects details about Azure VPN Gateways and provides:
 
 ### **Connection Management** 
 - **VPN Connections Table**: Tabular display of all site-to-site VPN connections with status, types, and remote gateway IPs
 - **Connection Statistics**: Summary of total connections, connected vs. disconnected counts
 - **Provisioning Status**: Shows provisioning state alongside connection status for better troubleshooting
-- **Shared Key Status**: Intelligent inference of shared key configuration without exposing sensitive values
+- **Shared Key Status**: inference of shared key configuration without exposing sensitive values
 
 ### **BGP Analysis** 
 - **BGP Peer Table**: Tabular format showing peer IP, state, status, message statistics, and connection duration
