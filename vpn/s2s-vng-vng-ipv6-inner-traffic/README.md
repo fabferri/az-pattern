@@ -113,11 +113,6 @@ vm1:~$ iperf3 -6 -s
 vm2:~$ iperf3 -6 -c fd:0:1:1::4 -t 600
 ```
 
-## Useful Links
-
-- [Azure VPN Gateway IPv6 documentation](https://aka.ms/vpnipv6portal)
-- [IPv6 CIDR Calculator](https://iplocation.io/ipv6-cidr-to-range)
-
 ## Notes
 
 - The VPN gateways use BGP for route exchange
@@ -126,7 +121,7 @@ vm2:~$ iperf3 -6 -c fd:0:1:1::4 -t 600
 
 
 `Tags: Azure VPN, Site-to-Site VPN, IPv6, dual-stack` <br>
-`date: 23-07-2025` <br>
+`date: 22-01-2026` <br>
 
 <!--Image References-->
 
