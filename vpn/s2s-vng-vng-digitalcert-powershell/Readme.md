@@ -110,10 +110,8 @@ Each VPN Gateway is configured with its own <ins>User-Assigned Managed Identity<
 
 > [!NOTE]
 >
-> Each gateway trusts the other gateway's root certificate.
->
-> Gateway1 uses the leaf certificates CN=gw1-cer (signed by VPNRootCA1) for its outbound certificate and trusts RootCA2 for inbound connections (and vice versa).
->
+> Each gateway trusts the other gateway's root certificate. <br>
+> Gateway1 uses the leaf certificates CN=gw1-cer (signed by VPNRootCA1) for its outbound certificate and trusts RootCA2 for inbound connections (and vice versa). <br>
 > Gateway2 uses the leaf certificates CN=gw2-cer (signed by VPNRootCA2) for its outbound certificate and trusts RootCA1 for inbound connections.
 
 The diagram shows how VPN Gateways, gw1 and gw2, access to the leaf certificates stored in KeyVaults:
