@@ -57,7 +57,6 @@ After generations of the digital certificates, run the scripts in the following 
 
 ---
 
-
 ## Architecture Overview
 
 This project uses digital certificate authentication for the S2S VPN tunnels. The digital certificates are securely stored in Azure Key Vault, and each VPN Gateway accesses its certificates through a User-Assigned Managed Identity.
@@ -72,13 +71,14 @@ The pictures shows the import if leaf certificates in KeyVaults:
 
 Site-to-site certificate authentication relies on both **inbound** and **outbound** certificates to establish secure VPN tunnels between Azure and on-premises (or between two Azure VPN Gateways).
 
-### Certificate Types and Their Purpose
+### Certificate types and their purpose
 
 | Certificate Type                | Purpose | Storage | Contains Private Key |
 |---------------------------------|---------|---------|----------------------|
-| **Root CA Certificate**         | Self-signed certificate used to sign leaf certificates and **verify inbound VPN connections**. <br> The remote peer's certificate is validated against this trusted root. | Connection configuration (.cer) | No (public key only) |
-| **Outbound Certificate (Leaf)** | Used to authenticate connections going **from Azure to the remote site**. Signed by the Root CA. | Azure Key Vault (.pfx) | Yes |
-| **Inbound Certificate (Leaf)**  | Used when connecting **from the remote site to Azure**. The public key is configured in the VPN connection. | Connection configuration (.cer) | No (public key only) |
+| **Root CA Certificate**         | Self-signed certificate used to sign leaf certificates. <br> Each gateway trusts the **remote peer's Root CA** to verify inbound VPN connections. | Connection configuration (.cer) | No (public key only) |
+| **Outbound Certificate (Leaf)** | Used to authenticate connections going **from Azure to the remote site**. Signed by the local Root CA. | Azure Key Vault (.pfx) | Yes |
+| **Inbound Certificate (Leaf)**  | Used when connecting **from the remote site to Azure**. The certificate is validated against the remote peer's Root CA configured in the connection. | Connection configuration (.cer) | No (public key only) |
+
 
 ### How Certificate Authentication Works
 
