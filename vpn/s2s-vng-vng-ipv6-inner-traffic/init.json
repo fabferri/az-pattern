@@ -1,0 +1,8 @@
+{
+    "subscriptionName": "Hybrid-PM-Demo-1",
+    "rgName": "test-ipv6",
+    "locationvnethub1": "uksouth",
+    "locationvnethub2": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME_GOES_HERE",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_GOES_HERE"
+}
