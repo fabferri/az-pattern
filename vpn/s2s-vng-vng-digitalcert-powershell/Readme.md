@@ -76,8 +76,8 @@ Site-to-site certificate authentication relies on both **inbound** and **outboun
 
 | Certificate Type                | Purpose | Storage | Contains Private Key |
 |---------------------------------|---------|---------|----------------------|
-| **Root CA Certificate**         | Self-signed certificate used to sign leaf certificates. Establishes the trust chain. | Local (used for signing) | Yes |
-| **Outbound Certificate (Leaf)** | Used to verify connections going **from Azure to the remote site**. Signed by the Root CA. | Azure Key Vault (.pfx) | Yes |
+| **Root CA Certificate**         | Self-signed certificate used to sign leaf certificates and **verify inbound VPN connections**. <br> The remote peer's certificate is validated against this trusted root. | Connection configuration (.cer) | No (public key only) |
+| **Outbound Certificate (Leaf)** | Used to authenticate connections going **from Azure to the remote site**. Signed by the Root CA. | Azure Key Vault (.pfx) | Yes |
 | **Inbound Certificate (Leaf)**  | Used when connecting **from the remote site to Azure**. The public key is configured in the VPN connection. | Connection configuration (.cer) | No (public key only) |
 
 ### How Certificate Authentication Works
@@ -157,7 +157,7 @@ The scripts `01_vpn1.ps1` and `02_vpn2.ps1` follow the same pattern to configure
 - [Migration from Access Policy to RBAC](https://learn.microsoft.com/azure/key-vault/general/rbac-migration?tabs=cli)
 - [Azure built-in roles for Key Vault data plane operations](https://learn.microsoft.com/azure/key-vault/general/rbac-guide)
 
-`Tag: Site-to-Site VPN, digital certificate authetication` <br>
+`Tag: Site-to-Site VPN, digital certificate authentication` <br>
 `date: 22-01-2026`
 
 <!--Image References-->
