@@ -1,7 +1,7 @@
 # Script to create a VPN Gateway gw2 with active-active mode, supporting IPv4 and IPv6
 #
 $vnetName = "on-prem-vnet2"
-$VNetAddressPrefix = @("10.0.0.0/16", "fd:0:2::/48","fd:0:3::/48")
+$VNetAddressPrefix = @("10.2.0.0/16", "fd:0:2::/48","fd:0:3::/48")
 $SubnetName = "subnet1" 
 $GatewaySubnet = @("10.2.0.0/24", "fd:0:2:e::/64")
 $Subnet = @("10.2.1.0/24", "fd:0:2:1::/64")
