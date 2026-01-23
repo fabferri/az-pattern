@@ -3,8 +3,8 @@
 $vnetName = "on-prem-vnet2"
 $VNetAddressPrefix = @("10.0.0.0/16", "fd:0:2::/48","fd:0:3::/48")
 $SubnetName = "subnet1" 
-$GatewaySubnet = @("10.0.0.0/24", "fd:0:2:e::/64")
-$Subnet = @("10.0.1.0/24", "fd:0:2:1::/64")
+$GatewaySubnet = @("10.2.0.0/24", "fd:0:2:e::/64")
+$Subnet = @("10.2.1.0/24", "fd:0:2:1::/64")
 $GatewayName = "gw2"
 $PublicIP1 = "$GatewayName-pip1"
 $PublicIP2 = "$GatewayName-pip2"

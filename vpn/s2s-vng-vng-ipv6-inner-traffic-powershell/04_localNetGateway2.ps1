@@ -6,7 +6,7 @@ $gw2PublicIP1 = "$gw2-pip1"
 $gw2PublicIP2 = "$gw2-pip2"
 $LocalNetworkGatewayName1 = "lng21"
 $LocalNetworkGatewayName2 = "lng22"
-$LocalAddressPrefixes = @("10.0.0.0/16", "fd:0:2::/48", "fd:0:3::/48") 
+$LocalAddressPrefixes = @("10.2.0.0/16", "fd:0:2::/48", "fd:0:3::/48") 
 
 $pathFiles = Split-Path -Parent $PSCommandPath
 $inputParams = 'init.json'

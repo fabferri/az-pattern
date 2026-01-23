@@ -143,10 +143,10 @@ $gw1SubnetAddress = @("10.1.0.0/24", "fd:0:1:e::/64")
 $vnet1subnet1Address = @("10.1.1.0/24", "fd:0:1:1::/64")
 
 $vnet2Name = "on-prem-vnet2"
-$vnet2AddressPrefix = @("10.0.0.0/16", "fd:0:2::/48","fd:0:3::/48")
+$vnet2AddressPrefix = @("10.2.0.0/16", "fd:0:2::/48","fd:0:3::/48")
 $vnet2subnet1Name = "subnet1" 
-$gw2SubnetAddress = @("10.0.0.0/24", "fd:0:2:e::/64")
-$vnet2subnet1Address = @("10.0.1.0/24", "fd:0:2:1::/64")
+$gw2SubnetAddress = @("10.2.0.0/24", "fd:0:2:e::/64")
+$vnet2subnet1Address = @("10.2.1.0/24", "fd:0:2:1::/64")
 
 
 $vmPublisher = "canonical"

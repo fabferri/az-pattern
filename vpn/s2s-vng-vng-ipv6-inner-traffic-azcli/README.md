@@ -1,4 +1,4 @@
-# Azure Site-to-Site VPN with IPv4/IPv6 Dual-Stack using powershell
+# Azure Site-to-Site VPN with IPv4/IPv6 Dual-Stack using AZ CLI
 
 This project contains PowerShell scripts to deploy an Azure Site-to-Site (S2S) VPN configuration with dual-stack (IPv4 and IPv6) support using active-active VPN gateways.
 
@@ -32,13 +32,13 @@ Run the scripts in numerical order:
 
 | Script | Description |
 |--------|-------------|
-| `01_gw1.ps1` | Creates VNet1, GatewaySubnet, and VPN Gateway `gw1` in active-active mode with dual-stack support |
-| `02_gw2.ps1` | Creates VNet2, GatewaySubnet, and VPN Gateway `gw2` in active-active mode with dual-stack support |
-| `03_localNetGateway1.ps1` | Creates Local Network Gateways (`lng11`, `lng12`) representing `gw1` for use in `gw2` connections |
-| `04_localNetGateway2.ps1` | Creates Local Network Gateways (`lng21`, `lng22`) representing `gw2` for use in `gw1` connections |
-| `05_connection1.ps1` | Creates VPN connections from `gw1` to the Local Network Gateways |
-| `06_connection2.ps1` | Creates VPN connections from `gw2` to the Local Network Gateways |
-| `07_vms.ps1` | Creates test VMs in both VNets with dual-stack network interfaces |
+| `01_gw1_azcli.ps1` | Creates VNet1, GatewaySubnet, and VPN Gateway `gw1` in active-active mode with dual-stack support |
+| `02_gw2_azcli.ps1` | Creates VNet2, GatewaySubnet, and VPN Gateway `gw2` in active-active mode with dual-stack support |
+| `03_localNetGateway1_azcli.ps1` | Creates Local Network Gateways (`lng11`, `lng12`) representing `gw1` for use in `gw2` connections |
+| `04_localNetGateway2_azcli.ps1` | Creates Local Network Gateways (`lng21`, `lng22`) representing `gw2` for use in `gw1` connections |
+| `05_connection1_azcli.ps1` | Creates VPN connections from `gw1` to the Local Network Gateways |
+| `06_connection2_azcli.ps1` | Creates VPN connections from `gw2` to the Local Network Gateways |
+| `07_vms_azcli.ps1` | Creates test VMs in both VNets with dual-stack network interfaces |
 
 ## Network Address Space
 
@@ -51,7 +51,7 @@ Run the scripts in numerical order:
 ### VNet2
 - **IPv4**: `10.2.0.0/16`
 - **IPv6**: `fd:0:2::/48`
-- **GatewaySubnet**: `10.0.0.0/24`, `fd:0:2:e::/64`
+- **GatewaySubnet**: `10.2.0.0/24`, `fd:0:2:e::/64`
 - **Subnet1**: `10.2.1.0/24`, `fd:0:2:1::/64`
 
 ## Usage
@@ -59,16 +59,16 @@ Run the scripts in numerical order:
 1. Update `init.json` with your configuration
 1. Run scripts in order:
    ```powershell
-   .\01_gw1.ps1
-   .\02_gw2.ps1
-   .\03_localNetGateway1.ps1
-   .\04_localNetGateway2.ps1
-   .\05_connection1.ps1
-   .\06_connection2.ps1
-   .\07_vms.ps1
+   .\01_gw1_azcli.ps1
+   .\02_gw2_azcli.ps1
+   .\03_localNetGateway1_azcli.ps1
+   .\04_localNetGateway2_azcli.ps1
+   .\05_connection1_azcli.ps1
+   .\06_connection2_azcli.ps1
+   .\07_vms_azcli.ps1
    ```
 
-> **Note**: VPN Gateway creation can take 30-45 minutes per gateway. Wait for each gateway to complete before running the Local Network Gateway scripts. **01_gw1.ps1** and **02_gw2.ps1** can run in parallel in two terminal becasue are indipendent.
+> **Note**: VPN Gateway creation can take 30-45 minutes per gateway. Wait for each gateway to complete before running the Local Network Gateway scripts. **01_gw1_azcli.ps1** and **02_gw2_azcli.ps1** can run in parallel in two terminal becasue are indipendent.
 
 ## Features
 
