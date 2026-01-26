@@ -40,7 +40,7 @@ Run the scripts in numerical order:
 | `06_connection2_azcli.ps1` | Creates VPN connections from `gw2` to the Local Network Gateways |
 | `07_vms_azcli.ps1` | Creates test VMs in both VNets with dual-stack network interfaces |
 
-The **bash-scripts** project folder contains the bash scripts used to perform deployments in **Azure Cloud Shell** or on a local linux environment. Remember to set the excution property on the files by chmod +x <filename>
+The **bash-scripts** project folder contains the bash scripts used to perform deployments in **Azure Cloud Shell** or on a local linux environment. Remember to set the excution property on the script files by chmod +x file_name
 
 
 ## Network Address Space
