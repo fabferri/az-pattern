@@ -269,11 +269,12 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_D2as_v5",
+            "defaultValue": "Standard_D2ds_v5",
             "allowedValues": [
                 "Standard_B1ls",
                 "Standard_B1s",
-                "Standard_D2as_v5"
+                "Standard_D2as_v5",
+                "Standard_D2ds_v5"
             ],
             "metadata": {
                 "description": "Size of the Virtual Machine"
@@ -365,7 +366,6 @@
     },
     "resources": [
         {
-
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsg1')]",
             "apiVersion": "2024-05-01",
@@ -552,7 +552,8 @@
             "comments": "public IP of the VPN Gateway2-instance 0",
             "location": "[variables('location2')]",
             "sku": {
-                "name": "Standard"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAllocationMethod": "Static"
@@ -566,7 +567,8 @@
             "comments": "public IP of the VPN Gateway2- instance 1",
             "location": "[variables('location2')]",
             "sku": {
-                "name": "Standard"
+                "name": "Standard",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAllocationMethod": "Static"

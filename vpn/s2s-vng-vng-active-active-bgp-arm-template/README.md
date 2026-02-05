@@ -58,7 +58,7 @@ Below a snippet of **vpn.json** showing how to collect the public IP of the remo
                 "localNetworkAddressSpace": {
                     "addressPrefixes": []
                 },
-                "gatewayIpAddress": "[reference(variables('gateway1PublicIP1Id'),'22024-05-01').ipAddress]",
+                "gatewayIpAddress": "[reference(variables('gateway1PublicIP1Id'),'2024-05-01').ipAddress]",
                 "bgpSettings": {
                     "asn": "[variables('asnGtw1')]",
                     "bgpPeeringAddress": "[first(split( reference(resourceId('Microsoft.Network/virtualNetworkGateways',variables('gateway1Name')),'2020-06-01').bgpSettings.bgpPeeringAddress , ','))]",
@@ -70,17 +70,23 @@ Below a snippet of **vpn.json** showing how to collect the public IP of the remo
 
 [![2][2]
 
-> [!NOTE]
-> Before spinning up the ARM template you should:
->
-> 1. edit the file **vpn.ps1** and set the correct values to the variables **$adminUsername**, **$adminPassword**
->
-> 2. customize the values of variables in the **init.txt** file: <br>
->    subscriptionName=AZURE_SUBSCRIPTION_NAME <br>
->    ResourceGroupName=RESOURCE_GROUP_NAME <br>
->    location1=NAME_AZURE_REGION_1 <br>
->    location2=NAME_AZURE_REGION_2 <br>
->
+
+Before spinning up the ARM template you should:
+
+1. edit the file **vpn.ps1** and set the correct values to the variables **$adminUsername**, **$adminPassword**
+1. customize the values of variables in the **init.json** file: <br>
+
+```json
+{
+    "subscriptionName": "Hybrid-PM-Test-2",
+    "rgName": "RESOURCE_GROUP_NAME",
+    "location": "AZURE_REGION_VPN_GW2",
+    "location1": "AZURE_REGION_VPN_GW2",
+    "location2": "uksouth",
+    "adminUsername": "ADMINISTRATOR_USERNAME",
+    "adminPassword": "ADMINISTRATOR_PASSWORD"
+}
+```
 
 <br>
 Some powershell commands to fetch information on site-to-site VPN tunnels:  
@@ -152,6 +158,7 @@ az network vnet-gateway list-advertised-routes -n $vpnName -g $rgName --peer $pe
 `date: 11-08-2021` <br>
 `date: 11-02-2024` <br>
 `date: 09-09-2025` <br>
+`date: 05-02-2025` <br>
 
 <!--Image References-->
 

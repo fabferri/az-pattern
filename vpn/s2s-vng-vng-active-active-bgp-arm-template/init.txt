@@ -1,4 +1,0 @@
-subscriptionName=AzureDemo
-ResourceGroupName=test-vpn
-location1=centralus
-location2=westus2
