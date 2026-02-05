@@ -30,10 +30,8 @@ Zonal VPN Gateways require public IP with Standard SKU and static assigment.
 | ------------------- |:------------------------------------------------------------------------- |
 | **vpn.json**        | ARM template to create two VNets interconnected through site-to-site VPN  |
 | **vpn.ps1**         | powershell script to deploy the ARM template **vpn1.json**                |
-| **public-ip.json**  | basic ARM template to create a public IP with standard SKU                |
-| **public-ip.ps1**   | powershell script to deploy the ARM template **public-ip.json**           |
 
-As reported in the **public-ip.json**, the value of the public IP can be retrieved by the function:
+The public IP associated with VPN Gateway can be retrieved by the function:
 
 ```json
 "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName')),'2024-05-01').ipAddress]"
