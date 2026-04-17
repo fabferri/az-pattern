@@ -552,7 +552,6 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 12:51:30.059329 IP 10.21.1.4.37322 > 10.50.0.4.80: Flags [.], ack 307, win 501, options [nop,nop,TS val 1936134479 ecr 1543140130], length 0
 ```
 
-
 ### HTTP traffic flow from vm-branch1 to WL21B-1
 
 [![9]][9]
@@ -584,7 +583,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 ```
 
 
-### HTTP traffic flow from WL21B-1 to vm-branch1
+### HTTP traffic flow from vm-branch1 to WL21B-1
 
 [![10]][10]
 
