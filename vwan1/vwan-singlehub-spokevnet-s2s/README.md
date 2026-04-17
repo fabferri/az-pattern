@@ -354,7 +354,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 ```
 
 
-### HTTP traffic flow from WL21-1 to WL21B-1
+### HTTP traffic flow from WL22-1 to WL21B-1
 
 [![5]][5]
 
