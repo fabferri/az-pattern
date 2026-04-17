@@ -638,5 +638,5 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 [10]: ./media/flow-9.png "transit of the HTTP flow"
 [11]: ./media/effectiveRoutes-1.png "effective routes"
 [12]: ./media/effectiveRoutes-2.png "effective routes"
-<
-!--Link References-->
+
+<!--Link References-->
