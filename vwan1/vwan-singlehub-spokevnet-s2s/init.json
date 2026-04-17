@@ -1,0 +1,19 @@
+{
+    "subscriptionName": "Hybrid-PM-Test-2",
+    "rgName": "vwan",
+    "vwanName": "vwan1",
+    "hub1Name": "hub90",
+    "location": "SwedenCentral",
+    "hub1location": "SwedenCentral",
+    "rgSpoke21": "spoke21",
+    "spoke21location": "SwedenCentral",
+    "rgSpoke22": "spoke22",
+    "spoke22location": "SwedenCentral",
+    "hub1vpnGwName": "hub90gw",
+    "rgBranch1": "branch1",
+    "branch1vpnGtwName": "gw-branch1",
+    "branch1location": "SwedenCentral",
+    "sharedKey": "SHARED_KEY_SITE_TO_SITE_VPN_GOES_HERE",
+    "adminUsername": "ADMINISTRATOR_USERNAME_GOES_HERE",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_GOES_HERE"
+}
