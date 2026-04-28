@@ -1,16 +1,19 @@
-# Azure Virtual WAN single hub with Spoke VNets and Site-to-Site VPN
+# Azure Virtual WAN two hubs with spoke VNets and child spoke VNets
 
 ## Overview
 
-This project deploys an Azure Virtual WAN architecture with spoke VNets containing NVAs (Network Virtual Appliance) routing through internal load balancers, and a branch site connected via site-to-site VPN. All resources are deployed using ARM templates and PowerShell scripts.
+This project deploys an Azure Virtual WAN with two virtual hubs (**hub90** and **hub91**), each connected to a pair of spoke VNets. <br>
+Each spoke VNet hosts a redundant pair of Linux-based NVAs (Network Virtual Appliances) behind a Standard Internal Load Balancer with HA ports, which steers east-west traffic between spokes through the NVA layer. Every parent spoke (spoke21, spoke22, spoke31, spoke32) has a child spoke (spoke21B, spoke22B, spoke31B, spoke32B) connected via VNet peering, with user-defined routes ensuring child-spoke traffic transits the parent NVAs. Two branch sites (branch1, branch2) connect to their respective virtual hubs over active-active site-to-site VPN gateways using BGP. All resources are deployed using ARM templates and PowerShell scripts.
 
 ## Architecture
 
-The high level network diagram is shown below:
+The topology is organized around two virtual hubs (**hub90** and **hub91**) hosted in the same Azure Virtual WAN. Each hub is independent and manages its own set of spokes and branch connectivity.
+
+The high-level network diagram is shown below:
 
 [![1]][1]
 
-The details network diagrams are shown below:
+The detailed network diagrams are shown below:
 
 [![2]][2]
 
@@ -18,11 +21,36 @@ The details network diagrams are shown below:
 
 ### Key Design Principles
 
-- **Traffic transit through NVAs**: Spoke VNets (spoke21, spoke22) contain Linux VMs acting as NVAs (with IP forwarding enabled) behind an internal Standard Load Balancer with HA ports.
-- **VNet peering for child spokes**: spoke21B and spoke22B are peered to spoke21 and spoke22 respectively, with traffic routed through the NVA load balancers.
-- **Site-to-site VPN**: Branch1 connects to the virtual hub via an active-active VPN gateway with BGP (ASN 65011 for branch, ASN 65515 for hub).
+#### 1. Redundant NVA pairs behind HA-ports ILBs
+Each parent spoke (spoke21, spoke22, spoke31, spoke32) hosts two Linux VMs acting as NVAs, with IP forwarding enabled at both the OS level (`net.ipv4.ip_forward=1`) and the Azure NIC level (`enableIPForwarding: true`). The NVAs sit in a dedicated backend subnet (`subnetBE`) and are registered in a Standard Internal Load Balancer backend pool. A single HA-ports load-balancing rule (`protocol: All`, `frontendPort: 0`, `backendPort: 0`) distributes all IP flows across the pool, eliminating the need for per-protocol rules and providing active-active NVA load sharing with built-in health-probe failover.
 
-### Network Address Space for all componenets connect to hub90
+#### 2. Child spoke extension via VNet peering
+Each parent spoke has a child spoke peered to it (spoke21↔spoke21B, spoke22↔spoke22B, spoke31↔spoke31B, spoke32↔spoke32B). Both sides of the peering set `allowForwardedTraffic: true` so that packets forwarded by the NVAs are accepted across the peering link. `allowGatewayTransit` and `useRemoteGateways` are `false` on all peerings — hub connectivity for child spokes is achieved via static routes on the hub connection of the parent spoke, not through gateway transit over the peering.
+
+#### 3. UDR-enforced NVA transit
+Explicit user-defined routes on the parent workload subnets (`subnetWL`) and child spoke subnets send all inter-spoke and branch destination prefixes to the ILB frontend IP (`VirtualAppliance` next hop). This guarantees that traffic leaving these subnets always passes through an NVA before reaching the virtual hub. Parent workload route tables also set `disableBgpRoutePropagation: true` (`Propagate gateway routes = No` in the portal), preventing BGP-learned routes from the hub from silently overriding the UDR entries.
+
+#### 4. Hub connection static routes
+Each spoke's `hubVirtualNetworkConnection` object includes `vnetRoutes.staticRoutes` entries covering both the parent and child prefixes, with `nextHopIpAddress` set to the ILB frontend IP. The flag `staticRoutesConfig.vnetLocalRouteOverrideCriteria = Equal` ensures that when the hub resolves a prefix that matches a locally known route at equal length, the static route still takes precedence, forcing hub-to-spoke traffic through the NVA rather than taking a direct system route.
+
+#### 5. Active-active S2S VPN with BGP
+Branch sites connect to their hub over two active-active IPsec tunnels, one per VPN gateway instance. BGP is enabled on both sides: branch gateways use ASN 65011 (branch1) and 65012 (branch2), while the hub VPN gateways use ASN 65515. Active-active mode ensures that both tunnels carry traffic simultaneously and that failover is sub-second upon tunnel loss, without requiring manual intervention.
+
+#### 6. Route-table association and propagation
+All spoke and branch connections are associated with `defaultRouteTable` and propagate their routes with the label `default`. This causes each hub to learn the prefixes of all connected spokes and branches and makes those routes available to every other connection sharing the same label — including across hubs when inter-hub connectivity is configured. Combined with the hub connection static routes described above, this ensures fully symmetric forwarding paths (spoke-to-spoke, spoke-to-branch, and branch-to-spoke) through the NVA layer.
+
+### Network Address Space — hub90
+
+| VNet/Hub   | Address Space    | Purpose                                  |
+|------------|------------------|------------------------------------------|
+| hub90      | 10.90.0.0/23     | Virtual Hub                              |
+| spoke21    | 10.21.0.0/24     | Spoke VNet with NVAs + workload          |
+| spoke21B   | 10.21.1.0/24     | Extended spoke peered to spoke21         |
+| spoke22    | 10.22.0.0/24     | Spoke VNet with NVAs + workload          |
+| spoke22B   | 10.22.1.0/24     | Extended spoke peered to spoke22         |
+| branch1    | 10.50.0.0/24     | Branch site1 connected via S2S VPN       |
+
+### Network Address Space — hub91
 
 | VNet/Hub   | Address Space    | Purpose                                  |
 |------------|------------------|------------------------------------------|
