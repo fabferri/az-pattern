@@ -28,7 +28,7 @@ Each parent spoke (spoke21, spoke22, spoke31, spoke32) hosts two Linux VMs actin
 Each parent spoke has a child spoke peered to it (spoke21↔spoke21B, spoke22↔spoke22B, spoke31↔spoke31B, spoke32↔spoke32B). Both sides of the peering set `allowForwardedTraffic: true` so that packets forwarded by the NVAs are accepted across the peering link. `allowGatewayTransit` and `useRemoteGateways` are `false` on all peerings — hub connectivity for child spokes is achieved via static routes on the hub connection of the parent spoke, not through gateway transit over the peering.
 
 #### 3. UDR-enforced NVA transit
-Explicit user-defined routes on the parent workload subnets (`subnetWL`) and child spoke subnets send all inter-spoke and branch destination prefixes to the ILB frontend IP (`VirtualAppliance` next hop). This guarantees that traffic leaving these subnets always passes through an NVA before reaching the virtual hub. Parent workload route tables also set `disableBgpRoutePropagation: true` (`Propagate gateway routes = No` in the portal), preventing BGP-learned routes from the hub from silently overriding the UDR entries.
+Explicit user-defined routes on the parent workload subnets (`subnetWL`) and child spoke subnets send all inter-spoke and branch destination prefixes to the ILB frontend IP (`VirtualAppliance` next hop). This guarantees that traffic leaving these subnets always passes through an NVA before reaching the virtual hub. Parent workload route tables also set `disableBgpRoutePropagation: true` (`Propagate gateway routes = No` in the portal), preventing BGP-learned routes from the hub from overriding the UDR entries.
 
 #### 4. Hub connection static routes
 Each spoke's `hubVirtualNetworkConnection` object includes `vnetRoutes.staticRoutes` entries covering both the parent and child prefixes, with `nextHopIpAddress` set to the ILB frontend IP. The flag `staticRoutesConfig.vnetLocalRouteOverrideCriteria = Equal` ensures that when the hub resolves a prefix that matches a locally known route at equal length, the static route still takes precedence, forcing hub-to-spoke traffic through the NVA rather than taking a direct system route.
@@ -249,7 +249,7 @@ All shared configuration is centralized in `init.json`.
 | `03-vwan-site.ps1`    | PowerShell       | Deployment script for `03-vwan-site.json`; reads branch1 VPN gateway public IPs and BGP IPs at runtime |
 | `README.md`           | Documentation    | Original project documentation                                                                     |
 
-## Deployment Order for hub90 and related components
+## Deployment sequence for hub90 and related components
 
 The scripts must be executed **sequentially** in the following order. Each step depends on resources created in the previous step.
 
@@ -297,7 +297,7 @@ Creates the VPN site definition in vWAN and establishes the VPN connection from 
 
 To deploy a second hub using the same Virtual WAN, prepare `init2.json` with second-hub values (at minimum set `hub1Name` to `hub91` and align hub-specific prefixes/gateway names), then run the full sequence with `-initFile`
 
-## Deployment Order for hub91 and related components
+## Deployment sequence for hub91 and related components
 
 The deployment sequence for hub91 and its associated resources is:
 
@@ -715,7 +715,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 ```
 
 
-### HTTP traffic flow from vm-branch1 to WL21B-1
+### HTTP traffic flow from branch1-vm to WL21B-1
 
 [![11]][11]
 
@@ -746,7 +746,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 ```
 
 
-### HTTP traffic flow from WL21B-1 to vm-branch1
+### HTTP traffic flow from WL21B-1 to branch1-vm
 
 [![12]][12]
 
@@ -784,6 +784,234 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 [![14]][14]
 
+### HTTP traffic flow from branch1-vm to WL31-1
+
+[![15]][15]
+
+```console
+R31-1:~# tcpdump -i eth0 -n "net 10.31.0.32/28 or net 10.31.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+15:20:22.482716 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [S], seq 764449696, win 64240, options [mss 1276,sackOK,TS val 3269670899 ecr 0,nop,wscale 7], length 0
+15:20:22.482752 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [S], seq 764449696, win 64240, options [mss 1276,sackOK,TS val 3269670899 ecr 0,nop,wscale 7], length 0
+15:20:22.484682 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [S.], seq 1182047163, ack 764449697, win 65160, options [mss 1418,sackOK,TS val 3270849958 ecr 3269670899,nop,wscale 7], length 0
+15:20:22.484685 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [S.], seq 1182047163, ack 764449697, win 65160, options [mss 1418,sackOK,TS val 3270849958 ecr 3269670899,nop,wscale 7], length 0
+15:20:22.490896 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3269670911 ecr 3270849958], length 0
+15:20:22.490897 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [P.], seq 1:74, ack 1, win 502, options [nop,nop,TS val 3269670911 ecr 3270849958], length 73: HTTP: GET / HTTP/1.1
+15:20:22.490918 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3269670911 ecr 3270849958], length 0
+15:20:22.490922 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [P.], seq 1:74, ack 1, win 502, options [nop,nop,TS val 3269670911 ecr 3270849958], length 73: HTTP: GET / HTTP/1.1
+15:20:22.491520 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [.], ack 74, win 509, options [nop,nop,TS val 3270849965 ecr 3269670911], length 0
+15:20:22.491523 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [.], ack 74, win 509, options [nop,nop,TS val 3270849965 ecr 3269670911], length 0
+15:20:22.491776 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [P.], seq 1:302, ack 74, win 509, options [nop,nop,TS val 3270849965 ecr 3269670911], length 301: HTTP: HTTP/1.1 200 OK
+15:20:22.491778 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [P.], seq 1:302, ack 74, win 509, options [nop,nop,TS val 3270849965 ecr 3269670911], length 301: HTTP: HTTP/1.1 200 OK
+15:20:22.495232 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [.], ack 302, win 501, options [nop,nop,TS val 3269670915 ecr 3270849965], length 0
+15:20:22.495232 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [F.], seq 74, ack 302, win 501, options [nop,nop,TS val 3269670915 ecr 3270849965], length 0
+15:20:22.495236 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [.], ack 302, win 501, options [nop,nop,TS val 3269670915 ecr 3270849965], length 0
+15:20:22.495238 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [F.], seq 74, ack 302, win 501, options [nop,nop,TS val 3269670915 ecr 3270849965], length 0
+15:20:22.495789 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [F.], seq 302, ack 75, win 509, options [nop,nop,TS val 3270849969 ecr 3269670915], length 0
+15:20:22.495791 IP 10.31.0.40.80 > 10.50.0.4.49522: Flags [F.], seq 302, ack 75, win 509, options [nop,nop,TS val 3270849969 ecr 3269670915], length 0
+15:20:22.498392 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3269670917 ecr 3270849969], length 0
+15:20:22.498395 IP 10.50.0.4.49522 > 10.31.0.40.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3269670917 ecr 3270849969], length 0
+```
+
+### HTTP traffic flow from branch1-vm to WL31B-1
+
+[![16]][16]
+
+```console
+R31-1:~# tcpdump -i eth0 -n "net 10.31.0.32/28 or net 10.31.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+15:47:49.186336 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [S], seq 3392736324, win 64240, options [mss 1276,sackOK,TS val 3829200063 ecr 0,nop,wscale 7], length 0
+15:47:49.186373 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [S], seq 3392736324, win 64240, options [mss 1276,sackOK,TS val 3829200063 ecr 0,nop,wscale 7], length 0
+15:47:49.187317 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [S.], seq 530408605, ack 3392736325, win 65160, options [mss 1418,sackOK,TS val 3352033127 ecr 3829200063,nop,wscale 7], length 0
+15:47:49.187323 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [S.], seq 530408605, ack 3392736325, win 65160, options [mss 1418,sackOK,TS val 3352033127 ecr 3829200063,nop,wscale 7], length 0
+15:47:49.189941 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3829200067 ecr 3352033127], length 0
+15:47:49.189941 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 3829200067 ecr 3352033127], length 72: HTTP: GET / HTTP/1.1
+15:47:49.189946 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3829200067 ecr 3352033127], length 0
+15:47:49.189947 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 3829200067 ecr 3352033127], length 72: HTTP: GET / HTTP/1.1
+15:47:49.190154 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [.], ack 73, win 509, options [nop,nop,TS val 3352033130 ecr 3829200067], length 0
+15:47:49.190156 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [.], ack 73, win 509, options [nop,nop,TS val 3352033130 ecr 3829200067], length 0
+15:47:49.191365 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 3352033131 ecr 3829200067], length 302: HTTP: HTTP/1.1 200 OK
+15:47:49.191368 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 3352033131 ecr 3829200067], length 302: HTTP: HTTP/1.1 200 OK
+15:47:49.192768 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3829200071 ecr 3352033131], length 0
+15:47:49.192770 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3829200071 ecr 3352033131], length 0
+15:47:49.192961 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 3829200071 ecr 3352033131], length 0
+15:47:49.192963 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 3829200071 ecr 3352033131], length 0
+15:47:49.193129 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 3352033133 ecr 3829200071], length 0
+15:47:49.193131 IP 10.31.1.4.80 > 10.50.0.4.42972: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 3352033133 ecr 3829200071], length 0
+15:47:49.194167 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 3829200072 ecr 3352033133], length 0
+15:47:49.194171 IP 10.50.0.4.42972 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 3829200072 ecr 3352033133], length 0
+```
+
+### HTTP traffic flow from WL21-1 to WL31-1
+
+[![17]][17]
+
+```console
+R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:13:01.158265 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [S], seq 1798051304, win 64240, options [mss 1418,sackOK,TS val 2588915404 ecr 0,nop,wscale 7], length 0
+16:13:01.158291 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [S], seq 1798051304, win 64240, options [mss 1418,sackOK,TS val 2588915404 ecr 0,nop,wscale 7], length 0
+16:13:01.164469 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [S.], seq 2970897675, ack 1798051305, win 65160, options [mss 1292,sackOK,TS val 29057388 ecr 2588915404,nop,wscale 7], length 0
+16:13:01.164492 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [S.], seq 2970897675, ack 1798051305, win 65160, options [mss 1292,sackOK,TS val 29057388 ecr 2588915404,nop,wscale 7], length 0
+16:13:01.165363 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 2588915411 ecr 29057388], length 0
+16:13:01.165370 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 2588915411 ecr 29057388], length 0
+16:13:01.166254 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [P.], seq 1:74, ack 1, win 502, options [nop,nop,TS val 2588915413 ecr 29057388], length 73: HTTP: GET / HTTP/1.1
+16:13:01.166263 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [P.], seq 1:74, ack 1, win 502, options [nop,nop,TS val 2588915413 ecr 29057388], length 73: HTTP: GET / HTTP/1.1
+16:13:01.169081 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [.], ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 0
+16:13:01.169081 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [P.], seq 1:302, ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 301: HTTP: HTTP/1.1 200 OK
+16:13:01.169105 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [.], ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 0
+16:13:01.169113 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [P.], seq 1:302, ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 301: HTTP: HTTP/1.1 200 OK
+16:13:01.169599 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.169602 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.169732 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [F.], seq 74, ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.169734 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [F.], seq 74, ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.171958 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [F.], seq 302, ack 75, win 509, options [nop,nop,TS val 29057397 ecr 2588915416], length 0
+16:13:01.171968 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [F.], seq 302, ack 75, win 509, options [nop,nop,TS val 29057397 ecr 2588915416], length 0
+16:13:01.172481 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 2588915419 ecr 29057397], length 0
+16:13:01.172485 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 2588915419 ecr 29057397], length 0
+```
+
+```console
+R31-1:~# tcpdump -i eth0 -n "net 10.31.0.32/28 or net 10.31.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:13:01.160470 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [S], seq 1798051304, win 64240, options [mss 1292,sackOK,TS val 2588915404 ecr 0,nop,wscale 7], length 0
+16:13:01.160479 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [S], seq 1798051304, win 64240, options [mss 1292,sackOK,TS val 2588915404 ecr 0,nop,wscale 7], length 0
+16:13:01.161783 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [S.], seq 2970897675, ack 1798051305, win 65160, options [mss 1418,sackOK,TS val 29057388 ecr 2588915404,nop,wscale 7], length 0
+16:13:01.161790 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [S.], seq 2970897675, ack 1798051305, win 65160, options [mss 1418,sackOK,TS val 29057388 ecr 2588915404,nop,wscale 7], length 0
+16:13:01.166168 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 2588915411 ecr 29057388], length 0
+16:13:01.166175 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 2588915411 ecr 29057388], length 0
+16:13:01.167178 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [P.], seq 1:74, ack 1, win 502, options [nop,nop,TS val 2588915413 ecr 29057388], length 73: HTTP: GET / HTTP/1.1
+16:13:01.167180 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [P.], seq 1:74, ack 1, win 502, options [nop,nop,TS val 2588915413 ecr 29057388], length 73: HTTP: GET / HTTP/1.1
+16:13:01.167784 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [.], ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 0
+16:13:01.167784 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [P.], seq 1:302, ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 301: HTTP: HTTP/1.1 200 OK
+16:13:01.167787 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [.], ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 0
+16:13:01.167789 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [P.], seq 1:302, ack 74, win 509, options [nop,nop,TS val 29057394 ecr 2588915413], length 301: HTTP: HTTP/1.1 200 OK
+16:13:01.170241 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.170245 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.170328 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [F.], seq 74, ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.170331 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [F.], seq 74, ack 302, win 501, options [nop,nop,TS val 2588915416 ecr 29057394], length 0
+16:13:01.170962 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [F.], seq 302, ack 75, win 509, options [nop,nop,TS val 29057397 ecr 2588915416], length 0
+16:13:01.170966 IP 10.31.0.40.80 > 10.21.0.40.59344: Flags [F.], seq 302, ack 75, win 509, options [nop,nop,TS val 29057397 ecr 2588915416], length 0
+16:13:01.173188 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 2588915419 ecr 29057397], length 0
+16:13:01.173193 IP 10.21.0.40.59344 > 10.31.0.40.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 2588915419 ecr 29057397], length 0
+```
+
+### HTTP traffic flow from WL21B-1 to WL31B-1
+
+[![18]][18]
+
+```console
+R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:20:11.892060 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [S], seq 345284666, win 64240, options [mss 1418,sackOK,TS val 4292521678 ecr 0,nop,wscale 7], length 0
+16:20:11.892090 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [S], seq 345284666, win 64240, options [mss 1418,sackOK,TS val 4292521678 ecr 0,nop,wscale 7], length 0
+16:20:11.898037 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [S.], seq 3615851820, ack 345284667, win 65160, options [mss 1292,sackOK,TS val 76377717 ecr 4292521678,nop,wscale 7], length 0
+16:20:11.898055 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [S.], seq 3615851820, ack 345284667, win 65160, options [mss 1292,sackOK,TS val 76377717 ecr 4292521678,nop,wscale 7], length 0
+16:20:11.899800 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 0
+16:20:11.899800 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 72: HTTP: GET / HTTP/1.1
+16:20:11.899812 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 0
+16:20:11.899816 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 72: HTTP: GET / HTTP/1.1
+16:20:11.901554 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [.], ack 73, win 509, options [nop,nop,TS val 76377722 ecr 4292521687], length 0
+16:20:11.901563 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [.], ack 73, win 509, options [nop,nop,TS val 76377722 ecr 4292521687], length 0
+16:20:11.904774 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 76377725 ecr 4292521687], length 302: HTTP: HTTP/1.1 200 OK
+16:20:11.904784 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 76377725 ecr 4292521687], length 302: HTTP: HTTP/1.1 200 OK
+16:20:11.905229 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 4292521692 ecr 76377725], length 0
+16:20:11.905233 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 4292521692 ecr 76377725], length 0
+16:20:11.905380 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 4292521693 ecr 76377725], length 0
+16:20:11.905382 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 4292521693 ecr 76377725], length 0
+16:20:11.906858 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 76377727 ecr 4292521693], length 0
+16:20:11.906868 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 76377727 ecr 4292521693], length 0
+16:20:11.907212 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 4292521694 ecr 76377727], length 0
+16:20:11.907215 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 4292521694 ecr 76377727], length 0
+```
+
+```console
+R31-1:~# tcpdump -i eth0 -n "net 10.31.0.32/28 or net 10.31.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:20:11.894496 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [S], seq 345284666, win 64240, options [mss 1292,sackOK,TS val 4292521678 ecr 0,nop,wscale 7], length 0
+16:20:11.894533 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [S], seq 345284666, win 64240, options [mss 1292,sackOK,TS val 4292521678 ecr 0,nop,wscale 7], length 0
+16:20:11.896183 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [S.], seq 3615851820, ack 345284667, win 65160, options [mss 1418,sackOK,TS val 76377717 ecr 4292521678,nop,wscale 7], length 0
+16:20:11.896186 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [S.], seq 3615851820, ack 345284667, win 65160, options [mss 1418,sackOK,TS val 76377717 ecr 4292521678,nop,wscale 7], length 0
+16:20:11.900675 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 0
+16:20:11.900675 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 72: HTTP: GET / HTTP/1.1
+16:20:11.900680 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 0
+16:20:11.900682 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 4292521687 ecr 76377717], length 72: HTTP: GET / HTTP/1.1
+16:20:11.900908 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [.], ack 73, win 509, options [nop,nop,TS val 76377722 ecr 4292521687], length 0
+16:20:11.900910 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [.], ack 73, win 509, options [nop,nop,TS val 76377722 ecr 4292521687], length 0
+16:20:11.903713 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 76377725 ecr 4292521687], length 302: HTTP: HTTP/1.1 200 OK
+16:20:11.903715 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 76377725 ecr 4292521687], length 302: HTTP: HTTP/1.1 200 OK
+16:20:11.906004 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 4292521692 ecr 76377725], length 0
+16:20:11.906004 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 4292521693 ecr 76377725], length 0
+16:20:11.906009 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 4292521692 ecr 76377725], length 0
+16:20:11.906011 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 4292521693 ecr 76377725], length 0
+16:20:11.906189 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 76377727 ecr 4292521693], length 0
+16:20:11.906192 IP 10.31.1.4.80 > 10.21.1.4.47272: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 76377727 ecr 4292521693], length 0
+16:20:11.907741 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 4292521694 ecr 76377727], length 0
+16:20:11.907748 IP 10.21.1.4.47272 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 4292521694 ecr 76377727], length 0
+```
+
+### HTTP traffic flow from WL21-1 to WL31B-1
+
+
+[![18]][18]
+
+```console
+R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:26:57.194384 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [S], seq 2824207374, win 64240, options [mss 1418,sackOK,TS val 3446815356 ecr 0,nop,wscale 7], length 0
+16:26:57.194409 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [S], seq 2824207374, win 64240, options [mss 1418,sackOK,TS val 3446815356 ecr 0,nop,wscale 7], length 0
+16:26:57.201336 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [S.], seq 79908996, ack 2824207375, win 65160, options [mss 1292,sackOK,TS val 1335449016 ecr 3446815356,nop,wscale 7], length 0
+16:26:57.201359 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [S.], seq 79908996, ack 2824207375, win 65160, options [mss 1292,sackOK,TS val 1335449016 ecr 3446815356,nop,wscale 7], length 0
+16:26:57.201924 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 0
+16:26:57.201928 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 0
+16:26:57.201941 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 72: HTTP: GET / HTTP/1.1
+16:26:57.201944 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 72: HTTP: GET / HTTP/1.1
+16:26:57.204982 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [.], ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 0
+16:26:57.204992 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [.], ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 0
+16:26:57.205143 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 302: HTTP: HTTP/1.1 200 OK
+16:26:57.205146 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 302: HTTP: HTTP/1.1 200 OK
+16:26:57.205548 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.205550 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.205614 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.205616 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.207000 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 1335449024 ecr 3446815368], length 0
+16:26:57.207005 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 1335449024 ecr 3446815368], length 0
+16:26:57.207369 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 3446815370 ecr 1335449024], length 0
+16:26:57.207371 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 3446815370 ecr 1335449024], length 0
+```
+
+```console
+R31-1:~# tcpdump -i eth0 -n "net 10.31.0.32/28 or net 10.31.1.0/24" and tcp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:26:57.197100 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [S], seq 2824207374, win 64240, options [mss 1292,sackOK,TS val 3446815356 ecr 0,nop,wscale 7], length 0
+16:26:57.197149 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [S], seq 2824207374, win 64240, options [mss 1292,sackOK,TS val 3446815356 ecr 0,nop,wscale 7], length 0
+16:26:57.199421 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [S.], seq 79908996, ack 2824207375, win 65160, options [mss 1418,sackOK,TS val 1335449016 ecr 3446815356,nop,wscale 7], length 0
+16:26:57.199435 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [S.], seq 79908996, ack 2824207375, win 65160, options [mss 1418,sackOK,TS val 1335449016 ecr 3446815356,nop,wscale 7], length 0
+16:26:57.203984 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 0
+16:26:57.203984 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 72: HTTP: GET / HTTP/1.1
+16:26:57.203994 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 0
+16:26:57.203999 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [P.], seq 1:73, ack 1, win 502, options [nop,nop,TS val 3446815364 ecr 1335449016], length 72: HTTP: GET / HTTP/1.1
+16:26:57.204230 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [.], ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 0
+16:26:57.204241 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [.], ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 0
+16:26:57.204480 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 302: HTTP: HTTP/1.1 200 OK
+16:26:57.204482 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [P.], seq 1:303, ack 73, win 509, options [nop,nop,TS val 1335449022 ecr 3446815364], length 302: HTTP: HTTP/1.1 200 OK
+16:26:57.206324 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.206324 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.206327 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.206328 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [F.], seq 73, ack 303, win 501, options [nop,nop,TS val 3446815368 ecr 1335449022], length 0
+16:26:57.206529 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 1335449024 ecr 3446815368], length 0
+16:26:57.206531 IP 10.31.1.4.80 > 10.21.0.40.58862: Flags [F.], seq 303, ack 74, win 509, options [nop,nop,TS val 1335449024 ecr 3446815368], length 0
+16:26:57.207969 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 3446815370 ecr 1335449024], length 0
+16:26:57.208004 IP 10.21.0.40.58862 > 10.31.1.4.80: Flags [.], ack 304, win 501, options [nop,nop,TS val 3446815370 ecr 1335449024], length 0
+```
 `Tags: Azure vWAN, Site-to-Site VPN, hub-spoke vnets, NVA, Load Balancer` <br>
 `date: 17-04-2026` <br>
 `date: 28-04-2026` <br>
@@ -803,6 +1031,9 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 [12]: ./media/flow-9.png "transit of the HTTP flow"
 [13]: ./media/effectiveRoutes-1.png "effective routes"
 [14]: ./media/effectiveRoutes-2.png "effective routes"
-
+[15]: ./media/flow-10.png "transit of the HTTP flow"
+[16]: ./media/flow-11.png "transit of the HTTP flow"
+[17]: ./media/flow-12.png "transit of the HTTP flow"
+[18]: ./media/flow-13.png "transit of the HTTP flow"
 
 <!--Link References-->
