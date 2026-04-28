@@ -1,39 +1,28 @@
-<properties
-pageTitle= 'Azure Virtual WAN single hub with Spoke VNets and Site-to-Site VPN'
-description= "Azure Virtual WAN single hub with Spoke VNets and Site-to-Site VPN"
-services="Azure Virtual WAN"
-documentationCenter="https://github.com/fabferri"
-authors="fabferri"
-editor="fabferri"/>
-
-<tags
-   ms.service="howto-Azure-examples"
-   ms.devlang="ARM templates"
-   ms.topic="article"
-   ms.tgt_pltfrm="Azure"
-   ms.workload="Azure Virtual WAN"
-   ms.date="28/11/2024"
-   ms.author="fabferri" />
-
 # Azure Virtual WAN single hub with Spoke VNets and Site-to-Site VPN
 
 ## Overview
 
-This project deploys an Azure Virtual WAN architecture with spoke VNets containing NVA (Network Virtual Appliance) routing through internal load balancers, and a branch site connected via site-to-site VPN. All resources are deployed in the same Azure region using ARM templates and PowerShell scripts.
+This project deploys an Azure Virtual WAN architecture with spoke VNets containing NVAs (Network Virtual Appliance) routing through internal load balancers, and a branch site connected via site-to-site VPN. All resources are deployed using ARM templates and PowerShell scripts.
 
 ## Architecture
 
-The architecture consists of the following components:
+The high level network diagram is shown below:
 
 [![1]][1]
+
+The details network diagrams are shown below:
+
+[![2]][2]
+
+[![3]][3]
 
 ### Key Design Principles
 
 - **Traffic transit through NVAs**: Spoke VNets (spoke21, spoke22) contain Linux VMs acting as NVAs (with IP forwarding enabled) behind an internal Standard Load Balancer with HA ports.
-- **VNet peering for extended spokes**: spoke21B and spoke22B are peered to spoke21 and spoke22 respectively, with traffic routed through the NVA load balancers.
+- **VNet peering for child spokes**: spoke21B and spoke22B are peered to spoke21 and spoke22 respectively, with traffic routed through the NVA load balancers.
 - **Site-to-site VPN**: Branch1 connects to the virtual hub via an active-active VPN gateway with BGP (ASN 65011 for branch, ASN 65515 for hub).
 
-### Network Address Space
+### Network Address Space for all componenets connect to hub90
 
 | VNet/Hub   | Address Space    | Purpose                                  |
 |------------|------------------|------------------------------------------|
@@ -42,63 +31,174 @@ The architecture consists of the following components:
 | spoke21B   | 10.21.1.0/24     | Extended spoke peered to spoke21         |
 | spoke22    | 10.22.0.0/24     | Spoke VNet with NVAs + workload          |
 | spoke22B   | 10.22.1.0/24     | Extended spoke peered to spoke22         |
-| branch1    | 10.50.0.0/24     | Branch site connected via S2S VPN        |
+| branch1    | 10.50.0.0/24     | Branch site1 connected via S2SVPN        |
+
+### Network Address Space for all componenets connect to hub91
+
+| VNet/Hub   | Address Space    | Purpose                                  |
+|------------|------------------|------------------------------------------|
+| hub91      | 10.91.0.0/23     | Virtual Hub                              |
+| spoke31    | 10.31.0.0/24     | Spoke VNet with NVAs + workload          |
+| spoke31B   | 10.31.1.0/24     | Extended spoke peered to spoke31         |
+| spoke32    | 10.32.0.0/24     | Spoke VNet with NVAs + workload          |
+| spoke32B   | 10.32.1.0/24     | Extended spoke peered to spoke32         |
+| branch2    | 10.51.0.0/24     | Branch site2 connected via S2SVPN        |
 
 ### Virtual Machines
 
-| VM Name   | VNet     | Subnet    | Private IP   | Role            |
-|-----------|----------|-----------|--------------|-----------------|
-| R21-1     | spoke21  | subnetBE  | 10.21.0.20   | NVA (IP fwd)    |
-| R21-2     | spoke21  | subnetBE  | 10.21.0.21   | NVA (IP fwd)    |
-| WL21-1    | spoke21  | subnetWL  | 10.21.0.40   | Workload        |
-| WL21B-1   | spoke21B | subnetWL21B | 10.21.1.4  | Workload        |
-| R22-1     | spoke22  | subnetBE  | 10.22.0.20   | NVA (IP fwd)    |
-| R22-2     | spoke22  | subnetBE  | 10.22.0.21   | NVA (IP fwd)    |
-| WL22-1    | spoke22  | subnetWL  | 10.22.0.40   | Workload        |
-| WL22B-1   | spoke22B | subnetWL22B | 10.22.1.4  | Workload        |
-| vm-branch1| branch1  | subnet1   | (dynamic)    | Branch workload |
+| VM Name   | VNet     | Subnet      | Private IP   | Role            |
+|-----------|----------|-------------|--------------|-----------------|
+| R21-1     | spoke21  | subnetBE    | 10.21.0.20   | NVA (IP fwd)    |
+| R21-2     | spoke21  | subnetBE    | 10.21.0.21   | NVA (IP fwd)    |
+| WL21-1    | spoke21  | subnetWL    | 10.21.0.40   | Workload        |
+| WL21B-1   | spoke21B | subnetWL21B | 10.21.1.4    | Workload        |
+| R22-1     | spoke22  | subnetBE    | 10.22.0.20   | NVA (IP fwd)    |
+| R22-2     | spoke22  | subnetBE    | 10.22.0.21   | NVA (IP fwd)    |
+| WL22-1    | spoke22  | subnetWL    | 10.22.0.40   | Workload        |
+| WL22B-1   | spoke22B | subnetWL22B | 10.22.1.4    | Workload        |
+| branch1-vm| branch1  | subnet1     | (dynamic)    | Branch workload |
+
+| VM Name   | VNet     | Subnet      | Private IP   | Role            |
+|-----------|----------|-------------|--------------|-----------------|
+| R31-1     | spoke31  | subnetBE    | 10.31.0.20   | NVA (IP fwd)    |
+| R31-2     | spoke31  | subnetBE    | 10.31.0.21   | NVA (IP fwd)    |
+| WL31-1    | spoke31  | subnetWL    | 10.31.0.40   | Workload        |
+| WL31B-1   | spoke31B | subnetWL31B | 10.31.1.4    | Workload        |
+| R32-1     | spoke32  | subnetBE    | 10.32.0.20   | NVA (IP fwd)    |
+| R32-2     | spoke32  | subnetBE    | 10.32.0.21   | NVA (IP fwd)    |
+| WL32-1    | spoke32  | subnetWL    | 10.32.0.40   | Workload        |
+| WL32B-1   | spoke32B | subnetWL32B | 10.32.1.4    | Workload        |
+| branch2-vm| branch2  | subnet1     | (dynamic)    | Branch workload |
+
 
 All VMs run **Ubuntu** with **nginx** installed via custom script extension. <br>
 **NVA VMs have IP forwarding enabled at both the OS and NIC level.**
 
 ### Routing
 
-**Spoke21 / Spoke22 subnets (subnetWL)**:
-- UDR routes inter-spoke and extended-spoke traffic to the internal load balancer frontend IP (e.g., `10.21.0.10` for spoke21).
-
-**Spoke21B / Spoke22B subnets**:
-- UDR routes all `10.0.0.0/8` traffic and spoke-specific traffic through the parent spoke's load balancer.
-
-**Virtual Hub connections**:
-- spoke21 and spoke22 connections use static routes pointing to their respective LB frontend IPs.
-- The hub's defaultRouteTable handles VPN-to-spoke routing.
-
+- Traffic is steered through the NVAs in each parent spoke by combining UDRs and internal load balancers. The parent-spoke ILBs are Standard internal load balancers with an HA Ports-style rule (`protocol: All`, `frontendPort: 0`, `backendPort: 0`), so any flow can be distributed to the NVA backend pool.
+- In parent workload subnets (`subnetWL` in spoke21/spoke22 and spoke31/spoke32), UDR entries send inter-spoke and child-spoke prefixes to the local ILB frontend, so packets hit an NVA before leaving the VNet.
+- UDR propagation flag: parent workload-subnet route tables are configured with `disableBgpRoutePropagation: true` (Azure portal shows this as `Propagate gateway routes = No`). This prevents BGP-propagated gateway routes from taking precedence over explicit UDR next-hop (`VirtualAppliance`) entries. Child-spoke route tables currently rely on explicit static routes and do not set this flag explicitly.
+- VNet peering flags used by child-to-parent and parent-to-child peerings are: `allowVirtualNetworkAccess: true` (permit routed reachability), `allowForwardedTraffic: true` (required because traffic is forwarded by NVAs), `allowGatewayTransit: false`, and `useRemoteGateways: false` (no remote gateway transit through peering).
+- Static routing on spoke hub-connections: each `hubVirtualNetworkConnection` to a spoke defines `vnetRoutes.staticRoutes` for exactly the parent-spoke and child-spoke prefixes (for example `to-spoke21-via-lb` and `to-spoke21B-via-lb`), with `nextHopIpAddress` set to the spoke ILB frontend. This forces hub-to-spoke/workload traffic through the NVA path instead of direct VNet system routing; `staticRoutesConfig.vnetLocalRouteOverrideCriteria = Equal` keeps the static route active when prefix lengths are equal.
+- Hub connection route-table behavior: spoke connections are associated with `defaultRouteTable`, and propagated route tables include `defaultRouteTable` with label `default`. Route tables such as `RT_SHARED` and `RT_SPOKE` exist in the hub but are not directly bound in these connection blocks.
+- Hub connection security/routing mode: `enableInternetSecurity` is set to `false` on the spoke `hubVirtualNetworkConnection` resources, so no secure internet breakout policy is enforced on these connections.
+- Virtual Hub route-table propagation flags: in hub route tables, `Propagate routes from connections to this route table = Yes` allows branch (VPN/ER/User VPN) routes to be learned into the selected table, and propagation label `default` makes those learned routes available across hubs/tables using the same label. Combined with connection-level static routes to ILB next hops, this preserves symmetric VPN-to-spoke and spoke-to-spoke transit through NVAs.
 
 ## Configuration
 
-All shared configuration is centralized in `init.json`:
+All shared configuration is centralized in `init.json`.
 
-| Parameter           | Description                                   |
-|---------------------|-----------------------------------------------|
-| `subscriptionName`  | Target Azure subscription name                |
-| `rgName`            | Resource group for vWAN and hub               |
-| `vwanName`          | Virtual WAN name                              |
-| `hub1Name`          | Virtual Hub name                              |
-| `location`          | Primary Azure region                          |
-| `hub1location`      | Hub Azure region                              |
-| `rgSpoke21`         | Resource group for spoke21 and spoke21B       |
-| `spoke21location`   | Azure region for spoke21                      |
-| `rgSpoke22`         | Resource group for spoke22 and spoke22B       |
-| `spoke22location`   | Azure region for spoke22                      |
-| `hub1vpnGwName`     | VPN gateway name in the hub                   |
-| `rgBranch1`         | Resource group for branch1                    |
-| `branch1vpnGtwName` | VPN gateway name for branch1                  |
-| `branch1location`   | Azure region for branch1                      |
-| `sharedKey`         | Pre-shared key for VPN tunnels                |
-| `adminUsername`     | VM administrator username                     |
-| `adminPassword`     | VM administrator password                     |
+### Full Variable Reference (`init.json`)
+
+| Variable | Description |
+|----------|-------------|
+| `adminPassword` | Local administrator password used by VM deployments |
+| `adminUsername` | Local administrator username used by VM deployments |
+| `branch1AddressPrefix` | Address space prefix for the branch1 VNet |
+| `branch1connectionGtwName1` | Name of VPN connection #1 on branch1 VPN gateway |
+| `branch1connectionGtwName2` | Name of VPN connection #2 on branch1 VPN gateway |
+| `branch1gatewaysubnetPrefix` | Address prefix for `GatewaySubnet` in branch1 VNet |
+| `branch1gtwASN` | BGP ASN used by branch1 VPN gateway |
+| `branch1localgatewayName1` | Name of local network gateway object #1 in branch resource group |
+| `branch1localgatewayName2` | Name of local network gateway object #2 in branch resource group |
+| `branch1location` | Azure region for branch1 resources |
+| `branch1Name` | Name of branch1 VNet (also reused as VPN site logical name) |
+| `branch1subnet1Name` | Name of workload subnet in branch1 VNet |
+| `branch1subnet1Prefix` | Address prefix for branch1 workload subnet |
+| `branch1vpnGtwName` | Name of branch1 VPN gateway resource |
+| `hub1addressPrefix` | Address prefix for the virtual hub |
+| `hub1location` | Azure region for virtual hub resources |
+| `hub1Name` | Name of the virtual hub resource |
+| `hub1ToBranchConnectionName` | Name of vHub-to-branch VPN connection |
+| `hub1vpnGwName` | Name of VPN gateway deployed in the virtual hub |
+| `R21_1_privIP` | Private IP assigned to VM `R21-1` |
+| `R21_2_privIP` | Private IP assigned to VM `R21-2` |
+| `R21-1` | VM name for first NVA in spoke21 |
+| `R21-2` | VM name for second NVA in spoke21 |
+| `R22_1_privIP` | Private IP assigned to VM `R22-1` |
+| `R22_2_privIP` | Private IP assigned to VM `R22-2` |
+| `R22-1` | VM name for first NVA in spoke22 |
+| `R22-2` | VM name for second NVA in spoke22 |
+| `rgBranch` | Resource group name for branch resources |
+| `rgSpoke21` | Resource group name for spoke21 resources |
+| `rgSpoke21B` | Resource group name used for spoke21B resources |
+| `rgSpoke22` | Resource group name for spoke22 resources |
+| `rgSpoke22B` | Resource group name used for spoke22B resources |
+| `rgWanName` | Resource group name for vWAN and virtual hub resources |
+| `sharedKey` | Pre-shared key for site-to-site VPN tunnels |
+| `spoke21AddressPrefix` | Address space prefix for spoke21 VNet |
+| `spoke21BAddressPrefix` | Address space prefix for spoke21B VNet |
+| `spoke21Blocation` | Azure region for spoke21B resources |
+| `spoke21BrtEntryNameMajorNet` | Route name in spoke21B route table for major network summary |
+| `spoke21BrtEntryNameParentSpoke` | Route name in spoke21B route table toward parent spoke21 |
+| `spoke21BrtSubnetWLName` | Route table name associated with spoke21B workload subnet |
+| `spoke21BsubnetWLName` | Workload subnet name in spoke21B |
+| `spoke21BsubnetWLPrefix` | Workload subnet prefix in spoke21B |
+| `spoke21BvnetName` | VNet name for spoke21B |
+| `spoke21lbBackEndPoolName` | Backend pool name of spoke21 internal load balancer |
+| `spoke21lbFrontEndConfigName` | Frontend configuration name of spoke21 internal load balancer |
+| `spoke21lbFrontEndIP` | Frontend private IP of spoke21 internal load balancer |
+| `spoke21lbName` | Name of spoke21 internal load balancer |
+| `spoke21lbProbeName` | Health probe name for spoke21 internal load balancer |
+| `spoke21location` | Azure region for spoke21 resources |
+| `spoke21rtEntryNameLocalChildSpoke` | Route name in spoke21 route table toward spoke21B |
+| `spoke21rtEntryNameRemoteChildSpoke` | Route name in spoke21 route table toward spoke22B |
+| `spoke21rtEntryNameRemoteSpoke` | Route name in spoke21 route table toward spoke22 |
+| `spoke21rtSubnetWLName` | Route table name associated with spoke21 workload subnet |
+| `spoke21subnetBEName` | Backend subnet name in spoke21 |
+| `spoke21subnetBEPrefix` | Backend subnet prefix in spoke21 |
+| `spoke21subnetFEName` | Frontend subnet name in spoke21 |
+| `spoke21subnetFEPrefix` | Frontend subnet prefix in spoke21 |
+| `spoke21subnetWLName` | Workload subnet name in spoke21 |
+| `spoke21subnetWLPrefix` | Workload subnet prefix in spoke21 |
+| `spoke21vnetName` | VNet name for spoke21 |
+| `spoke22AddressPrefix` | Address space prefix for spoke22 VNet |
+| `spoke22BAddressPrefix` | Address space prefix for spoke22B VNet |
+| `spoke22Blocation` | Azure region for spoke22B resources |
+| `spoke22BrtEntryNameMajorNet` | Route name in spoke22B route table for major network summary |
+| `spoke22BrtEntryNameParentSpoke` | Route name in spoke22B route table toward parent spoke22 |
+| `spoke22BrtSubnetWLName` | Route table name associated with spoke22B workload subnet |
+| `spoke22BsubnetWLName` | Workload subnet name in spoke22B |
+| `spoke22BsubnetWLPrefix` | Workload subnet prefix in spoke22B |
+| `spoke22BvnetName` | VNet name for spoke22B |
+| `spoke22lbBackEndPoolName` | Backend pool name of spoke22 internal load balancer |
+| `spoke22lbFrontEndConfigName` | Frontend configuration name of spoke22 internal load balancer |
+| `spoke22lbFrontEndIP` | Frontend private IP of spoke22 internal load balancer |
+| `spoke22lbName` | Name of spoke22 internal load balancer |
+| `spoke22lbProbeName` | Health probe name for spoke22 internal load balancer |
+| `spoke22location` | Azure region for spoke22 resources |
+| `spoke22rtEntryNameLocalChildSpoke` | Route name in spoke22 route table toward spoke22B |
+| `spoke22rtEntryNameRemoteChildSpoke` | Route name in spoke22 route table toward spoke21B |
+| `spoke22rtEntryNameRemoteSpoke` | Route name in spoke22 route table toward spoke21 |
+| `spoke22rtSubnetWLName` | Route table name associated with spoke22 workload subnet |
+| `spoke22subnetBEName` | Backend subnet name in spoke22 |
+| `spoke22subnetBEPrefix` | Backend subnet prefix in spoke22 |
+| `spoke22subnetFEName` | Frontend subnet name in spoke22 |
+| `spoke22subnetFEPrefix` | Frontend subnet prefix in spoke22 |
+| `spoke22subnetWLName` | Workload subnet name in spoke22 |
+| `spoke22subnetWLPrefix` | Workload subnet prefix in spoke22 |
+| `spoke22vnetName` | VNet name for spoke22 |
+| `subscriptionName` | Azure subscription display name used by deployment scripts |
+| `vnetpeeringName21Bto21` | Peering resource name from spoke21B to spoke21 |
+| `vnetpeeringName21to21B` | Peering resource name from spoke21 to spoke21B |
+| `vnetpeeringName22Bto22` | Peering resource name from spoke22B to spoke22 |
+| `vnetpeeringName22to22B` | Peering resource name from spoke22 to spoke22B |
+| `vpnSiteLink1Name` | Name of first link object in vWAN VPN site definition |
+| `vpnSiteLink2Name` | Name of second link object in vWAN VPN site definition |
+| `vwanName` | Name of Azure Virtual WAN resource |
+| `WL21_1_privIP` | Private IP assigned to VM `WL21-1` |
+| `WL21-1` | Workload VM name in spoke21 |
+| `WL21B_1_privIP` | Private IP assigned to VM `WL21B-1` |
+| `WL21B-1` | Workload VM name in spoke21B |
+| `WL22_1_privIP` | Private IP assigned to VM `WL22-1` |
+| `WL22-1` | Workload VM name in spoke22 |
+| `WL22B_1_privIP` | Private IP assigned to VM `WL22B-1` |
+| `WL22B-1` | Workload VM name in spoke22B |
 
 > **Important**: Update `init.json` with your own subscription name, credentials, and shared key before running any script.
+>
+> All deployment scripts use `init.json` by default. To use a different parameter file, pass `-initFile <file-name-or-path>`. Example: `./01-spoke21.ps1 -initFile init2.json`.
 
 ## File Descriptions
 
@@ -121,7 +221,7 @@ All shared configuration is centralized in `init.json`:
 | `03-vwan-site.ps1`    | PowerShell       | Deployment script for `03-vwan-site.json`; reads branch1 VPN gateway public IPs and BGP IPs at runtime |
 | `README.md`           | Documentation    | Original project documentation                                                                     |
 
-## Deployment Order
+## Deployment Order for hub90 and related components
 
 The scripts must be executed **sequentially** in the following order. Each step depends on resources created in the previous step.
 
@@ -165,20 +265,54 @@ Deploys the branch1 VNet with an active-active VPN gateway. This script **automa
 
 Creates the VPN site definition in vWAN and establishes the VPN connection from the hub to branch1. This script **automatically reads** the branch1 VPN gateway public IPs and BGP peer addresses.
 
-## Summary of Execution
+### Re-deploy for a second hub (`hub91`) in the same vWAN
 
-```console
-Step 1:  01-spoke21.ps1  +  01-spoke22.ps1    (spoke VNets, NVAs, LBs, workloads)
-Step 2:  02-vwan.ps1                          (vWAN, hub, connections, VPN GW)
-         02-spoke21B.ps1 +  02-spoke22B.ps1   (extended spokes with peering)
-Step 3:  03-vpn.ps1                           (branch VPN gateway)
-         03-vwan-site.ps1                     (vWAN site + VPN connection)
+To deploy a second hub using the same Virtual WAN, prepare `init2.json` with second-hub values (at minimum set `hub1Name` to `hub91` and align hub-specific prefixes/gateway names), then run the full sequence with `-initFile`
+
+## Deployment Order for hub91 and related components
+
+The deployment sequence for hub91 and its associated resources is:
+
+1. Parent spokes: `spoke31` and `spoke32`
+2. Hub and vWAN connection objects: `hub91` in `vwan1`
+3. Child spokes: `spoke31B` and `spoke32B` with peering to parent spokes
+4. Branch components: `branch2` VPN gateway and hub91-to-branch2 vWAN site connection
+
+Run commands in this order (parallel only inside each step where indicated):
+
+```powershell
+# Step 1 - Parent spokes (can run in parallel)
+.\01-spoke21.ps1 -initFile .\init2.json   # spoke31
+.\01-spoke22.ps1 -initFile .\init2.json   # spoke32
+
+# Step 2 - Hub91 in existing vWAN
+.\02-vwan.ps1 -initFile .\init2.json
+
+# Step 3 - Child spokes (can run in parallel)
+.\02-spoke21B.ps1 -initFile .\init2.json  # spoke31B
+.\02-spoke22B.ps1 -initFile .\init2.json  # spoke32B
+
+# Step 4 - Branch2 VPN and site connection
+.\03-vpn.ps1 -initFile .\init2.json
+.\03-vwan-site.ps1 -initFile .\init2.json
 ```
+
+```powershell
+.\01-spoke21.ps1 -initFile .\init2.json
+.\01-spoke22.ps1 -initFile .\init2.json
+.\02-vwan.ps1 -initFile .\init2.json
+.\02-spoke21B.ps1 -initFile .\init2.json
+.\02-spoke22B.ps1 -initFile .\init2.json
+.\03-vpn.ps1 -initFile .\init2.json
+.\03-vwan-site.ps1 -initFile .\init2.json
+```
+
+This keeps the same deployment logic while sourcing all parameters from `init2.json`.
 
 ## ANNEX: Checking flow symmetry through the NVAs
 
 **tcpdump** in linux NVAs allows to verify the traffic in transit and the symmetric transit through the NVAs.
-The **tcpdump** command are used in R21-1, R21-2, R22-1 and R22-2: 
+The **tcpdump** command are used in R21-1, R21-2, R22-1 and R22-2:
 
 ```console
 root@R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -187,7 +321,7 @@ root@R22-1:~# tcpdump -i eth0 -n "net 10.22.0.32/28 or net 10.22.1.0/24" and tcp
 
 ### HTTP traffic flow from WL22B-1 to WL21B-1
 
-[![2]][2]
+[![4]][4]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -243,7 +377,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 ### HTTP traffic flow from WL21B-1 to WL22B-1
 
-[![3]][3]
+[![5]][5]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -299,7 +433,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 ### HTTP traffic flow from WL21-1 to WL22B-1
 
-[![4]][4]
+[![6]][6]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -354,9 +488,9 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 ```
 
 
-### HTTP traffic flow from WL22-1 to WL21B-1
+### HTTP traffic flow from WL21-1 to WL21B-1
 
-[![5]][5]
+[![7]][7]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -412,7 +546,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 ### HTTP traffic flow from WL21-1 to WL22-1
 
-[![6]][6]
+[![8]][8]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -468,7 +602,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 ### HTTP traffic flow from WL22-1 to WL21-1
 
-[![7]][7]
+[![9]][9]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -524,7 +658,7 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 ### HTTP traffic flow from WL21B-1 to vm-branch1
 
-[![8]][8]
+[![10]][10]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -552,9 +686,10 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 12:51:30.059329 IP 10.21.1.4.37322 > 10.50.0.4.80: Flags [.], ack 307, win 501, options [nop,nop,TS val 1936134479 ecr 1543140130], length 0
 ```
 
+
 ### HTTP traffic flow from vm-branch1 to WL21B-1
 
-[![9]][9]
+[![11]][11]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -583,9 +718,9 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 ```
 
 
-### HTTP traffic flow from vm-branch1 to WL21B-1
+### HTTP traffic flow from WL21B-1 to vm-branch1
 
-[![10]][10]
+[![12]][12]
 
 ```console
 R21-1:~# tcpdump -i eth0 -n "net 10.21.0.32/28 or net 10.21.1.0/24" and tcp
@@ -615,28 +750,31 @@ listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 ### Effective routes WL21-1 and WL21B-1
 
-[![11]][11]
+[![13]][13]
 
 ### Effective routes WL22-1 and WL22B-1
 
-[![12]][12]
+[![14]][14]
 
 `Tags: Azure vWAN, Site-to-Site VPN, hub-spoke vnets, NVA, Load Balancer` <br>
 `date: 17-04-2026` <br>
+`date: 28-04-2026` <br>
 
 <!--Image References-->
-
 [1]: ./media/network-diagram.png "network diagram"
-[2]: ./media/flow-1.png "transit of the HTTP flow"
-[3]: ./media/flow-2.png "transit of the HTTP flow"
-[4]: ./media/flow-3.png "transit of the HTTP flow"
-[5]: ./media/flow-4.png "transit of the HTTP flow"
-[6]: ./media/flow-5.png "transit of the HTTP flow"
-[7]: ./media/flow-6.png "transit of the HTTP flow"
-[8]: ./media/flow-7.png "transit of the HTTP flow"
-[9]: ./media/flow-8.png "transit of the HTTP flow"
-[10]: ./media/flow-9.png "transit of the HTTP flow"
-[11]: ./media/effectiveRoutes-1.png "effective routes"
-[12]: ./media/effectiveRoutes-2.png "effective routes"
+[2]: ./media/network-diagram01.png "network diagram"
+[3]: ./media/network-diagram02.png "network diagram"
+[4]: ./media/flow-1.png "transit of the HTTP flow"
+[5]: ./media/flow-2.png "transit of the HTTP flow"
+[6]: ./media/flow-3.png "transit of the HTTP flow"
+[7]: ./media/flow-4.png "transit of the HTTP flow"
+[8]: ./media/flow-5.png "transit of the HTTP flow"
+[9]: ./media/flow-6.png "transit of the HTTP flow"
+[10]: ./media/flow-7.png "transit of the HTTP flow"
+[11]: ./media/flow-8.png "transit of the HTTP flow"
+[12]: ./media/flow-9.png "transit of the HTTP flow"
+[13]: ./media/effectiveRoutes-1.png "effective routes"
+[14]: ./media/effectiveRoutes-2.png "effective routes"
+
 
 <!--Link References-->

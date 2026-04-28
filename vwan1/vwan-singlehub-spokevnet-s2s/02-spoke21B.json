@@ -4,9 +4,107 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
+            "defaultValue": "SwedenCentral",
             "metadata": {
                 "description": "Location for all resources."
+            }
+        },
+        "spoke21BvnetName": {
+            "type": "string",
+            "defaultValue": "spoke21B",
+            "metadata": {
+                "description": "Name of the spoke21B virtual network."
+            }
+        },
+        "spoke21BAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.1.0/24",
+            "metadata": {
+                "description": "Address prefix for the spoke21B virtual network."
+            }
+        },
+        "spoke21BsubnetWLName": {
+            "type": "string",
+            "defaultValue": "subnetWL21B",
+            "metadata": {
+                "description": "Name of the spoke21B workload subnet."
+            }
+        },
+        "spoke21BsubnetWLPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.1.0/28",
+            "metadata": {
+                "description": "Address prefix of the spoke21B workload subnet."
+            }
+        },
+        "WL21B-1": {
+            "type": "string",
+            "defaultValue": "WL21B-1",
+            "metadata": {
+                "description": "Name of the workload VM in spoke21B."
+            }
+        },
+        "WL21B_1_privIP": {
+            "type": "string",
+            "defaultValue": "10.21.1.4",
+            "metadata": {
+                "description": "Private IP address of WL21B-1."
+            }
+        },
+        "spoke21BrtSubnetWLName": {
+            "type": "string",
+            "defaultValue": "RT-subnetWL21B",
+            "metadata": {
+                "description": "Name of the route table for spoke21B subnetWL."
+            }
+        },
+        "spoke21BrtEntryNameMajorNet": {
+            "type": "string",
+            "defaultValue": "to-majorNet10",
+            "metadata": {
+                "description": "Name of the major network route for spoke21B."
+            }
+        },
+        "spoke21BrtEntryNameParentSpoke": {
+            "type": "string",
+            "defaultValue": "to-spoke21",
+            "metadata": {
+                "description": "Name of the route from spoke21B to spoke21."
+            }
+        },
+        "spoke21lbFrontEndIP": {
+            "type": "string",
+            "defaultValue": "10.21.0.10",
+            "metadata": {
+                "description": "Frontend IP of the spoke21 load balancer used as next hop."
+            }
+        },
+        "spoke21vnetName": {
+            "type": "string",
+            "defaultValue": "spoke21",
+            "metadata": {
+                "description": "Name of the parent spoke21 virtual network."
+            }
+        },
+        "spoke21AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.0.0/24",
+            "metadata": {
+                "description": "Address prefix of the parent spoke21 virtual network."
+            }
+        },
+        "vnetpeeringName21Bto21": {
+            "type": "string",
+            "defaultValue": "spoke21B-to-spoke21",
+            "metadata": {
+                "description": "Name of the peering from spoke21B to spoke21."
+            }
+        },
+        "vnetpeeringName21to21B": {
+            "type": "string",
+            "defaultValue": "spoke21-to-spoke21B",
+            "metadata": {
+                "description": "Name of the peering from spoke21 to spoke21B."
             }
         },
         "adminUsername": {
@@ -21,6 +119,13 @@
                 "description": "Admin password for the VMs."
             }
         },
+        "rgSpoke21": {
+            "type": "string",
+            "defaultValue": "spoke21",
+            "metadata": {
+                "description": "Resource group name containing the spoke21 virtual network."
+            }
+        },
         "vmSize": {
             "type": "string",
             "defaultValue": "Standard_B1s",
@@ -30,17 +135,18 @@
         }
     },
     "variables": {
-        "vnetName": "spoke21B",
-        "vnetAddressPrefix": "10.21.1.0/24",
-        "subnetWLName": "subnetWL21B",
-        "subnetWLPrefix": "10.21.1.0/28",
-        "WL21_1_privIP": "10.21.1.4",
-        "rtSubnetWLName": "RT-subnetWL21B",
-        "lbFrontEndIP": "10.21.0.10",
-        "spoke21Name": "spoke21",
-        "spoke21AddressPrefix": "10.21.0.0/24",
-        "vnetpeeringName21Bto21": "spoke21B-to-spoke21",
-        "vnetpeeringName21to21B": "spoke21-to-spoke21B",
+        "vnetName": "[parameters('spoke21BvnetName')]",
+        "vnetAddressPrefix": "[parameters('spoke21BAddressPrefix')]",
+        "subnetWLName": "[parameters('spoke21BsubnetWLName')]",
+        "subnetWLPrefix": "[parameters('spoke21BsubnetWLPrefix')]",
+        "WL21_1_privIP": "[parameters('WL21B_1_privIP')]",
+        "rtSubnetWLName": "[parameters('spoke21BrtSubnetWLName')]",
+        "lbFrontEndIP": "[parameters('spoke21lbFrontEndIP')]",
+        "spoke21Name": "[parameters('spoke21vnetName')]",
+        "spoke21AddressPrefix": "[parameters('spoke21AddressPrefix')]",
+        "spoke21ResourceGroup": "[parameters('rgSpoke21')]",
+        "vnetpeeringName21Bto21": "[parameters('vnetpeeringName21Bto21')]",
+        "vnetpeeringName21to21B": "[parameters('vnetpeeringName21to21B')]",
 
         "linux_nginx_install": "sleep 10 && sudo apt -y update && apt -y install nginx && systemctl enable nginx && systemctl start nginx",
         "linux_custompage1": "echo '<style> h1 { color: blue; } </style> <h1>' > /var/www/html/index.nginx-debian.html",
@@ -51,11 +157,11 @@
         "linuxNVACommand": "[concat('sleep 1m', ' && ', variables('linuxIPForwarding'), ' && ', variables('linux_nginx')  )]",
         "vmArray": [
             {
-                "vmName": "WL21B-1",
+                "vmName": "[parameters('WL21B-1')]",
                 "subnetName": "[variables('subnetWLName')]",
                 "privIP": "[variables('WL21_1_privIP')]",
-                "pubIPName": "WL21B-1-pubIP",
-                "nsgName": "WL21B-1-nsg",
+                "pubIPName": "[concat(parameters('WL21B-1'),'-pubIP')]",
+                "nsgName": "[concat(parameters('WL21B-1'),'-nsg')]",
                 "ipforwarding": false,
                 "publisher": "canonical",
                 "offer": "ubuntu-24_04-lts",
@@ -76,7 +182,7 @@
             "properties": {
                 "routes": [
                     {
-                        "name": "to-majorNet10",
+                        "name": "[parameters('spoke21BrtEntryNameMajorNet')]",
                         "properties": {
                             "addressPrefix": "10.0.0.0/8",
                             "nextHopType": "VirtualAppliance",
@@ -84,7 +190,7 @@
                         }
                     },
                     {
-                        "name": "to-spoke21",
+                        "name": "[parameters('spoke21BrtEntryNameParentSpoke')]",
                         "properties": {
                             "addressPrefix": "[variables('spoke21AddressPrefix')]",
                             "nextHopType": "VirtualAppliance",
@@ -137,26 +243,71 @@
                 "allowGatewayTransit": false,
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('spoke21Name'))]"
+                    "id": "[resourceId(variables('spoke21ResourceGroup'), 'Microsoft.Network/virtualNetworks', variables('spoke21Name'))]"
                 }
             }
         },
         {
-            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-            "name": "[concat(variables('spoke21Name'),'/',variables('vnetpeeringName21to21B'))]",
-            "apiVersion": "2024-05-01",
-            "location": "[parameters('location')]",
-            "comments": "VNet peering from spoke21 to spoke21B",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "peeringDeploymentToSpoke21",
+            "resourceGroup": "[variables('spoke21ResourceGroup')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
             ],
             "properties": {
-                "allowVirtualNetworkAccess": true,
-                "allowForwardedTraffic": true,
-                "allowGatewayTransit": false,
-                "useRemoteGateways": false,
-                "remoteVirtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parameters": {
+                    "sourceVnetName": {
+                        "value": "[variables('vnetName')]"
+                    },
+                    "sourceVnetResourceGroup": {
+                        "value": "[resourceGroup().name]"
+                    },
+                    "targetVnetName": {
+                        "value": "[variables('spoke21Name')]"
+                    },
+                    "targetPeeringName": {
+                        "value": "[variables('vnetpeeringName21to21B')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "sourceVnetName": {
+                            "type": "string"
+                        },
+                        "sourceVnetResourceGroup": {
+                            "type": "string"
+                        },
+                        "targetVnetName": {
+                            "type": "string"
+                        },
+                        "targetPeeringName": {
+                            "type": "string"
+                        }
+                    },
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2024-05-01",
+                            "name": "[concat(parameters('targetVnetName'),'/',parameters('targetPeeringName'))]",
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId(parameters('sourceVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('sourceVnetName'))]"
+                                }
+                            }
+                        }
+                    ]
                 }
             }
         },
@@ -319,7 +470,7 @@
      "outputs": {
         "WL21B-1": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'WL21B-1-pubIP')).ipAddress]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('WL21B-1'), '-pubIP'))).ipAddress]"
         }
     }
 }

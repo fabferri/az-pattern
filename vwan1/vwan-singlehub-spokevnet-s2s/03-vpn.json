@@ -54,14 +54,14 @@
                 "description": "Azure region"
             }
         },
-        "branch1vNetName": {
+        "branch1Name": {
             "type": "string",
             "defaultValue": "branch1",
             "metadata": {
                 "description": "Arbitrary name for the Azure Virtual Network"
             }
         },
-        "branch1vNetAddressPrefix": {
+        "branch1AddressPrefix": {
             "type": "string",
             "defaultValue": "10.50.0.0/24",
             "metadata": {
@@ -79,14 +79,14 @@
             "type": "string",
             "defaultValue": "10.50.0.0/25",
             "metadata": {
-                "description": "CIDR block for VM subnet, subset of branch1vNetAddressPrefix address space"
+                "description": "CIDR block for VM subnet, subset of branch1AddressPrefix address space"
             }
         },
         "branch1gatewaysubnetPrefix": {
             "type": "string",
             "defaultValue": "10.50.0.224/27",
             "metadata": {
-                "description": "CIDR block for gateway subnet, subset of branch1vNetAddressPrefix address space"
+                "description": "CIDR block for gateway subnet, subset of branch1AddressPrefix address space"
             }
         },
         "branch1vpnGtwName": {
@@ -137,6 +137,13 @@
                 "description": "Shared key (PSK) for IPSec tunnel"
             }
         },
+        "branch1vmName": {
+            "type": "string",
+            "defaultValue": "branch1vm",
+            "metadata": {
+                "description": "Name of the Virtual Machine in branch1"
+            }
+        },
         "vmSize": {
             "type": "string",
             "defaultValue": "Standard_B1s",
@@ -160,9 +167,9 @@
     "variables": {
         "hub1_vpnASN": "[parameters('hub1_vpnASN')]",
         "branch1location": "[parameters('branch1location')]",
-        "branch1vNetName": "[parameters('branch1vNetName')]",
+        "branch1Name": "[parameters('branch1Name')]",
         "branch1subnet1Name": "[parameters('branch1subnet1Name')]",
-        "branch1vNetAddressPrefix": "[parameters('branch1vNetAddressPrefix')]",
+        "branch1AddressPrefix": "[parameters('branch1AddressPrefix')]",
         "branch1subnet1Prefix": "[parameters('branch1subnet1Prefix')]",
         "branch1gatewaysubnetPrefix": "[parameters('branch1gatewaysubnetPrefix')]",
         "branch1vpnGtwName": "[parameters('branch1vpnGtwName')]",
@@ -177,7 +184,7 @@
         "hub1vpn_BGPIP2": "[parameters('hub1vpn_BGPIP2')]",
         "branch1connectionGtwName1": "[parameters('branch1connectionGtwName1')]",
         "branch1connectionGtwName2": "[parameters('branch1connectionGtwName2')]",
-
+        "branch1vmName": "[parameters('branch1vmName')]",
         "linux_nginx_install": "sleep 10 && sudo apt -y update && apt -y install nginx && systemctl enable nginx && systemctl start nginx",
         "linux_custompage1": "echo '<style> h1 { color: blue; } </style> <h1>' > /var/www/html/index.nginx-debian.html",
         "linux_custompage2": "cat /etc/hostname >> /var/www/html/index.nginx-debian.html",
@@ -187,8 +194,8 @@
         "branchArray": [
             {
                 "location": "[variables('branch1location')]",
-                "vnetName": "[variables('branch1vNetName')]",
-                "addressSpace1Prefix": "[variables('branch1vNetAddressPrefix')]",
+                "vnetName": "[variables('branch1Name')]",
+                "addressSpace1Prefix": "[variables('branch1AddressPrefix')]",
                 "subnet1Name": "[variables('branch1subnet1Name')]",
                 "subnet1Prefix": "[variables('branch1subnet1Prefix')]",
                 "gatewaysubnetPrefix": "[variables('branch1gatewaysubnetPrefix')]",
@@ -214,7 +221,7 @@
         "vmSize": "[parameters('vmSize')]",
         "vmArray": [
             {
-                "vmName": "vm-branch1",
+                "vmName": "[variables('branch1vmName')]",
                 "location": "[variables('branchArray')[0].location]",
                 "vmSize": "[variables('vmSize')]",
                 "publisher": "canonical",
@@ -224,7 +231,8 @@
                 "vnetName": "[variables('branchArray')[0].vnetName]",
                 "subnetName": "[variables('branchArray')[0].subnet1Name]",
                 "ipforwarding": false,
-                "nsgName": "vm-branch1-nsg",
+                "pubIPName": "[concat(variables('branch1vmName'),'-pubIP')]",
+                "nsgName": "[concat(variables('branch1vmName'),'-nsg')]",
                 "cmd": "[variables('linux_nginx')]"
             }
         ],
@@ -490,7 +498,7 @@
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[concat(variables('vmArray')[copyIndex()].vmName,'-pubIP')]",
+            "name": "[concat(variables('vmArray')[copyIndex()].pubIPName)]",
             "apiVersion": "2024-05-01",
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "Public IP address VMs",
@@ -518,7 +526,7 @@
             "location": "[variables('vmArray')[copyIndex()].location]",
             "comments": "NIC of the VMs",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]",
+                "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].pubIPName )  )]",
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vmArray')[copyIndex()].vnetName)]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups',variables('vmArray')[copyIndex()].nsgName)]"
             ],
@@ -529,7 +537,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].vmName,'-pubIP' )  )]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat( variables('vmArray')[copyIndex()].pubIPName )  )]"
                             },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vmArray')[copyIndex()].vnetName, variables('vmArray')[copyIndex()].subnetName)]"
@@ -622,7 +630,7 @@
     "outputs": {
         "vm-branch1": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'vm-branch1-pubIP')).ipAddress]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat(variables('branch1vmName'),'-pubIP') )).ipAddress]"
         }
     }
 }

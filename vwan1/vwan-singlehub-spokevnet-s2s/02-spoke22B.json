@@ -4,9 +4,107 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
+            "defaultValue": "SwedenCentral",
             "metadata": {
                 "description": "Location for all resources."
+            }
+        },
+        "spoke22BvnetName": {
+            "type": "string",
+            "defaultValue": "spoke22B",
+            "metadata": {
+                "description": "Name of the spoke22B virtual network."
+            }
+        },
+        "spoke22BAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.1.0/24",
+            "metadata": {
+                "description": "Address prefix for the spoke22B virtual network."
+            }
+        },
+        "spoke22BsubnetWLName": {
+            "type": "string",
+            "defaultValue": "subnetWL22B",
+            "metadata": {
+                "description": "Name of the spoke22B workload subnet."
+            }
+        },
+        "spoke22BsubnetWLPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.1.0/28",
+            "metadata": {
+                "description": "Address prefix of the spoke22B workload subnet."
+            }
+        },
+        "WL22B-1": {
+            "type": "string",
+            "defaultValue": "WL22B-1",
+            "metadata": {
+                "description": "Name of the workload VM in spoke22B."
+            }
+        },
+        "WL22B_1_privIP": {
+            "type": "string",
+            "defaultValue": "10.22.1.4",
+            "metadata": {
+                "description": "Private IP address of WL22B-1."
+            }
+        },
+        "spoke22BrtSubnetWLName": {
+            "type": "string",
+            "defaultValue": "RT-subnetWL22B",
+            "metadata": {
+                "description": "Name of the route table for spoke22B subnetWL."
+            }
+        },
+        "spoke22BrtEntryNameMajorNet": {
+            "type": "string",
+            "defaultValue": "to-majorNet10",
+            "metadata": {
+                "description": "Name of the major network route for spoke22B."
+            }
+        },
+        "spoke22BrtEntryNameParentSpoke": {
+            "type": "string",
+            "defaultValue": "to-spoke22",
+            "metadata": {
+                "description": "Name of the route from spoke22B to spoke22."
+            }
+        },
+        "spoke22lbFrontEndIP": {
+            "type": "string",
+            "defaultValue": "10.22.0.10",
+            "metadata": {
+                "description": "Frontend IP of the spoke22 load balancer used as next hop."
+            }
+        },
+        "spoke22vnetName": {
+            "type": "string",
+            "defaultValue": "spoke22",
+            "metadata": {
+                "description": "Name of the parent spoke22 virtual network."
+            }
+        },
+        "spoke22AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.0/24",
+            "metadata": {
+                "description": "Address prefix of the parent spoke22 virtual network."
+            }
+        },
+        "vnetpeeringName22Bto22": {
+            "type": "string",
+            "defaultValue": "spoke22B-to-spoke22",
+            "metadata": {
+                "description": "Name of the peering from spoke22B to spoke22."
+            }
+        },
+        "vnetpeeringName22to22B": {
+            "type": "string",
+            "defaultValue": "spoke22-to-spoke22B",
+            "metadata": {
+                "description": "Name of the peering from spoke22 to spoke22B."
             }
         },
         "adminUsername": {
@@ -27,20 +125,28 @@
             "metadata": {
                 "description": "Size of the VMs."
             }
+        },
+        "rgSpoke22": {
+            "type": "string",
+            "defaultValue": "spoke22",
+            "metadata": {
+                "description": "Resource group name containing the spoke22 virtual network."
+            }
         }
     },
     "variables": {
-        "vnetName": "spoke22B",
-        "vnetAddressPrefix": "10.22.1.0/24",
-        "subnetWLName": "subnetWL22B",
-        "subnetWLPrefix": "10.22.1.0/28",
-        "WL22_1_privIP": "10.22.1.4",
-        "rtSubnetWLName": "RT-subnetWL22B",
-        "lbFrontEndIP": "10.22.0.10",
-        "spoke22Name": "spoke22",
-        "spoke22AddressPrefix": "10.22.0.0/24",
-        "vnetpeeringName22Bto22": "spoke22B-to-spoke22",
-        "vnetpeeringName22to22B": "spoke22-to-spoke22B",
+        "vnetName": "[parameters('spoke22BvnetName')]",
+        "vnetAddressPrefix": "[parameters('spoke22BAddressPrefix')]",
+        "subnetWLName": "[parameters('spoke22BsubnetWLName')]",
+        "subnetWLPrefix": "[parameters('spoke22BsubnetWLPrefix')]",
+        "WL22_1_privIP": "[parameters('WL22B_1_privIP')]",
+        "rtSubnetWLName": "[parameters('spoke22BrtSubnetWLName')]",
+        "lbFrontEndIP": "[parameters('spoke22lbFrontEndIP')]",
+        "spoke22Name": "[parameters('spoke22vnetName')]",
+        "spoke22AddressPrefix": "[parameters('spoke22AddressPrefix')]",
+        "spoke22ResourceGroup": "[parameters('rgSpoke22')]",
+        "vnetpeeringName22Bto22": "[parameters('vnetpeeringName22Bto22')]",
+        "vnetpeeringName22to22B": "[parameters('vnetpeeringName22to22B')]",
 
         "linux_nginx_install": "sleep 10 && sudo apt -y update && apt -y install nginx && systemctl enable nginx && systemctl start nginx",
         "linux_custompage1": "echo '<style> h1 { color: blue; } </style> <h1>' > /var/www/html/index.nginx-debian.html",
@@ -51,11 +157,11 @@
         "linuxNVACommand": "[concat('sleep 1m', ' && ', variables('linuxIPForwarding'), ' && ', variables('linux_nginx')  )]",
         "vmArray": [
             {
-                "vmName": "WL22B-1",
+                "vmName": "[parameters('WL22B-1')]",
                 "subnetName": "[variables('subnetWLName')]",
                 "privIP": "[variables('WL22_1_privIP')]",
-                "pubIPName": "WL22B-1-pubIP",
-                "nsgName": "WL22B-1-nsg",
+                "pubIPName": "[concat(parameters('WL22B-1'),'-pubIP')]",
+                "nsgName": "[concat(parameters('WL22B-1'),'-nsg')]",
                 "ipforwarding": false,
                 "publisher": "canonical",
                 "offer": "ubuntu-24_04-lts",
@@ -76,7 +182,7 @@
             "properties": {
                 "routes": [
                     {
-                        "name": "to-majorNet10",
+                        "name": "[parameters('spoke22BrtEntryNameMajorNet')]",
                         "properties": {
                             "addressPrefix": "10.0.0.0/8",
                             "nextHopType": "VirtualAppliance",
@@ -84,7 +190,7 @@
                         }
                     },
                     {
-                        "name": "to-spoke22",
+                        "name": "[parameters('spoke22BrtEntryNameParentSpoke')]",
                         "properties": {
                             "addressPrefix": "[variables('spoke22AddressPrefix')]",
                             "nextHopType": "VirtualAppliance",
@@ -137,26 +243,71 @@
                 "allowGatewayTransit": false,
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('spoke22Name'))]"
+                    "id": "[resourceId(variables('spoke22ResourceGroup'), 'Microsoft.Network/virtualNetworks', variables('spoke22Name'))]"
                 }
             }
         },
         {
-            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-            "name": "[concat(variables('spoke22Name'),'/',variables('vnetpeeringName22to22B'))]",
-            "apiVersion": "2024-05-01",
-            "location": "[parameters('location')]",
-            "comments": "VNet peering from spoke22 to spoke22B",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "peeringDeploymentToSpoke22",
+            "resourceGroup": "[variables('spoke22ResourceGroup')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
             ],
             "properties": {
-                "allowVirtualNetworkAccess": true,
-                "allowForwardedTraffic": true,
-                "allowGatewayTransit": false,
-                "useRemoteGateways": false,
-                "remoteVirtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parameters": {
+                    "sourceVnetName": {
+                        "value": "[variables('vnetName')]"
+                    },
+                    "sourceVnetResourceGroup": {
+                        "value": "[resourceGroup().name]"
+                    },
+                    "targetVnetName": {
+                        "value": "[variables('spoke22Name')]"
+                    },
+                    "targetPeeringName": {
+                        "value": "[variables('vnetpeeringName22to22B')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "sourceVnetName": {
+                            "type": "string"
+                        },
+                        "sourceVnetResourceGroup": {
+                            "type": "string"
+                        },
+                        "targetVnetName": {
+                            "type": "string"
+                        },
+                        "targetPeeringName": {
+                            "type": "string"
+                        }
+                    },
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2024-05-01",
+                            "name": "[concat(parameters('targetVnetName'),'/',parameters('targetPeeringName'))]",
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId(parameters('sourceVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('sourceVnetName'))]"
+                                }
+                            }
+                        }
+                    ]
                 }
             }
         },
@@ -318,7 +469,7 @@
     "outputs": {
         "WL22B-1": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'WL22B-1-pubIP')).ipAddress]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('WL22B-1'), '-pubIP'))).ipAddress]"
         }
     }
 }

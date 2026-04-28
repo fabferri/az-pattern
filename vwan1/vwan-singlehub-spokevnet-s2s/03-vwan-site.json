@@ -86,6 +86,20 @@
             "metadata": {
                 "description": "remote autonomous system number"
             }
+        },
+        "vpnSiteLink1Name": {
+            "type": "string",
+            "defaultValue": "vpnSiteLink1",
+            "metadata": {
+                "description": "Name of the first VPN site link."
+            }
+        },
+        "vpnSiteLink2Name": {
+            "type": "string",
+            "defaultValue": "vpnSiteLink2",
+            "metadata": {
+                "description": "Name of the second VPN site link."
+            }
         }
     },
     "variables": {
@@ -101,6 +115,8 @@
         "branch1vpnBGPpeer1": "[parameters('branch1vpnBGPpeer1')]",
         "branch1vpnBGPpeer2": "[parameters('branch1vpnBGPpeer2')]",
         "hub1ToBranchConnectionName": "[parameters('hub1ToBranchConnectionName')]",
+        "vpnSiteLink1Name": "[parameters('vpnSiteLink1Name')]",
+        "vpnSiteLink2Name": "[parameters('vpnSiteLink2Name')]",
 
         "vpnSiteArray": [
             {
@@ -115,8 +131,8 @@
                 "branchvpnBGPpeer1": "[variables('branch1vpnBGPpeer1')]",
                 "branchvpnBGPpeer2": "[variables('branch1vpnBGPpeer2')]",
                 "hubToBranchConnectionName": "[variables('hub1ToBranchConnectionName')]",
-                "vpnSiteLink1": "vpnSiteLink1",
-                "vpnSiteLink2": "vpnSiteLink2"
+                "vpnSiteLink1": "[variables('vpnSiteLink1Name')]",
+                "vpnSiteLink2": "[variables('vpnSiteLink2Name')]"
             }
         ],
         "vpnSiteCount": "[length(variables('vpnsiteArray'))]"
@@ -185,7 +201,7 @@
                                 "id": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', variables('vpnsiteArray')[copyIndex()].hubName, 'defaultRouteTable')]"
                             }
                         ],
-                        "labels": []
+                        "labels": ["default"]
                     }
                 },
                 "remoteVpnSite": {

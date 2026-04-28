@@ -68,6 +68,90 @@
             "metadata": {
                 "description": "Name of the VPN Gateway in the hub1."
             }
+        },
+        "spoke21vnetName": {
+            "type": "string",
+            "defaultValue": "spoke21"
+        },
+        "spoke21AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.0.0/24"
+        },
+        "spoke21subnetFEName": {
+            "type": "string",
+            "defaultValue": "subnetFE"
+        },
+        "spoke21subnetFEPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.0.0/28"
+        },
+        "spoke21subnetBEName": {
+            "type": "string",
+            "defaultValue": "subnetBE"
+        },
+        "spoke21subnetBEPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.0.16/28"
+        },
+        "spoke21subnetWLName": {
+            "type": "string",
+            "defaultValue": "subnetWL"
+        },
+        "spoke21subnetWLPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.0.32/28"
+        },
+        "spoke21BAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.1.0/24"
+        },
+        "spoke21lbFrontEndIP": {
+            "type": "string",
+            "defaultValue": "10.21.0.10"
+        },
+        "spoke22vnetName": {
+            "type": "string",
+            "defaultValue": "spoke22"
+        },
+        "spoke22AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.0/24"
+        },
+        "spoke22subnetFEName": {
+            "type": "string",
+            "defaultValue": "subnetFE"
+        },
+        "spoke22subnetFEPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.0/28"
+        },
+        "spoke22subnetBEName": {
+            "type": "string",
+            "defaultValue": "subnetBE"
+        },
+        "spoke22subnetBEPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.16/28"
+        },
+        "spoke22subnetWLName": {
+            "type": "string",
+            "defaultValue": "subnetWL"
+        },
+        "spoke22subnetWLPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.32/28"
+        },
+        "spoke22BAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.1.0/24"
+        },
+        "spoke22lbFrontEndIP": {
+            "type": "string",
+            "defaultValue": "10.22.0.10"
+        },
+        "hub1addressPrefix":{
+            "type": "string",
+            "defaultValue": "10.90.0.0/23"
         }
     },
     "variables": {
@@ -75,37 +159,37 @@
         "vwanName": "[parameters('vwanName')]",
         "hub1Name": "[parameters('hub1Name')]",
         "hub1location": "[parameters('hub1location')]",
-        "hub1addressPrefix": "10.90.0.0/23",
+        "hub1addressPrefix": "[parameters('hub1addressPrefix')]",
 
-        "spoke1vnetName": "spoke21",
-        "spoke2vnetName": "spoke22",
+        "spoke1vnetName": "[parameters('spoke21vnetName')]",
+        "spoke2vnetName": "[parameters('spoke22vnetName')]",
 
-        "spoke21BPrefix": "10.21.1.0/24",
-        "spoke22BPrefix": "10.22.1.0/24",
+        "spoke21BPrefix": "[parameters('spoke21BAddressPrefix')]",
+        "spoke22BPrefix": "[parameters('spoke22BAddressPrefix')]",
 
         "spoke1vnet": {
             "location": "[variables('hub1location')]",
             "name": "[variables('spoke1vnetName')]",
-            "addressPrefix1": "10.21.0.0/24",
-            "subnetFEName": "subnetFE",
-            "subnetFEPrefix": "10.21.0.0/28",
-            "subnetBEName": "subnetBE",
-            "subnetBEPrefix": "10.21.0.16/28",
-            "subnetWLName": "subnetWL",
-            "subnetWLPrefix": "10.21.0.32/28",
-            "lbFrontEndIP": "10.21.0.10"
+            "addressPrefix1": "[parameters('spoke21AddressPrefix')]",
+            "subnetFEName": "[parameters('spoke21subnetFEName')]",
+            "subnetFEPrefix": "[parameters('spoke21subnetFEPrefix')]",
+            "subnetBEName": "[parameters('spoke21subnetBEName')]",
+            "subnetBEPrefix": "[parameters('spoke21subnetBEPrefix')]",
+            "subnetWLName": "[parameters('spoke21subnetWLName')]",
+            "subnetWLPrefix": "[parameters('spoke21subnetWLPrefix')]",
+            "lbFrontEndIP": "[parameters('spoke21lbFrontEndIP')]"
         },
         "spoke2vnet": {
             "location": "[variables('hub1location')]",
             "name": "[variables('spoke2vnetName')]",
-            "addressPrefix1": "10.22.0.0/24",
-            "subnetFEName": "subnetFE",
-            "subnetFEPrefix": "10.22.0.0/28",
-            "subnetBEName": "subnetBE",
-            "subnetBEPrefix": "10.22.0.16/28",
-            "subnetWLName": "subnetWL",
-            "subnetWLPrefix": "10.22.0.32/28",
-            "lbFrontEndIP": "10.22.0.10"
+            "addressPrefix1": "[parameters('spoke22AddressPrefix')]",
+            "subnetFEName": "[parameters('spoke22subnetFEName')]",
+            "subnetFEPrefix": "[parameters('spoke22subnetFEPrefix')]",
+            "subnetBEName": "[parameters('spoke22subnetBEName')]",
+            "subnetBEPrefix": "[parameters('spoke22subnetBEPrefix')]",
+            "subnetWLName": "[parameters('spoke22subnetWLName')]",
+            "subnetWLPrefix": "[parameters('spoke22subnetWLPrefix')]",
+            "lbFrontEndIP": "[parameters('spoke22lbFrontEndIP')]"
         },
 
         "hub1connectionNamespoke1": "[concat(variables('spoke1vnetName'),'-conn')]",
