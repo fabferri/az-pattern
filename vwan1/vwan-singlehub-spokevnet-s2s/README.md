@@ -1,4 +1,4 @@
-# Azure Virtual WAN two hubs with spoke VNets and child spoke VNets
+# Azure Virtual WAN two virtual hubs with spoke VNets and child spoke VNets
 
 ## Overview
 
@@ -29,9 +29,22 @@ Each parent spoke has a child spoke peered to it (spoke21↔spoke21B, spoke22↔
 
 #### 3. UDR-enforced NVA transit
 Explicit user-defined routes on the parent workload subnets (`subnetWL`) and child spoke subnets send all inter-spoke and branch destination prefixes to the ILB frontend IP (`VirtualAppliance` next hop). This guarantees that traffic leaving these subnets always passes through an NVA before reaching the virtual hub. Parent workload route tables also set `disableBgpRoutePropagation: true` (`Propagate gateway routes = No` in the portal), preventing BGP-learned routes from the hub from overriding the UDR entries.
+How the mapping works:
+| Azure REST / ARM / Bicep          | Azure portal                   |
+| --------------------------------- | ------------------------------ |
+| disableBgpRoutePropagation: true  | Propagate gateway routes = No  |
+| disableBgpRoutePropagation: false | Propagate gateway routes = Yes |
+
+When you set `disableBgpRoutePropagation: true` the BGP‑learned routes from:
+
+- VPN Gateways (S2S / P2S)
+- ExpressRoute gateways
+are not injected into the effective route tables of subnets associated with that route table.
+
+This behaviour is explicitly described in Microsoft Q&A and Azure routing documentation: disabling propagation causes Azure to discard gateway‑learned (BGP and static) routes for those subnets.
 
 #### 4. Hub connection static routes
-Each spoke's `hubVirtualNetworkConnection` object includes `vnetRoutes.staticRoutes` entries covering both the parent and child prefixes, with `nextHopIpAddress` set to the ILB frontend IP. The flag `staticRoutesConfig.vnetLocalRouteOverrideCriteria = Equal` ensures that when the hub resolves a prefix that matches a locally known route at equal length, the static route still takes precedence, forcing hub-to-spoke traffic through the NVA rather than taking a direct system route.
+Each spoke's `hubVirtualNetworkConnection` object includes `vnetRoutes.staticRoutes` entries covering both the parent and child prefixes, with `nextHopIpAddress` set to the ILB frontend IP. The flag `staticRoutesConfig.vnetLocalRouteOverrideCriteria = "Equal"` ensures that when the hub resolves a prefix that matches a locally known route at equal length, the static route still takes precedence, forcing hub-to-spoke traffic through the NVA rather than taking a direct system route.
 
 #### 5. Active-active S2S VPN with BGP
 Branch sites connect to their hub over two active-active IPsec tunnels, one per VPN gateway instance. BGP is enabled on both sides: branch gateways use ASN 65011 (branch1) and 65012 (branch2), while the hub VPN gateways use ASN 65515. Active-active mode ensures that both tunnels carry traffic simultaneously and that failover is sub-second upon tunnel loss, without requiring manual intervention.
