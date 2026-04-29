@@ -39,9 +39,8 @@ When you set `disableBgpRoutePropagation: true` the BGP‑learned routes from:
 
 - VPN Gateways (S2S / P2S)
 - ExpressRoute gateways
-are not injected into the effective route tables of subnets associated with that route table.
 
-This behaviour is explicitly described in Microsoft Q&A and Azure routing documentation: disabling propagation causes Azure to discard gateway‑learned (BGP and static) routes for those subnets.
+are not injected into the effective route tables of subnets associated with that route table. Disabling propagation causes Azure to discard gateway‑learned (BGP and static) routes for those subnets.
 
 #### 4. Hub connection static routes
 Each spoke's `hubVirtualNetworkConnection` object includes `vnetRoutes.staticRoutes` entries covering both the parent and child prefixes, with `nextHopIpAddress` set to the ILB frontend IP. The flag `staticRoutesConfig.vnetLocalRouteOverrideCriteria = "Equal"` ensures that when the hub resolves a prefix that matches a locally known route at equal length, the static route still takes precedence, forcing hub-to-spoke traffic through the NVA rather than taking a direct system route.
