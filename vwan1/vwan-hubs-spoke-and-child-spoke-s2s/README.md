@@ -236,7 +236,11 @@ All shared configuration is centralized in `init.json`.
 | `WL22B_1_privIP` | Private IP assigned to VM `WL22B-1` |
 | `WL22B-1` | Workload VM name in spoke22B |
 
-> **Important**: Update `init.json` with your own subscription name, credentials, and shared key before running any script.
+> **Important**: Before deployment, update the values of variables:
+> `adminUsername`   (adminsitrator username) 
+> `adminPassword`   (adminsitrator password)
+> `sharedKey`       (shared key of the site-to-site VPN )
+> in both `init.json` and `init2.json`.
 >
 > All deployment scripts use `init.json` by default. To use a different parameter file, pass `-initFile <file-name-or-path>`. Example: `./01-spoke21.ps1 -initFile init2.json`.
 

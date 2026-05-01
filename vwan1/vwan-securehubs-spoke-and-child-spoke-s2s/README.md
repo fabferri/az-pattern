@@ -217,8 +217,7 @@ Key parameter groups include:
 
 Before deployment, update at least:
 
-- In both `init.json` and `init2.json`, customize the values of variables `adminUsername` and `adminPassword`
-- In both `init.json` and `init2.json`, customize the value of variable `sharedKey` (shared key for VPN connections)
+- In both `init.json` and `init2.json`, customize the values of variables `adminUsername`, `adminPassword`, and `sharedKey`
 - Subscription name
 
 

@@ -94,7 +94,7 @@
     "hub1ToBranchConnectionName": "hub1Tobranch1",
     "vpnSiteLink1Name": "vpnSiteLink1",
     "vpnSiteLink2Name": "vpnSiteLink2",
-    "sharedKey": "Fg#21S!!Q32ggl43",
+    "sharedKey": "SITE_TO_SITE_VPN_SHARED_KEY_GOES_HERE",
     "branch1localgatewayName1": "hub90localNetGateway1",
     "branch1localgatewayName2": "hub90localNetGateway2",
     "branch1connectionGtwName1": "gw-branch1-conn1",
