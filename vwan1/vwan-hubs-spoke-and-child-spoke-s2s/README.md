@@ -236,7 +236,8 @@ All shared configuration is centralized in `init.json`.
 | `WL22B_1_privIP` | Private IP assigned to VM `WL22B-1` |
 | `WL22B-1` | Workload VM name in spoke22B |
 
-> **Important**: Before deployment, update the values of variables: <br>
+> [!NOTE]
+> Before deployment, update the values of variables: <br>
 > `adminUsername`   (adminsitrator username)  <br>
 > `adminPassword`   (adminsitrator password)  <br>
 > `sharedKey`       (shared key of the site-to-site VPN ) <br>
