@@ -1,0 +1,501 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "spoke22location": {
+            "type": "string",
+            "defaultValue": "SwedenCentral",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "spoke22vnetName": {
+            "type": "string",
+            "defaultValue": "spoke22",
+            "metadata": {
+                "description": "Name of the virtual network."
+            }
+        },
+        "spoke22AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.0/24",
+            "metadata": {
+                "description": "Address prefix for the virtual network."
+            }
+        },
+        "spoke22subnetFEName": {
+            "type": "string",
+            "defaultValue": "subnetFE",
+            "metadata": {
+                "description": "Name of the front-end subnet."
+            }
+        },
+        "spoke22subnetFEPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.0/28",
+            "metadata": {
+                "description": "Address prefix for the front-end subnet."
+            }
+        },
+        "spoke22subnetBEName": {
+            "type": "string",
+            "defaultValue": "subnetBE",
+            "metadata": {
+                "description": "Name of the back-end subnet."
+            }
+        },
+        "spoke22subnetBEPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.0.16/28",
+            "metadata": {
+                "description": "Address prefix for the back-end subnet."
+            }
+        },
+        "spoke22BAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.22.1.0/24",
+            "metadata": {
+                "description": "Address prefix for the child spoke22B virtual network used in routing."
+            }
+        },
+        "spoke22lbName": {
+            "type": "string",
+            "defaultValue": "spoke22lb",
+            "metadata": {
+                "description": "Name of the load balancer."
+            }
+        },
+        "spoke22lbFrontEndIP": {
+            "type": "string",
+            "defaultValue": "10.22.0.10",
+            "metadata": {
+                "description": "Frontend IP address for the load balancer."
+            }
+        },
+        "spoke22lbFrontEndConfigName": {
+            "type": "string",
+            "defaultValue": "spoke22lbFrontEndConf",
+            "metadata": {
+                "description": "Name of the load balancer frontend configuration."
+            }
+        },
+        "spoke22lbBackEndPoolName": {
+            "type": "string",
+            "defaultValue": "spoke22lbBackEndPool",
+            "metadata": {
+                "description": "Name of the load balancer backend pool."
+            }
+        },
+        "spoke22lbProbeName": {
+            "type": "string",
+            "defaultValue": "spoke22lbprobe",
+            "metadata": {
+                "description": "Name of the load balancer health probe."
+            }
+        },
+        "majorPrivNetwork": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/8",
+            "metadata": {
+                "description": "Address prefix for the major private network."
+            }
+        },
+        "R22_1_privIP": {
+            "type": "string",
+            "defaultValue": "10.22.0.20",
+            "metadata": {
+                "description": "Private IP address for router 22-1."
+            }
+        },
+        "R22_2_privIP": {
+            "type": "string",
+            "defaultValue": "10.22.0.21",
+            "metadata": {
+                "description": "Private IP address for router 22-2."
+            }
+        },
+        "R22-1": {
+            "type": "string",
+            "defaultValue": "R22-1",
+            "metadata": {
+                "description": "Name of router 22-1."
+            }
+        },
+        "R22-2": {
+            "type": "string",
+            "defaultValue": "R22-2",
+            "metadata": {
+                "description": "Name of router 22-2."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Admin username for the VMs."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Admin password for the VMs."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of the VMs."
+            }
+        }
+    },
+    "variables": {
+        "vnetName": "[parameters('spoke22vnetName')]",
+        "vnetAddressPrefix": "[parameters('spoke22AddressPrefix')]",
+        "subnetFEName": "[parameters('spoke22subnetFEName')]",
+        "subnetFEPrefix": "[parameters('spoke22subnetFEPrefix')]",
+        "subnetBEName": "[parameters('spoke22subnetBEName')]",
+        "subnetBEPrefix": "[parameters('spoke22subnetBEPrefix')]",
+        "majorPrivNetwork": "[parameters('majorPrivNetwork')]",
+        "subnetspoke22BPrefix": "[parameters('spoke22BAddressPrefix')]",
+        
+        "lbName": "[parameters('spoke22lbName')]",
+        "lbFrontEndConfigName": "[parameters('spoke22lbFrontEndConfigName')]",
+        "lbBackEndPoolName": "[parameters('spoke22lbBackEndPoolName')]",
+        "lbProbeName": "[parameters('spoke22lbProbeName')]",
+        "lbFrontEndIP": "[parameters('spoke22lbFrontEndIP')]",
+
+        "R22_1_privIP": "[parameters('R22_1_privIP')]",
+        "R22_2_privIP": "[parameters('R22_2_privIP')]",
+
+        "linux_nginx_install": "sleep 10 && sudo apt -y update && apt -y install nginx && systemctl enable nginx && systemctl start nginx",
+        "linux_custompage1": "echo '<style> h1 { color: blue; } </style> <h1>' > /var/www/html/index.nginx-debian.html",
+        "linux_custompage2": "cat /etc/hostname >> /var/www/html/index.nginx-debian.html",
+        "linux_custompage3": "echo ' </h1>' >> /var/www/html/index.nginx-debian.html",
+        "linux_nginx": "[concat(variables('linux_nginx_install'),' && ', variables('linux_custompage1'),' && ', variables('linux_custompage2'),' && ', variables('linux_custompage3'))]",
+        "linuxIPForwarding": "sed -i -e '$a\\net.ipv4.ip_forward = 1' /etc/sysctl.conf && sysctl -p ",
+        "linuxNVACommand": "[concat('sleep 1m', ' && ', variables('linuxIPForwarding'), ' && ', variables('linux_nginx')  )]",
+        "vmArray": [
+            {
+                "vmName": "[parameters('R22-1')]",
+                "subnetName": "[variables('subnetBEName')]",
+                "privIP": "[variables('R22_1_privIP')]",
+                "pubIPName": "[concat(parameters('R22-1'),'-pubIP')]",
+                "nsgName": "[concat(parameters('R22-1'),'-nsg')]",
+                "ipforwarding": true,
+                "publisher": "canonical",
+                "offer": "ubuntu-24_04-lts",
+                "sku": "server",
+                "version": "latest",
+                "commandToExecute": "[variables('linuxNVACommand')]"
+            },
+            {
+                "vmName": "[parameters('R22-2')]",
+                "subnetName": "[variables('subnetBEName')]",
+                "privIP": "[variables('R22_2_privIP')]",
+                "pubIPName": "[concat(parameters('R22-2'),'-pubIP')]",
+                "nsgName": "[concat(parameters('R22-2'),'-nsg')]",
+                "ipforwarding": true,
+                "publisher": "canonical",
+                "offer": "ubuntu-24_04-lts",
+                "sku": "server",
+                "version": "latest",
+                "commandToExecute": "[variables('linuxNVACommand')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('vnetName')]",
+            "location": "[parameters('spoke22location')]",
+            "comments": "Spoke22 parent transit VNet with subnetFE and subnetBE; workloads are hosted in child spoke22B",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetFEName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetFEPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('subnetBEName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetBEPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('lbName')]",
+            "location": "[parameters('spoke22location')]",
+            "comments": "Internal Standard Load Balancer in subnetFE",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[variables('lbFrontEndConfigName')]",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetFEName'))]"
+                            },
+                            "privateIPAddress": "[variables('lbFrontEndIP')]",
+                            "privateIPAllocationMethod": "Static"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('lbBackEndPoolName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "lbAnyPortRule",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbName'), variables('lbFrontEndConfigName'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('lbName'), variables('lbBackEndPoolName'))]"
+                            },
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('lbName'), variables('lbProbeName'))]"
+                            },
+                            "protocol": "All",
+                            "frontendPort": 0,
+                            "backendPort": 0,
+                            "loadDistribution": "SourceIP",
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "[variables('lbProbeName')]",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(variables('lbName'), '/', variables('lbBackEndPoolName'))]",
+            "location": "[parameters('spoke22location')]",
+            "comments": "Backend pool with R22-1 and R22-2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "properties": {
+                "loadBalancerBackendAddresses": [
+                    {
+                        "name": "[parameters('R22-1')]",
+                        "properties": {
+                            "virtualNetwork": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+                            },
+                            "ipAddress": "[variables('R22_1_privIP')]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('R22-2')]",
+                        "properties": {
+                            "virtualNetwork": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+                            },
+                            "ipAddress": "[variables('R22_2_privIP')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "location": "[parameters('spoke22location')]",
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('vmArray')[copyIndex()].pubIPName]",
+            "location": "[parameters('spoke22location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-nic')]",
+            "location": "[parameters('spoke22location')]",
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].pubIPName)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privIP]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('vmArray')[copyIndex()].subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].pubIPName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+                },
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-07-01",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "location": "[parameters('spoke22location')]",
+            "copy": {
+                "name": "vmCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName, '-nic'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-osdisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName, '-nic'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/installNginx')]",
+            "location": "[parameters('spoke22location')]",
+            "copy": {
+                "name": "extCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
+                },
+                "protectedSettings": {}
+            }
+        }
+    ],
+    "outputs": {
+        "R22-1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('R22-1'), '-pubIP'))).ipAddress]"
+        },
+        "R22-2": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('R22-2'), '-pubIP'))).ipAddress]"
+        }
+    }
+}

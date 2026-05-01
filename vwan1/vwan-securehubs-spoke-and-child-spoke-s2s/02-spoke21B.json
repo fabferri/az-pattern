@@ -1,0 +1,468 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "SwedenCentral",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "spoke21BvnetName": {
+            "type": "string",
+            "defaultValue": "spoke21B",
+            "metadata": {
+                "description": "Name of the spoke21B virtual network."
+            }
+        },
+        "spoke21BAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.1.0/24",
+            "metadata": {
+                "description": "Address prefix for the spoke21B virtual network."
+            }
+        },
+        "spoke21BsubnetWLName": {
+            "type": "string",
+            "defaultValue": "subnetWL21B",
+            "metadata": {
+                "description": "Name of the spoke21B workload subnet."
+            }
+        },
+        "spoke21BsubnetWLPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.1.0/28",
+            "metadata": {
+                "description": "Address prefix of the spoke21B workload subnet."
+            }
+        },
+        "WL21B-1": {
+            "type": "string",
+            "defaultValue": "WL21B-1",
+            "metadata": {
+                "description": "Name of the workload VM in spoke21B."
+            }
+        },
+        "WL21B_1_privIP": {
+            "type": "string",
+            "defaultValue": "10.21.1.4",
+            "metadata": {
+                "description": "Private IP address of WL21B-1."
+            }
+        },
+        "spoke21BrtSubnetWLName": {
+            "type": "string",
+            "defaultValue": "RT-subnetWL21B",
+            "metadata": {
+                "description": "Name of the route table for spoke21B subnetWL."
+            }
+        },
+        "spoke21BrtEntryNameMajorNet": {
+            "type": "string",
+            "defaultValue": "to-majorNet10",
+            "metadata": {
+                "description": "Name of the major network route for spoke21B."
+            }
+        },
+        "spoke21BrtEntryNameParentSpoke": {
+            "type": "string",
+            "defaultValue": "to-spoke21",
+            "metadata": {
+                "description": "Name of the route from spoke21B to spoke21."
+            }
+        },
+        "spoke21lbFrontEndIP": {
+            "type": "string",
+            "defaultValue": "10.21.0.10",
+            "metadata": {
+                "description": "Frontend IP of the spoke21 load balancer used as next hop."
+            }
+        },
+        "spoke21vnetName": {
+            "type": "string",
+            "defaultValue": "spoke21",
+            "metadata": {
+                "description": "Name of the parent spoke21 virtual network."
+            }
+        },
+        "spoke21AddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.21.0.0/24",
+            "metadata": {
+                "description": "Address prefix of the parent spoke21 virtual network."
+            }
+        },
+        "vnetpeeringName21Bto21": {
+            "type": "string",
+            "defaultValue": "spoke21B-to-spoke21",
+            "metadata": {
+                "description": "Name of the peering from spoke21B to spoke21."
+            }
+        },
+        "vnetpeeringName21to21B": {
+            "type": "string",
+            "defaultValue": "spoke21-to-spoke21B",
+            "metadata": {
+                "description": "Name of the peering from spoke21 to spoke21B."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Admin username for the VMs."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Admin password for the VMs."
+            }
+        },
+        "rgSpoke21": {
+            "type": "string",
+            "defaultValue": "spoke21",
+            "metadata": {
+                "description": "Resource group name containing the spoke21 virtual network."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_B1s",
+            "metadata": {
+                "description": "Size of the VMs."
+            }
+        }
+    },
+    "variables": {
+        "vnetName": "[parameters('spoke21BvnetName')]",
+        "vnetAddressPrefix": "[parameters('spoke21BAddressPrefix')]",
+        "subnetWLName": "[parameters('spoke21BsubnetWLName')]",
+        "subnetWLPrefix": "[parameters('spoke21BsubnetWLPrefix')]",
+        "WL21_1_privIP": "[parameters('WL21B_1_privIP')]",
+        "rtSubnetWLName": "[parameters('spoke21BrtSubnetWLName')]",
+        "lbFrontEndIP": "[parameters('spoke21lbFrontEndIP')]",
+        "spoke21Name": "[parameters('spoke21vnetName')]",
+        "spoke21AddressPrefix": "[parameters('spoke21AddressPrefix')]",
+        "spoke21ResourceGroup": "[parameters('rgSpoke21')]",
+        "vnetpeeringName21Bto21": "[parameters('vnetpeeringName21Bto21')]",
+        "vnetpeeringName21to21B": "[parameters('vnetpeeringName21to21B')]",
+
+        "linux_nginx_install": "sleep 10 && sudo apt -y update && apt -y install nginx && systemctl enable nginx && systemctl start nginx",
+        "linux_custompage1": "echo '<style> h1 { color: blue; } </style> <h1>' > /var/www/html/index.nginx-debian.html",
+        "linux_custompage2": "cat /etc/hostname >> /var/www/html/index.nginx-debian.html",
+        "linux_custompage3": "echo ' </h1>' >> /var/www/html/index.nginx-debian.html",
+        "linux_nginx": "[concat(variables('linux_nginx_install'),' && ', variables('linux_custompage1'),' && ', variables('linux_custompage2'),' && ', variables('linux_custompage3'))]",
+        "linuxIPForwarding": "sed -i -e '$a\\net.ipv4.ip_forward = 1' /etc/sysctl.conf && sysctl -p ",
+        "linuxNVACommand": "[concat('sleep 1m', ' && ', variables('linuxIPForwarding'), ' && ', variables('linux_nginx')  )]",
+        "vmArray": [
+            {
+                "vmName": "[parameters('WL21B-1')]",
+                "subnetName": "[variables('subnetWLName')]",
+                "privIP": "[variables('WL21_1_privIP')]",
+                "pubIPName": "[concat(parameters('WL21B-1'),'-pubIP')]",
+                "nsgName": "[concat(parameters('WL21B-1'),'-nsg')]",
+                "ipforwarding": false,
+                "publisher": "canonical",
+                "offer": "ubuntu-24_04-lts",
+                "sku": "server",
+                "version": "latest",
+                "commandToExecute": "[variables('linux_nginx')]"
+            }
+        ],
+        "vmCount": "[length(variables('vmArray'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('rtSubnetWLName')]",
+            "location": "[parameters('location')]",
+            "comments": "Route table for child spoke21B workload subnet; sends major private traffic to the spoke21 ILB frontend IP",
+            "properties": {
+                "routes": [
+                    {
+                        "name": "[parameters('spoke21BrtEntryNameMajorNet')]",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/8",
+                            "nextHopType": "VirtualAppliance",
+                            "nextHopIpAddress": "[variables('lbFrontEndIP')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('vnetName')]",
+            "location": "[parameters('location')]",
+            "comments": "Child workload VNet spoke21B with one workload subnet and peering to parent transit VNet spoke21",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/routeTables', variables('rtSubnetWLName'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetWLName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetWLPrefix')]",
+                            "routeTable": {
+                                "id": "[resourceId('Microsoft.Network/routeTables', variables('rtSubnetWLName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('vnetName'), '/', variables('vnetpeeringName21Bto21'))]",
+            "apiVersion": "2024-05-01",
+            "location": "[parameters('location')]",
+            "comments": "VNet peering from spoke21B to spoke21",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId(variables('spoke21ResourceGroup'), 'Microsoft.Network/virtualNetworks', variables('spoke21Name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "peeringDeploymentToSpoke21",
+            "resourceGroup": "[variables('spoke21ResourceGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "parameters": {
+                    "sourceVnetName": {
+                        "value": "[variables('vnetName')]"
+                    },
+                    "sourceVnetResourceGroup": {
+                        "value": "[resourceGroup().name]"
+                    },
+                    "targetVnetName": {
+                        "value": "[variables('spoke21Name')]"
+                    },
+                    "targetPeeringName": {
+                        "value": "[variables('vnetpeeringName21to21B')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "sourceVnetName": {
+                            "type": "string"
+                        },
+                        "sourceVnetResourceGroup": {
+                            "type": "string"
+                        },
+                        "targetVnetName": {
+                            "type": "string"
+                        },
+                        "targetPeeringName": {
+                            "type": "string"
+                        }
+                    },
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "apiVersion": "2024-05-01",
+                            "name": "[concat(parameters('targetVnetName'),'/',parameters('targetPeeringName'))]",
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": true,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId(parameters('sourceVnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('sourceVnetName'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('vmArray')[copyIndex()].nsgName]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "nsgCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH-rule",
+                        "properties": {
+                            "description": "allow SSH",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2024-05-01",
+            "name": "[variables('vmArray')[copyIndex()].pubIPName]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "copy": {
+                "name": "pubIPCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2024-05-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-nic')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "nicCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].pubIPName)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[variables('vmArray')[copyIndex()].privIP]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('vmArray')[copyIndex()].subnetName)]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vmArray')[copyIndex()].pubIPName)]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('vmArray')[copyIndex()].nsgName)]"
+                },
+                "enableIPForwarding": "[variables('vmArray')[copyIndex()].ipforwarding]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-07-01",
+            "name": "[variables('vmArray')[copyIndex()].vmName]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "vmCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName, '-nic'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmArray')[copyIndex()].vmName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vmArray')[copyIndex()].publisher]",
+                        "offer": "[variables('vmArray')[copyIndex()].offer]",
+                        "sku": "[variables('vmArray')[copyIndex()].sku]",
+                        "version": "[variables('vmArray')[copyIndex()].version]"
+                    },
+                    "osDisk": {
+                        "name": "[concat(variables('vmArray')[copyIndex()].vmName, '-osdisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmArray')[copyIndex()].vmName, '-nic'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(variables('vmArray')[copyIndex()].vmName, '/installNginx')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "extCopy",
+                "count": "[variables('vmCount')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('vmArray')[copyIndex()].vmName)]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "commandToExecute": "[variables('vmArray')[copyIndex()].commandToExecute]"
+                },
+                "protectedSettings": {}
+            }
+        }
+    ],
+     "outputs": {
+        "WL21B-1": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('WL21B-1'), '-pubIP'))).ipAddress]"
+        }
+    }
+}
