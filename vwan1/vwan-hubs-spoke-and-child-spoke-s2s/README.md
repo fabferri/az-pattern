@@ -1,5 +1,32 @@
 # Azure Virtual WAN two virtual hubs with spoke VNets and child spoke VNets
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+  - [Key Design Principles](#key-design-principles)
+    - [1. Redundant NVA pairs behind HA-ports ILBs](#1-redundant-nva-pairs-behind-ha-ports-ilbs)
+    - [2. Child spoke extension via VNet peering](#2-child-spoke-extension-via-vnet-peering)
+    - [3. UDR-enforced NVA transit](#3-udr-enforced-nva-transit)
+    - [4. Hub connection static routes](#4-hub-connection-static-routes)
+    - [5. Active-active S2S VPN with BGP](#5-active-active-s2s-vpn-with-bgp)
+    - [6. Route-table association and propagation](#6-route-table-association-and-propagation)
+  - [Network Address Space — hub90](#network-address-space--hub90)
+  - [Network Address Space — hub91](#network-address-space--hub91)
+  - [Network Address Space for all components connected to hub91](#network-address-space-for-all-componenets-connect-to-hub91)
+  - [Virtual Machines](#virtual-machines)
+  - [Routing](#routing)
+- [Configuration](#configuration)
+  - [Full Variable Reference (`init.json`)](#full-variable-reference-initjson)
+- [File Descriptions](#file-descriptions)
+- [Deployment sequence for hub90 and related components](#deployment-sequence-for-hub90-and-related-components)
+  - [Step 1: Deploy Spoke VNets (can run in parallel)](#step-1-deploy-spoke-vnets-can-run-in-parallel)
+  - [Step 2: Deploy Virtual WAN, Hub, and Extended Spokes](#step-2-deploy-virtual-wan-hub-and-extended-spokes)
+  - [Step 3: Deploy Branch VPN and vWAN Site](#step-3-deploy-branch-vpn-and-vwan-site)
+  - [Re-deploy for a second hub (hub91) in the same vWAN](#re-deploy-for-a-second-hub-hub91-in-the-same-vwan)
+- [Deployment sequence for hub91 and related components](#deployment-sequence-for-hub91-and-related-components)
+- [ANNEX: Checking flow symmetry through the NVAs](#annex-checking-flow-symmetry-through-the-nvas)
+
 ## Overview
 
 This project deploys an Azure Virtual WAN with two virtual hubs (**hub90** and **hub91**), each connected to a pair of spoke VNets. <br>
