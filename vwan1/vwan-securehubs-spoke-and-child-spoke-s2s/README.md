@@ -4,21 +4,21 @@
 
 - [Overview](#overview)
 - [Architecture](#architecture)
-- [Topology Overview](#topology-overview)
-- [Parent Spokes](#parent-spokes)
-- [Child Spokes](#child-spokes)
-- [Secure Hub and Routing Intent](#secure-hub-and-routing-intent)
+   - [Topology Overview](#topology-overview)
+   - [Parent Spokes](#parent-spokes)
+   - [Child Spokes](#child-spokes)
+   - [Secure Hub and Routing Intent](#secure-hub-and-routing-intent)
 - [Routing Model](#routing-model)
-- [Child Spoke to Parent Spoke](#child-spoke-to-parent-spoke)
-- [Hub to Child Spoke](#hub-to-child-spoke)
-- [Peering Behavior](#peering-behavior)
-- [Secure Hub Behavior](#secure-hub-behavior)
+   - [Child Spoke to Parent Spoke](#child-spoke-to-parent-spoke)
+   - [Hub to Child Spoke](#hub-to-child-spoke)
+   - [Peering Behavior](#peering-behavior)
+   - [Secure Hub Behavior](#secure-hub-behavior)
 - [IP Addressing Plan](#ip-addressing-plan)
 - [Configuration Files](#configuration-files)
 - [File List](#file-list)
 - [Deployment Order](#deployment-order)
-- [Deployment sequence for `init.json`](#deployment-sequence-for-initjson)
-- [Deployment sequence for `init2.json`](#deployment-sequence-for-init2json)
+   - [Deployment sequence for `init.json`](#deployment-sequence-for-initjson)
+   - [Deployment sequence for `init2.json`](#deployment-sequence-for-init2json)
 - [How to check symmetric data traffic through NVAs](#how-to-check-symmetric-data-traffic-through-nvas)
 - [ANNEX: Checking flow symmetry through the NVAs](#annex-checking-flow-symmetry-through-the-nvas)
 
@@ -61,6 +61,7 @@ Detailed diagrams:
 - Each hub has two parent spokes connected directly to the hub.
 - Each parent spoke has one child spoke connected with bidirectional VNet peering.
 - Each branch site connects to its corresponding hub VPN gateway with two BGP-enabled IPsec tunnels.
+- The design combines Azure Firewall inspection in the virtual hub with explicit NVA steering for traffic to and from child spokes.
 
 ### Parent Spokes
 
@@ -134,6 +135,11 @@ That means:
 - It reaches the parent ILB frontend IP.
 - The ILB distributes the flow to one of the two NVAs.
 
+> [Note]
+> in the current design Parent spokes are transit-only VNets.
+> Workloads are deployed only in child spokes. if you deploy workloads in parent spoke vnet the traffic parent spoke-to-parent spoke will be asymmetric
+>
+
 ### Hub to Child Spoke
 
 Each `hubVirtualNetworkConnection` for a parent spoke includes a static route for the child spoke prefix with `nextHopIpAddress` set to the parent spoke ILB frontend IP.
@@ -166,12 +172,9 @@ Child-to-parent and parent-to-child peerings are configured with:
 
 At the hub level:
 
-- Private traffic is sent to Azure Firewall through routing intent.
-- The Azure Firewall Policy permits transit across all private address prefixes; therefore, traffic between spoke VNets and between spoke VNets and branch networks is allowed.
+- Secure hub routing intent currently applies only to `PrivateTraffic`. No internet routing intent is configured.
 - Spoke hub connections set `enableInternetSecurity = false`.
-- No internet routing intent is configured.
-
-So the design combines Azure Firewall inspection in the virtual hub with explicit NVA steering for traffic to and from child spokes.
+- The Azure Firewall Policy permits transit across all private address prefixes; therefore, traffic between spoke VNets and between spoke VNets and branch networks is allowed.
 
 ## IP Addressing Plan
 
@@ -318,14 +321,6 @@ root@R22-1:~# tcpdump -i eth0 -n "net 10.22.1.0/24" and tcp
 root@R31-1:~# tcpdump -i eth0 -n "net 10.31.1.0/24" and tcp
 root@R32-1:~# tcpdump -i eth0 -n "net 10.32.1.0/24" and tcp
 ```
-
-## Notes
-
-- Some embedded comments in the ARM templates still describe the previous layout. The actual resources declared in the templates are the authoritative source.
-- Parent spokes are transit-only VNets in the current design.
-- Workloads are deployed only in child spokes. if you deploy workloads in parent spoke vnet the traffic parent spoke-to-parent spoke will be asymmetric
-- Secure hub routing intent currently applies only to `PrivateTraffic`.
-
 
 ## ANNEX: Checking flow symmetry through the NVAs
 
