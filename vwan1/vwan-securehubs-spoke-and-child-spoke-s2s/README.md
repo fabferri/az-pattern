@@ -1,5 +1,27 @@
 # Azure Virtual WAN Secure Hubs with Parent Spokes and Child Spokes
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Topology Overview](#topology-overview)
+- [Parent Spokes](#parent-spokes)
+- [Child Spokes](#child-spokes)
+- [Secure Hub and Routing Intent](#secure-hub-and-routing-intent)
+- [Routing Model](#routing-model)
+- [Child Spoke to Parent Spoke](#child-spoke-to-parent-spoke)
+- [Hub to Child Spoke](#hub-to-child-spoke)
+- [Peering Behavior](#peering-behavior)
+- [Secure Hub Behavior](#secure-hub-behavior)
+- [IP Addressing Plan](#ip-addressing-plan)
+- [Configuration Files](#configuration-files)
+- [File List](#file-list)
+- [Deployment Order](#deployment-order)
+- [Deployment sequence for `init.json`](#deployment-sequence-for-initjson)
+- [Deployment sequence for `init2.json`](#deployment-sequence-for-init2json)
+- [How to check symmetric data traffic through NVAs](#how-to-check-symmetric-data-traffic-through-nvas)
+- [ANNEX: Checking flow symmetry through the NVAs](#annex-checking-flow-symmetry-through-the-nvas)
+
 ## Overview
 
 This project deploys an Azure Virtual WAN topology with two secure virtual hubs, each serving two parent spokes, two child spokes, and two branch site connected over active-active site-to-site VPN with BGP.
@@ -32,7 +54,7 @@ Detailed diagrams:
 
 [![3]][3]
 
-### Topology Summary
+### Topology Overview
 
 - `hub90` and `hub91` are virtual hubs inside the same Azure Virtual WAN.
 - Each hub contains an Azure Firewall secured by a firewall policy.
@@ -93,7 +115,7 @@ The routing intent resource points `PrivateTraffic` to Azure Firewall. The `Inte
 
 ## Routing Model
 
-Traffic steering is implemented in two places.
+Traffic steering is implemented through two routing mechanisms: child-spoke route tables (UDRs) and static routes configured on virtual hub VNet connections.
 
 In addition to child-spoke UDRs, static routes are explicitly defined in each hub VNet Connection (`hubVirtualNetworkConnection`). These connection-level static routes map child-spoke prefixes to the parent spoke ILB frontend IP as `nextHopIpAddress`, so traffic arriving at the hub for those prefixes follows the NVA path in the parent spoke.
 
@@ -145,14 +167,13 @@ Child-to-parent and parent-to-child peerings are configured with:
 At the hub level:
 
 - Private traffic is sent to Azure Firewall through routing intent.
+- The Azure Firewall Policy permits transit across all private address prefixes; therefore, traffic between spoke VNets and between spoke VNets and branch networks is allowed.
 - Spoke hub connections set `enableInternetSecurity = false`.
 - No internet routing intent is configured.
 
 So the design combines Azure Firewall inspection in the virtual hub with explicit NVA steering for traffic to and from child spokes.
 
-## Addressing
-
-### Addressing for `init.json`
+## IP Addressing Plan
 
 | Component | Prefix | Purpose |
 | --------- | ------ | ------- |
@@ -163,8 +184,6 @@ So the design combines Azure Firewall inspection in the virtual hub with explici
 | `spoke22B` | `10.22.1.0/24` | Child spoke with workload subnet |
 | `branch1` | `10.50.0.0/24` | Branch VNet connected by S2S VPN |
 
-### Addressing for `init2.json`
-
 | Component | Prefix | Purpose |
 | --------- | ------ | ------- |
 | `hub91` | `10.91.0.0/23` | Virtual hub |
@@ -173,10 +192,6 @@ So the design combines Azure Firewall inspection in the virtual hub with explici
 | `spoke32` | `10.32.0.0/24` | Parent spoke transit VNet |
 | `spoke32B` | `10.32.1.0/24` | Child spoke with workload subnet |
 | `branch2` | `10.51.0.0/24` | Branch VNet connected by S2S VPN |
-
-## Virtual Machines
-
-### VM Inventory for `init.json`
 
 | VM Name | Network | Subnet | Private IP | Role |
 | ------- | ------- | ------ | ---------- | ---- |
@@ -187,8 +202,6 @@ So the design combines Azure Firewall inspection in the virtual hub with explici
 | `R22-2` | `spoke22` | `subnetBE` | `10.22.0.21` | NVA |
 | `WL22B-1` | `spoke22B` | `subnetWL22B` | `10.22.1.4` | Workload |
 | `branch1vm` | `branch1` | `subnet1` | dynamic | Branch workload |
-
-### VM Inventory for `init2.json`
 
 | VM Name | Network | Subnet | Private IP | Role |
 | ------- | ------- | ------ | ---------- | ---- |
@@ -221,7 +234,7 @@ Before deployment, update at least:
 - Subscription name
 
 
-## Files
+## File List
 
 | File | Description |
 | ---- | ----------- |
@@ -285,9 +298,9 @@ The deployment is sequential. Inside a step, the two spoke deployments can run i
 .\03-vwan-site.ps1 -initFile .\init2.json
 ```
 
-## Validation Notes
+## How to check symmetric data traffic through NVAs
 
-The easiest functional validation is traffic between child-spoke workloads, because the workload subnets exist only in the child spokes.
+The easiest functional validation is traffic between child-spoke workloads, because in the architecture the workload subnets exist only in the child spokes.
 
 Examples:
 
@@ -295,7 +308,7 @@ Examples:
 - `WL31B-1` to `WL32B-1`
 - Branch VM to child-spoke workload VM
 
-To confirm symmetric forwarding through the NVA layer, capture traffic on the NVA VMs with `tcpdump`.
+To confirm symmetric transit through the NVA layer, capture traffic on the NVA VMs with `tcpdump`.
 
 Example:
 
