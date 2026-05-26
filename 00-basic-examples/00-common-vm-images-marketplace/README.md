@@ -18,17 +18,11 @@ editor=""/>
    ms.author="fabferri" />
 
 ## Common Azure VM images from the Azure marketplace
+
 List of few common images from Azure marketple to run Azure VMs.
 
-`Ubuntu 20.04 LTS`
-```Console
-"publisher": "canonical",
-"offer": "0001-com-ubuntu-server-focal",
-"sku": "20_04-lts",
-"version": "latest"
-```
-
 `Ubuntu 22.04 LTS`
+
 ```Console
 "publisher": "canonical",
 "offer": "0001-com-ubuntu-server-jammy",
@@ -37,6 +31,7 @@ List of few common images from Azure marketple to run Azure VMs.
 ```
 
 `Ubuntu 24.04 LTS`
+
 ```Console
 "publisher": "canonical",
 "offer": "ubuntu-24_04-lts",
@@ -45,6 +40,7 @@ List of few common images from Azure marketple to run Azure VMs.
 ```
 
 `Windows Server 2022`
+
 ```Console
 "publisher": "MicrosoftWindowsServer",
 "offer": "WindowsServer",
@@ -54,6 +50,7 @@ List of few common images from Azure marketple to run Azure VMs.
 ```
 
 `Windows Server 2025`
+
 ```Console
 "publisher": "MicrosoftWindowsServer",
 "offer": "WindowsServer",
@@ -61,20 +58,21 @@ List of few common images from Azure marketple to run Azure VMs.
 "version": "latest"
 ```
 
-`Windows 11 23H2`
-```Console
-"publisher": "microsoftwindowsdesktop",
-"offer": "windows-11",
-"sku": "win11-23h2-ent",
-"version": "latest"
-"license": "Windows_Client"
-```
-
 `Windows 11 24H2`
+
 ```console
 "publisher": "microsoftwindowsdesktop",
 "offer": "windows-11",
 "sku": "win11-24h2-ent",
+"version": "latest"
+```
+
+`Windows 11 25H2`
+
+```console
+"publisher": "microsoftwindowsdesktop",
+"offer":     "windows-11",
+"sku":       "win11-25h2-ent",
 "version": "latest"
 ```
 
@@ -85,6 +83,7 @@ List of few common images from Azure marketple to run Azure VMs.
 ```
 
 `Debian`
+
 ```Console
 "publisher": "debian",
 "offer": "debian-12",
@@ -95,4 +94,3 @@ List of few common images from Azure marketple to run Azure VMs.
 <!--Image References-->
 
 <!--Link References-->
-
