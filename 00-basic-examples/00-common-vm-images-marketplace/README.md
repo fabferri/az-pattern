@@ -78,6 +78,12 @@ List of few common images from Azure marketple to run Azure VMs.
 "version": "latest"
 ```
 
+```console
+"publisher": "microsoftwindowsdesktop",
+"offer":     "windows-11",
+"sku":       "win11-25h2-ent",
+```
+
 `Debian`
 ```Console
 "publisher": "debian",
