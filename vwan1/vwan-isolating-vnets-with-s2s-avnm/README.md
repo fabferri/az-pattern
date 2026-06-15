@@ -758,7 +758,7 @@ Key patterns adopted from the reference:
 - `uniqueString(networkGroupId)` for policy resource names
 
 
-`Tags: virtual WAN, vWAN, Azure Virtual Network Mnager, AVNM` <br>
+`Tags: virtual WAN, vWAN, Azure Virtual Network Manager, AVNM` <br>
 `testing date: 15-06-26`
 
 <!--Image References-->
