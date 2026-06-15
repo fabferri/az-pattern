@@ -759,7 +759,7 @@ Key patterns adopted from the reference:
 
 
 `Tags: virtual WAN, vWAN, Azure Virtual Network Mnager, AVNM` <br>
-`testing date: 09-11-22`
+`testing date: 15-06-26`
 
 <!--Image References-->
 
