@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Hybrid-PM-Test-2",
+    "ResourceGroupName": "vwan-avnm-1",
+    "hub1location": "swedencentral",
+    "hub2location": "swedencentral",
+    "branch1location": "swedencentral",
+    "branch2location": "swedencentral",
+    "hub1Name": "hub1",
+    "hub2Name": "hub2",
+    "sharedKey": "SHARE_SECRET_SITE_TO_SITE_VPN_GOES_HERE",
+    "adminUsername": "ADMINISTRATOR_USERNAME_GOES_HERE",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_GOES_HERE"
+}

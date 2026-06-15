@@ -1,0 +1,620 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Deploys Azure Virtual Network Manager (net-mgr1) with 4 network groups, 4 HubAndSpoke connectivity configurations targeting vWAN hubs, dynamic membership via Azure Policy (tag-based), and a deployment script to commit and activate the connectivity configurations."
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "swedencentral",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "defaultValue": "vwan-avnm-1",
+      "metadata": {
+        "description": "Resource group where the Network Manager and its child resources are deployed."
+      }
+    },
+    "hub1RedPolicyResourceId": {
+      "type": "string",
+      "defaultValue": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'), '/providers/Microsoft.Network/virtualHubs/hub1/connectionPolicies/policy1-red')]",
+      "metadata": {
+        "description": "Full resource ID of the vWAN hub1 connection policy for the red network group."
+      }
+    },
+    "hub1BluePolicyResourceId": {
+      "type": "string",
+      "defaultValue": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'), '/providers/Microsoft.Network/virtualHubs/hub1/connectionPolicies/policy1-blue')]",
+      "metadata": {
+        "description": "Full resource ID of the vWAN hub1 connection policy for the blue network group."
+      }
+    },
+    "hub2BluePolicyResourceId": {
+      "type": "string",
+      "defaultValue": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'), '/providers/Microsoft.Network/virtualHubs/hub2/connectionPolicies/policyhub2-blue')]",
+      "metadata": {
+        "description": "Full resource ID of the vWAN hub2 connection policy for the blue network group."
+      }
+    },
+    "hub2RedPolicyResourceId": {
+      "type": "string",
+      "defaultValue": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('resourceGroupName'), '/providers/Microsoft.Network/virtualHubs/hub2/connectionPolicies/policyhub2-red')]",
+      "metadata": {
+        "description": "Full resource ID of the vWAN hub2 connection policy for the red network group."
+      }
+    }
+  },
+  "variables": {
+    "networkManagerName": "net-mgr1",
+    "subscriptionScope": "[concat('/subscriptions/', subscription().subscriptionId)]",
+    "uaiName": "[concat('uai-', variables('networkManagerName'))]",
+    "contributorRoleId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+    "avnmDeploymentId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'avnm')]"
+  },
+  "resources": [
+    {
+      "comments": "=== 1. AVNM nested deployment (resource-group scoped) ===",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "avnm",
+      "resourceGroup": "[parameters('resourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": { "scope": "inner" },
+        "mode": "Incremental",
+        "parameters": {
+          "location":                  { "value": "[parameters('location')]" },
+          "networkManagerName":        { "value": "[variables('networkManagerName')]" },
+          "subscriptionScope":         { "value": "[variables('subscriptionScope')]" },
+          "uaiName":                   { "value": "[variables('uaiName')]" },
+          "contributorRoleId":         { "value": "[variables('contributorRoleId')]" },
+          "hub1RedPolicyResourceId":   { "value": "[parameters('hub1RedPolicyResourceId')]" },
+          "hub1BluePolicyResourceId":  { "value": "[parameters('hub1BluePolicyResourceId')]" },
+          "hub2BluePolicyResourceId":  { "value": "[parameters('hub2BluePolicyResourceId')]" },
+          "hub2RedPolicyResourceId":   { "value": "[parameters('hub2RedPolicyResourceId')]" }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "location":                  { "type": "string" },
+            "networkManagerName":        { "type": "string" },
+            "subscriptionScope":         { "type": "string" },
+            "uaiName":                   { "type": "string" },
+            "contributorRoleId":         { "type": "string" },
+            "hub1RedPolicyResourceId":   { "type": "string" },
+            "hub1BluePolicyResourceId":  { "type": "string" },
+            "hub2BluePolicyResourceId":  { "type": "string" },
+            "hub2RedPolicyResourceId":   { "type": "string" }
+          },
+          "resources": [
+            {
+              "comments": "User-assigned managed identity used by the deployment script to commit connectivity configurations.",
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2023-01-31",
+              "name": "[parameters('uaiName')]",
+              "location": "[parameters('location')]"
+            },
+            {
+              "comments": "Contributor role on the resource group so the UAI can call Deploy-AzNetworkManagerCommit.",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[guid(resourceGroup().id, parameters('uaiName'), parameters('contributorRoleId'))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', parameters('contributorRoleId'))]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('uaiName')), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('uaiName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/networkManagers",
+              "apiVersion": "2024-05-01",
+              "name": "[parameters('networkManagerName')]",
+              "location": "[parameters('location')]",
+              "tags": {},
+              "properties": {
+                "description": "",
+                "networkManagerScopeAccesses": [ "Connectivity" ],
+                "networkManagerScopes": {
+                  "subscriptions": [ "[parameters('subscriptionScope')]" ],
+                  "managementGroups": []
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/networkGroups",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/grp1-red')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+              ],
+              "properties": { "description": "", "memberType": "VirtualNetwork" }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/networkGroups",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/grp1-blue')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+              ],
+              "properties": { "description": "", "memberType": "VirtualNetwork" }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/networkGroups",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/grp2-red')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+              ],
+              "properties": { "description": "", "memberType": "VirtualNetwork" }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/networkGroups",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/grp2-blue')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers', parameters('networkManagerName'))]"
+              ],
+              "properties": { "description": "", "memberType": "VirtualNetwork" }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/connConfig1')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp1-red')]"
+              ],
+              "properties": {
+                "description": "grp1-red spokes connected to hub1 via vWAN (policy1-red)",
+                "connectivityTopology": "HubAndSpoke",
+                "isGlobal": "True",
+                "deleteExistingPeering": "False",
+                "hubs": [
+                  {
+                    "resourceId": "[parameters('hub1RedPolicyResourceId')]",
+                    "resourceType": "Microsoft.Network/virtualHubs"
+                  }
+                ],
+                "appliesToGroups": [
+                  {
+                    "networkGroupId": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp1-red')]",
+                    "groupConnectivity": "None",
+                    "isGlobal": "False",
+                    "useHubGateway": "False"
+                  }
+                ],
+                "connectivityCapabilities": {
+                  "connectedGroupAddressOverlap": "Allowed",
+                  "connectedGroupPrivateEndpointsScale": "Standard",
+                  "peeringEnforcement": "Unenforced"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/connConfig2')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp1-blue')]"
+              ],
+              "properties": {
+                "description": "grp1-blue spokes connected to hub1 via vWAN (policy1-blue)",
+                "connectivityTopology": "HubAndSpoke",
+                "isGlobal": "True",
+                "deleteExistingPeering": "False",
+                "hubs": [
+                  {
+                    "resourceId": "[parameters('hub1BluePolicyResourceId')]",
+                    "resourceType": "Microsoft.Network/virtualHubs"
+                  }
+                ],
+                "appliesToGroups": [
+                  {
+                    "networkGroupId": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp1-blue')]",
+                    "groupConnectivity": "None",
+                    "isGlobal": "False",
+                    "useHubGateway": "False"
+                  }
+                ],
+                "connectivityCapabilities": {
+                  "connectedGroupAddressOverlap": "Allowed",
+                  "connectedGroupPrivateEndpointsScale": "Standard",
+                  "peeringEnforcement": "Unenforced"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/connConfig3')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp2-blue')]"
+              ],
+              "properties": {
+                "description": "grp2-blue spokes connected to hub2 via vWAN (policyhub2-blue)",
+                "connectivityTopology": "HubAndSpoke",
+                "isGlobal": "True",
+                "deleteExistingPeering": "False",
+                "hubs": [
+                  {
+                    "resourceId": "[parameters('hub2BluePolicyResourceId')]",
+                    "resourceType": "Microsoft.Network/virtualHubs"
+                  }
+                ],
+                "appliesToGroups": [
+                  {
+                    "networkGroupId": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp2-blue')]",
+                    "groupConnectivity": "None",
+                    "isGlobal": "False",
+                    "useHubGateway": "False"
+                  }
+                ],
+                "connectivityCapabilities": {
+                  "connectedGroupAddressOverlap": "Allowed",
+                  "connectedGroupPrivateEndpointsScale": "Standard",
+                  "peeringEnforcement": "Unenforced"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkManagers/connectivityConfigurations",
+              "apiVersion": "2024-05-01",
+              "name": "[concat(parameters('networkManagerName'), '/connConfig4')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp2-red')]"
+              ],
+              "properties": {
+                "description": "grp2-red spokes connected to hub2 via vWAN (policyhub2-red)",
+                "connectivityTopology": "HubAndSpoke",
+                "isGlobal": "True",
+                "deleteExistingPeering": "False",
+                "hubs": [
+                  {
+                    "resourceId": "[parameters('hub2RedPolicyResourceId')]",
+                    "resourceType": "Microsoft.Network/virtualHubs"
+                  }
+                ],
+                "appliesToGroups": [
+                  {
+                    "networkGroupId": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp2-red')]",
+                    "groupConnectivity": "None",
+                    "isGlobal": "False",
+                    "useHubGateway": "False"
+                  }
+                ],
+                "connectivityCapabilities": {
+                  "connectedGroupAddressOverlap": "Allowed",
+                  "connectedGroupPrivateEndpointsScale": "Standard",
+                  "peeringEnforcement": "Unenforced"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "networkManagerName": {
+              "type": "string",
+              "value": "[parameters('networkManagerName')]"
+            },
+            "uaiId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('uaiName'))]"
+            },
+            "grp1RedId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp1-red')]"
+            },
+            "grp1BlueId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp1-blue')]"
+            },
+            "grp2RedId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp2-red')]"
+            },
+            "grp2BlueId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/networkGroups', parameters('networkManagerName'), 'grp2-blue')]"
+            },
+            "connConfig1Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/connectivityConfigurations', parameters('networkManagerName'), 'connConfig1')]"
+            },
+            "connConfig2Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/connectivityConfigurations', parameters('networkManagerName'), 'connConfig2')]"
+            },
+            "connConfig3Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/connectivityConfigurations', parameters('networkManagerName'), 'connConfig3')]"
+            },
+            "connConfig4Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/networkManagers/connectivityConfigurations', parameters('networkManagerName'), 'connConfig4')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "comments": "=== 2. Policy nested deployment (subscription-scoped) — dynamic network group membership ===",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[concat('policy-', parameters('location'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('avnmDeploymentId')]"
+      ],
+      "properties": {
+        "expressionEvaluationOptions": { "scope": "inner" },
+        "mode": "Incremental",
+        "parameters": {
+          "grp1RedId":  { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp1RedId.value]" },
+          "grp1BlueId": { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp1BlueId.value]" },
+          "grp2RedId":  { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp2RedId.value]" },
+          "grp2BlueId": { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp2BlueId.value]" }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "grp1RedId":  { "type": "string" },
+            "grp1BlueId": { "type": "string" },
+            "grp2RedId":  { "type": "string" },
+            "grp2BlueId": { "type": "string" }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/policyDefinitions",
+              "apiVersion": "2023-04-01",
+              "name": "[uniqueString(parameters('grp1RedId'))]",
+              "properties": {
+                "policyType": "Custom",
+                "mode": "Microsoft.Network.Data",
+                "displayName": "AVNM dynamic membership — grp1-red (tag: environment=red1)",
+                "description": "Adds VNets tagged environment=red1 to the grp1-red network group.",
+                "metadata": { "category": "Azure Virtual Network Manager" },
+                "policyRule": {
+                  "if": {
+                    "allOf": [
+                      { "field": "type", "equals": "Microsoft.Network/virtualNetworks" },
+                      { "field": "tags['environment']", "equals": "red1" }
+                    ]
+                  },
+                  "then": {
+                    "effect": "addToNetworkGroup",
+                    "details": { "networkGroupId": "[parameters('grp1RedId')]" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyAssignments",
+              "apiVersion": "2022-06-01",
+              "name": "[uniqueString(parameters('grp1RedId'))]",
+              "dependsOn": [
+                "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp1RedId')))]"
+              ],
+              "properties": {
+                "displayName": "AVNM dynamic membership — grp1-red",
+                "description": "Assigns dynamic membership policy for grp1-red.",
+                "enforcementMode": "Default",
+                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp1RedId')))]"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyDefinitions",
+              "apiVersion": "2023-04-01",
+              "name": "[uniqueString(parameters('grp1BlueId'))]",
+              "properties": {
+                "policyType": "Custom",
+                "mode": "Microsoft.Network.Data",
+                "displayName": "AVNM dynamic membership — grp1-blue (tag: environment=blue1)",
+                "description": "Adds VNets tagged environment=blue1 to the grp1-blue network group.",
+                "metadata": { "category": "Azure Virtual Network Manager" },
+                "policyRule": {
+                  "if": {
+                    "allOf": [
+                      { "field": "type", "equals": "Microsoft.Network/virtualNetworks" },
+                      { "field": "tags['environment']", "equals": "blue1" }
+                    ]
+                  },
+                  "then": {
+                    "effect": "addToNetworkGroup",
+                    "details": { "networkGroupId": "[parameters('grp1BlueId')]" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyAssignments",
+              "apiVersion": "2022-06-01",
+              "name": "[uniqueString(parameters('grp1BlueId'))]",
+              "dependsOn": [
+                "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp1BlueId')))]"
+              ],
+              "properties": {
+                "displayName": "AVNM dynamic membership — grp1-blue",
+                "description": "Assigns dynamic membership policy for grp1-blue.",
+                "enforcementMode": "Default",
+                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp1BlueId')))]"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyDefinitions",
+              "apiVersion": "2023-04-01",
+              "name": "[uniqueString(parameters('grp2RedId'))]",
+              "properties": {
+                "policyType": "Custom",
+                "mode": "Microsoft.Network.Data",
+                "displayName": "AVNM dynamic membership — grp2-red (tag: environment=red2)",
+                "description": "Adds VNets tagged environment=red2 to the grp2-red network group.",
+                "metadata": { "category": "Azure Virtual Network Manager" },
+                "policyRule": {
+                  "if": {
+                    "allOf": [
+                      { "field": "type", "equals": "Microsoft.Network/virtualNetworks" },
+                      { "field": "tags['environment']", "equals": "red2" }
+                    ]
+                  },
+                  "then": {
+                    "effect": "addToNetworkGroup",
+                    "details": { "networkGroupId": "[parameters('grp2RedId')]" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyAssignments",
+              "apiVersion": "2022-06-01",
+              "name": "[uniqueString(parameters('grp2RedId'))]",
+              "dependsOn": [
+                "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp2RedId')))]"
+              ],
+              "properties": {
+                "displayName": "AVNM dynamic membership — grp2-red",
+                "description": "Assigns dynamic membership policy for grp2-red.",
+                "enforcementMode": "Default",
+                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp2RedId')))]"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyDefinitions",
+              "apiVersion": "2023-04-01",
+              "name": "[uniqueString(parameters('grp2BlueId'))]",
+              "properties": {
+                "policyType": "Custom",
+                "mode": "Microsoft.Network.Data",
+                "displayName": "AVNM dynamic membership — grp2-blue (tag: environment=blue2)",
+                "description": "Adds VNets tagged environment=blue2 to the grp2-blue network group.",
+                "metadata": { "category": "Azure Virtual Network Manager" },
+                "policyRule": {
+                  "if": {
+                    "allOf": [
+                      { "field": "type", "equals": "Microsoft.Network/virtualNetworks" },
+                      { "field": "tags['environment']", "equals": "blue2" }
+                    ]
+                  },
+                  "then": {
+                    "effect": "addToNetworkGroup",
+                    "details": { "networkGroupId": "[parameters('grp2BlueId')]" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/policyAssignments",
+              "apiVersion": "2022-06-01",
+              "name": "[uniqueString(parameters('grp2BlueId'))]",
+              "dependsOn": [
+                "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp2BlueId')))]"
+              ],
+              "properties": {
+                "displayName": "AVNM dynamic membership — grp2-blue",
+                "description": "Assigns dynamic membership policy for grp2-blue.",
+                "enforcementMode": "Default",
+                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp2BlueId')))]"
+              }
+            }
+          ],
+          "outputs": {
+            "policyDef1Id": { "type": "string", "value": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp1RedId')))]" },
+            "policyDef2Id": { "type": "string", "value": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp1BlueId')))]" },
+            "policyDef3Id": { "type": "string", "value": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp2RedId')))]" },
+            "policyDef4Id": { "type": "string", "value": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', uniqueString(parameters('grp2BlueId')))]" }
+          }
+        }
+      }
+    },
+    {
+      "comments": "=== 3. Commit nested deployment (resource-group scoped) — activates connectivity configurations via DeploymentScript ===",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "commitConnectivityConfigs",
+      "resourceGroup": "[parameters('resourceGroupName')]",
+      "dependsOn": [
+        "[variables('avnmDeploymentId')]",
+        "[subscriptionResourceId('Microsoft.Resources/deployments', concat('policy-', parameters('location')))]"
+      ],
+      "properties": {
+        "expressionEvaluationOptions": { "scope": "inner" },
+        "mode": "Incremental",
+        "parameters": {
+          "location":            { "value": "[parameters('location')]" },
+          "networkManagerName":  { "value": "[variables('networkManagerName')]" },
+          "resourceGroupName":   { "value": "[parameters('resourceGroupName')]" },
+          "uaiId":               { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.uaiId.value]" },
+          "connConfig1Id":       { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.connConfig1Id.value]" },
+          "connConfig2Id":       { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.connConfig2Id.value]" },
+          "connConfig3Id":       { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.connConfig3Id.value]" },
+          "connConfig4Id":       { "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.connConfig4Id.value]" }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "location":           { "type": "string" },
+            "networkManagerName": { "type": "string" },
+            "resourceGroupName":  { "type": "string" },
+            "uaiId":              { "type": "string" },
+            "connConfig1Id":      { "type": "string" },
+            "connConfig2Id":      { "type": "string" },
+            "connConfig3Id":      { "type": "string" },
+            "connConfig4Id":      { "type": "string" }
+          },
+          "resources": [
+            {
+              "comments": "Deployment script that calls Deploy-AzNetworkManagerCommit to activate all 4 connectivity configurations.",
+              "type": "Microsoft.Resources/deploymentScripts",
+              "apiVersion": "2020-10-01",
+              "name": "[concat('ds-commit-', parameters('networkManagerName'))]",
+              "location": "[parameters('location')]",
+              "kind": "AzurePowerShell",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[parameters('uaiId')]": {}
+                }
+              },
+              "properties": {
+                "azPowerShellVersion": "8.3",
+                "retentionInterval": "PT1H",
+                "timeout": "PT1H",
+                "arguments": "[format('-networkManagerName \"{0}\" -subscriptionId \"{1}\" -resourceGroupName \"{2}\" -targetLocation \"{3}\" -configId1 \"{4}\" -configId2 \"{5}\" -configId3 \"{6}\" -configId4 \"{7}\" -configType Connectivity', parameters('networkManagerName'), subscription().subscriptionId, parameters('resourceGroupName'), parameters('location'), parameters('connConfig1Id'), parameters('connConfig2Id'), parameters('connConfig3Id'), parameters('connConfig4Id'))]",
+                "scriptContent": "    param (\r\n      [parameter(mandatory=$true)][string]$subscriptionId,\r\n      [parameter(mandatory=$true)][string]$networkManagerName,\r\n      [parameter(mandatory=$true)][string]$configId1,\r\n      [parameter(mandatory=$true)][string]$configId2,\r\n      [parameter(mandatory=$true)][string]$configId3,\r\n      [parameter(mandatory=$true)][string]$configId4,\r\n      [parameter(mandatory=$true)][string]$targetLocation,\r\n      [parameter(mandatory=$true)][ValidateSet('Connectivity','SecurityAdmin')][string]$configType,\r\n      [parameter(mandatory=$true)][string]$resourceGroupName\r\n    )\r\n\r\n    $null = Connect-AzAccount -Identity -Subscription $subscriptionId\r\n\r\n    $configIdList = [System.Collections.Generic.List[string]]@($configId1, $configId2, $configId3, $configId4)\r\n    $targetLocationList = [System.Collections.Generic.List[string]]@($targetLocation)\r\n\r\n    $deployment = @{\r\n      Name              = $networkManagerName\r\n      ResourceGroupName = $resourceGroupName\r\n      ConfigurationId   = $configIdList\r\n      TargetLocation    = $targetLocationList\r\n      CommitType        = $configType\r\n    }\r\n\r\n    try {\r\n      Deploy-AzNetworkManagerCommit @deployment -ErrorAction Stop\r\n    } catch {\r\n      Write-Error \"Commit failed: $_\"\r\n      throw \"Commit failed: $_\"\r\n    }\r\n    "
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "networkManagerId": {
+      "type": "string",
+      "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp1RedId.value]",
+      "metadata": { "description": "Resource ID of the deployed Network Manager." }
+    },
+    "grp1RedId": {
+      "type": "string",
+      "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp1RedId.value]"
+    },
+    "grp1BlueId": {
+      "type": "string",
+      "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp1BlueId.value]"
+    },
+    "grp2RedId": {
+      "type": "string",
+      "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp2RedId.value]"
+    },
+    "grp2BlueId": {
+      "type": "string",
+      "value": "[reference(variables('avnmDeploymentId'), '2022-09-01').outputs.grp2BlueId.value]"
+    }
+  }
+}

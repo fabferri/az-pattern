@@ -1,0 +1,129 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Creates 4 AVNM connection policies on hub1 and hub2, encoding the per-colour routing configurations (red/blue) that AVNM will apply when it attaches spoke VNets to each vWAN hub. Must be deployed AFTER 01-vwan.json (hubs and route tables must exist) and BEFORE net-mgr1-arm.json (which references these policies as hub targets)."
+  },
+  "parameters": {
+    "hub1location": {
+      "type": "string",
+      "defaultValue": "swedencentral",
+      "metadata": { "description": "Azure region of hub1." }
+    },
+    "hub2location": {
+      "type": "string",
+      "defaultValue": "swedencentral",
+      "metadata": { "description": "Azure region of hub2." }
+    },
+    "hub1Name": {
+      "type": "string",
+      "defaultValue": "hub1",
+      "metadata": { "description": "Name of the first vWAN virtual hub." }
+    },
+    "hub2Name": {
+      "type": "string",
+      "defaultValue": "hub2",
+      "metadata": { "description": "Name of the second vWAN virtual hub." }
+    }
+  },
+  "variables": {
+    "hub1RedRouteTableId":  "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', parameters('hub1Name'), 'red')]",
+    "hub1BlueRouteTableId": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', parameters('hub1Name'), 'blue')]",
+    "hub2RedRouteTableId":  "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', parameters('hub2Name'), 'red')]",
+    "hub2BlueRouteTableId": "[resourceId('Microsoft.Network/virtualHubs/hubRouteTables', parameters('hub2Name'), 'blue')]"
+  },
+  "resources": [
+    {
+      "comments": "=== hub1 / policy1-red — spokes in grp1-red associate with hub1/red, propagate to all hubs red + default tables via labels ===",
+      "type": "Microsoft.Network/virtualHubs/connectionPolicies",
+      "apiVersion": "2024-05-01",
+      "name": "[concat(parameters('hub1Name'), '/policy1-red')]",
+      "location": "[parameters('hub1location')]",
+      "properties": {
+        "routingConfiguration": {
+          "associatedRouteTable": {
+            "id": "[variables('hub1RedRouteTableId')]"
+          },
+          "propagatedRouteTables": {
+            "labels": [ "default", "red" ]
+          }
+        }
+      }
+    },
+    {
+      "comments": "=== hub1 / policy1-blue — spokes in grp1-blue associate with hub1/blue, propagate to all hubs blue + default tables via labels ===",
+      "type": "Microsoft.Network/virtualHubs/connectionPolicies",
+      "apiVersion": "2024-05-01",
+      "name": "[concat(parameters('hub1Name'), '/policy1-blue')]",
+      "location": "[parameters('hub1location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualHubs/connectionPolicies', parameters('hub1Name'), 'policy1-red')]"
+      ],
+      "properties": {
+        "routingConfiguration": {
+          "associatedRouteTable": {
+            "id": "[variables('hub1BlueRouteTableId')]"
+          },
+          "propagatedRouteTables": {
+            "labels": [ "default", "blue" ]
+          }
+        }
+      }
+    },
+    {
+      "comments": "=== hub2 / policyhub2-red — spokes in grp2-red associate with hub2/red, propagate to all hubs red + default tables via labels ===",
+      "type": "Microsoft.Network/virtualHubs/connectionPolicies",
+      "apiVersion": "2024-05-01",
+      "name": "[concat(parameters('hub2Name'), '/policyhub2-red')]",
+      "location": "[parameters('hub2location')]",
+      "properties": {
+        "routingConfiguration": {
+          "associatedRouteTable": {
+            "id": "[variables('hub2RedRouteTableId')]"
+          },
+          "propagatedRouteTables": {
+            "labels": [ "default", "red" ]
+          }
+        }
+      }
+    },
+    {
+      "comments": "=== hub2 / policyhub2-blue — spokes in grp2-blue associate with hub2/blue, propagate to all hubs blue + default tables via labels ===",
+      "type": "Microsoft.Network/virtualHubs/connectionPolicies",
+      "apiVersion": "2024-05-01",
+      "name": "[concat(parameters('hub2Name'), '/policyhub2-blue')]",
+      "location": "[parameters('hub2location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualHubs/connectionPolicies', parameters('hub2Name'), 'policyhub2-red')]"
+      ],
+      "properties": {
+        "routingConfiguration": {
+          "associatedRouteTable": {
+            "id": "[variables('hub2BlueRouteTableId')]"
+          },
+          "propagatedRouteTables": {
+            "labels": [ "default", "blue" ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "policy1RedId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/virtualHubs/connectionPolicies', parameters('hub1Name'), 'policy1-red')]"
+    },
+    "policy1BlueId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/virtualHubs/connectionPolicies', parameters('hub1Name'), 'policy1-blue')]"
+    },
+    "policyhub2RedId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/virtualHubs/connectionPolicies', parameters('hub2Name'), 'policyhub2-red')]"
+    },
+    "policyhub2BlueId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/virtualHubs/connectionPolicies', parameters('hub2Name'), 'policyhub2-blue')]"
+    }
+  }
+}
