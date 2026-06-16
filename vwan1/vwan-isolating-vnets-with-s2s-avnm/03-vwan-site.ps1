@@ -1,4 +1,4 @@
-#
+# This script deploys the site-to-site VPN connection between the branches and the virtual hubs in vWAN
 #  variables in init.json file:
 #   $adminUsername: administrator username
 #   $adminPassword: administrator password
@@ -11,11 +11,6 @@
 #   $hub1Name: name of the virtual hub1
 #   $hub2Name: name of the virtual hub2 
 #   $sharedKey: Share secret of the site-to-site VPN
-#   $mngIP: management public IP to connect in SSH to the Azure VMs
-#   $RGTagExpireDate: tag assigned to the resource group. It is used to track the expiration date of the deployment in testing.
-#   $RGTagContact: tag assigned to the resource group. It is used to email to the owner of th deployment
-#   $RGTagNinja: tag assigned to the resource group. Alias of the user
-#   $RGTagUsage: tag assigned to the resource group. Short description of the deployment purpose
 #
 ################# Input parameters #################
 $deploymentName = 'vwan-site'
