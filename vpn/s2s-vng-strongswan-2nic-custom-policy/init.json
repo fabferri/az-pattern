@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "Hybrid-PM-Test-2",
+    "resourceGroupName": "strongswan2",
+    "location": "uksouth",
+    "location1": "uksouth",
+    "location2": "uksouth",
+    "gatewayName": "gw",
+    "nvaName": "nva",
+    "adminUsername": "ADMINISTATOR_USERNAME_GOES_HERE",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_GOES_HERE"
+}
+
