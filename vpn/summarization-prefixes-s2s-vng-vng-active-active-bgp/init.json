@@ -1,0 +1,19 @@
+{
+    "subscriptionName": "Hybrid-PM-Test-2",
+    "rgName": "test-summarization-101",
+    "location": "uksouth",
+    "location1": "uksouth",
+    "location2": "uksouth",
+    "gateway1Name": "gw1",
+    "gateway2Name": "gw2",
+    "asnGtw1": 65001,
+    "asnGtw2": 65002,
+    "spoke1": "spoke-1",
+    "spoke2": "spoke-2",
+    "spoke3": "spoke-3",
+    "spoke4": "spoke-4",
+    "spoke5": "spoke-5",
+    "spoke6": "spoke-6",
+    "adminUsername": "ADMINISTRATOR_USERNAME_GOES_HERE",
+    "adminPassword": "ADMINISTRATOR_PASSWORD_GOES_HERE"
+}
