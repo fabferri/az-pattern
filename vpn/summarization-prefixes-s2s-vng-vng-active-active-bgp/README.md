@@ -446,10 +446,10 @@ Network        NextHop     Origin    SourcePeer    AsPath    Weight
 The 28 individual /24 routes have been replaced by 7 summarized routes (6x /21 + 1x /24).
 
 
-Effective routes table in the vm2 (without summmarization):
+Effective routes table in the vm2 (with summmarization):
 ```bash
 # list of NIC name
-az network nic list --resource-group test-summarization-101 --query "[].name" -o tsv                                                   
+az network nic list --resource-group $rgName --query "[].name" -o tsv                                                   
 vm11-nic
 vm21-nic                       
 
@@ -497,22 +497,22 @@ Default                Active   0.0.0.0/0         Internet
 
 Check BGP learned routes:
 ```powershell
-az network vnet-gateway list-learned-routes -n gw2 -g $rg -o table
+az network vnet-gateway list-learned-routes -n gw2 -g $rgName -o table
 ```
 
 Check BGP peer status:
 ```powershell
-az network vnet-gateway list-bgp-peer-status -n gw1 -g $rg -o table
+az network vnet-gateway list-bgp-peer-status -n gw1 -g $rgName -o table
 ```
 
 Check S2S VPN connection status:
 ```powershell
-az network vpn-connection show --name conn11 --resource-group $rg --query connectionStatus
+az network vpn-connection show --name conn11 --resource-group $rgName --query connectionStatus
 ```
 
 Check VPN tunnel status:
 ```powershell
-az network vpn-connection show --name conn11 --resource-group $rg --query tunnelConnectionStatus
+az network vpn-connection show --name conn11 --resource-group $rgName --query tunnelConnectionStatus
 ```
 
 ### Notes
