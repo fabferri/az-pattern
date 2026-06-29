@@ -1,9 +1,0 @@
-{
-    "subscriptionName": "Hybrid-PM-Test-2",
-    "rgName": "vpn-s2s",
-    "location": "uksouth",
-    "location1": "uksouth",
-    "location2": "uksouth",
-    "adminUsername": "ADMINISTRATOR_USERNAME_GOES_HERE",
-    "adminPassword": "ADMINISTRATOR_PASSWORD_GOES_HERE"
-}

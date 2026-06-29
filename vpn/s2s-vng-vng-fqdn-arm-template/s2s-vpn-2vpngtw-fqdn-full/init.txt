@@ -1,3 +1,0 @@
-ResourceGroupName=vpn06
-location1=northeurope
-location2=northeurope
