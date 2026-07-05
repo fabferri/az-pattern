@@ -1,5 +1,4 @@
 # Fab's Azure Networking patterns
-[fabferri/az-pattern: Azure ARM templates and scripts](https://github.com/fabferri/az-pattern/tree/master)
 
 ## Basic examples
 
