@@ -1,0 +1,106 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "hubVNetName": {
+            "type": "string",
+            "defaultValue": "vnet1",
+            "metadata": {
+                "description": "Name of the hub VNet"
+            }
+        },
+        "spoke1": {
+            "type": "string",
+            "defaultValue": "spoke-1",
+            "metadata": {
+                "description": "Name of spoke VNet 1"
+            }
+        },
+        "spoke2": {
+            "type": "string",
+            "defaultValue": "spoke-2",
+            "metadata": {
+                "description": "Name of spoke VNet 2"
+            }
+        },
+        "spoke3": {
+            "type": "string",
+            "defaultValue": "spoke-3",
+            "metadata": {
+                "description": "Name of spoke VNet 3"
+            }
+        },
+        "spoke4": {
+            "type": "string",
+            "defaultValue": "spoke-4",
+            "metadata": {
+                "description": "Name of spoke VNet 4"
+            }
+        },
+        "spoke5": {
+            "type": "string",
+            "defaultValue": "spoke-5",
+            "metadata": {
+                "description": "Name of spoke VNet 5"
+            }
+        },
+        "spoke6": {
+            "type": "string",
+            "defaultValue": "spoke-6",
+            "metadata": {
+                "description": "Name of spoke VNet 6"
+            }
+        }
+    },
+    "variables": {
+        "spokeVNets": [
+            "[parameters('spoke1')]",
+            "[parameters('spoke2')]",
+            "[parameters('spoke3')]",
+            "[parameters('spoke4')]",
+            "[parameters('spoke5')]",
+            "[parameters('spoke6')]"
+        ]
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2025-07-01",
+            "name": "[concat(parameters('hubVNetName'), '/', parameters('hubVNetName'), '-to-', variables('spokeVNets')[copyIndex()])]",
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": true,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('spokeVNets')[copyIndex()])]"
+                }
+            },
+            "copy": {
+                "name": "hubToSpokePeerings",
+                "count": "[length(variables('spokeVNets'))]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2025-07-01",
+            "name": "[concat(variables('spokeVNets')[copyIndex()], '/', variables('spokeVNets')[copyIndex()], '-to-', parameters('hubVNetName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings', parameters('hubVNetName'), concat(parameters('hubVNetName'), '-to-', variables('spokeVNets')[copyIndex()]))]"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": true,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": true,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVNetName'))]"
+                }
+            },
+            "copy": {
+                "name": "spokeToHubPeerings",
+                "count": "[length(variables('spokeVNets'))]"
+            }
+        }
+    ]
+}
